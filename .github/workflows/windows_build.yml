@@ -1,0 +1,51 @@
+name: Windows Build
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    permissions:
+        contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          
+      - name: Enable Windows Support
+        run: flutter config --enable-windows-desktop
+          
+      - name: Ensure Windows Files Exist
+        # Since 'windows' folder might be missing in repo, generate it.
+        run: flutter create --platforms=windows .
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Windows
+        run: flutter build windows --release
+
+      - name: Archive Release
+        uses: thedoctor0/zip-release@0.7.6
+        with:
+          type: 'zip'
+          filename: 'InvoBharat-Windows.zip'
+          directory: 'build/windows/x64/runner/Release'
+          
+      - name: Update Nightly Release
+        uses: softprops/action-gh-release@v1
+        if: github.event_name == 'push'
+        with:
+            name: "Nightly Build"
+            tag_name: nightly
+            files: build/windows/x64/runner/Release/InvoBharat-Windows.zip
+            prerelease: true
+            body: "Auto-generated nightly build from commit ${{ github.sha }}."
