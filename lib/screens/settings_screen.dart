@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 import '../providers/business_profile_provider.dart';
+import '../providers/theme_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -21,6 +22,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late TextEditingController _phoneController;
   late TextEditingController _seriesController;
   late TextEditingController _sequenceController;
+  late TextEditingController _termsController;
+  late TextEditingController _notesController;
+  late TextEditingController _currencyController;
 
   @override
   void initState() {
@@ -34,6 +38,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _seriesController = TextEditingController(text: profile.invoiceSeries);
     _sequenceController =
         TextEditingController(text: profile.invoiceSequence.toString());
+    _termsController = TextEditingController(text: profile.termsAndConditions);
+    _notesController = TextEditingController(text: profile.defaultNotes);
+    _currencyController = TextEditingController(text: profile.currencySymbol);
   }
 
   @override
@@ -45,6 +52,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _phoneController.dispose();
     _seriesController.dispose();
     _sequenceController.dispose();
+    _termsController.dispose();
+    _notesController.dispose();
+    _currencyController.dispose();
     super.dispose();
   }
 
@@ -59,6 +69,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         phone: _phoneController.text,
         invoiceSeries: _seriesController.text,
         invoiceSequence: int.tryParse(_sequenceController.text) ?? 1,
+        termsAndConditions: _termsController.text,
+        defaultNotes: _notesController.text,
+        currencySymbol: _currencyController.text,
       );
       ref.read(businessProfileProvider.notifier).updateProfile(newProfile);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -67,9 +80,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _pickLogo() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final currentProfile = ref.read(businessProfileProvider);
+      final newProfile = currentProfile.copyWith(logoPath: pickedFile.path);
+      ref.read(businessProfileProvider.notifier).updateProfile(newProfile);
+    }
+  }
+
+  Future<void> _pickSignature() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final currentProfile = ref.read(businessProfileProvider);
+      final newProfile =
+          currentProfile.copyWith(signaturePath: pickedFile.path);
+      ref.read(businessProfileProvider.notifier).updateProfile(newProfile);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final profile = ref.watch(businessProfileProvider);
+    final themeMode = ref.watch(themeProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text("Settings")),
@@ -80,26 +117,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionHeader("Branding"),
-              Center(
-                  child: Column(children: [
-                GestureDetector(
-                    onTap: _pickLogo,
-                    child: CircleAvatar(
-                      radius: 40,
-                      backgroundImage: profile.logoPath != null
-                          ? FileImage(File(profile.logoPath!))
-                          : null,
-                      child: profile.logoPath == null
-                          ? const Icon(Icons.add_a_photo, size: 30)
-                          : null,
-                    )),
-                const SizedBox(height: 8),
-                TextButton(
-                    onPressed: _pickLogo,
-                    child: const Text("Upload Company Logo"))
-              ])),
-              const SizedBox(height: 16),
+              _buildSectionHeader("Appearance"),
+              ListTile(
+                title: const Text("App Theme"),
+                subtitle:
+                    Text(themeMode.toString().split('.').last.toUpperCase()),
+                trailing: DropdownButton<ThemeMode>(
+                  value: themeMode,
+                  underline: const SizedBox(),
+                  items: const [
+                    DropdownMenuItem(
+                        value: ThemeMode.system, child: Text("System")),
+                    DropdownMenuItem(
+                        value: ThemeMode.light, child: Text("Light")),
+                    DropdownMenuItem(
+                        value: ThemeMode.dark, child: Text("Dark")),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) {
+                      ref.read(themeProvider.notifier).setTheme(val);
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
               const Text("Primary Color"),
               const SizedBox(height: 8),
               Wrap(
@@ -126,6 +167,53 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           "Next Sequence", _sequenceController)),
                 ],
               ),
+              _buildTextField("Currency Symbol", _currencyController),
+              _buildTextField("Default Terms", _termsController, maxLines: 4),
+              _buildTextField("Default Notes", _notesController, maxLines: 2),
+              const SizedBox(height: 24),
+              _buildSectionHeader("Branding"),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(children: [
+                      const Text("Logo",
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                          onTap: _pickLogo,
+                          child: CircleAvatar(
+                            radius: 40,
+                            backgroundImage: profile.logoPath != null
+                                ? FileImage(File(profile.logoPath!))
+                                : null,
+                            child: profile.logoPath == null
+                                ? const Icon(Icons.add_a_photo, size: 30)
+                                : null,
+                          )),
+                    ]),
+                  ),
+                  Expanded(
+                    child: Column(children: [
+                      const Text("Signature",
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                          onTap: _pickSignature,
+                          child: CircleAvatar(
+                            radius: 40,
+                            backgroundColor: Colors.grey.shade200,
+                            backgroundImage: profile.signaturePath != null
+                                ? FileImage(File(profile.signaturePath!))
+                                : null,
+                            child: profile.signaturePath == null
+                                ? const Icon(Icons.edit, size: 30)
+                                : null,
+                          )),
+                    ]),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
               _buildSectionHeader("Business Profile"),
               _buildTextField("Company Name", _nameController),
               _buildTextField("Address", _addressController, maxLines: 3),
@@ -141,22 +229,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   label: const Text("Save Settings"),
                 ),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
       ),
     );
-  }
-
-  Future<void> _pickLogo() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      final currentProfile = ref.read(businessProfileProvider);
-      final newProfile = currentProfile.copyWith(logoPath: pickedFile.path);
-      ref.read(businessProfileProvider.notifier).updateProfile(newProfile);
-    }
   }
 
   Widget _buildSectionHeader(String title) {
@@ -182,7 +260,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           border: const OutlineInputBorder(),
         ),
         validator: (value) =>
-            value == null || value.isEmpty ? 'Required' : null,
+            // Only validate required fields if necessary.
+            // For now, let's keep it loose or validate specific ones like Company Name.
+            label == "Company Name" && (value == null || value.isEmpty)
+                ? 'Required'
+                : null,
       ),
     );
   }
@@ -198,20 +280,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             .updateColor(color.toARGB32());
       },
       child: Container(
-        width: 48,
-        height: 48,
+        width: 40,
+        height: 40,
         decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-            border:
-                isSelected ? Border.all(color: Colors.white, width: 3) : null,
-            boxShadow: [
-              if (isSelected)
-                BoxShadow(
-                    color: color.withValues(alpha: 0.6),
-                    blurRadius: 8,
-                    spreadRadius: 2)
-            ]),
+          color: color,
+          shape: BoxShape.circle,
+          border: isSelected ? Border.all(width: 3, color: Colors.grey) : null,
+        ),
         child: isSelected ? const Icon(Icons.check, color: Colors.white) : null,
       ),
     );

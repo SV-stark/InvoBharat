@@ -10,6 +10,10 @@ class BusinessProfile {
   String? logoPath;
   String invoiceSeries;
   int invoiceSequence;
+  String? signaturePath;
+  String termsAndConditions;
+  String defaultNotes;
+  String currencySymbol;
 
   BusinessProfile({
     required this.companyName,
@@ -21,6 +25,10 @@ class BusinessProfile {
     this.logoPath,
     this.invoiceSeries = 'INV-',
     this.invoiceSequence = 1,
+    this.signaturePath,
+    this.termsAndConditions = '',
+    this.defaultNotes = '',
+    this.currencySymbol = '₹',
   });
 
   Color get color => Color(colorValue);
@@ -35,6 +43,10 @@ class BusinessProfile {
       colorValue: Colors.teal.toARGB32(),
       invoiceSeries: "INV-",
       invoiceSequence: 1,
+      termsAndConditions:
+          "1. All disputes are subject to local jurisdiction.\n2. Interest @ 18% p.a. will be charged on delayed payment.",
+      defaultNotes: "Thank you for your business!",
+      currencySymbol: "₹",
     );
   }
 
@@ -49,6 +61,10 @@ class BusinessProfile {
       'logoPath': logoPath,
       'invoiceSeries': invoiceSeries,
       'invoiceSequence': invoiceSequence,
+      'signaturePath': signaturePath,
+      'termsAndConditions': termsAndConditions,
+      'defaultNotes': defaultNotes,
+      'currencySymbol': currencySymbol,
     };
   }
 
@@ -63,6 +79,10 @@ class BusinessProfile {
       logoPath: json['logoPath'],
       invoiceSeries: json['invoiceSeries'] ?? 'INV-',
       invoiceSequence: json['invoiceSequence'] ?? 1,
+      signaturePath: json['signaturePath'],
+      termsAndConditions: json['termsAndConditions'] ?? '',
+      defaultNotes: json['defaultNotes'] ?? '',
+      currencySymbol: json['currencySymbol'] ?? '₹',
     );
   }
 
@@ -76,6 +96,10 @@ class BusinessProfile {
     String? logoPath,
     String? invoiceSeries,
     int? invoiceSequence,
+    String? signaturePath,
+    String? termsAndConditions,
+    String? defaultNotes,
+    String? currencySymbol,
   }) {
     return BusinessProfile(
       companyName: companyName ?? this.companyName,
@@ -87,6 +111,10 @@ class BusinessProfile {
       logoPath: logoPath ?? this.logoPath,
       invoiceSeries: invoiceSeries ?? this.invoiceSeries,
       invoiceSequence: invoiceSequence ?? this.invoiceSequence,
+      signaturePath: signaturePath ?? this.signaturePath,
+      termsAndConditions: termsAndConditions ?? this.termsAndConditions,
+      defaultNotes: defaultNotes ?? this.defaultNotes,
+      currencySymbol: currencySymbol ?? this.currencySymbol,
     );
   }
 }

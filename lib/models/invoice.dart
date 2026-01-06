@@ -70,7 +70,7 @@ class Invoice {
   }
 
   double get totalTaxableValue =>
-      items.fold(0, (sum, item) => sum + item.amount);
+      items.fold(0, (sum, item) => sum + item.netAmount);
   double get totalCGST => items.fold(0, (sum, item) => sum + (item.cgstAmount));
   double get totalSGST => items.fold(0, (sum, item) => sum + (item.sgstAmount));
   double get totalIGST => items.fold(0, (sum, item) => sum + (item.igstAmount));
@@ -216,6 +216,7 @@ class Receiver {
 }
 
 class InvoiceItem {
+  final String id;
   final String description;
   final String sacCode;
   final String year; // e.g. "F.Y. 2025-26"
@@ -235,16 +236,18 @@ class InvoiceItem {
 
   double get totalAmount => netAmount + cgstAmount + sgstAmount;
 
-  const InvoiceItem({
+  InvoiceItem({
+    String? id,
     this.description = '',
     this.sacCode = '',
     this.year = '',
     this.amount = 0,
     this.discount = 0,
     this.gstRate = 18.0,
-  });
+  }) : id = id ?? DateTime.now().microsecondsSinceEpoch.toString();
 
   InvoiceItem copyWith({
+    String? id,
     String? description,
     String? sacCode,
     String? year,
@@ -253,6 +256,7 @@ class InvoiceItem {
     double? gstRate,
   }) {
     return InvoiceItem(
+      id: id ?? this.id,
       description: description ?? this.description,
       sacCode: sacCode ?? this.sacCode,
       year: year ?? this.year,
@@ -263,6 +267,7 @@ class InvoiceItem {
   }
 
   Map<String, dynamic> toJson() => {
+        'id': id,
         'description': description,
         'sacCode': sacCode,
         'year': year,
@@ -272,6 +277,7 @@ class InvoiceItem {
       };
 
   factory InvoiceItem.fromJson(Map<String, dynamic> json) => InvoiceItem(
+        id: json['id'],
         description: json['description'] ?? '',
         sacCode: json['sacCode'] ?? '',
         year: json['year'] ?? '',

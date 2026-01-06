@@ -36,7 +36,7 @@ class InvoiceNotifier extends Notifier<Invoice> {
           "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}",
       items: [
         // One empty item to start
-        const InvoiceItem(description: "", amount: 0, gstRate: 18),
+        InvoiceItem(description: "", amount: 0, gstRate: 18),
       ],
     );
   }
@@ -89,10 +89,29 @@ class InvoiceNotifier extends Notifier<Invoice> {
     state = state.copyWith(items: newItems);
   }
 
+  void updateItemSac(int index, String val) {
+    final newItems = List<InvoiceItem>.from(state.items);
+    newItems[index] = newItems[index].copyWith(sacCode: val);
+    state = state.copyWith(items: newItems);
+  }
+
+  void updateItemYear(int index, String val) {
+    final newItems = List<InvoiceItem>.from(state.items);
+    newItems[index] = newItems[index].copyWith(year: val);
+    state = state.copyWith(items: newItems);
+  }
+
+  void updateItemDiscount(int index, String val) {
+    final newItems = List<InvoiceItem>.from(state.items);
+    newItems[index] =
+        newItems[index].copyWith(discount: double.tryParse(val) ?? 0.0);
+    state = state.copyWith(items: newItems);
+  }
+
   void addItem() {
     state = state.copyWith(items: [
       ...state.items,
-      const InvoiceItem(description: "", amount: 0, gstRate: 18)
+      InvoiceItem(description: "", amount: 0, gstRate: 18)
     ]);
   }
 
@@ -118,11 +137,9 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
   void initState() {
     super.initState();
     // If editing, set the invoice in the provider
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.invoiceToEdit != null) {
-        ref.read(invoiceProvider.notifier).setInvoice(widget.invoiceToEdit!);
-      }
-    });
+    if (widget.invoiceToEdit != null) {
+      ref.read(invoiceProvider.notifier).setInvoice(widget.invoiceToEdit!);
+    }
   }
 
   @override
@@ -226,12 +243,40 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                     }),
                     Row(children: [
                       Expanded(
+                          child:
+                              _buildTextField("SAC Code", item.sacCode, (val) {
+                        ref
+                            .read(invoiceProvider.notifier)
+                            .updateItemSac(index, val);
+                      })),
+                      const SizedBox(width: 10),
+                      Expanded(
+                          child: _buildTextField(
+                              "Year (e.g. 2025-26)", item.year, (val) {
+                        ref
+                            .read(invoiceProvider.notifier)
+                            .updateItemYear(index, val);
+                      })),
+                    ]),
+                    Row(children: [
+                      Expanded(
                           child: _buildTextField("Amount",
                               item.amount == 0 ? "" : item.amount.toString(),
                               (val) {
                         ref
                             .read(invoiceProvider.notifier)
                             .updateItemAmount(index, val);
+                      })),
+                      const SizedBox(width: 10),
+                      Expanded(
+                          child: _buildTextField(
+                              "Discount",
+                              item.discount == 0
+                                  ? ""
+                                  : item.discount.toString(), (val) {
+                        ref
+                            .read(invoiceProvider.notifier)
+                            .updateItemDiscount(index, val);
                       })),
                       const SizedBox(width: 10),
                       Expanded(
@@ -342,11 +387,10 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
 
   Widget _buildTextField(
       String label, String initialValue, Function(String) onChanged) {
-    // Using a key to enforce rebuild when initialValue changes (important for reset/edit)
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: TextFormField(
-        key: Key(initialValue),
+        // Removed Key(initialValue) to prevent focus loss
         initialValue: initialValue,
         decoration: InputDecoration(
           labelText: label,
