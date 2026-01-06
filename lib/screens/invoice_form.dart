@@ -4,16 +4,20 @@ import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 import '../models/invoice.dart';
 import '../utils/pdf_generator.dart';
+import '../providers/business_profile_provider.dart';
+import '../data/invoice_repository.dart';
+
 
 final invoiceProvider = StateProvider<Invoice>((ref) {
+  final profile = ref.watch(businessProfileProvider);
   return Invoice(
     supplier: Supplier(
-      name: "Rakesh R S Garg & Co",
-      address: "MIDDLE BAZAR, SHIMLA-171001 (HIMACHAL PRADESH)",
-      gstin: "02ABIFR3682C1ZF",
-      pan: "ABIFR3682C",
-      email: "shimla@rsgarg.co.in",
-      phone: "9418318830",
+      name: profile.companyName,
+      address: profile.address,
+      gstin: profile.gstin,
+      pan: "ABIFR3682C", // Placeholder or from profile if exists
+      email: profile.email,
+      phone: profile.phone,
     ),
     receiver: Receiver(
       name: "Oberoi Hotels Pvt. Ltd.",
@@ -27,7 +31,7 @@ final invoiceProvider = StateProvider<Invoice>((ref) {
     accountNo: "120026964730",
     ifscCode: "CNRB0001964",
     items: [
-      InvoiceItem(description: "Digital Signature Charges", year: "2025-26", amount: 1428, gstRate: 0), // Base example
+      InvoiceItem(description: "Digital Signature Charges", year: "2025-26", amount: 1428, gstRate: 0),
       InvoiceItem(description: "Support Charges", sacCode: "998224", year: "2025-26", amount: 484, gstRate: 18),
     ],
   );
@@ -41,13 +45,20 @@ class InvoiceFormScreen extends ConsumerWidget {
     final invoice = ref.watch(invoiceProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("InvoBharat Generator")),
+      appBar: AppBar(title: const Text("Invoice Generator")),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          final pdfBytes = await generateInvoicePdf(invoice);
+          final profile = ref.read(businessProfileProvider);
+          final pdfBytes = await generateInvoicePdf(invoice, profile);
           await Printing.layoutPdf(onLayout: (_) => pdfBytes);
+          
+          // Save to Repo
+          await InvoiceRepository().saveInvoice(invoice);
+          if (context.mounted) {
+             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Invoice Saved!")));
+          }
         },
-        label: const Text("Preview PDF"),
+        label: const Text("Preview & Save"),
         icon: const Icon(Icons.picture_as_pdf),
       ),
       body: SingleChildScrollView(
