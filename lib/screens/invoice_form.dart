@@ -179,7 +179,10 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
             // --- Settings Section ---
             Card(
               elevation: 0,
-              color: Colors.grey.shade100,
+              color: Theme.of(context).cardColor, // Adaptive color
+              shape: RoundedRectangleBorder(
+                  side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+                  borderRadius: BorderRadius.circular(12)),
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(
@@ -192,13 +195,51 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                           ref.read(invoiceProvider.notifier).updateStyle(val!),
                     ),
                     const SizedBox(height: 10),
+                    Row(children: [
+                      Expanded(
+                        child: _buildTextField(
+                          "Invoice No",
+                          invoice.invoiceNo,
+                          (val) => ref
+                              .read(invoiceProvider.notifier)
+                              .updateInvoiceNo(val),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            final date = await showDatePicker(
+                                context: context,
+                                initialDate: invoice.invoiceDate,
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2100));
+                            if (date != null) {
+                              ref
+                                  .read(invoiceProvider.notifier)
+                                  .updateDate(date);
+                            }
+                          },
+                          child: InputDecorator(
+                            decoration: const InputDecoration(
+                              labelText: "Invoice Date",
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                            ),
+                            child: Text(DateFormat('dd-MMM-yyyy')
+                                .format(invoice.invoiceDate)),
+                          ),
+                        ),
+                      ),
+                    ]),
+                    const SizedBox(height: 10),
                     _buildTextField(
-                      "Invoice No",
-                      invoice.invoiceNo,
-                      (val) => ref
-                          .read(invoiceProvider.notifier)
-                          .updateInvoiceNo(val),
-                    ),
+                        "Place of Supply",
+                        invoice.placeOfSupply,
+                        (val) => ref
+                            .read(invoiceProvider.notifier)
+                            .updatePlaceOfSupply(val)),
                   ],
                 ),
               ),
@@ -262,21 +303,60 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                           .updateItemDescription(index, val);
                     }),
                     Row(children: [
+                      // SAC/HSN Toggle
+                      SizedBox(
+                        width: 80,
+                        child: DropdownButtonFormField<String>(
+                          key: ValueKey(item.codeType),
+                          initialValue: item.codeType,
+                          decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 8)),
+                          items: const [
+                            DropdownMenuItem(value: 'SAC', child: Text('SAC')),
+                            DropdownMenuItem(value: 'HSN', child: Text('HSN')),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) {
+                              ref
+                                  .read(invoiceProvider.notifier)
+                                  .updateItemCodeType(index, val);
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      // SAC/HSN Code Input
                       Expanded(
-                          child:
-                              _buildTextField("SAC Code", item.sacCode, (val) {
+                          child: _buildTextField("Code", item.sacCode, (val) {
                         ref
                             .read(invoiceProvider.notifier)
                             .updateItemSac(index, val);
                       })),
                       const SizedBox(width: 10),
+                      // Year Dropdown
                       Expanded(
-                          child: _buildTextField(
-                              "Year (e.g. 2025-26)", item.year, (val) {
-                        ref
-                            .read(invoiceProvider.notifier)
-                            .updateItemYear(index, val);
-                      })),
+                          child: DropdownButtonFormField<String>(
+                        key: ValueKey(item.year),
+                        initialValue: item.year.isEmpty ? null : item.year,
+                        hint: const Text("Year"),
+                        decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 8)),
+                        items: _getYearList()
+                            .map((y) =>
+                                DropdownMenuItem(value: y, child: Text(y)))
+                            .toList(),
+                        onChanged: (val) {
+                          if (val != null) {
+                            ref
+                                .read(invoiceProvider.notifier)
+                                .updateItemYear(index, val);
+                          }
+                        },
+                      )),
                     ]),
                     Row(children: [
                       Expanded(
@@ -437,5 +517,16 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
     );
+  }
+
+  List<String> _getYearList() {
+    List<String> years = [];
+    int startYear = 2017;
+    int currentYear = DateTime.now().year;
+    // Cover until next year to be safe
+    for (int y = startYear; y <= currentYear + 1; y++) {
+      years.add("$y-${(y + 1).toString().substring(2)}");
+    }
+    return years.reversed.toList();
   }
 }
