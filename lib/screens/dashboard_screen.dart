@@ -87,7 +87,7 @@ class DashboardScreen extends ConsumerWidget {
                             context,
                             "Manage Items",
                             Icons.inventory,
-                            Theme.of(context).colorScheme.surfaceVariant,
+                            Theme.of(context).colorScheme.surfaceContainerHighest,
                             () {
                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coming Soon!")));
                             },

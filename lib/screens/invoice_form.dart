@@ -7,43 +7,85 @@ import '../utils/pdf_generator.dart';
 import '../providers/business_profile_provider.dart';
 import '../data/invoice_repository.dart';
 
-final invoiceProvider = StateProvider<Invoice>((ref) {
-  final profile = ref.watch(businessProfileProvider);
-  return Invoice(
-    supplier: Supplier(
-      name: profile.companyName,
-      address: profile.address,
-      gstin: profile.gstin,
-      pan: "ABIFR3682C", // Placeholder or from profile if exists
-      email: profile.email,
-      phone: profile.phone,
-    ),
-    receiver: Receiver(
-      name: "Oberoi Hotels Pvt. Ltd.",
-      gstin: "02AAAC03408K1ZT",
-    ),
-    invoiceDate: DateTime.now(),
-    invoiceNo: "RRSG/SML/21",
-    placeOfSupply: "HIMACHAL PRADESH (02)",
-    bankName: "CANARA BANK",
-    branch: "MIDDLE BAZAR",
-    accountNo: "120026964730",
-    ifscCode: "CNRB0001964",
-    items: [
-      InvoiceItem(
-          description: "Digital Signature Charges",
-          year: "2025-26",
-          amount: 1428,
-          gstRate: 0),
-      InvoiceItem(
-          description: "Support Charges",
-          sacCode: "998224",
-          year: "2025-26",
-          amount: 484,
-          gstRate: 18),
-    ],
-  );
-});
+final invoiceProvider =
+    NotifierProvider<InvoiceNotifier, Invoice>(InvoiceNotifier.new);
+
+class InvoiceNotifier extends Notifier<Invoice> {
+  @override
+  Invoice build() {
+    final profile = ref.watch(businessProfileProvider);
+    return Invoice(
+      supplier: Supplier(
+        name: profile.companyName,
+        address: profile.address,
+        gstin: profile.gstin,
+        pan: "ABIFR3682C", // Placeholder or from profile if exists
+        email: profile.email,
+        phone: profile.phone,
+      ),
+      receiver: const Receiver(
+        name: "Oberoi Hotels Pvt. Ltd.",
+        gstin: "02AAAC03408K1ZT",
+      ),
+      invoiceDate: DateTime.now(),
+      invoiceNo: "RRSG/SML/21",
+      placeOfSupply: "HIMACHAL PRADESH (02)",
+      bankName: "CANARA BANK",
+      branch: "MIDDLE BAZAR",
+      accountNo: "120026964730",
+      ifscCode: "CNRB0001964",
+      items: [
+        const InvoiceItem(
+            description: "Digital Signature Charges",
+            year: "2025-26",
+            amount: 1428,
+            gstRate: 0),
+        const InvoiceItem(
+            description: "Support Charges",
+            sacCode: "998224",
+            year: "2025-26",
+            amount: 484,
+            gstRate: 18),
+      ],
+    );
+  }
+
+  void updateSupplierName(String val) {
+    state = state.copyWith(supplier: state.supplier.copyWith(name: val));
+  }
+
+  void updateSupplierGstin(String val) {
+    state = state.copyWith(supplier: state.supplier.copyWith(gstin: val));
+  }
+
+  void updateReceiverName(String val) {
+    state = state.copyWith(receiver: state.receiver.copyWith(name: val));
+  }
+
+  void updateReceiverGstin(String val) {
+    state = state.copyWith(receiver: state.receiver.copyWith(gstin: val));
+  }
+
+  void updateItemDescription(int index, String val) {
+    final newItems = List<InvoiceItem>.from(state.items);
+    newItems[index] = newItems[index].copyWith(description: val);
+    state = state.copyWith(items: newItems);
+  }
+
+  void updateItemAmount(int index, String val) {
+    final newItems = List<InvoiceItem>.from(state.items);
+    newItems[index] =
+        newItems[index].copyWith(amount: double.tryParse(val) ?? 0.0);
+    state = state.copyWith(items: newItems);
+  }
+
+  void updateItemGstRate(int index, String val) {
+    final newItems = List<InvoiceItem>.from(state.items);
+    newItems[index] =
+        newItems[index].copyWith(gstRate: double.tryParse(val) ?? 0.0);
+    state = state.copyWith(items: newItems);
+  }
+}
 
 class InvoiceFormScreen extends ConsumerWidget {
   const InvoiceFormScreen({super.key});
@@ -78,50 +120,59 @@ class InvoiceFormScreen extends ConsumerWidget {
             _buildTextField(
                 "Name",
                 invoice.supplier.name,
-                (val) => ref
-                    .read(invoiceProvider.notifier)
-                    .update((state) => state..supplier.name = val)),
+                (val) =>
+                    ref.read(invoiceProvider.notifier).updateSupplierName(val)),
             _buildTextField(
                 "GSTIN",
                 invoice.supplier.gstin,
                 (val) => ref
                     .read(invoiceProvider.notifier)
-                    .update((state) => state..supplier.gstin = val)),
+                    .updateSupplierGstin(val)),
 
             const SizedBox(height: 20),
             _buildSectionHeader("Receiver Details"),
             _buildTextField(
                 "Name",
                 invoice.receiver.name,
-                (val) => ref
-                    .read(invoiceProvider.notifier)
-                    .update((state) => state..receiver.name = val)),
+                (val) =>
+                    ref.read(invoiceProvider.notifier).updateReceiverName(val)),
             _buildTextField(
                 "GSTIN",
                 invoice.receiver.gstin,
                 (val) => ref
                     .read(invoiceProvider.notifier)
-                    .update((state) => state..receiver.gstin = val)),
+                    .updateReceiverGstin(val)),
 
             const SizedBox(height: 20),
             _buildSectionHeader("Items"),
             ...invoice.items.asMap().entries.map((entry) {
+              final index = entry.key;
               final item = entry.value;
               return Card(
                 child: Padding(
                   padding: const EdgeInsets.all(8),
                   child: Column(children: [
                     _buildTextField("Description", item.description, (val) {
-                      // Update item logic (simplified)
+                      ref
+                          .read(invoiceProvider.notifier)
+                          .updateItemDescription(index, val);
                     }),
                     Row(children: [
                       Expanded(
                           child: _buildTextField(
-                              "Amount", item.amount.toString(), (val) {})),
+                              "Amount", item.amount.toString(), (val) {
+                        ref
+                            .read(invoiceProvider.notifier)
+                            .updateItemAmount(index, val);
+                      })),
                       const SizedBox(width: 10),
                       Expanded(
                           child: _buildTextField(
-                              "GST %", item.gstRate.toString(), (val) {})),
+                              "GST %", item.gstRate.toString(), (val) {
+                        ref
+                            .read(invoiceProvider.notifier)
+                            .updateItemGstRate(index, val);
+                      })),
                     ])
                   ]),
                 ),
