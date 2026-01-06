@@ -219,6 +219,7 @@ class InvoiceItem {
   final String id;
   final String description;
   final String sacCode;
+  final String codeType; // 'SAC' or 'HSN'
   final String year; // e.g. "F.Y. 2025-26"
   final double amount; // Taxable Value
   final double discount; // Optional
@@ -240,6 +241,7 @@ class InvoiceItem {
     String? id,
     this.description = '',
     this.sacCode = '',
+    this.codeType = 'SAC',
     this.year = '',
     this.amount = 0,
     this.discount = 0,
@@ -250,6 +252,7 @@ class InvoiceItem {
     String? id,
     String? description,
     String? sacCode,
+    String? codeType,
     String? year,
     double? amount,
     double? discount,
@@ -259,6 +262,7 @@ class InvoiceItem {
       id: id ?? this.id,
       description: description ?? this.description,
       sacCode: sacCode ?? this.sacCode,
+      codeType: codeType ?? this.codeType,
       year: year ?? this.year,
       amount: amount ?? this.amount,
       discount: discount ?? this.discount,
@@ -270,6 +274,7 @@ class InvoiceItem {
         'id': id,
         'description': description,
         'sacCode': sacCode,
+        'codeType': codeType,
         'year': year,
         'amount': amount,
         'discount': discount,
@@ -280,6 +285,7 @@ class InvoiceItem {
         id: json['id'],
         description: json['description'] ?? '',
         sacCode: json['sacCode'] ?? '',
+        codeType: json['codeType'] ?? 'SAC',
         year: json['year'] ?? '',
         amount: (json['amount'] as num).toDouble(),
         discount: (json['discount'] as num).toDouble(),

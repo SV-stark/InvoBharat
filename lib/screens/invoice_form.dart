@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
+import 'package:intl/intl.dart';
 
 import '../models/invoice.dart';
 import '../models/business_profile.dart'; // Import for manual usage if needed
@@ -38,11 +39,24 @@ class InvoiceNotifier extends Notifier<Invoice> {
         // One empty item to start
         InvoiceItem(description: "", amount: 0, gstRate: 18),
       ],
+      // Pre-fill bank details
+      bankName: profile.bankName,
+      accountNo: profile.accountNumber,
+      ifscCode: profile.ifscCode,
+      branch: profile.branchName,
     );
   }
 
   void setInvoice(Invoice invoice) {
     state = invoice;
+  }
+
+  void updateDate(DateTime date) {
+    state = state.copyWith(invoiceDate: date);
+  }
+
+  void updatePlaceOfSupply(String val) {
+    state = state.copyWith(placeOfSupply: val);
   }
 
   void updateStyle(String val) {
@@ -86,6 +100,12 @@ class InvoiceNotifier extends Notifier<Invoice> {
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] =
         newItems[index].copyWith(gstRate: double.tryParse(val) ?? 0.0);
+    state = state.copyWith(items: newItems);
+  }
+
+  void updateItemCodeType(int index, String val) {
+    final newItems = List<InvoiceItem>.from(state.items);
+    newItems[index] = newItems[index].copyWith(codeType: val);
     state = state.copyWith(items: newItems);
   }
 
