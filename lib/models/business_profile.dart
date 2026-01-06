@@ -28,7 +28,7 @@ class BusinessProfile {
       gstin: "29XXXXX0000X0Z1",
       email: "email@example.com",
       phone: "9876543210",
-      colorValue: Colors.teal.value,
+      colorValue: Colors.teal.toARGB32(),
     );
   }
 
@@ -51,7 +51,7 @@ class BusinessProfile {
       gstin: json['gstin'] ?? '',
       email: json['email'] ?? '',
       phone: json['phone'] ?? '',
-      colorValue: json['colorValue'] ?? Colors.teal.value,
+      colorValue: json['colorValue'] ?? Colors.teal.toARGB32(),
       logoPath: json['logoPath'],
     );
   }

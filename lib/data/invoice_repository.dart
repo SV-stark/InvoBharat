@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -26,25 +27,25 @@ class InvoiceRepository {
       final path = await _localPath;
       final dir = Directory(path);
       List<Invoice> invoices = [];
-      
+
       final List<FileSystemEntity> files = dir.listSync();
-      
+
       for (var file in files) {
         if (file is File && file.path.endsWith('.json')) {
           final String contents = await file.readAsString();
           try {
-             invoices.add(Invoice.fromJson(jsonDecode(contents)));
+            invoices.add(Invoice.fromJson(jsonDecode(contents)));
           } catch (e) {
-            print("Error parsing ${file.path}: $e");
+            debugPrint("Error parsing ${file.path}: $e");
           }
         }
       }
-      
+
       // Sort by date desc
       invoices.sort((a, b) => b.invoiceDate.compareTo(a.invoiceDate));
       return invoices;
     } catch (e) {
-      print("Error loading invoices: $e");
+      debugPrint("Error loading invoices: $e");
       return [];
     }
   }

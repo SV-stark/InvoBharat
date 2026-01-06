@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../models/business_profile.dart'; 
+
 import '../providers/business_profile_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -74,34 +74,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _buildSectionHeader("Branding"),
               Center(
                   child: Column(children: [
-                      GestureDetector(
-                          onTap: _pickLogo,
-                          child: CircleAvatar(
-                              radius: 40,
-                              backgroundImage: profile.logoPath != null ? FileImage(File(profile.logoPath!)) : null,
-                              child: profile.logoPath == null ? const Icon(Icons.add_a_photo, size: 30) : null,
-                          )
-                      ),
-                      const SizedBox(height: 8),
-                      TextButton(onPressed: _pickLogo, child: const Text("Upload Company Logo"))
-                  ])
-              ),
+                GestureDetector(
+                    onTap: _pickLogo,
+                    child: CircleAvatar(
+                      radius: 40,
+                      backgroundImage: profile.logoPath != null
+                          ? FileImage(File(profile.logoPath!))
+                          : null,
+                      child: profile.logoPath == null
+                          ? const Icon(Icons.add_a_photo, size: 30)
+                          : null,
+                    )),
+                const SizedBox(height: 8),
+                TextButton(
+                    onPressed: _pickLogo,
+                    child: const Text("Upload Company Logo"))
+              ])),
               const SizedBox(height: 16),
               const Text("Primary Color"),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 12,
                 children: [
-                   _buildColorOption(Colors.teal),
-                   _buildColorOption(Colors.blue),
-                   _buildColorOption(Colors.purple),
-                   _buildColorOption(Colors.indigo),
-                   _buildColorOption(Colors.deepOrange),
-                   _buildColorOption(Colors.black),
+                  _buildColorOption(Colors.teal),
+                  _buildColorOption(Colors.blue),
+                  _buildColorOption(Colors.purple),
+                  _buildColorOption(Colors.indigo),
+                  _buildColorOption(Colors.deepOrange),
+                  _buildColorOption(Colors.black),
                 ],
               ),
               const SizedBox(height: 24),
-
               _buildSectionHeader("Business Profile"),
               _buildTextField("Company Name", _nameController),
               _buildTextField("Address", _addressController, maxLines: 3),
@@ -109,7 +112,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _buildTextField("Email", _emailController),
               _buildTextField("Phone", _phoneController),
               const SizedBox(height: 32),
-              
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -130,9 +132,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-       final currentProfile = ref.read(businessProfileProvider);
-       final newProfile = currentProfile.copyWith(logoPath: pickedFile.path);
-       ref.read(businessProfileProvider.notifier).updateProfile(newProfile);
+      final currentProfile = ref.read(businessProfileProvider);
+      final newProfile = currentProfile.copyWith(logoPath: pickedFile.path);
+      ref.read(businessProfileProvider.notifier).updateProfile(newProfile);
     }
   }
 
@@ -147,7 +149,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {int maxLines = 1}) {
+  Widget _buildTextField(String label, TextEditingController controller,
+      {int maxLines = 1}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
@@ -157,30 +160,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           labelText: label,
           border: const OutlineInputBorder(),
         ),
-        validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+        validator: (value) =>
+            value == null || value.isEmpty ? 'Required' : null,
       ),
     );
   }
 
   Widget _buildColorOption(Color color) {
     final selectedColor = ref.watch(businessProfileProvider).colorValue;
-    final isSelected = selectedColor == color.value;
+    final isSelected = selectedColor == color.toARGB32();
 
     return GestureDetector(
       onTap: () {
-        ref.read(businessProfileProvider.notifier).updateColor(color.value);
+        ref
+            .read(businessProfileProvider.notifier)
+            .updateColor(color.toARGB32());
       },
       child: Container(
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: isSelected ? Border.all(color: Colors.white, width: 3) : null,
-          boxShadow: [
-             if (isSelected) BoxShadow(color: color.withOpacity(0.6), blurRadius: 8, spreadRadius: 2)
-          ]
-        ),
+            color: color,
+            shape: BoxShape.circle,
+            border:
+                isSelected ? Border.all(color: Colors.white, width: 3) : null,
+            boxShadow: [
+              if (isSelected)
+                BoxShadow(
+                    color: color.withValues(alpha: 0.6),
+                    blurRadius: 8,
+                    spreadRadius: 2)
+            ]),
         child: isSelected ? const Icon(Icons.check, color: Colors.white) : null,
       ),
     );
