@@ -443,33 +443,76 @@ class ModernTemplate implements InvoiceTemplate {
       }
     }
 
+    final headerStyle = pw.TextStyle(
+        color: PdfColors.white, fontWeight: pw.FontWeight.bold, fontSize: 8);
+    final rowStyle = const pw.TextStyle(fontSize: 8);
+
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(0), // Full bleed for header
         build: (context) {
           return pw.Column(children: [
             // Header
             pw.Container(
                 color: themeColor,
                 padding: const pw.EdgeInsets.all(20),
-                child: pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text("INVOICE",
-                          style: pw.TextStyle(
-                              color: PdfColors.white,
-                              fontSize: 32,
-                              fontWeight: pw.FontWeight.bold)),
-                      if (logoImage != null)
-                        pw.Container(
-                            height: 50, width: 50, child: pw.Image(logoImage))
-                      else
-                        pw.Text(profile.companyName,
+                child: pw.Column(children: [
+                  pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text("INVOICE",
                             style: pw.TextStyle(
                                 color: PdfColors.white,
-                                fontSize: 20,
+                                fontSize: 24,
                                 fontWeight: pw.FontWeight.bold)),
-                    ])),
+                        if (logoImage != null)
+                          pw.Container(
+                              height: 50, width: 50, child: pw.Image(logoImage))
+                        else
+                          pw.Text(profile.companyName,
+                              style: pw.TextStyle(
+                                  color: PdfColors.white,
+                                  fontSize: 18,
+                                  fontWeight: pw.FontWeight.bold)),
+                      ]),
+                  pw.SizedBox(height: 10),
+                  pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text(profile.companyName,
+                                  style: pw.TextStyle(
+                                      color: PdfColors.white,
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text(profile.address,
+                                  style: const pw.TextStyle(
+                                      color: PdfColors.white)),
+                              pw.Text("GSTIN: ${profile.gstin}",
+                                  style: const pw.TextStyle(
+                                      color: PdfColors.white)),
+                              pw.Text("Phone: ${profile.phone}",
+                                  style: const pw.TextStyle(
+                                      color: PdfColors.white)),
+                            ]),
+                        pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.end,
+                            children: [
+                              pw.Text("Before Tax Amount",
+                                  style: const pw.TextStyle(
+                                      color: PdfColors.white)),
+                              pw.Text(
+                                  "Rs. ${invoice.totalTaxableValue.toStringAsFixed(2)}",
+                                  style: pw.TextStyle(
+                                      color: PdfColors.white,
+                                      fontSize: 16,
+                                      fontWeight: pw.FontWeight.bold)),
+                            ])
+                      ])
+                ])),
 
             pw.Padding(
                 padding: const pw.EdgeInsets.all(20),
@@ -486,67 +529,133 @@ class ModernTemplate implements InvoiceTemplate {
                                       color: themeColor,
                                       fontWeight: pw.FontWeight.bold)),
                               pw.Text(invoice.receiver.name),
+                              pw.Text(invoice.receiver.address),
                               pw.Text("GSTIN: ${invoice.receiver.gstin}"),
                             ]),
                         pw.Column(
                             crossAxisAlignment: pw.CrossAxisAlignment.end,
                             children: [
-                              pw.Text("Invoice #${invoice.invoiceNo}",
+                              pw.Text("Invoice Details:",
                                   style: pw.TextStyle(
+                                      color: themeColor,
                                       fontWeight: pw.FontWeight.bold)),
+                              pw.Text("Invoice #: ${invoice.invoiceNo}"),
                               pw.Text(
-                                  "Date: ${DateFormat('yyyy-MM-dd').format(invoice.invoiceDate)}"),
+                                  "Date: ${DateFormat('dd-MMM-yyyy').format(invoice.invoiceDate)}"),
+                              pw.Text(
+                                  "Place of Supply: ${invoice.placeOfSupply}"),
                             ])
                       ]),
-                  pw.SizedBox(height: 30),
+                  pw.SizedBox(height: 20),
 
-                  // Table
-                  pw.TableHelper.fromTextArray(
-                    headerStyle: pw.TextStyle(
-                        color: PdfColors.white, fontWeight: pw.FontWeight.bold),
-                    headerDecoration: pw.BoxDecoration(color: themeColor),
-                    oddRowDecoration:
-                        const pw.BoxDecoration(color: PdfColors.grey100),
-                    headers: ['Description', 'Qty', 'Price', 'Total'],
-                    data: invoice.items
-                        .map((item) => [
-                              item.description,
-                              "1", // Qty placeholder
-                              item.amount.toStringAsFixed(2),
-                              item.totalAmount.toStringAsFixed(2)
-                            ])
-                        .toList(),
-                  ),
+                  // GST Table
+                  _buildItemsTable(invoice, themeColor, headerStyle, rowStyle),
+
+                  pw.SizedBox(height: 10),
+
+                  // Total in Words
+                  pw.Container(
+                      width: double.infinity,
+                      padding: const pw.EdgeInsets.all(5),
+                      color: PdfColors.grey100,
+                      child: pw.Text(
+                          "Amount (in words): ${numberToWords(invoice.grandTotal)} Only",
+                          style: const pw.TextStyle(fontSize: 10))),
 
                   pw.SizedBox(height: 20),
                   pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.end,
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        pw.Text("Total: ",
-                            style: const pw.TextStyle(fontSize: 18)),
-                        pw.Text("Rs. ${invoice.grandTotal.toStringAsFixed(2)}",
-                            style: pw.TextStyle(
-                                fontSize: 18,
-                                fontWeight: pw.FontWeight.bold,
-                                color: themeColor)),
+                        // Bank Details
+                        pw.Expanded(
+                            child: pw.Column(
+                                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                                children: [
+                              pw.Text("Bank Details",
+                                  style: pw.TextStyle(
+                                      color: themeColor,
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text("Bank: ${invoice.bankName}"),
+                              pw.Text("A/c: ${invoice.accountNo}"),
+                              pw.Text("IFSC: ${invoice.ifscCode}"),
+                              pw.Text("Branch: ${invoice.branch}"),
+                              pw.SizedBox(height: 10),
+                              pw.Text("Terms",
+                                  style: pw.TextStyle(
+                                      color: themeColor,
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text(profile.termsAndConditions,
+                                  style: const pw.TextStyle(fontSize: 8)),
+                            ])),
+                        // Signature
+                        pw.Expanded(
+                            child: pw.Column(
+                                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                                children: [
+                              if (profile.signaturePath != null &&
+                                  File(profile.signaturePath!).existsSync())
+                                pw.Image(
+                                    pw.MemoryImage(File(profile.signaturePath!)
+                                        .readAsBytesSync()),
+                                    height: 60,
+                                    fit: pw.BoxFit.contain),
+                              pw.Text(
+                                  "Authorized Signatory\nfor ${profile.companyName}",
+                                  textAlign: pw.TextAlign.right,
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                            ]))
                       ]),
+
+                  pw.SizedBox(height: 10),
+                  pw.Divider(color: themeColor),
+                  pw.Center(
+                      child: pw.Text("Thank you for your business!",
+                          style: pw.TextStyle(color: themeColor)))
                 ])),
-
-            pw.Spacer(),
-
-            // Footer
-            pw.Container(
-                color: PdfColors.grey200,
-                width: double.infinity,
-                padding: const pw.EdgeInsets.all(10),
-                child: pw.Center(
-                    child: pw.Text("Thank you for your business!",
-                        style: const pw.TextStyle(color: PdfColors.grey800))))
           ]);
         },
       ),
     );
 
     return pdf.save();
+  }
+
+  pw.Widget _buildItemsTable(Invoice invoice, PdfColor themeColor,
+      pw.TextStyle headerStyle, pw.TextStyle rowStyle) {
+    // Simplification for Modern View: Combine taxes differently or show fewer columns if needed
+
+    // Simplification for Modern View: Combine taxes differently or show fewer columns if needed
+    // But user asked for GST details. Let's make a readable table.
+
+    return pw.TableHelper.fromTextArray(
+      headerStyle: headerStyle,
+      headerDecoration: pw.BoxDecoration(color: themeColor),
+      oddRowDecoration: const pw.BoxDecoration(color: PdfColors.grey100),
+      cellStyle: rowStyle,
+      headers: [
+        "Description",
+        "SAC",
+        "Value",
+        "Dis.",
+        "Tax (${invoice.items.firstOrNull?.gstRate ?? 0}%)", // Assuming uniform tax for simple column, otherwise split
+        "Total"
+      ],
+      // Let's use detailed row builder manually for full control if standard array isn't enough
+      // But standard is easy. Let's do a rigorous detailed table like Professional but styled.
+      data: invoice.items.map((item) {
+        final taxAmt = item.cgstAmount +
+            item.sgstAmount +
+            (item.amount * 0); // IGST logic if needed
+        return [
+          item.description,
+          item.sacCode,
+          item.amount.toStringAsFixed(2),
+          item.discount.toStringAsFixed(2),
+          taxAmt.toStringAsFixed(2),
+          item.totalAmount.toStringAsFixed(2)
+        ];
+      }).toList(),
+    );
   }
 }

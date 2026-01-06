@@ -25,6 +25,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late TextEditingController _termsController;
   late TextEditingController _notesController;
   late TextEditingController _currencyController;
+  // Bank Details
+  late TextEditingController _bankNameController;
+  late TextEditingController _accountNumberController;
+  late TextEditingController _ifscCodeController;
+  late TextEditingController _branchNameController;
 
   @override
   void initState() {
@@ -41,6 +46,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _termsController = TextEditingController(text: profile.termsAndConditions);
     _notesController = TextEditingController(text: profile.defaultNotes);
     _currencyController = TextEditingController(text: profile.currencySymbol);
+    _bankNameController = TextEditingController(text: profile.bankName);
+    _accountNumberController =
+        TextEditingController(text: profile.accountNumber);
+    _ifscCodeController = TextEditingController(text: profile.ifscCode);
+    _branchNameController = TextEditingController(text: profile.branchName);
   }
 
   @override
@@ -55,6 +65,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _termsController.dispose();
     _notesController.dispose();
     _currencyController.dispose();
+    _bankNameController.dispose();
+    _accountNumberController.dispose();
+    _ifscCodeController.dispose();
+    _branchNameController.dispose();
     super.dispose();
   }
 
@@ -72,6 +86,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         termsAndConditions: _termsController.text,
         defaultNotes: _notesController.text,
         currencySymbol: _currencyController.text,
+        bankName: _bankNameController.text,
+        accountNumber: _accountNumberController.text,
+        ifscCode: _ifscCodeController.text,
+        branchName: _branchNameController.text,
       );
       ref.read(businessProfileProvider.notifier).updateProfile(newProfile);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -170,6 +188,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _buildTextField("Currency Symbol", _currencyController),
               _buildTextField("Default Terms", _termsController, maxLines: 4),
               _buildTextField("Default Notes", _notesController, maxLines: 2),
+              const SizedBox(height: 24),
+              _buildSectionHeader("Payment Details"),
+              _buildTextField("Bank Name", _bankNameController),
+              _buildTextField("Account Number", _accountNumberController),
+              _buildTextField("IFSC Code", _ifscCodeController),
+              _buildTextField("Branch Name", _branchNameController),
               const SizedBox(height: 24),
               _buildSectionHeader("Branding"),
               Row(

@@ -15,6 +15,12 @@ class BusinessProfile {
   String defaultNotes;
   String currencySymbol;
 
+  // Bank Details
+  String bankName;
+  String accountNumber;
+  String ifscCode;
+  String branchName;
+
   BusinessProfile({
     required this.companyName,
     required this.address,
@@ -29,6 +35,10 @@ class BusinessProfile {
     this.termsAndConditions = '',
     this.defaultNotes = '',
     this.currencySymbol = '₹',
+    this.bankName = '',
+    this.accountNumber = '',
+    this.ifscCode = '',
+    this.branchName = '',
   });
 
   Color get color => Color(colorValue);
@@ -47,6 +57,10 @@ class BusinessProfile {
           "1. All disputes are subject to local jurisdiction.\n2. Interest @ 18% p.a. will be charged on delayed payment.",
       defaultNotes: "Thank you for your business!",
       currencySymbol: "₹",
+      bankName: "",
+      accountNumber: "",
+      ifscCode: "",
+      branchName: "",
     );
   }
 
@@ -65,6 +79,10 @@ class BusinessProfile {
       'termsAndConditions': termsAndConditions,
       'defaultNotes': defaultNotes,
       'currencySymbol': currencySymbol,
+      'bankName': bankName,
+      'accountNumber': accountNumber,
+      'ifscCode': ifscCode,
+      'branchName': branchName,
     };
   }
 
@@ -83,6 +101,10 @@ class BusinessProfile {
       termsAndConditions: json['termsAndConditions'] ?? '',
       defaultNotes: json['defaultNotes'] ?? '',
       currencySymbol: json['currencySymbol'] ?? '₹',
+      bankName: json['bankName'] ?? '',
+      accountNumber: json['accountNumber'] ?? '',
+      ifscCode: json['ifscCode'] ?? '',
+      branchName: json['branchName'] ?? '',
     );
   }
 
@@ -100,6 +122,10 @@ class BusinessProfile {
     String? termsAndConditions,
     String? defaultNotes,
     String? currencySymbol,
+    String? bankName,
+    String? accountNumber,
+    String? ifscCode,
+    String? branchName,
   }) {
     return BusinessProfile(
       companyName: companyName ?? this.companyName,
@@ -115,6 +141,10 @@ class BusinessProfile {
       termsAndConditions: termsAndConditions ?? this.termsAndConditions,
       defaultNotes: defaultNotes ?? this.defaultNotes,
       currencySymbol: currencySymbol ?? this.currencySymbol,
+      bankName: bankName ?? this.bankName,
+      accountNumber: accountNumber ?? this.accountNumber,
+      ifscCode: ifscCode ?? this.ifscCode,
+      branchName: branchName ?? this.branchName,
     );
   }
 }
