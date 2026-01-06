@@ -62,6 +62,10 @@ Contributions are welcome! If you find a bug or have a feature request, please [
 4.  Push to the Branch (`git push origin feature/AmazingFeature`)
 5.  Open a Pull Request
 
+## 📄 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
 ---
 
 Made with ❤️ in India.
