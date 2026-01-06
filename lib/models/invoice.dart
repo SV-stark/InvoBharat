@@ -34,6 +34,43 @@ class Invoice {
   double get totalSGST => items.fold(0, (sum, item) => sum + (item.sgstAmount ?? 0));
   double get totalIGST => items.fold(0, (sum, item) => sum + (item.igstAmount ?? 0));
   double get grandTotal => totalTaxableValue + totalCGST + totalSGST + totalIGST;
+  double get grandTotal => totalTaxableValue + totalCGST + totalSGST + totalIGST;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'supplier': supplier.toJson(),
+      'receiver': receiver.toJson(),
+      'invoiceNo': invoiceNo,
+      'invoiceDate': invoiceDate.toIso8601String(),
+      'placeOfSupply': placeOfSupply,
+      'reverseCharge': reverseCharge,
+      'paymentTerms': paymentTerms,
+      'items': items.map((i) => i.toJson()).toList(),
+      'comments': comments,
+      'bankName': bankName,
+      'accountNo': accountNo,
+      'ifscCode': ifscCode,
+      'branch': branch,
+    };
+  }
+
+  factory Invoice.fromJson(Map<String, dynamic> json) {
+    return Invoice(
+      supplier: Supplier.fromJson(json['supplier']),
+      receiver: Receiver.fromJson(json['receiver']),
+      invoiceNo: json['invoiceNo'],
+      invoiceDate: DateTime.parse(json['invoiceDate']),
+      placeOfSupply: json['placeOfSupply'],
+      reverseCharge: json['reverseCharge'],
+      paymentTerms: json['paymentTerms'],
+      items: (json['items'] as List).map((i) => InvoiceItem.fromJson(i)).toList(),
+      comments: json['comments'],
+      bankName: json['bankName'],
+      accountNo: json['accountNo'],
+      ifscCode: json['ifscCode'],
+      branch: json['branch'],
+    );
+  }
 }
 
 class Supplier {
@@ -52,6 +89,25 @@ class Supplier {
     this.email = '',
     this.phone = '',
   });
+  });
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'address': address,
+    'gstin': gstin,
+    'pan': pan,
+    'email': email,
+    'phone': phone,
+  };
+
+  factory Supplier.fromJson(Map<String, dynamic> json) => Supplier(
+    name: json['name'] ?? '',
+    address: json['address'] ?? '',
+    gstin: json['gstin'] ?? '',
+    pan: json['pan'] ?? '',
+    email: json['email'] ?? '',
+    phone: json['phone'] ?? '',
+  );
 }
 
 class Receiver {
@@ -66,6 +122,21 @@ class Receiver {
     this.gstin = '',
     this.pan = '',
   });
+  });
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'address': address,
+    'gstin': gstin,
+    'pan': pan,
+  };
+
+  factory Receiver.fromJson(Map<String, dynamic> json) => Receiver(
+    name: json['name'] ?? '',
+    address: json['address'] ?? '',
+    gstin: json['gstin'] ?? '',
+    pan: json['pan'] ?? '',
+  );
 }
 
 class InvoiceItem {
@@ -96,4 +167,23 @@ class InvoiceItem {
     this.discount = 0,
     this.gstRate = 18.0,
   }) : netAmount = amount - discount;
+  }) : netAmount = amount - discount;
+
+  Map<String, dynamic> toJson() => {
+    'description': description,
+    'sacCode': sacCode,
+    'year': year,
+    'amount': amount,
+    'discount': discount,
+    'gstRate': gstRate,
+  };
+
+  factory InvoiceItem.fromJson(Map<String, dynamic> json) => InvoiceItem(
+    description: json['description'] ?? '',
+    sacCode: json['sacCode'] ?? '',
+    year: json['year'] ?? '',
+    amount: (json['amount'] as num).toDouble(),
+    discount: (json['discount'] as num).toDouble(),
+    gstRate: (json['gstRate'] as num).toDouble(),
+  );
 }
