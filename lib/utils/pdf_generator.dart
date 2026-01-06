@@ -79,7 +79,7 @@ class ModernTemplate implements InvoiceTemplate {
   Future<Uint8List> generate(Invoice invoice, BusinessProfile profile) async {
     final pdf = pw.Document();
     final themeColor = PdfColor.fromInt(profile.colorValue);
-    final lightThemeColor = PdfColor.fromInt(profile.colorValue).flatten(p: 0.1); // Approximation
+    final themeColor = PdfColor.fromInt(profile.colorValue);
 
     pw.MemoryImage? logoImage;
     if (profile.logoPath != null) {
