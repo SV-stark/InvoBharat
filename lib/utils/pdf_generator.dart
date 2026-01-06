@@ -6,6 +6,7 @@ import 'dart:io';
 import '../models/invoice.dart';
 import '../models/business_profile.dart';
 import 'invoice_template.dart';
+import 'number_to_words.dart';
 
 // --- FACTORY ---
 Future<Uint8List> generateInvoicePdf(
@@ -124,45 +125,303 @@ class ProfessionalTemplate implements InvoiceTemplate {
   @override
   Future<Uint8List> generate(Invoice invoice, BusinessProfile profile) async {
     final pdf = pw.Document();
+
+    // Define styles
+    // ignore: prefer_const_constructors
+    final textStyle = pw.TextStyle(fontSize: 9);
+    final boldStyle = pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold);
+    final headerStyle = pw.TextStyle(
+        fontSize: 14,
+        fontWeight: pw.FontWeight.bold,
+        decoration: pw.TextDecoration.underline);
+
     pdf.addPage(pw.Page(
       pageFormat: PdfPageFormat.a4,
-      margin: const pw.EdgeInsets.all(32),
-      build: (context) => _buildContent(invoice, profile),
+      margin: const pw.EdgeInsets.all(20),
+      build: (context) {
+        return pw.Container(
+            decoration: pw.BoxDecoration(border: pw.Border.all()),
+            child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+                children: [
+                  // Header
+                  pw.Container(
+                    padding: const pw.EdgeInsets.all(5),
+                    alignment: pw.Alignment.center,
+                    child: pw.Text("TAX INVOICE", style: headerStyle),
+                  ),
+
+                  pw.Divider(height: 1),
+
+                  // Supplier & Receiver Row
+                  pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        // Supplier
+                        pw.Expanded(
+                            child: pw.Container(
+                                padding: const pw.EdgeInsets.all(5),
+                                decoration: const pw.BoxDecoration(
+                                    border: pw.Border(right: pw.BorderSide())),
+                                child: pw.Column(
+                                    crossAxisAlignment:
+                                        pw.CrossAxisAlignment.start,
+                                    children: [
+                                      pw.Center(
+                                          child: pw.Text("Supplier",
+                                              style: boldStyle)),
+                                      pw.Divider(height: 5),
+                                      _buildLabelValue("Name",
+                                          profile.companyName, boldStyle),
+                                      _buildLabelValue(
+                                          "GSTIN", profile.gstin, textStyle),
+                                      // Assume PAN is derived or empty if not in profile (it is usually part of GSTIN: chars 3-12)
+                                      _buildLabelValue(
+                                          "PAN",
+                                          profile.gstin.length > 12
+                                              ? profile.gstin.substring(2, 12)
+                                              : "",
+                                          textStyle),
+                                      _buildLabelValue("Address",
+                                          profile.address, textStyle),
+                                    ]))),
+                        // Receiver
+                        pw.Expanded(
+                            child: pw.Container(
+                                padding: const pw.EdgeInsets.all(5),
+                                child: pw.Column(
+                                    crossAxisAlignment:
+                                        pw.CrossAxisAlignment.start,
+                                    children: [
+                                      pw.Center(
+                                          child: pw.Text("Receiver",
+                                              style: boldStyle)),
+                                      pw.Divider(height: 5),
+                                      _buildLabelValue("Name",
+                                          invoice.receiver.name, boldStyle),
+                                      _buildLabelValue("GSTIN",
+                                          invoice.receiver.gstin, textStyle),
+                                      _buildLabelValue("PAN",
+                                          invoice.receiver.pan, textStyle),
+                                      _buildLabelValue("Address",
+                                          invoice.receiver.address, textStyle),
+                                    ]))),
+                      ]),
+
+                  pw.Divider(height: 1),
+
+                  // Invoice Details
+                  pw.Container(
+                      child: pw.Row(children: [
+                    pw.Expanded(
+                        child: pw.Container(
+                            padding: const pw.EdgeInsets.all(5),
+                            decoration: const pw.BoxDecoration(
+                                border: pw.Border(right: pw.BorderSide())),
+                            child: _buildLabelValue("Place of Supply",
+                                invoice.placeOfSupply, textStyle))),
+                    pw.Expanded(
+                        child: pw.Container(
+                            padding: const pw.EdgeInsets.all(5),
+                            decoration: const pw.BoxDecoration(
+                                border: pw.Border(right: pw.BorderSide())),
+                            child: _buildLabelValue(
+                                "Invoice Date",
+                                DateFormat('dd/MM/yyyy')
+                                    .format(invoice.invoiceDate),
+                                textStyle))),
+                    pw.Expanded(
+                        child: pw.Container(
+                            padding: const pw.EdgeInsets.all(5),
+                            child: _buildLabelValue(
+                                "Invoice No.", invoice.invoiceNo, boldStyle))),
+                  ])),
+
+                  pw.Divider(height: 1),
+
+                  // Items Table
+                  _buildItemsTable(invoice),
+
+                  // Total in Words
+                  pw.Container(
+                      padding: const pw.EdgeInsets.all(5),
+                      decoration: const pw.BoxDecoration(
+                          border: pw.Border(bottom: pw.BorderSide())),
+                      child: pw.Row(children: [
+                        pw.Text("Total Invoice Value (In Words): ",
+                            style: boldStyle),
+                        pw.Text(
+                            "Rupees ${numberToWords(invoice.grandTotal)} Only",
+                            style: textStyle),
+                      ])),
+
+                  // Footer Section (Payment + Signatory)
+                  pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        // Bottom Left
+                        pw.Expanded(
+                            flex: 1,
+                            child: pw.Container(
+                                padding: const pw.EdgeInsets.all(5),
+                                decoration: const pw.BoxDecoration(
+                                    border: pw.Border(right: pw.BorderSide())),
+                                child: pw.Column(
+                                    crossAxisAlignment:
+                                        pw.CrossAxisAlignment.start,
+                                    children: [
+                                      pw.Text("Payment Terms",
+                                          style: boldStyle),
+                                      pw.SizedBox(height: 2),
+                                      _buildLabelValue(
+                                          "Bank", invoice.bankName, textStyle),
+                                      _buildLabelValue("A/c No.",
+                                          invoice.accountNo, textStyle),
+                                      _buildLabelValue(
+                                          "IFSC", invoice.ifscCode, textStyle),
+                                      _buildLabelValue(
+                                          "Branch", invoice.branch, textStyle),
+                                      pw.SizedBox(height: 5),
+                                      pw.Text("Terms & Conditions:",
+                                          style: boldStyle),
+                                      pw.Text(profile.termsAndConditions,
+                                          style: textStyle),
+                                    ]))),
+                        // Bottom Right (Signatory)
+                        pw.Expanded(
+                            flex: 1,
+                            child: pw.Container(
+                                padding: const pw.EdgeInsets.all(5),
+                                height: 100, // Fixed height for sig area
+                                child: pw.Column(
+                                    mainAxisAlignment:
+                                        pw.MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        pw.CrossAxisAlignment.end,
+                                    children: [
+                                      pw.Text("for ${profile.companyName}",
+                                          style: boldStyle),
+                                      if (profile.signaturePath != null &&
+                                          File(profile.signaturePath!)
+                                              .existsSync())
+                                        pw.Image(
+                                            pw.MemoryImage(
+                                                File(profile.signaturePath!)
+                                                    .readAsBytesSync()),
+                                            height: 50,
+                                            fit: pw.BoxFit.contain),
+                                      pw.Text("Authorized Signatory",
+                                          style: boldStyle),
+                                    ]))),
+                      ])
+                ]));
+      },
     ));
     return pdf.save();
   }
 
-  pw.Widget _buildContent(Invoice invoice, BusinessProfile profile) {
-    return pw.Column(children: [
-      pw.Text("TAX INVOICE",
-          style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 18)),
-      pw.Divider(),
-      pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
-        pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-          pw.Text("Supplier: ${profile.companyName}",
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-          pw.Text(profile.address),
-          pw.Text("GSTIN: ${profile.gstin}"),
-        ]),
-        pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-          pw.Text("Invoice No: ${invoice.invoiceNo}"),
-          pw.Text(
-              "Date: ${DateFormat('dd/MM/yyyy').format(invoice.invoiceDate)}"),
-        ])
-      ]),
-      pw.SizedBox(height: 20),
-      _buildTable(invoice),
-      pw.Spacer(),
-      pw.Text("Authorized Signatory"),
+  pw.Widget _buildLabelValue(String label, String value, pw.TextStyle style) {
+    return pw.Row(children: [
+      pw.SizedBox(width: 80, child: pw.Text(label, style: style)),
+      pw.Text(": ", style: style),
+      pw.Expanded(child: pw.Text(value, style: style))
     ]);
   }
 
-  pw.Widget _buildTable(Invoice invoice) {
-    return pw.TableHelper.fromTextArray(
-      headers: ['Item', 'Amount'],
-      data: invoice.items
-          .map((i) => [i.description, i.totalAmount.toStringAsFixed(2)])
-          .toList(),
+  pw.Widget _buildItemsTable(Invoice invoice) {
+    final headers = [
+      "S.No",
+      "Description & SAC",
+      "Year",
+      "Amount",
+      "Discount",
+      "Net Amt",
+      "CGST %",
+      "CGST",
+      "SGST %",
+      "SGST",
+      "Total"
+    ];
+
+    final List<pw.TableRow> rows = [];
+
+    // Header
+    rows.add(pw.TableRow(
+        decoration: const pw.BoxDecoration(color: PdfColors.grey300),
+        children: headers
+            .map((t) => pw.Padding(
+                padding: const pw.EdgeInsets.all(2),
+                child: pw.Center(
+                    child: pw.Text(t,
+                        style: pw.TextStyle(
+                            fontSize: 7, fontWeight: pw.FontWeight.bold)))))
+            .toList()));
+
+    // Items
+    for (var i = 0; i < invoice.items.length; i++) {
+      final item = invoice.items[i];
+      rows.add(pw.TableRow(
+          children: [
+        (i + 1).toString(),
+        "${item.description}\nSAC: ${item.sacCode}",
+        item.year,
+        item.amount.toStringAsFixed(0),
+        item.discount.toStringAsFixed(0),
+        item.netAmount.toStringAsFixed(0),
+        "${item.cgstRate}%",
+        item.cgstAmount.toStringAsFixed(0),
+        "${item.sgstRate}%",
+        item.sgstAmount.toStringAsFixed(0),
+        item.totalAmount.toStringAsFixed(0),
+      ]
+              .map((t) => pw.Padding(
+                  padding: const pw.EdgeInsets.all(2),
+                  child: pw.Text(t,
+                      style: const pw.TextStyle(fontSize: 8),
+                      textAlign: pw.TextAlign.right)))
+              .toList()));
+    }
+
+    // Total
+    rows.add(pw.TableRow(
+        decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+        children: [
+          "",
+          "Total",
+          "",
+          invoice.totalTaxableValue.toStringAsFixed(0),
+          "",
+          (invoice.totalTaxableValue).toStringAsFixed(0),
+          "",
+          invoice.totalCGST.toStringAsFixed(0),
+          "",
+          invoice.totalSGST.toStringAsFixed(0),
+          invoice.grandTotal.toStringAsFixed(0),
+        ]
+            .map((t) => pw.Padding(
+                padding: const pw.EdgeInsets.all(2),
+                child: pw.Text(t,
+                    style: pw.TextStyle(
+                        fontSize: 8, fontWeight: pw.FontWeight.bold),
+                    textAlign: pw.TextAlign.right)))
+            .toList()));
+
+    return pw.Table(
+      border: pw.TableBorder.all(),
+      columnWidths: {
+        0: const pw.FlexColumnWidth(0.5),
+        1: const pw.FlexColumnWidth(2.5),
+        2: const pw.FlexColumnWidth(1),
+        3: const pw.FlexColumnWidth(1.2),
+        4: const pw.FlexColumnWidth(1),
+        5: const pw.FlexColumnWidth(1.2),
+        6: const pw.FlexColumnWidth(0.8),
+        7: const pw.FlexColumnWidth(1),
+        8: const pw.FlexColumnWidth(0.8),
+        9: const pw.FlexColumnWidth(1),
+        10: const pw.FlexColumnWidth(1.5),
+      },
+      children: rows,
     );
   }
 }
