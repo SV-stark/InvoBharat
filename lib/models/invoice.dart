@@ -1,4 +1,6 @@
 class Invoice {
+  final String? id; // Unique ID
+  final String style; // 'Modern', 'Professional', 'Minimal'
   final Supplier supplier;
   final Receiver receiver;
   final String invoiceNo;
@@ -14,6 +16,8 @@ class Invoice {
   final String branch;
 
   const Invoice({
+    this.id,
+    this.style = 'Modern',
     required this.supplier,
     required this.receiver,
     this.invoiceNo = '',
@@ -30,6 +34,8 @@ class Invoice {
   });
 
   Invoice copyWith({
+    String? id,
+    String? style,
     Supplier? supplier,
     Receiver? receiver,
     String? invoiceNo,
@@ -45,6 +51,8 @@ class Invoice {
     String? branch,
   }) {
     return Invoice(
+      id: id ?? this.id,
+      style: style ?? this.style,
       supplier: supplier ?? this.supplier,
       receiver: receiver ?? this.receiver,
       invoiceNo: invoiceNo ?? this.invoiceNo,
@@ -71,6 +79,8 @@ class Invoice {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
+      'style': style,
       'supplier': supplier.toJson(),
       'receiver': receiver.toJson(),
       'invoiceNo': invoiceNo,
@@ -89,6 +99,8 @@ class Invoice {
 
   factory Invoice.fromJson(Map<String, dynamic> json) {
     return Invoice(
+      id: json['id'],
+      style: json['style'] ?? 'Modern',
       supplier: Supplier.fromJson(json['supplier']),
       receiver: Receiver.fromJson(json['receiver']),
       invoiceNo: json['invoiceNo'],

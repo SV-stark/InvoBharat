@@ -29,7 +29,8 @@ class DashboardScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
+            onPressed: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
         ],
       ),
@@ -38,37 +39,61 @@ class DashboardScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-             // Welcome Section ...
-             Text(
+            // Welcome Section ...
+            Text(
               "Welcome back,",
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge
+                  ?.copyWith(color: Colors.grey),
             ),
             Text(
               profile.companyName,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
 
             invoiceListAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Text("Error: $err"),
-              data: (invoices) {
-                 final totalRevenue = invoices.fold(0.0, (sum, inv) => sum + inv.grandTotal);
-                 final currency = NumberFormat.simpleCurrency(locale: 'en_IN', decimalDigits: 0);
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, stack) => Text("Error: $err"),
+                data: (invoices) {
+                  final totalRevenue =
+                      invoices.fold(0.0, (sum, inv) => sum + inv.grandTotal);
+                  final currency = NumberFormat.simpleCurrency(
+                      locale: 'en_IN', decimalDigits: 0);
 
-                return Column(children: [
+                  return Column(children: [
                     // Stats Cards
                     Row(
                       children: [
-                        Expanded(child: _buildStatCard(context, "Total Revenue", currency.format(totalRevenue), Icons.currency_rupee, Colors.green)),
+                        Expanded(
+                            child: _buildStatCard(
+                                context,
+                                "Total Revenue",
+                                currency.format(totalRevenue),
+                                Icons.currency_rupee,
+                                Colors.green)),
                         const SizedBox(width: 16),
-                        Expanded(child: _buildStatCard(context, "Invoices Generated", "${invoices.length}", Icons.description, Colors.blue)),
+                        Expanded(
+                            child: _buildStatCard(
+                                context,
+                                "Invoices Generated",
+                                "${invoices.length}",
+                                Icons.description,
+                                Colors.blue)),
                       ],
                     ),
                     const SizedBox(height: 32),
 
                     // Quick Actions
-                    Text("Quick Actions", style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    Text("Quick Actions",
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleLarge
+                            ?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 16),
                     Row(
                       children: [
@@ -78,7 +103,12 @@ class DashboardScreen extends ConsumerWidget {
                             "New Invoice",
                             Icons.add,
                             Theme.of(context).colorScheme.primaryContainer,
-                            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const InvoiceFormScreen())).then((_) => ref.refresh(invoiceListProvider)),
+                            () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const InvoiceFormScreen()))
+                                .then((_) => ref.refresh(invoiceListProvider)),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -87,9 +117,13 @@ class DashboardScreen extends ConsumerWidget {
                             context,
                             "Manage Items",
                             Icons.inventory,
-                            Theme.of(context).colorScheme.surfaceContainerHighest,
+                            Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
                             () {
-                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coming Soon!")));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text("Coming Soon!")));
                             },
                           ),
                         ),
@@ -97,29 +131,49 @@ class DashboardScreen extends ConsumerWidget {
                     ),
 
                     const SizedBox(height: 32),
-                    Text("Recent Invoices", style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    Text("Recent Invoices",
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleLarge
+                            ?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
-                    if (invoices.isEmpty) 
-                       const Card(child: ListTile(leading: CircleAvatar(child: Icon(Icons.history)), title: Text("No invoices yet")))
-                    else 
-                       ...invoices.take(5).map((inv) => Card(
-                           child: ListTile(
-                               leading: const CircleAvatar(child: Icon(Icons.description)),
-                               title: Text(inv.receiver.name),
-                               subtitle: Text("${inv.invoiceNo} • ${DateFormat('dd MMM').format(inv.invoiceDate)}"),
-                               trailing: Text(currency.format(inv.grandTotal), style: const TextStyle(fontWeight: FontWeight.bold)),
-                           )
-                       ))
-                ]);
-              }
-            )
+                    if (invoices.isEmpty)
+                      const Card(
+                          child: ListTile(
+                              leading: CircleAvatar(child: Icon(Icons.history)),
+                              title: Text("No invoices yet")))
+                    else
+                      ...invoices.take(5).map((inv) => Card(
+                              child: ListTile(
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      InvoiceFormScreen(invoiceToEdit: inv),
+                                ),
+                              );
+                              ref.invalidate(invoiceListProvider);
+                            },
+                            leading: const CircleAvatar(
+                                child: Icon(Icons.description)),
+                            title: Text(inv.receiver.name),
+                            subtitle: Text(
+                                "${inv.invoiceNo} • ${DateFormat('dd MMM').format(inv.invoiceDate)}"),
+                            trailing: Text(currency.format(inv.grandTotal),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold)),
+                          )))
+                  ]);
+                })
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatCard(BuildContext context, String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(BuildContext context, String title, String value,
+      IconData icon, Color color) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -129,16 +183,25 @@ class DashboardScreen extends ConsumerWidget {
           children: [
             Icon(icon, color: color, size: 28),
             const SizedBox(height: 12),
-            Text(title, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600])),
+            Text(title,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: Colors.grey[600])),
             const SizedBox(height: 4),
-            Text(value, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+            Text(value,
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.bold)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildActionButton(BuildContext context, String label, IconData icon, Color bgColor, VoidCallback onTap) {
+  Widget _buildActionButton(BuildContext context, String label, IconData icon,
+      Color bgColor, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -151,9 +214,14 @@ class DashboardScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 32, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            Icon(icon,
+                size: 32,
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
             const SizedBox(height: 8),
-            Text(label, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            Text(label,
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ],
         ),
       ),
