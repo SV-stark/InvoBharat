@@ -10,14 +10,112 @@ import 'invoice_template.dart';
 // --- FACTORY ---
 Future<Uint8List> generateInvoicePdf(
     Invoice invoice, BusinessProfile profile) async {
-  // Using ModernTemplate by default for now
-  final template = ModernTemplate();
-  // final template = ProfessionalTemplate();
+  InvoiceTemplate template;
+  switch (invoice.style) {
+    case 'Professional':
+      template = ProfessionalTemplate();
+      break;
+    case 'Minimal':
+      template = MinimalTemplate();
+      break;
+    case 'Modern':
+    default:
+      template = ModernTemplate();
+      break;
+  }
 
   return template.generate(invoice, profile);
 }
 
 // --- TEMPLATES ---
+
+class MinimalTemplate implements InvoiceTemplate {
+  @override
+  String get name => 'Minimal';
+
+  @override
+  Future<Uint8List> generate(Invoice invoice, BusinessProfile profile) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(pw.Page(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.all(32),
+      build: (context) {
+        return pw
+            .Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+          pw.Center(
+              child: pw.Text("INVOICE",
+                  style: pw.TextStyle(
+                      fontSize: 24, fontWeight: pw.FontWeight.bold))),
+          pw.SizedBox(height: 20),
+          pw.Divider(),
+          pw.SizedBox(height: 10),
+          pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text("From:",
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text(profile.companyName),
+                      pw.Text(profile.address),
+                      pw.Text("GSTIN: ${profile.gstin}"),
+                      pw.Text("Phone: ${profile.phone}"),
+                    ]),
+                pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.end,
+                    children: [
+                      pw.Text("To:",
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text(invoice.receiver.name),
+                      if (invoice.receiver.address.isNotEmpty)
+                        pw.Text(invoice.receiver.address),
+                      pw.Text("GSTIN: ${invoice.receiver.gstin}"),
+                    ])
+              ]),
+          pw.SizedBox(height: 20),
+          pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text("Invoice No: ${invoice.invoiceNo}"),
+                pw.Text(
+                    "Date: ${DateFormat('dd-MMM-yyyy').format(invoice.invoiceDate)}"),
+              ]),
+          pw.SizedBox(height: 20),
+          pw.TableHelper.fromTextArray(
+            border: pw.TableBorder.all(),
+            headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            headers: ['Description', 'Qty', 'Price', 'GST %', 'Total'],
+            data: invoice.items.map((item) {
+              return [
+                item.description,
+                "1",
+                item.amount.toStringAsFixed(2),
+                "${item.gstRate}%",
+                item.totalAmount.toStringAsFixed(2)
+              ];
+            }).toList(),
+          ),
+          pw.SizedBox(height: 10),
+          pw.Align(
+              alignment: pw.Alignment.centerRight,
+              child: pw.Text(
+                  "Total: Rs. ${invoice.grandTotal.toStringAsFixed(2)}",
+                  style: pw.TextStyle(
+                      fontSize: 16, fontWeight: pw.FontWeight.bold))),
+          pw.Spacer(),
+          pw.Divider(),
+          pw.Center(
+              child: pw.Text("Thank you",
+                  style: const pw.TextStyle(fontSize: 10))),
+        ]);
+      },
+    ));
+
+    return pdf.save();
+  }
+}
 
 class ProfessionalTemplate implements InvoiceTemplate {
   @override
@@ -26,7 +124,6 @@ class ProfessionalTemplate implements InvoiceTemplate {
   @override
   Future<Uint8List> generate(Invoice invoice, BusinessProfile profile) async {
     final pdf = pw.Document();
-    // Reuse existing logic (simplified)
     pdf.addPage(pw.Page(
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.all(32),
@@ -36,8 +133,6 @@ class ProfessionalTemplate implements InvoiceTemplate {
   }
 
   pw.Widget _buildContent(Invoice invoice, BusinessProfile profile) {
-    // ... (Keeping the original logic mostly, but hooking up profile)
-    // For brevity, using a simplified version of the original layout
     return pw.Column(children: [
       pw.Text("TAX INVOICE",
           style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 18)),
@@ -63,7 +158,6 @@ class ProfessionalTemplate implements InvoiceTemplate {
   }
 
   pw.Widget _buildTable(Invoice invoice) {
-    // Simplified table for Professional
     return pw.TableHelper.fromTextArray(
       headers: ['Item', 'Amount'],
       data: invoice.items

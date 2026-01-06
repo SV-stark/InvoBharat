@@ -28,6 +28,12 @@ class BusinessProfileNotifier extends Notifier<BusinessProfile> {
     final newProfile = state.copyWith(colorValue: colorValue);
     await updateProfile(newProfile);
   }
+
+  Future<void> incrementInvoiceSequence() async {
+    final newProfile =
+        state.copyWith(invoiceSequence: state.invoiceSequence + 1);
+    await updateProfile(newProfile);
+  }
 }
 
 final businessProfileProvider =

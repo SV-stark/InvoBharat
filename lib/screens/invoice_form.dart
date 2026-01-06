@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:printing/printing.dart';
+
 import '../models/invoice.dart';
+import '../models/business_profile.dart'; // Import for manual usage if needed
 import '../utils/pdf_generator.dart';
 import '../providers/business_profile_provider.dart';
 import '../data/invoice_repository.dart';
+
+// Generates a unique ID
+String _generateId() => DateTime.now().millisecondsSinceEpoch.toString();
 
 final invoiceProvider =
     NotifierProvider<InvoiceNotifier, Invoice>(InvoiceNotifier.new);
@@ -14,40 +18,39 @@ class InvoiceNotifier extends Notifier<Invoice> {
   @override
   Invoice build() {
     final profile = ref.watch(businessProfileProvider);
+    // Initialize with defaults from profile
     return Invoice(
+      id: null, // New invoice
+      style: 'Modern',
       supplier: Supplier(
         name: profile.companyName,
         address: profile.address,
         gstin: profile.gstin,
-        pan: "ABIFR3682C", // Placeholder or from profile if exists
+        pan: "", // Optional: Add to profile model if needed
         email: profile.email,
         phone: profile.phone,
       ),
-      receiver: const Receiver(
-        name: "Oberoi Hotels Pvt. Ltd.",
-        gstin: "02AAAC03408K1ZT",
-      ),
+      receiver: const Receiver(), // Empty
       invoiceDate: DateTime.now(),
-      invoiceNo: "RRSG/SML/21",
-      placeOfSupply: "HIMACHAL PRADESH (02)",
-      bankName: "CANARA BANK",
-      branch: "MIDDLE BAZAR",
-      accountNo: "120026964730",
-      ifscCode: "CNRB0001964",
+      invoiceNo:
+          "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}",
       items: [
-        const InvoiceItem(
-            description: "Digital Signature Charges",
-            year: "2025-26",
-            amount: 1428,
-            gstRate: 0),
-        const InvoiceItem(
-            description: "Support Charges",
-            sacCode: "998224",
-            year: "2025-26",
-            amount: 484,
-            gstRate: 18),
+        // One empty item to start
+        const InvoiceItem(description: "", amount: 0, gstRate: 18),
       ],
     );
+  }
+
+  void setInvoice(Invoice invoice) {
+    state = invoice;
+  }
+
+  void updateStyle(String val) {
+    state = state.copyWith(style: val);
+  }
+
+  void updateInvoiceNo(String val) {
+    state = state.copyWith(invoiceNo: val);
   }
 
   void updateSupplierName(String val) {
@@ -85,38 +88,87 @@ class InvoiceNotifier extends Notifier<Invoice> {
         newItems[index].copyWith(gstRate: double.tryParse(val) ?? 0.0);
     state = state.copyWith(items: newItems);
   }
+
+  void addItem() {
+    state = state.copyWith(items: [
+      ...state.items,
+      const InvoiceItem(description: "", amount: 0, gstRate: 18)
+    ]);
+  }
+
+  void removeItem(int index) {
+    if (state.items.length > 1) {
+      final newItems = List<InvoiceItem>.from(state.items);
+      newItems.removeAt(index);
+      state = state.copyWith(items: newItems);
+    }
+  }
 }
 
-class InvoiceFormScreen extends ConsumerWidget {
-  const InvoiceFormScreen({super.key});
+class InvoiceFormScreen extends ConsumerStatefulWidget {
+  final Invoice? invoiceToEdit;
+  const InvoiceFormScreen({super.key, this.invoiceToEdit});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<InvoiceFormScreen> createState() => _InvoiceFormScreenState();
+}
+
+class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // If editing, set the invoice in the provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.invoiceToEdit != null) {
+        ref.read(invoiceProvider.notifier).setInvoice(widget.invoiceToEdit!);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final invoice = ref.watch(invoiceProvider);
+    final profile = ref.watch(businessProfileProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Invoice Generator")),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final profile = ref.read(businessProfileProvider);
-          final pdfBytes = await generateInvoicePdf(invoice, profile);
-          await Printing.layoutPdf(onLayout: (_) => pdfBytes);
-
-          // Save to Repo
-          await InvoiceRepository().saveInvoice(invoice);
-          if (context.mounted) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(const SnackBar(content: Text("Invoice Saved!")));
-          }
-        },
-        label: const Text("Preview & Save"),
-        icon: const Icon(Icons.picture_as_pdf),
+      appBar: AppBar(
+        title:
+            Text(widget.invoiceToEdit != null ? "Edit Invoice" : "New Invoice"),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _buildSectionHeader("Supplier Details"),
+            // --- Settings Section ---
+            Card(
+              elevation: 0,
+              color: Colors.grey.shade100,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    _buildDropdown(
+                      "Invoice Style",
+                      invoice.style,
+                      ['Modern', 'Professional', 'Minimal'],
+                      (val) =>
+                          ref.read(invoiceProvider.notifier).updateStyle(val!),
+                    ),
+                    const SizedBox(height: 10),
+                    _buildTextField(
+                      "Invoice No",
+                      invoice.invoiceNo,
+                      (val) => ref
+                          .read(invoiceProvider.notifier)
+                          .updateInvoiceNo(val),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            _buildSectionHeader("Supplier Details (You)"),
             _buildTextField(
                 "Name",
                 invoice.supplier.name,
@@ -130,7 +182,7 @@ class InvoiceFormScreen extends ConsumerWidget {
                     .updateSupplierGstin(val)),
 
             const SizedBox(height: 20),
-            _buildSectionHeader("Receiver Details"),
+            _buildSectionHeader("Receiver Details (Client)"),
             _buildTextField(
                 "Name",
                 invoice.receiver.name,
@@ -149,9 +201,24 @@ class InvoiceFormScreen extends ConsumerWidget {
               final index = entry.key;
               final item = entry.value;
               return Card(
+                margin: const EdgeInsets.only(bottom: 10),
                 child: Padding(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(10),
                   child: Column(children: [
+                    Row(
+                      children: [
+                        Expanded(
+                            child: Text("Item ${index + 1}",
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold))),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => ref
+                              .read(invoiceProvider.notifier)
+                              .removeItem(index),
+                        )
+                      ],
+                    ),
                     _buildTextField("Description", item.description, (val) {
                       ref
                           .read(invoiceProvider.notifier)
@@ -159,8 +226,9 @@ class InvoiceFormScreen extends ConsumerWidget {
                     }),
                     Row(children: [
                       Expanded(
-                          child: _buildTextField(
-                              "Amount", item.amount.toString(), (val) {
+                          child: _buildTextField("Amount",
+                              item.amount == 0 ? "" : item.amount.toString(),
+                              (val) {
                         ref
                             .read(invoiceProvider.notifier)
                             .updateItemAmount(index, val);
@@ -178,11 +246,86 @@ class InvoiceFormScreen extends ConsumerWidget {
                 ),
               );
             }),
+            TextButton.icon(
+              onPressed: () => ref.read(invoiceProvider.notifier).addItem(),
+              icon: const Icon(Icons.add),
+              label: const Text("Add Item"),
+            ),
 
-            const SizedBox(height: 80), // Space for FAB
+            const SizedBox(height: 100), // Space for bottom bar
           ],
         ),
       ),
+      bottomNavigationBar: BottomAppBar(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              OutlinedButton.icon(
+                onPressed: () => _showPreview(context, invoice, profile),
+                icon: const Icon(Icons.visibility),
+                label: const Text("Preview"),
+              ),
+              ElevatedButton.icon(
+                onPressed: () => _saveInvoice(context, ref, invoice),
+                icon: const Icon(Icons.save),
+                label: const Text("Save"),
+              ),
+              OutlinedButton.icon(
+                onPressed: () => _printInvoice(invoice, profile),
+                icon: const Icon(Icons.print),
+                label: const Text("Print"),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveInvoice(
+      BuildContext context, WidgetRef ref, Invoice invoice) async {
+    // If it's a new invoice, ensure ID is generated
+    Invoice toSave = invoice;
+    if (toSave.id == null) {
+      toSave = toSave.copyWith(id: _generateId());
+    }
+
+    await InvoiceRepository().saveInvoice(toSave);
+
+    // Only increment sequence if it was a NEW invoice (id was null initially)
+    if (invoice.id == null) {
+      await ref
+          .read(businessProfileProvider.notifier)
+          .incrementInvoiceSequence();
+    }
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Invoice Saved!")));
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> _printInvoice(Invoice invoice, BusinessProfile profile) async {
+    final pdfBytes = await generateInvoicePdf(invoice, profile);
+    await Printing.layoutPdf(onLayout: (_) => pdfBytes);
+  }
+
+  void _showPreview(
+      BuildContext context, Invoice invoice, BusinessProfile profile) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          insetPadding: const EdgeInsets.all(20),
+          child: PdfPreview(
+            build: (format) => generateInvoicePdf(invoice, profile),
+            useActions: false, // We have our own buttons
+          ),
+        );
+      },
     );
   }
 
@@ -199,9 +342,11 @@ class InvoiceFormScreen extends ConsumerWidget {
 
   Widget _buildTextField(
       String label, String initialValue, Function(String) onChanged) {
+    // Using a key to enforce rebuild when initialValue changes (important for reset/edit)
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: TextFormField(
+        key: Key(initialValue),
         initialValue: initialValue,
         decoration: InputDecoration(
           labelText: label,
@@ -210,6 +355,22 @@ class InvoiceFormScreen extends ConsumerWidget {
               const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         ),
         onChanged: onChanged,
+      ),
+    );
+  }
+
+  Widget _buildDropdown(String label, String value, List<String> items,
+      Function(String?) onChanged) {
+    return DropdownButtonFormField<String>(
+      key: Key(value),
+      initialValue: value,
+      items:
+          items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
     );
   }

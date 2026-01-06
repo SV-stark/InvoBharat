@@ -8,6 +8,8 @@ class BusinessProfile {
   String phone;
   int colorValue; // Store Color as int
   String? logoPath;
+  String invoiceSeries;
+  int invoiceSequence;
 
   BusinessProfile({
     required this.companyName,
@@ -17,6 +19,8 @@ class BusinessProfile {
     required this.phone,
     required this.colorValue,
     this.logoPath,
+    this.invoiceSeries = 'INV-',
+    this.invoiceSequence = 1,
   });
 
   Color get color => Color(colorValue);
@@ -29,6 +33,8 @@ class BusinessProfile {
       email: "email@example.com",
       phone: "9876543210",
       colorValue: Colors.teal.toARGB32(),
+      invoiceSeries: "INV-",
+      invoiceSequence: 1,
     );
   }
 
@@ -41,6 +47,8 @@ class BusinessProfile {
       'phone': phone,
       'colorValue': colorValue,
       'logoPath': logoPath,
+      'invoiceSeries': invoiceSeries,
+      'invoiceSequence': invoiceSequence,
     };
   }
 
@@ -53,6 +61,8 @@ class BusinessProfile {
       phone: json['phone'] ?? '',
       colorValue: json['colorValue'] ?? Colors.teal.toARGB32(),
       logoPath: json['logoPath'],
+      invoiceSeries: json['invoiceSeries'] ?? 'INV-',
+      invoiceSequence: json['invoiceSequence'] ?? 1,
     );
   }
 
@@ -64,6 +74,8 @@ class BusinessProfile {
     String? phone,
     int? colorValue,
     String? logoPath,
+    String? invoiceSeries,
+    int? invoiceSequence,
   }) {
     return BusinessProfile(
       companyName: companyName ?? this.companyName,
@@ -73,6 +85,8 @@ class BusinessProfile {
       phone: phone ?? this.phone,
       colorValue: colorValue ?? this.colorValue,
       logoPath: logoPath ?? this.logoPath,
+      invoiceSeries: invoiceSeries ?? this.invoiceSeries,
+      invoiceSequence: invoiceSequence ?? this.invoiceSequence,
     );
   }
 }

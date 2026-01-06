@@ -19,6 +19,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late TextEditingController _gstinController;
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
+  late TextEditingController _seriesController;
+  late TextEditingController _sequenceController;
 
   @override
   void initState() {
@@ -29,6 +31,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _gstinController = TextEditingController(text: profile.gstin);
     _emailController = TextEditingController(text: profile.email);
     _phoneController = TextEditingController(text: profile.phone);
+    _seriesController = TextEditingController(text: profile.invoiceSeries);
+    _sequenceController =
+        TextEditingController(text: profile.invoiceSequence.toString());
   }
 
   @override
@@ -38,6 +43,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _gstinController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _seriesController.dispose();
+    _sequenceController.dispose();
     super.dispose();
   }
 
@@ -50,6 +57,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         gstin: _gstinController.text,
         email: _emailController.text,
         phone: _phoneController.text,
+        invoiceSeries: _seriesController.text,
+        invoiceSequence: int.tryParse(_sequenceController.text) ?? 1,
       );
       ref.read(businessProfileProvider.notifier).updateProfile(newProfile);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -105,6 +114,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ],
               ),
               const SizedBox(height: 24),
+              _buildSectionHeader("Invoice Configuration"),
+              Row(
+                children: [
+                  Expanded(
+                      child: _buildTextField(
+                          "Series (e.g. INV-)", _seriesController)),
+                  const SizedBox(width: 16),
+                  Expanded(
+                      child: _buildTextField(
+                          "Next Sequence", _sequenceController)),
+                ],
+              ),
               _buildSectionHeader("Business Profile"),
               _buildTextField("Company Name", _nameController),
               _buildTextField("Address", _addressController, maxLines: 3),
