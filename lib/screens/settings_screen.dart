@@ -162,7 +162,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _buildColorOption(MaterialColor color) {
+  Widget _buildColorOption(Color color) {
     final selectedColor = ref.watch(businessProfileProvider).colorValue;
     final isSelected = selectedColor == color.value;
 
