@@ -64,26 +64,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Settings")),
-    }
-  }
-
-  Future<void> _pickLogo() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-       final currentProfile = ref.read(businessProfileProvider);
-       final newProfile = currentProfile.copyWith(logoPath: pickedFile.path);
-       ref.read(businessProfileProvider.notifier).updateProfile(newProfile);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final profile = ref.watch(businessProfileProvider);
-
-    return Scaffold(
-      appBar: AppBar(title: const Text("Settings")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -91,7 +71,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionHeader("Branding"), // Moved Branding up
+              _buildSectionHeader("Branding"),
               Center(
                   child: Column(children: [
                       GestureDetector(
@@ -143,6 +123,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _pickLogo() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+       final currentProfile = ref.read(businessProfileProvider);
+       final newProfile = currentProfile.copyWith(logoPath: pickedFile.path);
+       ref.read(businessProfileProvider.notifier).updateProfile(newProfile);
+    }
   }
 
   Widget _buildSectionHeader(String title) {

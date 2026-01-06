@@ -30,10 +30,9 @@ class Invoice {
   });
 
   double get totalTaxableValue => items.fold(0, (sum, item) => sum + item.amount);
-  double get totalCGST => items.fold(0, (sum, item) => sum + (item.cgstAmount ?? 0));
-  double get totalSGST => items.fold(0, (sum, item) => sum + (item.sgstAmount ?? 0));
-  double get totalIGST => items.fold(0, (sum, item) => sum + (item.igstAmount ?? 0));
-  double get grandTotal => totalTaxableValue + totalCGST + totalSGST + totalIGST;
+  double get totalCGST => items.fold(0, (sum, item) => sum + (item.cgstAmount));
+  double get totalSGST => items.fold(0, (sum, item) => sum + (item.sgstAmount));
+  double get totalIGST => items.fold(0, (sum, item) => sum + (item.igstAmount));
   double get grandTotal => totalTaxableValue + totalCGST + totalSGST + totalIGST;
 
   Map<String, dynamic> toJson() {
@@ -89,7 +88,6 @@ class Supplier {
     this.email = '',
     this.phone = '',
   });
-  });
 
   Map<String, dynamic> toJson() => {
     'name': name,
@@ -121,7 +119,6 @@ class Receiver {
     this.address = '',
     this.gstin = '',
     this.pan = '',
-  });
   });
 
   Map<String, dynamic> toJson() => {
@@ -166,7 +163,6 @@ class InvoiceItem {
     this.amount = 0,
     this.discount = 0,
     this.gstRate = 18.0,
-  }) : netAmount = amount - discount;
   }) : netAmount = amount - discount;
 
   Map<String, dynamic> toJson() => {
