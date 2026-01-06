@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="logo.png" alt="InvoBharat Logo" width="120" height="120">
+</div>
+
 # InvoBharat 🇮🇳
 
 [![Windows Build](https://github.com/SV-stark/InvoBharat/actions/workflows/windows_build.yml/badge.svg)](https://github.com/SV-stark/InvoBharat/actions/workflows/windows_build.yml)

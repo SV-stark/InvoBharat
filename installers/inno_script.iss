@@ -15,6 +15,7 @@ OutputBaseFilename=InvoBharat_Setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+SetupIconFile=..\windows\runner\resources\app_icon.ico
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
