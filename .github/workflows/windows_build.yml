@@ -46,7 +46,7 @@ jobs:
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers/inno_script.iss
           
       - name: Update Nightly Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: github.event_name == 'push'
         with:
             name: "Nightly Build"
