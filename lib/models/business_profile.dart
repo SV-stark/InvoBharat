@@ -12,6 +12,7 @@ class BusinessProfile {
   String invoiceSeries;
   int invoiceSequence;
   String? signaturePath;
+  String? stampPath;
   String termsAndConditions;
   String defaultNotes;
   String currencySymbol;
@@ -34,6 +35,7 @@ class BusinessProfile {
     this.invoiceSeries = 'INV-',
     this.invoiceSequence = 1,
     this.signaturePath,
+    this.stampPath,
     this.termsAndConditions = '',
     this.defaultNotes = '',
     this.currencySymbol = '₹',
@@ -80,6 +82,7 @@ class BusinessProfile {
       'invoiceSeries': invoiceSeries,
       'invoiceSequence': invoiceSequence,
       'signaturePath': signaturePath,
+      'stampPath': stampPath,
       'termsAndConditions': termsAndConditions,
       'defaultNotes': defaultNotes,
       'currencySymbol': currencySymbol,
@@ -103,6 +106,7 @@ class BusinessProfile {
       invoiceSeries: json['invoiceSeries'] ?? 'INV-',
       invoiceSequence: json['invoiceSequence'] ?? 1,
       signaturePath: json['signaturePath'],
+      stampPath: json['stampPath'],
       termsAndConditions: json['termsAndConditions'] ?? '',
       defaultNotes: json['defaultNotes'] ?? '',
       currencySymbol: json['currencySymbol'] ?? '₹',
@@ -125,6 +129,7 @@ class BusinessProfile {
     String? invoiceSeries,
     int? invoiceSequence,
     String? signaturePath,
+    String? stampPath,
     String? termsAndConditions,
     String? defaultNotes,
     String? currencySymbol,
@@ -145,6 +150,7 @@ class BusinessProfile {
       invoiceSeries: invoiceSeries ?? this.invoiceSeries,
       invoiceSequence: invoiceSequence ?? this.invoiceSequence,
       signaturePath: signaturePath ?? this.signaturePath,
+      stampPath: stampPath ?? this.stampPath,
       termsAndConditions: termsAndConditions ?? this.termsAndConditions,
       defaultNotes: defaultNotes ?? this.defaultNotes,
       currencySymbol: currencySymbol ?? this.currencySymbol,
