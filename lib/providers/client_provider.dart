@@ -10,13 +10,17 @@ final clientRepositoryProvider = Provider<ClientRepository>((ref) {
 });
 
 final clientListProvider =
-    NotifierProvider<ClientListNotifier, List<Client>>(ClientListNotifier.new);
+    StateNotifierProvider.autoDispose<ClientListNotifier, List<Client>>((ref) {
+  return ClientListNotifier(ref);
+});
 
-class ClientListNotifier extends Notifier<List<Client>> {
-  @override
-  List<Client> build() {
+class ClientListNotifier extends StateNotifier<List<Client>> {
+  final Ref ref;
+
+  ClientListNotifier(this.ref) : super([]) {
+    // Watch the repository provider to trigger rebuilds on profile change
+    ref.watch(clientRepositoryProvider);
     _loadClients();
-    return [];
   }
 
   Future<void> _loadClients() async {
@@ -27,14 +31,13 @@ class ClientListNotifier extends Notifier<List<Client>> {
   Future<void> addClient(Client client) async {
     final repository = ref.read(clientRepositoryProvider);
 
-    // Assign ID if missing (though UI should ideally handle this, or we do it here)
     Client newClient = client;
     if (newClient.id.isEmpty) {
       newClient = newClient.copyWith(id: const Uuid().v4());
     }
 
     await repository.saveClient(newClient);
-    await _loadClients(); // Reload to sort and update
+    await _loadClients();
   }
 
   Future<void> updateClient(Client client) async {
@@ -46,11 +49,6 @@ class ClientListNotifier extends Notifier<List<Client>> {
   Future<void> deleteClient(String clientId) async {
     final repository = ref.read(clientRepositoryProvider);
     await repository.deleteClient(clientId);
-    await _loadClients();
-  }
-
-  // Method to refresh manually if needed (e.g. after profile switch)
-  Future<void> refresh() async {
     await _loadClients();
   }
 }

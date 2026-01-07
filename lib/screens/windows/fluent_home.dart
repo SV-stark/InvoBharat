@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'fluent_dashboard.dart';
 import 'fluent_invoice_form.dart';
 import 'fluent_settings.dart';
+import '../clients_screen.dart';
 
 import '../../providers/app_config_provider.dart';
 
@@ -33,6 +34,11 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
             icon: const Icon(FluentIcons.home),
             title: const Text('Dashboard'),
             body: const FluentDashboard(),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.contact),
+            title: const Text('Clients'),
+            body: const ClientsScreen(),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.add),

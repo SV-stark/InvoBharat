@@ -163,6 +163,17 @@ class ActiveProfileIdNotifier extends Notifier<String> {
     state = id;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('active_profile_id', id);
+
+    // Refresh dependent providers
+    // We can't directly read other providers here easily without a Ref in the method or passing it in.
+    // However, since `clientRepositoryProvider` watches `businessProfileProvider`,
+    // and `businessProfileProvider` watches `activeProfileIdProvider`,
+    // the repository will automatically rebuild with the new profileId.
+    // The `clientListNotifier` needs to be told to reload though, OR it should watch the repository properly.
+    // But `ClientListNotifier` does `ref.read(clientRepositoryProvider)` in `_loadClients`.
+    // Let's make `ClientListNotifier` watch the repository or profile change.
+    // Actually, simply watching the profile in the provider definition is enough for the Repo,
+    // but the ListNotifier state needs to restart.
   }
 }
 
