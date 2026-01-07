@@ -3,6 +3,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
 import 'dart:io';
+import 'package:printing/printing.dart';
 import '../models/invoice.dart';
 import '../models/business_profile.dart';
 import 'invoice_template.dart';
@@ -11,6 +12,9 @@ import 'number_to_words.dart';
 // --- FACTORY ---
 Future<Uint8List> generateInvoicePdf(
     Invoice invoice, BusinessProfile profile) async {
+  final font = await PdfGoogleFonts.notoSansRegular();
+  final fontBold = await PdfGoogleFonts.notoSansBold();
+
   InvoiceTemplate template;
   switch (invoice.style) {
     case 'Professional':
@@ -25,7 +29,7 @@ Future<Uint8List> generateInvoicePdf(
       break;
   }
 
-  return template.generate(invoice, profile);
+  return template.generate(invoice, profile, font, fontBold);
 }
 
 // --- TEMPLATES ---
@@ -35,8 +39,13 @@ class MinimalTemplate implements InvoiceTemplate {
   String get name => 'Minimal';
 
   @override
-  Future<Uint8List> generate(Invoice invoice, BusinessProfile profile) async {
-    final pdf = pw.Document();
+  Future<Uint8List> generate(Invoice invoice, BusinessProfile profile,
+      pw.Font font, pw.Font fontBold) async {
+    final pdf = pw.Document(
+        theme: pw.ThemeData.withFont(
+      base: font,
+      bold: fontBold,
+    ));
 
     pdf.addPage(pw.Page(
       pageFormat: PdfPageFormat.a4,
@@ -123,8 +132,13 @@ class ProfessionalTemplate implements InvoiceTemplate {
   String get name => 'Professional';
 
   @override
-  Future<Uint8List> generate(Invoice invoice, BusinessProfile profile) async {
-    final pdf = pw.Document();
+  Future<Uint8List> generate(Invoice invoice, BusinessProfile profile,
+      pw.Font font, pw.Font fontBold) async {
+    final pdf = pw.Document(
+        theme: pw.ThemeData.withFont(
+      base: font,
+      bold: fontBold,
+    ));
 
     // Define styles
     // ignore: prefer_const_constructors
@@ -431,8 +445,13 @@ class ModernTemplate implements InvoiceTemplate {
   String get name => 'Modern';
 
   @override
-  Future<Uint8List> generate(Invoice invoice, BusinessProfile profile) async {
-    final pdf = pw.Document();
+  Future<Uint8List> generate(Invoice invoice, BusinessProfile profile,
+      pw.Font font, pw.Font fontBold) async {
+    final pdf = pw.Document(
+        theme: pw.ThemeData.withFont(
+      base: font,
+      bold: fontBold,
+    ));
     final themeColor = PdfColor.fromInt(profile.colorValue);
 
     pw.MemoryImage? logoImage;

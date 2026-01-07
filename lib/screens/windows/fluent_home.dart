@@ -4,6 +4,8 @@ import 'fluent_dashboard.dart';
 import 'fluent_invoice_form.dart';
 import 'fluent_settings.dart';
 
+import '../../providers/app_config_provider.dart';
+
 class FluentHome extends ConsumerStatefulWidget {
   const FluentHome({super.key});
 
@@ -16,6 +18,7 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
 
   @override
   Widget build(BuildContext context) {
+    final appConfig = ref.watch(appConfigProvider);
     return NavigationView(
       appBar: const NavigationAppBar(
         title: Text('InvoBharat'),
@@ -24,7 +27,7 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
       pane: NavigationPane(
         selected: topIndex,
         onChanged: (index) => setState(() => topIndex = index),
-        displayMode: PaneDisplayMode.open,
+        displayMode: appConfig.paneDisplayMode,
         items: [
           PaneItem(
             icon: const Icon(FluentIcons.home),
