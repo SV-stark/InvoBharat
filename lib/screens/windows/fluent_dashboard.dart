@@ -6,6 +6,9 @@ import '../../models/invoice.dart';
 import '../../providers/business_profile_provider.dart';
 import '../../widgets/profile_switcher_sheet.dart';
 import 'fluent_invoice_form.dart';
+import '../../services/gstr_service.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 
 import '../../providers/invoice_repository_provider.dart';
 
@@ -102,17 +105,52 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                       }),
                   const SizedBox(width: 12),
                   Button(
-                    child: const Text("Export GSTR-1 (Coming Soon)"),
-                    onPressed: () {
-                      displayInfoBar(context, builder: (context, close) {
-                        return InfoBar(
-                          title: const Text("Coming Soon"),
-                          content:
-                              const Text("GSTR-1 Export is under development."),
-                          severity: InfoBarSeverity.info,
-                          onClose: close,
+                    child: const Text("Export GSTR-1 (CSV)"),
+                    onPressed: () async {
+                      try {
+                        final filteredInvoices =
+                            _filterInvoices(allInvoices, _selectedPeriod);
+                        if (filteredInvoices.isEmpty) {
+                          displayInfoBar(context,
+                              builder: (context, close) => InfoBar(
+                                  title: const Text("No Invoices"),
+                                  content: const Text(
+                                      "No invoices to export for selected period"),
+                                  onClose: close));
+                          return;
+                        }
+
+                        final csvData =
+                            GstrService().generateGstr1Csv(filteredInvoices);
+
+                        String? outputFile = await FilePicker.platform.saveFile(
+                          dialogTitle: 'Save GSTR-1 CSV',
+                          fileName:
+                              'GSTR1_${_selectedPeriod.replaceAll(" ", "_")}.csv',
+                          allowedExtensions: ['csv'],
+                          type: FileType.custom,
                         );
-                      });
+
+                        if (outputFile != null) {
+                          if (!outputFile.toLowerCase().endsWith('.csv')) {
+                            outputFile = '$outputFile.csv';
+                          }
+                          await File(outputFile).writeAsString(csvData);
+                          displayInfoBar(context,
+                              builder: (context, close) => InfoBar(
+                                  title: const Text("Success"),
+                                  content: Text("Exported to $outputFile"),
+                                  severity: InfoBarSeverity.success,
+                                  onClose: close));
+                        }
+                      } catch (e) {
+                        displayInfoBar(context,
+                            builder: (context, close) => InfoBar(
+                                title: const Text("Error"),
+                                content: Text(e.toString()),
+                                severity: InfoBarSeverity.error,
+                                onClose: close));
+                      }
                     },
                   ),
                 ]),

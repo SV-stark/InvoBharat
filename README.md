@@ -76,7 +76,16 @@ To build InvoBharat locally, ensure you have the [Flutter SDK](https://docs.flut
     ```bash
     # For Windows
     flutter run -d windows
+
+    # For Linux
+    flutter run -d linux
     ```
+
+    > **Note for Linux Users**: Ensure you have the necessary prerequisites installed:
+    > ```bash
+    > sudo apt-get update
+    > sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
+    > ```
 
 4.  **Run Tests**
     ```bash

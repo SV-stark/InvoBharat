@@ -7,6 +7,7 @@ import '../providers/business_profile_provider.dart';
 import '../providers/theme_provider.dart';
 import '../services/backup_service.dart';
 import '../widgets/profile_switcher_sheet.dart';
+import '../widgets/about_tab.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -145,7 +146,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     // For now, let's assume one active profile edit at a time.
 
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Settings"),
@@ -154,6 +155,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Tab(text: "General", icon: Icon(Icons.settings)),
               Tab(text: "Profiles", icon: Icon(Icons.business)),
               Tab(text: "Backup", icon: Icon(Icons.backup)),
+              Tab(text: "About", icon: Icon(Icons.info_outline)),
             ],
           ),
         ),
@@ -162,6 +164,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildGeneralSettings(),
             _buildProfileSettings(),
             _buildBackupSettings(),
+            const AboutTab(),
           ],
         ),
       ),
@@ -419,7 +422,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onPressed: () async {
                 // Export logic
                 try {
-                  final msg = await BackupService().exportData(ref);
+                  final msg = await BackupService().exportAllProfiles(ref);
                   if (mounted) {
                     ScaffoldMessenger.of(context)
                         .showSnackBar(SnackBar(content: Text(msg)));
@@ -432,7 +435,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 }
               },
               icon: const Icon(Icons.download),
-              label: const Text("Backup Data (JSON)"),
+              label: const Text("Export Full Backup (ZIP)"),
             ),
           ),
           const SizedBox(height: 16),
@@ -462,7 +465,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 32),
-          const Text("Note: Multi-profile ZIP backup coming soon.",
+          const Text("Supports backing up all profiles and invoices.",
               style: TextStyle(color: Colors.grey)),
         ],
       ),
