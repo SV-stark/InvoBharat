@@ -20,7 +20,9 @@ void main() {
     );
 
     // Wait for animations and async data to settle
-    await tester.pumpAndSettle();
+    await tester.pump(); // Start Future
+    await tester.pump(const Duration(seconds: 1)); // Allow time for Future
+    await tester.pump(); // Rebuild with data
 
     // Verify that our title is present.
     expect(find.text('InvoBharat'), findsOneWidget);

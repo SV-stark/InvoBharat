@@ -20,7 +20,9 @@ class InvoiceNotifier extends Notifier<Invoice> {
         gstin: profile.gstin,
         pan: "", // Optional: Add to profile model if needed
         email: profile.email,
+
         phone: profile.phone,
+        state: profile.state,
       ),
       receiver: const Receiver(), // Empty
       invoiceDate: DateTime.now(),

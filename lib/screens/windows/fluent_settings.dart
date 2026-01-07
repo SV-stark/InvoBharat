@@ -5,15 +5,40 @@ import 'dart:io';
 import '../../providers/business_profile_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../providers/app_config_provider.dart';
+import '../../utils/constants.dart';
+import '../../services/backup_service.dart';
 
-class FluentSettings extends ConsumerWidget {
+class FluentSettings extends ConsumerStatefulWidget {
   const FluentSettings({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FluentSettings> createState() => _FluentSettingsState();
+}
+
+class _FluentSettingsState extends ConsumerState<FluentSettings> {
+  late TextEditingController _stateController;
+
+  @override
+  void initState() {
+    super.initState();
+    _stateController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _stateController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final profile = ref.watch(businessProfileProvider);
     final themeMode = ref.watch(themeProvider);
     final appConfig = ref.watch(appConfigProvider);
+
+    if (_stateController.text.isEmpty && profile.state.isNotEmpty) {
+      _stateController.text = profile.state;
+    }
 
     // Common accent colors
     final List<Color> accentColors = [
@@ -155,20 +180,143 @@ class FluentSettings extends ConsumerWidget {
                         HyperlinkButton(
                           child: const Text("Remove Logo"),
                           onPressed: () {
-                            // To clear, we can't easily pass null to copyWith if it's not setup.
-                            // But usually I can pass empty string if needed or null.
-                            // I'll assume copyWith accepts null?
-                            // Checking BusinessProfile.dart logic:
-                            // logoPath ?? this.logoPath.
-                            // Yes, existing copyWith logic usually ignores null.
-                            // So I cannot remove logo unless I change copyWith logic or pass a special value.
-                            // I will temporarily leave it or use "" and handle check.
                             ref
                                 .read(businessProfileProvider.notifier)
                                 .updateProfile(profile.copyWith(logoPath: ""));
                           },
                         ),
                       ]
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Signature & Stamp
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Signature Picker
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Digital Signature",
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 5),
+                      Row(
+                        children: [
+                          Container(
+                              width: 100,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Colors.grey.withValues(alpha: 0.5)),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: (profile.signaturePath != null &&
+                                      profile.signaturePath!.isNotEmpty)
+                                  ? Image.file(File(profile.signaturePath!),
+                                      fit: BoxFit.contain)
+                                  : const Center(
+                                      child: Icon(FluentIcons.edit, size: 24))),
+                          const SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Button(
+                                child: const Text("Upload Signature"),
+                                onPressed: () async {
+                                  final picker = ImagePicker();
+                                  final XFile? image = await picker.pickImage(
+                                      source: ImageSource.gallery);
+                                  if (image != null) {
+                                    ref
+                                        .read(businessProfileProvider.notifier)
+                                        .updateProfile(profile.copyWith(
+                                            signaturePath: image.path));
+                                  }
+                                },
+                              ),
+                              if (profile.signaturePath != null) ...[
+                                const SizedBox(height: 5),
+                                HyperlinkButton(
+                                  child: const Text("Remove"),
+                                  onPressed: () {
+                                    ref
+                                        .read(businessProfileProvider.notifier)
+                                        .updateProfile(profile.copyWith(
+                                            signaturePath: ""));
+                                  },
+                                ),
+                              ]
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 30),
+                  // Stamp Picker
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Business Stamp",
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 5),
+                      Row(
+                        children: [
+                          Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Colors.grey.withValues(alpha: 0.5)),
+                                borderRadius: BorderRadius.circular(
+                                    50), // Circular for stamp
+                              ),
+                              child: (profile.stampPath != null &&
+                                      profile.stampPath!.isNotEmpty)
+                                  ? ClipOval(
+                                      child: Image.file(
+                                          File(profile.stampPath!),
+                                          fit: BoxFit.cover),
+                                    )
+                                  : const Center(
+                                      child: Icon(FluentIcons.tag, size: 24))),
+                          const SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Button(
+                                child: const Text("Upload Stamp"),
+                                onPressed: () async {
+                                  final picker = ImagePicker();
+                                  final XFile? image = await picker.pickImage(
+                                      source: ImageSource.gallery);
+                                  if (image != null) {
+                                    ref
+                                        .read(businessProfileProvider.notifier)
+                                        .updateProfile(profile.copyWith(
+                                            stampPath: image.path));
+                                  }
+                                },
+                              ),
+                              if (profile.stampPath != null) ...[
+                                const SizedBox(height: 5),
+                                HyperlinkButton(
+                                  child: const Text("Remove"),
+                                  onPressed: () {
+                                    ref
+                                        .read(businessProfileProvider.notifier)
+                                        .updateProfile(
+                                            profile.copyWith(stampPath: ""));
+                                  },
+                                ),
+                              ]
+                            ],
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ],
@@ -235,11 +383,25 @@ class FluentSettings extends ConsumerWidget {
               const SizedBox(height: 10),
               InfoLabel(
                 label: "State",
-                child: TextFormBox(
-                  initialValue: profile.state,
-                  onChanged: (v) => ref
-                      .read(businessProfileProvider.notifier)
-                      .updateProfile(profile.copyWith(state: v)),
+                child: AutoSuggestBox<String>(
+                  controller: _stateController,
+                  items: IndianStates.states
+                      .map(
+                          (e) => AutoSuggestBoxItem<String>(value: e, label: e))
+                      .toList(),
+                  onSelected: (item) {
+                    ref
+                        .read(businessProfileProvider.notifier)
+                        .updateProfile(profile.copyWith(state: item.value!));
+                  },
+                  onChanged: (text, reason) {
+                    if (reason == TextChangedReason.userInput) {
+                      ref
+                          .read(businessProfileProvider.notifier)
+                          .updateProfile(profile.copyWith(state: text));
+                    }
+                  },
+                  placeholder: "Select State",
                 ),
               ),
             ],
@@ -379,7 +541,119 @@ class FluentSettings extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: 50),
+        const SizedBox(height: 10),
+
+        // --- Data Management ---
+        Expander(
+            header: Text("Data Management",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: FluentTheme.of(context).accentColor)),
+            content: Column(
+              children: [
+                InfoLabel(
+                  label: "Backup & Restore",
+                  child: const Text(
+                      "Export your data to a JSON file or restore from a previous backup. Note: Logos are not included in the backup file."),
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Button(
+                        onPressed: () async {
+                          try {
+                            final result =
+                                await BackupService().exportData(ref);
+                            if (context.mounted) {
+                              displayInfoBar(context,
+                                  builder: (context, close) {
+                                return InfoBar(
+                                  title: const Text('Export Result'),
+                                  content: Text(result),
+                                  action: IconButton(
+                                      icon: const Icon(FluentIcons.clear),
+                                      onPressed: close),
+                                  severity: InfoBarSeverity.success,
+                                );
+                              });
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              displayInfoBar(context,
+                                  builder: (context, close) {
+                                return InfoBar(
+                                  title: const Text('Export Failed'),
+                                  content: Text(e.toString()),
+                                  action: IconButton(
+                                      icon: const Icon(FluentIcons.clear),
+                                      onPressed: close),
+                                  severity: InfoBarSeverity.error,
+                                );
+                              });
+                            }
+                          }
+                        },
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(FluentIcons.encryption),
+                            SizedBox(width: 8),
+                            Text("Export Backup"),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Button(
+                        onPressed: () async {
+                          try {
+                            final result =
+                                await BackupService().importData(ref);
+                            if (context.mounted) {
+                              displayInfoBar(context,
+                                  builder: (context, close) {
+                                return InfoBar(
+                                  title: const Text('Import Result'),
+                                  content: Text(result),
+                                  action: IconButton(
+                                      icon: const Icon(FluentIcons.clear),
+                                      onPressed: close),
+                                  severity: InfoBarSeverity.success,
+                                );
+                              });
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              displayInfoBar(context,
+                                  builder: (context, close) {
+                                return InfoBar(
+                                  title: const Text('Import Failed'),
+                                  content: Text(e.toString()),
+                                  action: IconButton(
+                                      icon: const Icon(FluentIcons.clear),
+                                      onPressed: close),
+                                  severity: InfoBarSeverity.error,
+                                );
+                              });
+                            }
+                          }
+                        },
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(FluentIcons.download),
+                            SizedBox(width: 8),
+                            Text("Import Backup"),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            )),
       ],
     );
   }
