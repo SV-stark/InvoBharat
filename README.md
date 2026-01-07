@@ -8,7 +8,7 @@
   ![Version](https://img.shields.io/badge/version-1.1.0-blue)
 </div>
 
-**InvoBharat** is a fast, offline-first invoice generator tailored for the Indian market, now optimized for **Windows** with a beautiful **Fluent UI**. It empowers freelancers and small businesses to create professional, GST-compliant invoices in seconds—customized to their needs and ready to share as PDFs.
+**InvoBharat** is a fast, offline-first invoice generator tailored for the Indian market, optimized for **Windows** (Fluent UI) and **Linux/Android** (Material 3). It empowers freelancers and small businesses to create professional, GST-compliant invoices in seconds—customized to their needs and ready to share as PDFs.
 
 ---
 
@@ -25,6 +25,8 @@
 - **Auto-Suggest**: Smart **Place of Supply** selection with all Indian States and UTs.
 - **Full Screen Preview**: Interactive PDF preview with Zoom, Scroll, and Print capabilities before saving.
 - **Item Management**: Easy addition of items with SAC/HSN codes and distinct GST rates.
+- **Client Management**: Save client details for quick reuse. Add, edit, and manage your customers seamlessly.
+- **GSTR-1 Export**: Generate **CSV reports** of your sales for easy GST filing.
 
 ### 🎨 Customization at its Core
 - **Brand Identity**: Upload your **Business Logo** to appear on invoices.
@@ -53,7 +55,9 @@ Get the latest nightly build for **Windows**:
 ## 🛠️ Tech Stack
 
 - **Framework**: [Flutter](https://flutter.dev) (Dart)
-- **UI Library**: [fluent_ui](https://pub.dev/packages/fluent_ui) (Windows Native Feel)
+- **UI Library**: 
+  - **Windows**: [fluent_ui](https://pub.dev/packages/fluent_ui) (Native Feel)
+  - **Linux/Android**: Material Design 3
 - **State Management**: [Riverpod](https://riverpod.dev)
 - **PDF Engine**: `pdf` & `printing` packages
 - **Typography**: Google Fonts (Noto Sans)
