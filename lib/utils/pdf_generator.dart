@@ -78,9 +78,12 @@ class MinimalTemplate implements InvoiceTemplate {
                       else
                         pw.Text(profile.companyName, style: titleStyle),
                       pw.SizedBox(height: 5),
-                      pw.Text(profile.address, style: headerLabel),
-                      pw.Text("GSTIN: ${profile.gstin}", style: headerLabel),
-                      pw.Text("Phone: ${profile.phone}", style: headerLabel),
+                      if (profile.address.isNotEmpty)
+                        pw.Text(profile.address, style: headerLabel),
+                      if (profile.gstin.isNotEmpty)
+                        pw.Text("GSTIN: ${profile.gstin}", style: headerLabel),
+                      if (profile.phone.isNotEmpty)
+                        pw.Text("Phone: ${profile.phone}", style: headerLabel),
                       if (profile.email.isNotEmpty)
                         pw.Text("Email: ${profile.email}", style: headerLabel),
                     ]),
@@ -97,6 +100,8 @@ class MinimalTemplate implements InvoiceTemplate {
                           headerLabel,
                           headerValue),
                       _buildField("Place of Supply", invoice.placeOfSupply,
+                          headerLabel, headerValue),
+                      _buildField("Reverse Charge", invoice.reverseCharge,
                           headerLabel, headerValue),
                     ])
               ]),
@@ -115,7 +120,25 @@ class MinimalTemplate implements InvoiceTemplate {
             if (invoice.receiver.address.isNotEmpty)
               pw.Text(invoice.receiver.address, style: headerLabel),
             pw.Text("GSTIN: ${invoice.receiver.gstin}", style: headerLabel),
+            if (invoice.receiver.state.isNotEmpty)
+              pw.Text(
+                  "State: ${invoice.receiver.state} (Code: ${invoice.receiver.stateCode})",
+                  style: headerLabel),
           ]),
+
+          if (invoice.deliveryAddress != null &&
+              invoice.deliveryAddress!.isNotEmpty &&
+              invoice.deliveryAddress != invoice.receiver.address) ...[
+            pw.SizedBox(height: 10),
+            pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text("Shipped To:",
+                      style: pw.TextStyle(
+                          fontSize: 10, fontWeight: pw.FontWeight.bold)),
+                  pw.Text(invoice.deliveryAddress!, style: headerLabel),
+                ]),
+          ],
 
           pw.SizedBox(height: 30),
 
@@ -258,7 +281,7 @@ class MinimalTemplate implements InvoiceTemplate {
         (e.key + 1).toString(),
         item.description,
         item.sacCode,
-        "1",
+        "${item.quantity} ${item.unit}",
         item.amount.toStringAsFixed(2),
         item.totalAmount.toStringAsFixed(2),
       ];
@@ -334,13 +357,17 @@ class ProfessionalTemplate implements InvoiceTemplate {
                       else
                         pw.Text(profile.companyName, style: titleStyle),
                       pw.SizedBox(height: 5),
-                      pw.Text(profile.address, style: headerLabelStyle),
-                      pw.Text("GSTIN: ${profile.gstin}",
-                          style: headerLabelStyle),
-                      pw.Text("Phone: ${profile.phone}",
-                          style: headerLabelStyle),
-                      pw.Text("Email: ${profile.email}",
-                          style: headerLabelStyle),
+                      if (profile.address.isNotEmpty)
+                        pw.Text(profile.address, style: headerLabelStyle),
+                      if (profile.gstin.isNotEmpty)
+                        pw.Text("GSTIN: ${profile.gstin}",
+                            style: headerLabelStyle),
+                      if (profile.phone.isNotEmpty)
+                        pw.Text("Phone: ${profile.phone}",
+                            style: headerLabelStyle),
+                      if (profile.email.isNotEmpty)
+                        pw.Text("Email: ${profile.email}",
+                            style: headerLabelStyle),
                     ]),
                 pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
@@ -359,6 +386,8 @@ class ProfessionalTemplate implements InvoiceTemplate {
                           invoice.placeOfSupply,
                           headerLabelStyle,
                           headerValueStyle),
+                      _buildHeaderField("Reverse Charge", invoice.reverseCharge,
+                          headerLabelStyle, headerValueStyle),
                     ])
               ]),
           pw.SizedBox(height: 20),
@@ -389,7 +418,28 @@ class ProfessionalTemplate implements InvoiceTemplate {
                           style: headerLabelStyle),
                     pw.Text("GSTIN: ${invoice.receiver.gstin}",
                         style: headerLabelStyle),
-                  ])
+                    if (invoice.receiver.state.isNotEmpty)
+                      pw.Text(
+                          "State: ${invoice.receiver.state} (Code: ${invoice.receiver.stateCode})",
+                          style: headerLabelStyle),
+                  ]),
+              if (invoice.deliveryAddress != null &&
+                  invoice.deliveryAddress!.isNotEmpty &&
+                  invoice.deliveryAddress != invoice.receiver.address) ...[
+                pw.SizedBox(width: 20),
+                pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text("Shipped To:",
+                          style: pw.TextStyle(
+                              fontSize: 10,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.grey700)),
+                      pw.SizedBox(height: 5),
+                      pw.Text(invoice.deliveryAddress!,
+                          style: headerLabelStyle),
+                    ])
+              ]
             ]),
           ),
           pw.SizedBox(height: 20),
@@ -551,7 +601,7 @@ class ProfessionalTemplate implements InvoiceTemplate {
         (index + 1).toString(),
         item.description,
         item.sacCode,
-        "1", // Qty hardcoded as per current model
+        "${item.quantity} ${item.unit}",
         item.amount.toStringAsFixed(2),
         if (!isInterState) item.calculateCgst(false).toStringAsFixed(2),
         if (!isInterState) item.calculateSgst(false).toStringAsFixed(2),
@@ -638,11 +688,14 @@ class ModernTemplate implements InvoiceTemplate {
                                       fontSize: 18,
                                       fontWeight: pw.FontWeight.bold)),
                             pw.SizedBox(height: 5),
-                            pw.Text(profile.address, style: headerText),
-                            pw.Text("GSTIN: ${profile.gstin}",
-                                style: headerText),
-                            pw.Text("Phone: ${profile.phone}",
-                                style: headerText),
+                            if (profile.address.isNotEmpty)
+                              pw.Text(profile.address, style: headerText),
+                            if (profile.gstin.isNotEmpty)
+                              pw.Text("GSTIN: ${profile.gstin}",
+                                  style: headerText),
+                            if (profile.phone.isNotEmpty)
+                              pw.Text("Phone: ${profile.phone}",
+                                  style: headerText),
                             if (profile.email.isNotEmpty)
                               pw.Text("Email: ${profile.email}",
                                   style: headerText),
@@ -660,6 +713,8 @@ class ModernTemplate implements InvoiceTemplate {
                                     .format(invoice.invoiceDate)),
                             _buildWhiteField(
                                 "Place Of Supply", invoice.placeOfSupply),
+                            _buildWhiteField(
+                                "Reverse Charge", invoice.reverseCharge),
                           ])
                     ])),
 
@@ -691,7 +746,30 @@ class ModernTemplate implements InvoiceTemplate {
                                     style: const pw.TextStyle(fontSize: 9)),
                                 pw.Text("GSTIN: ${invoice.receiver.gstin}",
                                     style: const pw.TextStyle(fontSize: 9)),
+                                if (invoice.receiver.state.isNotEmpty)
+                                  pw.Text(
+                                      "State: ${invoice.receiver.state} (Code: ${invoice.receiver.stateCode})",
+                                      style: const pw.TextStyle(fontSize: 9)),
                               ]))),
+                  if (invoice.deliveryAddress != null &&
+                      invoice.deliveryAddress!.isNotEmpty &&
+                      invoice.deliveryAddress != invoice.receiver.address) ...[
+                    pw.SizedBox(width: 20),
+                    pw.Expanded(
+                        child: pw.Container(
+                            padding: const pw.EdgeInsets.all(15),
+                            child: pw.Column(
+                                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                                children: [
+                                  pw.Text("Shipped To",
+                                      style: pw.TextStyle(
+                                          color: themeColor,
+                                          fontWeight: pw.FontWeight.bold)),
+                                  pw.SizedBox(height: 5),
+                                  pw.Text(invoice.deliveryAddress!,
+                                      style: const pw.TextStyle(fontSize: 9)),
+                                ])))
+                  ],
                   pw.SizedBox(width: 20),
                   pw.Expanded(
                       child: pw.Column(

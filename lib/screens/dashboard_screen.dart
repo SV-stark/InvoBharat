@@ -1,14 +1,18 @@
+import 'dart:io' as io;
 import 'package:flutter/material.dart';
+import '../widgets/profile_switcher_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'invoice_form.dart';
 import 'settings_screen.dart';
 import '../providers/business_profile_provider.dart';
-import '../data/invoice_repository.dart';
+
 import '../models/invoice.dart';
 
+import '../providers/invoice_repository_provider.dart';
+
 final invoiceListProvider = FutureProvider<List<Invoice>>((ref) async {
-  return InvoiceRepository().getAllInvoices();
+  return ref.watch(invoiceRepositoryProvider).getAllInvoices();
 });
 
 class DashboardScreen extends ConsumerWidget {
@@ -21,7 +25,21 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("InvoBharat"),
+        title: Row(
+          children: [
+            if (profile.logoPath != null)
+              CircleAvatar(
+                backgroundImage: FileImage(io.File(profile.logoPath!)),
+                radius: 16,
+              )
+            else
+              const CircleAvatar(radius: 16, child: Icon(Icons.business)),
+            const SizedBox(width: 10),
+            Text(profile.companyName.isNotEmpty
+                ? profile.companyName
+                : "InvoBharat"),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -33,6 +51,11 @@ class DashboardScreen extends ConsumerWidget {
                 MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showProfileSwitcher(context, ref),
+        tooltip: "Switch Profile",
+        child: const Icon(Icons.switch_account),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -115,21 +138,19 @@ class DashboardScreen extends ConsumerWidget {
                         Expanded(
                           child: _buildActionButton(
                             context,
-                            "Manage Items",
-                            Icons.inventory,
-                            Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest,
+                            "Export GSTR-1",
+                            Icons.table_chart,
+                            Theme.of(context).colorScheme.tertiaryContainer,
                             () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                      content: Text("Coming Soon!")));
+                                      content:
+                                          Text("GSTR-1 Export Coming Soon!")));
                             },
                           ),
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 32),
                     Text("Recent Invoices",
                         style: Theme.of(context)
@@ -226,5 +247,9 @@ class DashboardScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  void _showProfileSwitcher(BuildContext context, WidgetRef ref) {
+    showProfileSwitcherSheet(context, ref);
   }
 }

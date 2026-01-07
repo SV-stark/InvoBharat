@@ -117,7 +117,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                       backgroundColor: WidgetStateProperty.all(color),
                     ),
                     onPressed: () {
-                      ref.read(businessProfileProvider.notifier).updateProfile(
+                      ref.read(businessProfileNotifierProvider).updateProfile(
                           profile.copyWith(colorValue: color.toARGB32()));
                     },
                     icon: isSelected
@@ -169,7 +169,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                               source: ImageSource.gallery);
                           if (image != null) {
                             ref
-                                .read(businessProfileProvider.notifier)
+                                .read(businessProfileNotifierProvider)
                                 .updateProfile(
                                     profile.copyWith(logoPath: image.path));
                           }
@@ -181,7 +181,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                           child: const Text("Remove Logo"),
                           onPressed: () {
                             ref
-                                .read(businessProfileProvider.notifier)
+                                .read(businessProfileNotifierProvider)
                                 .updateProfile(profile.copyWith(logoPath: ""));
                           },
                         ),
@@ -231,7 +231,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                                       source: ImageSource.gallery);
                                   if (image != null) {
                                     ref
-                                        .read(businessProfileProvider.notifier)
+                                        .read(businessProfileNotifierProvider)
                                         .updateProfile(profile.copyWith(
                                             signaturePath: image.path));
                                   }
@@ -243,7 +243,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                                   child: const Text("Remove"),
                                   onPressed: () {
                                     ref
-                                        .read(businessProfileProvider.notifier)
+                                        .read(businessProfileNotifierProvider)
                                         .updateProfile(profile.copyWith(
                                             signaturePath: ""));
                                   },
@@ -295,7 +295,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                                       source: ImageSource.gallery);
                                   if (image != null) {
                                     ref
-                                        .read(businessProfileProvider.notifier)
+                                        .read(businessProfileNotifierProvider)
                                         .updateProfile(profile.copyWith(
                                             stampPath: image.path));
                                   }
@@ -307,7 +307,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                                   child: const Text("Remove"),
                                   onPressed: () {
                                     ref
-                                        .read(businessProfileProvider.notifier)
+                                        .read(businessProfileNotifierProvider)
                                         .updateProfile(
                                             profile.copyWith(stampPath: ""));
                                   },
@@ -327,7 +327,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 child: TextFormBox(
                   initialValue: profile.companyName,
                   onChanged: (v) => ref
-                      .read(businessProfileProvider.notifier)
+                      .read(businessProfileNotifierProvider)
                       .updateProfile(profile.copyWith(companyName: v)),
                 ),
               ),
@@ -340,7 +340,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                       child: TextFormBox(
                         initialValue: profile.gstin,
                         onChanged: (v) => ref
-                            .read(businessProfileProvider.notifier)
+                            .read(businessProfileNotifierProvider)
                             .updateProfile(profile.copyWith(gstin: v)),
                       ),
                     ),
@@ -352,7 +352,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                       child: TextFormBox(
                         initialValue: profile.phone,
                         onChanged: (v) => ref
-                            .read(businessProfileProvider.notifier)
+                            .read(businessProfileNotifierProvider)
                             .updateProfile(profile.copyWith(phone: v)),
                       ),
                     ),
@@ -365,7 +365,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 child: TextFormBox(
                   initialValue: profile.email,
                   onChanged: (v) => ref
-                      .read(businessProfileProvider.notifier)
+                      .read(businessProfileNotifierProvider)
                       .updateProfile(profile.copyWith(email: v)),
                 ),
               ),
@@ -376,7 +376,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   initialValue: profile.address,
                   maxLines: 3,
                   onChanged: (v) => ref
-                      .read(businessProfileProvider.notifier)
+                      .read(businessProfileNotifierProvider)
                       .updateProfile(profile.copyWith(address: v)),
                 ),
               ),
@@ -391,13 +391,13 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                       .toList(),
                   onSelected: (item) {
                     ref
-                        .read(businessProfileProvider.notifier)
+                        .read(businessProfileNotifierProvider)
                         .updateProfile(profile.copyWith(state: item.value!));
                   },
                   onChanged: (text, reason) {
                     if (reason == TextChangedReason.userInput) {
                       ref
-                          .read(businessProfileProvider.notifier)
+                          .read(businessProfileNotifierProvider)
                           .updateProfile(profile.copyWith(state: text));
                     }
                   },
@@ -426,7 +426,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                       child: TextFormBox(
                         initialValue: profile.invoiceSeries,
                         onChanged: (v) => ref
-                            .read(businessProfileProvider.notifier)
+                            .read(businessProfileNotifierProvider)
                             .updateProfile(profile.copyWith(invoiceSeries: v)),
                       ),
                     ),
@@ -440,7 +440,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                         onChanged: (v) {
                           if (v != null) {
                             ref
-                                .read(businessProfileProvider.notifier)
+                                .read(businessProfileNotifierProvider)
                                 .updateProfile(
                                     profile.copyWith(invoiceSequence: v));
                           }
@@ -461,7 +461,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   onChanged: (val) {
                     if (val != null) {
                       ref
-                          .read(businessProfileProvider.notifier)
+                          .read(businessProfileNotifierProvider)
                           .updateProfile(profile.copyWith(currencySymbol: val));
                     }
                   },
@@ -474,7 +474,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   initialValue: profile.termsAndConditions,
                   maxLines: 3,
                   onChanged: (v) => ref
-                      .read(businessProfileProvider.notifier)
+                      .read(businessProfileNotifierProvider)
                       .updateProfile(profile.copyWith(termsAndConditions: v)),
                 ),
               ),
@@ -496,7 +496,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 child: TextFormBox(
                   initialValue: profile.bankName,
                   onChanged: (v) => ref
-                      .read(businessProfileProvider.notifier)
+                      .read(businessProfileNotifierProvider)
                       .updateProfile(profile.copyWith(bankName: v)),
                 ),
               ),
@@ -509,7 +509,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                       child: TextFormBox(
                         initialValue: profile.accountNumber,
                         onChanged: (v) => ref
-                            .read(businessProfileProvider.notifier)
+                            .read(businessProfileNotifierProvider)
                             .updateProfile(profile.copyWith(accountNumber: v)),
                       ),
                     ),
@@ -521,7 +521,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                       child: TextFormBox(
                         initialValue: profile.ifscCode,
                         onChanged: (v) => ref
-                            .read(businessProfileProvider.notifier)
+                            .read(businessProfileNotifierProvider)
                             .updateProfile(profile.copyWith(ifscCode: v)),
                       ),
                     ),
@@ -534,7 +534,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 child: TextFormBox(
                   initialValue: profile.branchName,
                   onChanged: (v) => ref
-                      .read(businessProfileProvider.notifier)
+                      .read(businessProfileNotifierProvider)
                       .updateProfile(profile.copyWith(branchName: v)),
                 ),
               ),

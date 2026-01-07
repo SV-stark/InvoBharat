@@ -52,6 +52,14 @@ class InvoiceNotifier extends Notifier<Invoice> {
     state = state.copyWith(placeOfSupply: val);
   }
 
+  void updateReverseCharge(String val) {
+    state = state.copyWith(reverseCharge: val);
+  }
+
+  void updateDeliveryAddress(String val) {
+    state = state.copyWith(deliveryAddress: val);
+  }
+
   void updateStyle(String val) {
     state = state.copyWith(style: val);
   }
@@ -74,6 +82,14 @@ class InvoiceNotifier extends Notifier<Invoice> {
 
   void updateReceiverGstin(String val) {
     state = state.copyWith(receiver: state.receiver.copyWith(gstin: val));
+  }
+
+  void updateReceiverState(String val) {
+    state = state.copyWith(receiver: state.receiver.copyWith(state: val));
+  }
+
+  void updateReceiverStateCode(String val) {
+    state = state.copyWith(receiver: state.receiver.copyWith(stateCode: val));
   }
 
   void updateItemDescription(int index, String val) {
@@ -118,6 +134,19 @@ class InvoiceNotifier extends Notifier<Invoice> {
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] =
         newItems[index].copyWith(discount: double.tryParse(val) ?? 0.0);
+    state = state.copyWith(items: newItems);
+  }
+
+  void updateItemQuantity(int index, String val) {
+    final newItems = List<InvoiceItem>.from(state.items);
+    newItems[index] =
+        newItems[index].copyWith(quantity: double.tryParse(val) ?? 1.0);
+    state = state.copyWith(items: newItems);
+  }
+
+  void updateItemUnit(int index, String val) {
+    final newItems = List<InvoiceItem>.from(state.items);
+    newItems[index] = newItems[index].copyWith(unit: val);
     state = state.copyWith(items: newItems);
   }
 

@@ -4,18 +4,21 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../data/invoice_repository.dart';
+
 import '../models/business_profile.dart';
 import '../models/invoice.dart';
 import '../providers/business_profile_provider.dart';
 
+import '../providers/invoice_repository_provider.dart';
+
 class BackupService {
-  final InvoiceRepository _invoiceRepository = InvoiceRepository();
+  // final InvoiceRepository _invoiceRepository = InvoiceRepository(); // Removed
 
   Future<String> exportData(WidgetRef ref) async {
     try {
       // 1. Fetch Data
-      final invoices = await _invoiceRepository.getAllInvoices();
+      final invoices =
+          await ref.read(invoiceRepositoryProvider).getAllInvoices();
       final profile = ref.read(businessProfileProvider);
 
       // 2. create JSON structure
@@ -80,16 +83,17 @@ class BackupService {
         final profileMap = data['profile'];
         final newProfile = BusinessProfile.fromJson(profileMap);
         await ref
-            .read(businessProfileProvider.notifier)
+            .read(businessProfileNotifierProvider)
             .updateProfile(newProfile);
 
         // 4. Restore Invoices
         final List<dynamic> invoicesList = data['invoices'];
         int restoreCount = 0;
+        final repository = ref.read(invoiceRepositoryProvider);
         for (var invMap in invoicesList) {
           try {
             final invoice = Invoice.fromJson(invMap);
-            await _invoiceRepository.saveInvoice(invoice);
+            await repository.saveInvoice(invoice);
             restoreCount++;
           } catch (e) {
             debugPrint("Skipping invalid invoice record: $e");
