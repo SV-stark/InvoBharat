@@ -34,6 +34,15 @@ jobs:
       - name: Install Inno Setup
         if: steps.cache-innosetup.outputs.cache-hit != 'true'
         run: choco install innosetup --allow-empty-checksums --no-progress
+
+      - name: Install Dependencies
+        run: flutter pub get
+        
+      - name: Generate Icons
+        run: flutter pub run flutter_launcher_icons
+
+      - name: Build Windows
+        run: flutter build windows --release
           
       - name: Compile Installer
         run: |
