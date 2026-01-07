@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:libadwaita/libadwaita.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import '../../services/gstr_service.dart';
 
 import '../../models/invoice.dart';
 import '../../providers/business_profile_provider.dart';
@@ -206,11 +209,49 @@ class _LinuxDashboardState extends ConsumerState<LinuxDashboard> {
                               title: "Export GSTR-1",
                               subtitle: "Download CSV report",
                               end: const Icon(Icons.chevron_right),
-                              onActivated: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text(
-                                            "GSTR-1 Export Coming Soon!")));
+                              onActivated: () async {
+                                try {
+                                  final filteredInvoices = _filterInvoices(
+                                      allInvoices, _selectedPeriod);
+                                  if (filteredInvoices.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                            content:
+                                                Text("No invoices to export")));
+                                    return;
+                                  }
+
+                                  final csvData = GstrService()
+                                      .generateGstr1Csv(filteredInvoices);
+
+                                  String? outputFile =
+                                      await FilePicker.platform.saveFile(
+                                    dialogTitle: 'Save GSTR-1 CSV',
+                                    fileName:
+                                        'GSTR1_${_selectedPeriod.replaceAll(" ", "_")}.csv',
+                                    allowedExtensions: ['csv'],
+                                    type: FileType.custom,
+                                  );
+
+                                  if (outputFile != null) {
+                                    if (!outputFile
+                                        .toLowerCase()
+                                        .endsWith('.csv')) {
+                                      outputFile = '$outputFile.csv';
+                                    }
+                                    await File(outputFile)
+                                        .writeAsString(csvData);
+                                    if (!context.mounted) return;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                "Exported to $outputFile")));
+                                  }
+                                } catch (e) {
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(e.toString())));
+                                }
                               },
                             ),
                           ],
