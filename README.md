@@ -1,12 +1,12 @@
 <div align="center">
   <img src="logo.png" alt="InvoBharat Logo" width="120" height="120">
+
+  # InvoBharat 🇮🇳
+
+  [![Windows Build](https://github.com/SV-stark/InvoBharat/actions/workflows/windows_build.yml/badge.svg)](https://github.com/SV-stark/InvoBharat/actions/workflows/windows_build.yml)
+  ![License](https://img.shields.io/github/license/SV-stark/InvoBharat)
+  ![Version](https://img.shields.io/badge/version-1.1.0-blue)
 </div>
-
-# InvoBharat 🇮🇳
-
-[![Windows Build](https://github.com/SV-stark/InvoBharat/actions/workflows/windows_build.yml/badge.svg)](https://github.com/SV-stark/InvoBharat/actions/workflows/windows_build.yml)
-![License](https://img.shields.io/github/license/SV-stark/InvoBharat)
-![Version](https://img.shields.io/badge/version-1.1.0-blue)
 
 **InvoBharat** is a fast, offline-first invoice generator tailored for the Indian market, now optimized for **Windows** with a beautiful **Fluent UI**. It empowers freelancers and small businesses to create professional, GST-compliant invoices in seconds—customized to their needs and ready to share as PDFs.
 
