@@ -1,7 +1,9 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 import 'dart:io';
+import '../../models/business_profile.dart';
 import '../../providers/business_profile_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../providers/app_config_provider.dart';
@@ -55,6 +57,16 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
     return ScaffoldPage.scrollable(
       header: const PageHeader(title: Text('Settings')),
       children: [
+        // --- Profiles ---
+        Expander(
+          header: Text("Business Profiles",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: FluentTheme.of(context).accentColor)),
+          content: _buildProfilesSection(context, ref),
+        ),
+        const SizedBox(height: 10),
+
         // --- Appearance ---
         Expander(
           header: Text("Appearance",
@@ -538,6 +550,36 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                       .updateProfile(profile.copyWith(branchName: v)),
                 ),
               ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: InfoLabel(
+                      label: "UPI ID (VPA)",
+                      child: TextFormBox(
+                        initialValue: profile.upiId,
+                        placeholder: "e.g. name@bank",
+                        onChanged: (v) => ref
+                            .read(businessProfileNotifierProvider)
+                            .updateProfile(profile.copyWith(upiId: v)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: InfoLabel(
+                      label: "UPI Name",
+                      child: TextFormBox(
+                        initialValue: profile.upiName,
+                        placeholder: "e.g. Business Name",
+                        onChanged: (v) => ref
+                            .read(businessProfileNotifierProvider)
+                            .updateProfile(profile.copyWith(upiName: v)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -654,6 +696,138 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 )
               ],
             )),
+      ],
+    );
+  }
+
+  Widget _buildProfilesSection(BuildContext context, WidgetRef ref) {
+    final profiles = ref.watch(businessProfileListProvider);
+    final activeId = ref.watch(activeProfileIdProvider);
+
+    return Column(
+      children: [
+        ...profiles.map((p) {
+          final isActive = p.id == activeId;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Card(
+              borderColor:
+                  isActive ? FluentTheme.of(context).accentColor : null,
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: isActive
+                      ? FluentTheme.of(context).accentColor
+                      : Colors.grey,
+                  radius: 16,
+                  child: Text(
+                      p.companyName.isNotEmpty
+                          ? p.companyName[0].toUpperCase()
+                          : '?',
+                      style: const TextStyle(color: Colors.white)),
+                ),
+                title: Text(p.companyName,
+                    style: TextStyle(
+                        fontWeight: isActive ? FontWeight.bold : null)),
+                subtitle: Text(
+                    isActive ? 'Active Profile' : 'Switch to this profile'),
+                trailing: Row(
+                  children: [
+                    if (!isActive)
+                      Button(
+                        child: const Text("Switch"),
+                        onPressed: () {
+                          ref
+                              .read(activeProfileIdProvider.notifier)
+                              .selectProfile(p.id);
+                        },
+                      ),
+                    const SizedBox(width: 8),
+                    if (profiles.length > 1)
+                      IconButton(
+                        icon: const Icon(FluentIcons.delete),
+                        onPressed: () async {
+                          if (isActive) {
+                            displayInfoBar(context, builder: (context, close) {
+                              return InfoBar(
+                                title: const Text("Cannot Delete"),
+                                content: const Text(
+                                    "Cannot delete the active profile. Switch to another profile first."),
+                                severity: InfoBarSeverity.error,
+                                onClose: close,
+                              );
+                            });
+                            return;
+                          }
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return ContentDialog(
+                                  title: const Text("Delete Profile?"),
+                                  content: Text(
+                                      "Are you sure you want to delete ${p.companyName}? All associated data might be lost."),
+                                  actions: [
+                                    Button(
+                                        child: const Text("Cancel"),
+                                        onPressed: () =>
+                                            Navigator.pop(context)),
+                                    FilledButton(
+                                        child: const Text("Delete"),
+                                        onPressed: () {
+                                          ref
+                                              .read(businessProfileListProvider
+                                                  .notifier)
+                                              .deleteProfile(p.id);
+                                          Navigator.pop(context);
+                                        }),
+                                  ],
+                                );
+                              });
+                        },
+                      )
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+        const SizedBox(height: 10),
+        Button(
+          child: const Text("Create New Profile"),
+          onPressed: () {
+            final TextEditingController nameCtrl = TextEditingController();
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return ContentDialog(
+                    title: const Text("New Business Profile"),
+                    content: TextBox(
+                      controller: nameCtrl,
+                      placeholder: "Company Name",
+                    ),
+                    actions: [
+                      Button(
+                          child: const Text("Cancel"),
+                          onPressed: () => Navigator.pop(context)),
+                      FilledButton(
+                          child: const Text("Create"),
+                          onPressed: () {
+                            if (nameCtrl.text.isNotEmpty) {
+                              final newProfile =
+                                  BusinessProfile.defaults().copyWith(
+                                id: const Uuid().v4(),
+                                companyName: nameCtrl.text,
+                              );
+                              ref
+                                  .read(businessProfileListProvider.notifier)
+                                  .addProfile(newProfile);
+                              Navigator.pop(context);
+                            }
+                          }),
+                    ],
+                  );
+                });
+          },
+        )
       ],
     );
   }

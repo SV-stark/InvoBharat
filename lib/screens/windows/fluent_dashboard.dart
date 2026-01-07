@@ -11,7 +11,8 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 
 import '../../providers/invoice_repository_provider.dart';
-import '../estimates_screen.dart';
+
+import 'fluent_estimates_screen.dart';
 import '../recurring_invoices_screen.dart';
 
 final invoiceListProvider = FutureProvider<List<Invoice>>((ref) async {
@@ -163,7 +164,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                     onPressed: () => Navigator.push(
                         context,
                         FluentPageRoute(
-                            builder: (_) => const EstimatesScreen())),
+                            builder: (_) => const FluentEstimatesScreen())),
                   ),
                   const SizedBox(width: 12),
                   Button(

@@ -68,8 +68,50 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                     context: context,
                     builder: (context) => ContentDialog(
                           title: const Text("About InvoBharat"),
-                          content: const Text(
-                              "InvoBharat v1.0.0\n\nA comprehensive invoicing solution for Indian businesses.\n\nDeveloped with Flutter & Riverpod."),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 60,
+                                    height: 60,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          FluentTheme.of(context).accentColor,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Center(
+                                        child: Icon(FluentIcons.invoice,
+                                            size: 32, color: Colors.white)),
+                                  ),
+                                  const SizedBox(width: 15),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text("InvoBharat",
+                                          style: FluentTheme.of(context)
+                                              .typography
+                                              .title),
+                                      const Text("Version 1.0.0"),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                  "A comprehensive invoicing solution for Indian businesses.\n\nDeveloped with Flutter & Riverpod for Windows & Linux."),
+                              const SizedBox(height: 10),
+                              HyperlinkButton(
+                                child: const Text("Visit Website"),
+                                onPressed: () {
+                                  // Open URL
+                                },
+                              ),
+                            ],
+                          ),
                           actions: [
                             Button(
                                 child: const Text("Close"),
