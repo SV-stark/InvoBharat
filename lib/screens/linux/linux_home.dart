@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'linux_dashboard.dart';
+import '../material_clients_screen.dart';
+import '../settings_screen.dart';
+import '../invoice_form.dart';
 
 class LinuxHome extends ConsumerStatefulWidget {
   const LinuxHome({super.key});
@@ -17,11 +20,11 @@ class _LinuxHomeState extends ConsumerState<LinuxHome> {
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: [
-          const LinuxDashboard(),
-          _buildPlaceholder("Clients", Icons.contacts),
-          _buildPlaceholder("New Invoice", Icons.add),
-          _buildPlaceholder("Settings", Icons.settings),
+        children: const [
+          LinuxDashboard(),
+          MaterialClientsScreen(),
+          InvoiceFormScreen(),
+          SettingsScreen(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -49,26 +52,6 @@ class _LinuxHomeState extends ConsumerState<LinuxHome> {
             selectedIcon: Icon(Icons.settings),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPlaceholder(String title, IconData icon) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            Text("$title Coming Soon",
-                style: Theme.of(context).textTheme.titleLarge),
-          ],
-        ),
       ),
     );
   }

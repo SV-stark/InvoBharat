@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/windows/fluent_home.dart';
 import 'screens/linux/linux_home.dart';
-import 'package:adwaita/adwaita.dart';
+
 import 'providers/business_profile_provider.dart';
 import 'providers/theme_provider.dart';
 
@@ -49,8 +49,16 @@ class InvoBharatApp extends ConsumerWidget {
       return MaterialApp(
         title: 'InvoBharat',
         debugShowCheckedModeBanner: false,
-        theme: AdwaitaThemeData.light(),
-        darkTheme: AdwaitaThemeData.dark(),
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        ),
+        darkTheme: ThemeData(
+          useMaterial3: true,
+          brightness: Brightness.dark,
+          colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.blue, brightness: Brightness.dark),
+        ),
         themeMode: ref.watch(themeProvider),
         home: const LinuxHome(),
       );

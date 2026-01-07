@@ -12,6 +12,10 @@ import 'settings_screen.dart';
 import '../providers/business_profile_provider.dart';
 
 import '../providers/invoice_repository_provider.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import '../services/gstr_service.dart';
+import 'material_clients_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -136,6 +140,20 @@ class DashboardScreen extends ConsumerWidget {
                         Expanded(
                           child: _buildActionButton(
                             context,
+                            "Clients",
+                            Icons.contacts,
+                            Colors.blue.shade100,
+                            () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const MaterialClientsScreen())),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildActionButton(
+                            context,
                             "Estimates",
                             Icons.request_quote,
                             Colors.orange.shade100,
@@ -145,7 +163,11 @@ class DashboardScreen extends ConsumerWidget {
                                     builder: (_) => const EstimatesScreen())),
                           ),
                         ),
-                        const SizedBox(width: 16),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
                         Expanded(
                           child: _buildActionButton(
                             context,
@@ -166,11 +188,47 @@ class DashboardScreen extends ConsumerWidget {
                             "Export GSTR-1",
                             Icons.table_chart,
                             Theme.of(context).colorScheme.tertiaryContainer,
-                            () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content:
-                                          Text("GSTR-1 Export Coming Soon!")));
+                            () async {
+                              try {
+                                final filteredInvoices =
+                                    invoices; // Export all for now or filter? Dashboard usually shows recent. Let's export all visible.
+                                if (filteredInvoices.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content:
+                                              Text("No invoices to export")));
+                                  return;
+                                }
+
+                                final csvData = GstrService()
+                                    .generateGstr1Csv(filteredInvoices);
+
+                                String? outputFile =
+                                    await FilePicker.platform.saveFile(
+                                  dialogTitle: 'Save GSTR-1 CSV',
+                                  fileName: 'GSTR1_All_Time.csv',
+                                  allowedExtensions: ['csv'],
+                                  type: FileType.custom,
+                                );
+
+                                if (outputFile != null) {
+                                  if (!outputFile
+                                      .toLowerCase()
+                                      .endsWith('.csv')) {
+                                    outputFile = '$outputFile.csv';
+                                  }
+                                  await File(outputFile).writeAsString(csvData);
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content:
+                                              Text("Exported to $outputFile")));
+                                }
+                              } catch (e) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(e.toString())));
+                              }
                             },
                           ),
                         ),
