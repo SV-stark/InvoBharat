@@ -111,7 +111,7 @@ class MinimalTemplate implements InvoiceTemplate {
           pw.Align(
               alignment: pw.Alignment.centerRight,
               child: pw.Text(
-                  "Total: Rs. ${invoice.grandTotal.toStringAsFixed(2)}",
+                  "Total: ${profile.currencySymbol} ${invoice.grandTotal.toStringAsFixed(2)}",
                   style: pw.TextStyle(
                       fontSize: 16, fontWeight: pw.FontWeight.bold))),
           pw.Spacer(),
@@ -265,7 +265,7 @@ class ProfessionalTemplate implements InvoiceTemplate {
                         pw.Text("Total Invoice Value (In Words): ",
                             style: boldStyle),
                         pw.Text(
-                            "Rupees ${numberToWords(invoice.grandTotal)} Only",
+                            "${_getCurrencyName(profile.currencySymbol)} ${numberToWords(invoice.grandTotal)} Only",
                             style: textStyle),
                       ])),
 
@@ -524,7 +524,7 @@ class ModernTemplate implements InvoiceTemplate {
                                   style: const pw.TextStyle(
                                       color: PdfColors.white)),
                               pw.Text(
-                                  "Rs. ${invoice.totalTaxableValue.toStringAsFixed(2)}",
+                                  "${profile.currencySymbol} ${invoice.totalTaxableValue.toStringAsFixed(2)}",
                                   style: pw.TextStyle(
                                       color: PdfColors.white,
                                       fontSize: 16,
@@ -578,7 +578,7 @@ class ModernTemplate implements InvoiceTemplate {
                       padding: const pw.EdgeInsets.all(5),
                       color: PdfColors.grey100,
                       child: pw.Text(
-                          "Amount (in words): ${numberToWords(invoice.grandTotal)} Only",
+                          "Amount (in words): ${_getCurrencyName(profile.currencySymbol)} ${numberToWords(invoice.grandTotal)} Only",
                           style: const pw.TextStyle(fontSize: 10))),
 
                   pw.SizedBox(height: 20),
@@ -676,5 +676,22 @@ class ModernTemplate implements InvoiceTemplate {
         ];
       }).toList(),
     );
+  }
+}
+
+String _getCurrencyName(String symbol) {
+  switch (symbol) {
+    case '₹':
+      return 'Rupees';
+    case '\$':
+      return 'Dollars';
+    case '€':
+      return 'Euros';
+    case '£':
+      return 'Pounds';
+    case '¥':
+      return 'Yen';
+    default:
+      return 'Currency';
   }
 }

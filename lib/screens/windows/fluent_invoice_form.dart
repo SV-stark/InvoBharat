@@ -425,39 +425,33 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
 
   void _showPreview(
       BuildContext context, Invoice invoice, BusinessProfile profile) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) {
-        return ContentDialog(
-          title: const Text("Invoice Preview"),
-          content: SizedBox(
-            width: 1000,
-            height: 700,
-            child: PdfPreview(
-              build: (format) => generateInvoicePdf(invoice, profile),
-              allowPrinting: true,
-              allowSharing: false,
-              canChangePageFormat: false,
-              initialPageFormat: PdfPageFormat.a4,
-              pdfPreviewPageDecoration: BoxDecoration(
-                color: FluentTheme.of(context).cardColor,
-                boxShadow: const [
-                  BoxShadow(blurRadius: 4, color: Colors.black)
-                ],
+    Navigator.push(
+      context,
+      FluentPageRoute(
+        builder: (context) => ScaffoldPage(
+          header: PageHeader(
+            title: const Text("Invoice Preview"),
+            leading: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: IconButton(
+                icon: const Icon(FluentIcons.back),
+                onPressed: () => Navigator.pop(context),
               ),
-              // Enabling default actions (zoom, print etc.)
-              useActions: true,
             ),
           ),
-          actions: [
-            Button(
-              child: const Text("Close"),
-              onPressed: () => Navigator.pop(context),
+          content: PdfPreview(
+            build: (format) => generateInvoicePdf(invoice, profile),
+            allowPrinting: true,
+            allowSharing: true,
+            canChangePageFormat: false,
+            initialPageFormat: PdfPageFormat.a4,
+            pdfPreviewPageDecoration: BoxDecoration(
+              color: FluentTheme.of(context).cardColor,
+              boxShadow: const [BoxShadow(blurRadius: 4, color: Colors.black)],
             ),
-          ],
-        );
-      },
+          ),
+        ),
+      ),
     );
   }
 }
