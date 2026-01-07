@@ -34,7 +34,7 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev imagemagick
 
       - name: Install Project Dependencies
         run: flutter pub get
@@ -58,8 +58,8 @@ jobs:
           cp -r build/linux/x64/release/bundle/* AppDir/usr/bin/
           
           # Setup icon and desktop file
-          # Assuming logo.png is the icon and we need to create a desktop file
-          cp logo.png AppDir/usr/share/icons/hicolor/256x256/apps/invobharat.png
+          # Resize logo to 256x256 for AppImage
+          convert logo.png -resize 256x256 AppDir/usr/share/icons/hicolor/256x256/apps/invobharat.png
           
           # Create .desktop file
           cat > AppDir/usr/share/applications/invobharat.desktop <<EOF
