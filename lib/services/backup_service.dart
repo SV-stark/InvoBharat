@@ -10,6 +10,8 @@ import '../models/invoice.dart';
 import '../providers/business_profile_provider.dart';
 
 import '../providers/invoice_repository_provider.dart';
+import 'package:archive/archive.dart';
+import '../data/invoice_repository.dart';
 
 class BackupService {
   // final InvoiceRepository _invoiceRepository = InvoiceRepository(); // Removed
@@ -55,6 +57,64 @@ class BackupService {
     } catch (e) {
       debugPrint("Export Error: $e");
       throw Exception("Failed to export data: $e");
+    }
+  }
+
+  Future<String> exportAllProfiles(WidgetRef ref) async {
+    try {
+      final profiles = ref.read(businessProfileListProvider);
+      final archive = Archive();
+
+      for (final profile in profiles) {
+        // Fetch invoices for this profile
+        // We need to instantiate a temporary repository access or use the provider if we can switch it?
+        // Provider depends on 'current profile'.
+        // So we manually create InvoiceRepository with the profile ID.
+        final repo = InvoiceRepository(profileId: profile.id);
+        final invoices = await repo.getAllInvoices();
+
+        final backupData = {
+          'version': 1,
+          'timestamp': DateTime.now().toIso8601String(),
+          'profile': profile.toJson(),
+          'invoices': invoices.map((e) => e.toJson()).toList(),
+        };
+
+        final jsonString = jsonEncode(backupData);
+        final filename =
+            'profile_${profile.companyName.replaceAll(RegExp(r'[^\w\s]+'), '')}_${profile.id}.json';
+
+        final bytes = utf8.encode(jsonString);
+        archive.addFile(ArchiveFile(filename, bytes.length, bytes));
+      }
+
+      final zipEncoder = ZipEncoder();
+      final zipData = zipEncoder.encode(archive);
+
+      // Save to file
+
+      String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save Full Backup (ZIP)',
+        fileName:
+            'invobharat_full_backup_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.zip',
+        allowedExtensions: ['zip'],
+        type: FileType.custom,
+      );
+
+      if (outputFile != null) {
+        if (!outputFile.toLowerCase().endsWith('.zip')) {
+          outputFile = '$outputFile.zip';
+        }
+
+        final file = File(outputFile);
+        await file.writeAsBytes(zipData);
+        return "Full Backup saved to $outputFile";
+      } else {
+        return "Backup cancelled";
+      }
+    } catch (e) {
+      debugPrint("Full Backup Error: $e");
+      throw Exception("Failed to create full backup: $e");
     }
   }
 

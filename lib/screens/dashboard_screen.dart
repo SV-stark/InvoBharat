@@ -1,9 +1,10 @@
-import 'dart:io' as io;
 import 'package:flutter/material.dart';
 import '../widgets/profile_switcher_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'invoice_form.dart';
+
 import 'settings_screen.dart';
 import '../providers/business_profile_provider.dart';
 
@@ -27,17 +28,15 @@ class DashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Row(
           children: [
-            if (profile.logoPath != null)
-              CircleAvatar(
-                backgroundImage: FileImage(io.File(profile.logoPath!)),
-                radius: 16,
-              )
-            else
-              const CircleAvatar(radius: 16, child: Icon(Icons.business)),
-            const SizedBox(width: 10),
-            Text(profile.companyName.isNotEmpty
-                ? profile.companyName
-                : "InvoBharat"),
+            Image.asset('logo.png', height: 32, width: 32),
+            const SizedBox(width: 12),
+            Text(
+              "InvoBharat",
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold,
+                fontSize: 22,
+              ),
+            ),
           ],
         ),
         actions: [
