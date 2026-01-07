@@ -10,20 +10,20 @@ final clientRepositoryProvider = Provider<ClientRepository>((ref) {
 });
 
 final clientListProvider =
-    StateNotifierProvider.autoDispose<ClientListNotifier, List<Client>>((ref) {
-  return ClientListNotifier(ref);
-});
+    NotifierProvider<ClientListNotifier, List<Client>>(ClientListNotifier.new);
 
-class ClientListNotifier extends StateNotifier<List<Client>> {
-  final Ref ref;
-
-  ClientListNotifier(this.ref) : super([]) {
-    // Watch the repository provider to trigger rebuilds on profile change
+class ClientListNotifier extends Notifier<List<Client>> {
+  @override
+  List<Client> build() {
+    // Watch the dependency
     ref.watch(clientRepositoryProvider);
     _loadClients();
+    return [];
   }
 
   Future<void> _loadClients() async {
+    // Access repository using ref.read inside methods or ref.watch in build.
+    // Since we watched it in build, we can read it here or state might be reset if repo changes.
     final repository = ref.read(clientRepositoryProvider);
     state = await repository.getAllClients();
   }

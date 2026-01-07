@@ -83,54 +83,68 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextFormBox(
-                controller: _nameController,
-                header: 'Client / Business Name',
-                placeholder: 'Enter client name',
-                validator: (v) => v!.isEmpty ? 'Name is required' : null,
+              InfoLabel(
+                label: 'Client / Business Name',
+                child: TextFormBox(
+                  controller: _nameController,
+                  placeholder: 'Enter client name',
+                  validator: (v) => v!.isEmpty ? 'Name is required' : null,
+                ),
               ),
               const SizedBox(height: 8),
-              TextFormBox(
-                controller: _gstinController,
-                header: 'GSTIN',
-                placeholder: 'e.g. 29ABCDE1234F1Z5',
+              InfoLabel(
+                label: 'GSTIN',
+                child: TextFormBox(
+                  controller: _gstinController,
+                  placeholder: 'e.g. 29ABCDE1234F1Z5',
+                ),
               ),
               const SizedBox(height: 8),
-              TextFormBox(
-                controller: _addressController,
-                header: 'Billing Address',
-                placeholder: 'Enter full address',
-                minLines: 3,
-                maxLines: 5,
+              InfoLabel(
+                label: 'Billing Address',
+                child: TextFormBox(
+                  controller: _addressController,
+                  placeholder: 'Enter full address',
+                  minLines: 3,
+                  maxLines: 5,
+                ),
               ),
               const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
-                    child: TextFormBox(
-                      controller: _emailController,
-                      header: 'Email',
+                    child: InfoLabel(
+                      label: 'Email',
+                      child: TextFormBox(
+                        controller: _emailController,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: TextFormBox(
-                      controller: _phoneController,
-                      header: 'Phone',
+                    child: InfoLabel(
+                      label: 'Phone',
+                      child: TextFormBox(
+                        controller: _phoneController,
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              TextFormBox(
-                controller: _contactController,
-                header: 'Primary Contact Person',
+              InfoLabel(
+                label: 'Primary Contact Person',
+                child: TextFormBox(
+                  controller: _contactController,
+                ),
               ),
               const SizedBox(height: 8),
-              TextFormBox(
-                controller: _notesController,
-                header: 'Notes (Internal)',
-                placeholder: 'Private notes about this client',
+              InfoLabel(
+                label: 'Notes (Internal)',
+                child: TextFormBox(
+                  controller: _notesController,
+                  placeholder: 'Private notes about this client',
+                ),
               ),
             ],
           ),
@@ -142,8 +156,8 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
           onPressed: () => Navigator.pop(context),
         ),
         FilledButton(
-          child: const Text('Save'),
           onPressed: _save,
+          child: const Text('Save'),
         ),
       ],
     );
