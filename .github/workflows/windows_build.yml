@@ -24,22 +24,16 @@ jobs:
       - name: Enable Windows Support
         run: flutter config --enable-windows-desktop
           
-      - name: Ensure Windows Files Exist
-        # Since 'windows' folder might be missing in repo, generate it.
-        run: flutter create --platforms=windows .
-
-      - name: Install Dependencies
-        run: flutter pub get
-        
-      - name: Generate Icons
-        run: flutter pub run flutter_launcher_icons
-
-      - name: Build Windows
-        run: flutter build windows --release
+      - name: Cache Inno Setup
+        id: cache-innosetup
+        uses: actions/cache@v4
+        with:
+          path: "C:\\Program Files (x86)\\Inno Setup 6"
+          key: ${{ runner.os }}-innosetup
 
       - name: Install Inno Setup
-        run: |
-          choco install innosetup
+        if: steps.cache-innosetup.outputs.cache-hit != 'true'
+        run: choco install innosetup --allow-empty-checksums --no-progress
           
       - name: Compile Installer
         run: |
