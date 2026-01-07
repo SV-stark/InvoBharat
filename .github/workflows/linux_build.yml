@@ -65,7 +65,7 @@ jobs:
           
           # Setup icon and desktop file
           # Use pre-sized icon
-          cp linux/packaging/logo.png AppDir/usr/share/icons/hicolor/256x256/apps/invobharat.png
+          cp linux/packaging/invobharat.png AppDir/usr/share/icons/hicolor/256x256/apps/invobharat.png
           
           # Create .desktop file
           cat > AppDir/usr/share/applications/invobharat.desktop <<EOF
@@ -79,7 +79,7 @@ jobs:
 
           # Run linuxdeploy
           # Provide the correct 256x256 icon
-          ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --icon-file linux/packaging/logo.png --desktop-file AppDir/usr/share/applications/invobharat.desktop
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --icon-file linux/packaging/invobharat.png --desktop-file AppDir/usr/share/applications/invobharat.desktop
 
           # Rename for upload
           mv InvoBharat-*.AppImage InvoBharat-Linux.AppImage
