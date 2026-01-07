@@ -44,6 +44,7 @@
 Get the latest nightly build for **Windows**:
 
 [![Download Windows Installer](https://img.shields.io/badge/Download-Windows_Installer-blue?style=for-the-badge&logo=windows)](https://github.com/SV-stark/InvoBharat/releases/tag/nightly)
+[![Download Linux AppImage](https://img.shields.io/badge/Download-Linux_AppImage-orange?style=for-the-badge&logo=linux)](https://github.com/SV-stark/InvoBharat/releases/tag/nightly)
 
 > **Note**: This is a nightly release. It contains the absolute latest features but may be experimental.
 
