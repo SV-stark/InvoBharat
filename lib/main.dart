@@ -18,7 +18,10 @@ class InvoBharatApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(businessProfileProvider);
+
     if (Platform.isWindows) {
+      final accentColor = _getAccentColor(profile.color);
       // Return FluentApp for Windows
       return fluent.FluentApp(
         title: 'InvoBharat',
@@ -28,18 +31,19 @@ class InvoBharatApp extends ConsumerWidget {
           brightness: Brightness.light,
           visualDensity: fluent.VisualDensity.standard,
           shadowColor: fluent.Colors.black,
+          accentColor: accentColor,
         ),
         darkTheme: fluent.FluentThemeData(
           brightness: Brightness.dark,
           visualDensity: fluent.VisualDensity.standard,
           shadowColor: fluent.Colors.black,
+          accentColor: accentColor,
         ),
         home: const FluentHome(),
       );
     }
 
-    // Return MaterialApp for Android/Other
-    final profile = ref.watch(businessProfileProvider);
+    // Return MaterialApp for Android/Other (profile already watched above)
     final themeMode = ref.watch(themeProvider);
 
     return MaterialApp(
@@ -73,5 +77,34 @@ class InvoBharatApp extends ConsumerWidget {
       case ThemeMode.dark:
         return fluent.ThemeMode.dark;
     }
+  }
+
+  fluent.AccentColor _getAccentColor(Color color) {
+    if (color.toARGB32() == fluent.Colors.teal.toARGB32()) {
+      return fluent.Colors.teal;
+    }
+    if (color.toARGB32() == fluent.Colors.blue.toARGB32()) {
+      return fluent.Colors.blue;
+    }
+    if (color.toARGB32() == fluent.Colors.red.toARGB32()) {
+      return fluent.Colors.red;
+    }
+    if (color.toARGB32() == fluent.Colors.orange.toARGB32()) {
+      return fluent.Colors.orange;
+    }
+    if (color.toARGB32() == fluent.Colors.green.toARGB32()) {
+      return fluent.Colors.green;
+    }
+    if (color.toARGB32() == fluent.Colors.purple.toARGB32()) {
+      return fluent.Colors.purple;
+    }
+    if (color.toARGB32() == fluent.Colors.magenta.toARGB32()) {
+      return fluent.Colors.magenta;
+    }
+    if (color.toARGB32() == fluent.Colors.yellow.toARGB32()) {
+      return fluent.Colors.yellow;
+    }
+
+    return fluent.Colors.blue; // Fallback
   }
 }

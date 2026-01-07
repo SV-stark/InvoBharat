@@ -2,12 +2,14 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:printing/printing.dart';
+import 'package:pdf/pdf.dart';
 import '../../models/invoice.dart';
 import '../../models/business_profile.dart';
 import '../../providers/business_profile_provider.dart';
 import '../../providers/invoice_provider.dart';
 import '../../data/invoice_repository.dart';
 import '../../utils/pdf_generator.dart';
+import '../../utils/constants.dart';
 
 // Generates a unique ID
 String _generateId() => DateTime.now().millisecondsSinceEpoch.toString();
@@ -21,14 +23,31 @@ class FluentInvoiceForm extends ConsumerStatefulWidget {
 }
 
 class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
+  late TextEditingController _placeOfSupplyController;
+
   @override
   void initState() {
     super.initState();
+    _placeOfSupplyController = TextEditingController();
     if (widget.invoiceToEdit != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(invoiceProvider.notifier).setInvoice(widget.invoiceToEdit!);
+        _placeOfSupplyController.text = widget.invoiceToEdit!.placeOfSupply;
       });
+    } else {
+      // Set default if any or just ref read
+      // But better to just sync with provider in build or use a listener
+      // Because provider might change from elsewhere? No, mostly here.
+      // Actually, we should initialize it from the provider state in build?
+      // No, controller is stateful.
+      // Let's keep it simple: sync on init, and update provider on change.
     }
+  }
+
+  @override
+  void dispose() {
+    _placeOfSupplyController.dispose();
+    super.dispose();
   }
 
   @override
@@ -36,10 +55,25 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
     final invoice = ref.watch(invoiceProvider);
     final profile = ref.watch(businessProfileProvider);
 
+    // Sync controller if empty (first load of new invoice) or if external change?
+    if (_placeOfSupplyController.text.isEmpty &&
+        invoice.placeOfSupply.isNotEmpty) {
+      _placeOfSupplyController.text = invoice.placeOfSupply;
+    }
+
     return ScaffoldPage.scrollable(
       header: PageHeader(
         title:
             Text(widget.invoiceToEdit != null ? "Edit Invoice" : "New Invoice"),
+        leading: Navigator.canPop(context)
+            ? Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: IconButton(
+                  icon: const Icon(FluentIcons.back),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              )
+            : null,
       ),
       bottomBar: Container(
         padding: const EdgeInsets.all(16),
@@ -55,6 +89,11 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Button(
+              onPressed: () => _showPreview(context, invoice, profile),
+              child: const Text("Preview"),
+            ),
+            const SizedBox(width: 10),
+            Button(
               onPressed: () => _printInvoice(invoice, profile),
               child: const Text("Print"),
             ),
@@ -68,7 +107,10 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
       ),
       children: [
         Expander(
-          header: const Text("Invoice Details"),
+          header: Text("Invoice Details",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: FluentTheme.of(context).accentColor)),
           initiallyExpanded: true,
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,52 +159,92 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
               const SizedBox(height: 10),
               InfoLabel(
                 label: "Place of Supply",
-                child: TextFormBox(
-                  initialValue: invoice.placeOfSupply,
-                  onChanged: (val) => ref
-                      .read(invoiceProvider.notifier)
-                      .updatePlaceOfSupply(val),
+                child: AutoSuggestBox<String>(
+                  controller: _placeOfSupplyController,
+                  items: IndianStates.states
+                      .map(
+                          (e) => AutoSuggestBoxItem<String>(value: e, label: e))
+                      .toList(),
+                  onSelected: (item) {
+                    ref
+                        .read(invoiceProvider.notifier)
+                        .updatePlaceOfSupply(item.value!);
+                  },
+                  onChanged: (text, reason) {
+                    if (reason == TextChangedReason.userInput) {
+                      ref
+                          .read(invoiceProvider.notifier)
+                          .updatePlaceOfSupply(text);
+                    }
+                  },
+                  placeholder: "Select State",
                 ),
               ),
             ],
           ),
         ),
         const SizedBox(height: 10),
+
+        // Parties Section
         Expander(
-          header: const Text("Parties"),
+          header: Text("Parties",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: FluentTheme.of(context).accentColor)),
           content: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Supplier (Read Only)
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Supplier (You)",
+                    const Text("Supplier",
                         style: TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 5),
-                    TextFormBox(
-                      prefix: const Padding(
-                        padding: EdgeInsets.only(left: 8),
-                        child: Icon(FluentIcons.contact),
+                    Card(
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(profile.companyName,
+                                style: FluentTheme.of(context)
+                                    .typography
+                                    .bodyStrong),
+                            Text(profile.gstin,
+                                style:
+                                    FluentTheme.of(context).typography.caption),
+                            Text(profile.address,
+                                style:
+                                    FluentTheme.of(context).typography.caption),
+                          ],
+                        ),
                       ),
-                      placeholder: "Name",
-                      initialValue: invoice.supplier.name,
-                      onChanged: (val) => ref
-                          .read(invoiceProvider.notifier)
-                          .updateSupplierName(val),
                     ),
                     const SizedBox(height: 5),
-                    TextFormBox(
-                      placeholder: "GSTIN",
-                      initialValue: invoice.supplier.gstin,
-                      onChanged: (val) => ref
-                          .read(invoiceProvider.notifier)
-                          .updateSupplierGstin(val),
-                    ),
+                    HyperlinkButton(
+                      child: const Text("Edit in Settings"),
+                      onPressed: () {
+                        // Ideally navigate to settings, but user can just click Settings tab
+                        displayInfoBar(context, builder: (context, close) {
+                          return InfoBar(
+                            title: const Text("Go to Settings"),
+                            content: const Text(
+                                "Please edit supplier details in the Settings tab."),
+                            action: IconButton(
+                                icon: const Icon(FluentIcons.clear),
+                                onPressed: close),
+                            severity: InfoBarSeverity.info,
+                          );
+                        });
+                      },
+                    )
                   ],
                 ),
               ),
               const SizedBox(width: 20),
+              // Receiver (Editable)
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,8 +278,11 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
           ),
         ),
         const SizedBox(height: 10),
-        const Text("Items",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text("Items",
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: FluentTheme.of(context).accentColor)),
         const SizedBox(height: 10),
         ...invoice.items.asMap().entries.map((entry) {
           final index = entry.key;
@@ -330,15 +415,49 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
           );
         },
       );
-      if (widget.invoiceToEdit == null) {
-        // Clear form if new
-        // Navigator.pop(context); // Or navigate back
-      }
     }
   }
 
   Future<void> _printInvoice(Invoice invoice, BusinessProfile profile) async {
     final pdfBytes = await generateInvoicePdf(invoice, profile);
     await Printing.layoutPdf(onLayout: (_) => pdfBytes);
+  }
+
+  void _showPreview(
+      BuildContext context, Invoice invoice, BusinessProfile profile) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return ContentDialog(
+          title: const Text("Invoice Preview"),
+          content: SizedBox(
+            width: 1000,
+            height: 700,
+            child: PdfPreview(
+              build: (format) => generateInvoicePdf(invoice, profile),
+              allowPrinting: true,
+              allowSharing: false,
+              canChangePageFormat: false,
+              initialPageFormat: PdfPageFormat.a4,
+              pdfPreviewPageDecoration: BoxDecoration(
+                color: FluentTheme.of(context).cardColor,
+                boxShadow: const [
+                  BoxShadow(blurRadius: 4, color: Colors.black)
+                ],
+              ),
+              // Enabling default actions (zoom, print etc.)
+              useActions: true,
+            ),
+          ),
+          actions: [
+            Button(
+              child: const Text("Close"),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
