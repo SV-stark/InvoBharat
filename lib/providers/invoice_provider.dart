@@ -88,6 +88,10 @@ class InvoiceNotifier extends Notifier<Invoice> {
     state = state.copyWith(receiver: state.receiver.copyWith(state: val));
   }
 
+  void updateReceiverAddress(String val) {
+    state = state.copyWith(receiver: state.receiver.copyWith(address: val));
+  }
+
   void updateReceiverStateCode(String val) {
     state = state.copyWith(receiver: state.receiver.copyWith(stateCode: val));
   }

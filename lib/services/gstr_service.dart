@@ -3,26 +3,43 @@ import 'package:intl/intl.dart';
 
 class GstrService {
   String generateGstr1Csv(List<Invoice> invoices) {
-    // Header
+    // Header based on user request
     final buffer = StringBuffer();
     buffer.writeln(
-        'Invoice No,Invoice Date,Receiver Name,GSTIN,State,Taxable Value,IGST,CGST,SGST,Total Invoice Value');
+        'GSTIN/UIN,Trade Name,Invoice No,Date of Invoice,Invoice Value,GST%,Taxable Value,CESS,Place Of Supply,RCM Applicable');
 
     for (final inv in invoices) {
       final date = DateFormat('dd-MM-yyyy').format(inv.invoiceDate);
-      final receiver = inv.receiver.name.replaceAll(',', ' '); // Escape commas
+      final receiverName = inv.receiver.name.replaceAll(',', ' ');
       final gstin = inv.receiver.gstin;
-      final state =
+      final invoiceValue = inv.grandTotal.toStringAsFixed(2);
+      final placeOfSupply =
           inv.receiver.state.isEmpty ? inv.placeOfSupply : inv.receiver.state;
+      const rcm = "N"; // Default RCM to No
+      const cess = "0.00";
 
-      final taxable = inv.totalTaxableValue.toStringAsFixed(2);
-      final igst = inv.totalIGST.toStringAsFixed(2);
-      final cgst = inv.totalCGST.toStringAsFixed(2);
-      final sgst = inv.totalSGST.toStringAsFixed(2);
-      final total = inv.grandTotal.toStringAsFixed(2);
+      // Group items by GST Rate
+      final Map<double, double> rateWiseTaxable = {};
 
-      buffer.writeln(
-          '${inv.invoiceNo},$date,$receiver,$gstin,$state,$taxable,$igst,$cgst,$sgst,$total');
+      for (final item in inv.items) {
+        // item.amount is typically the taxable value (quantity * price)
+        // If your model is different, adjust. Assuming item.amount is line taxable value.
+        rateWiseTaxable.update(item.gstRate, (value) => value + item.amount,
+            ifAbsent: () => item.amount);
+      }
+
+      // If no items, output one row with 0 values?
+      // Or just skip? Typically an invoice has items.
+      if (rateWiseTaxable.isEmpty) {
+        // Fallback for empty invoice
+        buffer.writeln(
+            '$gstin,$receiverName,${inv.invoiceNo},$date,$invoiceValue,0,0.00,$cess,$placeOfSupply,$rcm');
+      } else {
+        rateWiseTaxable.forEach((rate, taxableVal) {
+          buffer.writeln(
+              '$gstin,$receiverName,${inv.invoiceNo},$date,$invoiceValue,${rate.toStringAsFixed(2)},${taxableVal.toStringAsFixed(2)},$cess,$placeOfSupply,$rcm');
+        });
+      }
     }
 
     return buffer.toString();
