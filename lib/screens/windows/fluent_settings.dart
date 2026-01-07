@@ -1,5 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../providers/business_profile_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../providers/app_config_provider.dart';
@@ -113,6 +115,65 @@ class FluentSettings extends ConsumerWidget {
                   color: FluentTheme.of(context).accentColor)),
           content: Column(
             children: [
+              // Logo Picker
+              Row(
+                children: [
+                  Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                            color: Colors.grey.withValues(alpha: 0.5)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: (profile.logoPath != null &&
+                              profile.logoPath!.isNotEmpty)
+                          ? Image.file(File(profile.logoPath!),
+                              fit: BoxFit.contain)
+                          : const Center(
+                              child: Icon(FluentIcons.photo2, size: 30))),
+                  const SizedBox(width: 20),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Button(
+                        child: const Text("Select Brand Logo"),
+                        onPressed: () async {
+                          final picker = ImagePicker();
+                          final XFile? image = await picker.pickImage(
+                              source: ImageSource.gallery);
+                          if (image != null) {
+                            ref
+                                .read(businessProfileProvider.notifier)
+                                .updateProfile(
+                                    profile.copyWith(logoPath: image.path));
+                          }
+                        },
+                      ),
+                      if (profile.logoPath != null) ...[
+                        const SizedBox(height: 10),
+                        HyperlinkButton(
+                          child: const Text("Remove Logo"),
+                          onPressed: () {
+                            // To clear, we can't easily pass null to copyWith if it's not setup.
+                            // But usually I can pass empty string if needed or null.
+                            // I'll assume copyWith accepts null?
+                            // Checking BusinessProfile.dart logic:
+                            // logoPath ?? this.logoPath.
+                            // Yes, existing copyWith logic usually ignores null.
+                            // So I cannot remove logo unless I change copyWith logic or pass a special value.
+                            // I will temporarily leave it or use "" and handle check.
+                            ref
+                                .read(businessProfileProvider.notifier)
+                                .updateProfile(profile.copyWith(logoPath: ""));
+                          },
+                        ),
+                      ]
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
               InfoLabel(
                 label: "Company Name",
                 child: TextFormBox(
@@ -216,6 +277,23 @@ class FluentSettings extends ConsumerWidget {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 10),
+              InfoLabel(
+                label: "Currency Symbol",
+                child: ComboBox<String>(
+                  value: profile.currencySymbol,
+                  items: ['₹', '\$', '€', '£', '¥']
+                      .map((e) => ComboBoxItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      ref
+                          .read(businessProfileProvider.notifier)
+                          .updateProfile(profile.copyWith(currencySymbol: val));
+                    }
+                  },
+                ),
               ),
               const SizedBox(height: 10),
               InfoLabel(
