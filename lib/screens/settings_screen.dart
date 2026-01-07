@@ -20,6 +20,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late TextEditingController _gstinController;
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
+  late TextEditingController _stateController;
   late TextEditingController _seriesController;
   late TextEditingController _sequenceController;
   late TextEditingController _termsController;
@@ -40,6 +41,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _gstinController = TextEditingController(text: profile.gstin);
     _emailController = TextEditingController(text: profile.email);
     _phoneController = TextEditingController(text: profile.phone);
+    _stateController = TextEditingController(text: profile.state);
     _seriesController = TextEditingController(text: profile.invoiceSeries);
     _sequenceController =
         TextEditingController(text: profile.invoiceSequence.toString());
@@ -60,6 +62,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _gstinController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _stateController.dispose();
     _seriesController.dispose();
     _sequenceController.dispose();
     _termsController.dispose();
@@ -81,6 +84,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         gstin: _gstinController.text,
         email: _emailController.text,
         phone: _phoneController.text,
+        state: _stateController.text,
         invoiceSeries: _seriesController.text,
         invoiceSequence: int.tryParse(_sequenceController.text) ?? 1,
         termsAndConditions: _termsController.text,
@@ -244,6 +248,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _buildTextField("GSTIN", _gstinController),
               _buildTextField("Email", _emailController),
               _buildTextField("Phone", _phoneController),
+              _buildTextField("State", _stateController),
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,

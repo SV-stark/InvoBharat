@@ -303,6 +303,14 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
       BuildContext context, WidgetRef ref, Invoice invoice) async {
     // If it's a new invoice, ensure ID is generated
     Invoice toSave = invoice;
+
+    // Sync supplier state from profile if not present (or always update if we assume profile is source of truth for self)
+    final profile = ref.read(businessProfileProvider);
+    if (toSave.supplier.state.isEmpty && profile.state.isNotEmpty) {
+      toSave = toSave.copyWith(
+          supplier: toSave.supplier.copyWith(state: profile.state));
+    }
+
     if (toSave.id == null) {
       toSave = toSave.copyWith(id: _generateId());
     }

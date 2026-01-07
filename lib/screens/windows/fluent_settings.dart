@@ -232,6 +232,16 @@ class FluentSettings extends ConsumerWidget {
                       .updateProfile(profile.copyWith(address: v)),
                 ),
               ),
+              const SizedBox(height: 10),
+              InfoLabel(
+                label: "State",
+                child: TextFormBox(
+                  initialValue: profile.state,
+                  onChanged: (v) => ref
+                      .read(businessProfileProvider.notifier)
+                      .updateProfile(profile.copyWith(state: v)),
+                ),
+              ),
             ],
           ),
         ),
