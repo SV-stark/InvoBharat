@@ -37,8 +37,13 @@ void main() {
     debugPrint("Checking for New Invoice text...");
     if (find.text('New Invoice').evaluate().isEmpty) {
       debugPrint("New Invoice NOT found.");
-      // Dump tree to see what IS there
-      debugPrint(tester.toString());
+      // Dump all text widgets
+      final textWidgets = find.byType(Text).evaluate();
+      debugPrint("Found ${textWidgets.length} Text widgets:");
+      for (final widget in textWidgets) {
+        final text = (widget.widget as Text).data;
+        debugPrint(" - '$text'");
+      }
     } else {
       debugPrint("New Invoice found!");
     }
