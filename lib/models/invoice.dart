@@ -69,11 +69,23 @@ class Invoice {
     );
   }
 
+  bool get isInterState {
+    if (supplier.state.isEmpty || placeOfSupply.isEmpty) return false;
+    // Simple normalization for comparison
+    return supplier.state.trim().toLowerCase() !=
+        placeOfSupply.trim().toLowerCase();
+  }
+
   double get totalTaxableValue =>
       items.fold(0, (sum, item) => sum + item.netAmount);
-  double get totalCGST => items.fold(0, (sum, item) => sum + (item.cgstAmount));
-  double get totalSGST => items.fold(0, (sum, item) => sum + (item.sgstAmount));
-  double get totalIGST => items.fold(0, (sum, item) => sum + (item.igstAmount));
+
+  double get totalCGST => items.fold(
+      0, (sum, item) => sum + (isInterState ? 0 : item.calculateCgst(false)));
+  double get totalSGST => items.fold(
+      0, (sum, item) => sum + (isInterState ? 0 : item.calculateSgst(false)));
+  double get totalIGST => items.fold(
+      0, (sum, item) => sum + (isInterState ? item.calculateIgst(true) : 0));
+
   double get grandTotal =>
       totalTaxableValue + totalCGST + totalSGST + totalIGST;
 
@@ -126,6 +138,7 @@ class Supplier {
   final String pan;
   final String email;
   final String phone;
+  final String state;
 
   const Supplier({
     this.name = '',
@@ -134,6 +147,7 @@ class Supplier {
     this.pan = '',
     this.email = '',
     this.phone = '',
+    this.state = '',
   });
 
   Supplier copyWith({
@@ -143,6 +157,7 @@ class Supplier {
     String? pan,
     String? email,
     String? phone,
+    String? state,
   }) {
     return Supplier(
       name: name ?? this.name,
@@ -151,6 +166,7 @@ class Supplier {
       pan: pan ?? this.pan,
       email: email ?? this.email,
       phone: phone ?? this.phone,
+      state: state ?? this.state,
     );
   }
 
@@ -161,6 +177,7 @@ class Supplier {
         'pan': pan,
         'email': email,
         'phone': phone,
+        'state': state,
       };
 
   factory Supplier.fromJson(Map<String, dynamic> json) => Supplier(
@@ -170,6 +187,7 @@ class Supplier {
         pan: json['pan'] ?? '',
         email: json['email'] ?? '',
         phone: json['phone'] ?? '',
+        state: json['state'] ?? '',
       );
 }
 
@@ -231,11 +249,22 @@ class InvoiceItem {
   double get cgstRate => gstRate / 2;
   double get sgstRate => gstRate / 2;
 
+  // Deprecated direct access, prefer calculate methods with context
   double get cgstAmount => netAmount * (cgstRate / 100);
   double get sgstAmount => netAmount * (sgstRate / 100);
-  double get igstAmount => 0;
+  double get igstAmount => netAmount * (gstRate / 100);
 
-  double get totalAmount => netAmount + cgstAmount + sgstAmount;
+  double calculateCgst(bool isInterState) =>
+      isInterState ? 0 : netAmount * (cgstRate / 100);
+  double calculateSgst(bool isInterState) =>
+      isInterState ? 0 : netAmount * (sgstRate / 100);
+  double calculateIgst(bool isInterState) =>
+      isInterState ? netAmount * (gstRate / 100) : 0;
+
+  // Total amount including tax (assuming context agnostic max tax for line item view)
+  // For precise total, we need context. But usually line total is taxable + tax.
+  // The original code aggregated CGST+SGST. IGST is same rate.
+  double get totalAmount => netAmount * (1 + gstRate / 100);
 
   InvoiceItem({
     String? id,

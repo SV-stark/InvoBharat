@@ -388,6 +388,14 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
   Future<void> _saveInvoice(
       BuildContext context, WidgetRef ref, Invoice invoice) async {
     Invoice toSave = invoice;
+
+    // Sync supplier state from profile if not present
+    final profile = ref.read(businessProfileProvider);
+    if (toSave.supplier.state.isEmpty && profile.state.isNotEmpty) {
+      toSave = toSave.copyWith(
+          supplier: toSave.supplier.copyWith(state: profile.state));
+    }
+
     if (toSave.id == null) {
       toSave = toSave.copyWith(id: _generateId());
     }

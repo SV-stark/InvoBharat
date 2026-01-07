@@ -6,6 +6,7 @@ class BusinessProfile {
   String gstin;
   String email;
   String phone;
+  String state;
   int colorValue; // Store Color as int
   String? logoPath;
   String invoiceSeries;
@@ -27,6 +28,7 @@ class BusinessProfile {
     required this.gstin,
     required this.email,
     required this.phone,
+    required this.state,
     required this.colorValue,
     this.logoPath,
     this.invoiceSeries = 'INV-',
@@ -50,6 +52,7 @@ class BusinessProfile {
       gstin: "29XXXXX0000X0Z1",
       email: "email@example.com",
       phone: "9876543210",
+      state: "Karnataka",
       colorValue: Colors.teal.toARGB32(),
       invoiceSeries: "INV-",
       invoiceSequence: 1,
@@ -71,6 +74,7 @@ class BusinessProfile {
       'gstin': gstin,
       'email': email,
       'phone': phone,
+      'state': state,
       'colorValue': colorValue,
       'logoPath': logoPath,
       'invoiceSeries': invoiceSeries,
@@ -93,6 +97,7 @@ class BusinessProfile {
       gstin: json['gstin'] ?? '',
       email: json['email'] ?? '',
       phone: json['phone'] ?? '',
+      state: json['state'] ?? '',
       colorValue: json['colorValue'] ?? Colors.teal.toARGB32(),
       logoPath: json['logoPath'],
       invoiceSeries: json['invoiceSeries'] ?? 'INV-',
@@ -114,6 +119,7 @@ class BusinessProfile {
     String? gstin,
     String? email,
     String? phone,
+    String? state,
     int? colorValue,
     String? logoPath,
     String? invoiceSeries,
@@ -133,6 +139,7 @@ class BusinessProfile {
       gstin: gstin ?? this.gstin,
       email: email ?? this.email,
       phone: phone ?? this.phone,
+      state: state ?? this.state,
       colorValue: colorValue ?? this.colorValue,
       logoPath: logoPath ?? this.logoPath,
       invoiceSeries: invoiceSeries ?? this.invoiceSeries,
