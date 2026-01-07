@@ -22,7 +22,7 @@ jobs:
           cache: true
 
       - name: Cache Pub Dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.pub-cache
           key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
@@ -30,7 +30,7 @@ jobs:
             ${{ runner.os }}-pub-
 
       - name: Cache System Dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-apt-${{ hashFiles('.github/workflows/linux_build.yml') }}
