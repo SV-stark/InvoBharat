@@ -8,6 +8,8 @@ import '../../models/business_profile.dart';
 import '../../providers/business_profile_provider.dart';
 import '../../providers/invoice_provider.dart';
 
+import '../../models/client.dart';
+import '../../providers/client_provider.dart';
 import '../../providers/invoice_repository_provider.dart';
 import '../../utils/pdf_generator.dart';
 import '../../utils/constants.dart';
@@ -283,8 +285,20 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Receiver (Client)",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text("Receiver (Client)",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        IconButton(
+                          icon: const Icon(FluentIcons.contact_list),
+                          onPressed: () {
+                            final clients = ref.read(clientListProvider);
+                            _showClientSelector(context, clients);
+                          },
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 5),
                     TextFormBox(
                       prefix: const Padding(
@@ -544,6 +558,51 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showClientSelector(BuildContext context, List<Client> clients) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return ContentDialog(
+          title: const Text("Select Client"),
+          content: SizedBox(
+            height: 300,
+            width: 400,
+            child: ListView.builder(
+              itemCount: clients.length,
+              itemBuilder: (context, index) {
+                final client = clients[index];
+                return ListTile(
+                  title: Text(client.name),
+                  subtitle: Text(client.gstin.isNotEmpty
+                      ? client.gstin
+                      : (client.phone.isNotEmpty
+                          ? client.phone
+                          : "No details")),
+                  onPressed: () {
+                    ref
+                        .read(invoiceProvider.notifier)
+                        .updateReceiverName(client.name);
+                    ref
+                        .read(invoiceProvider.notifier)
+                        .updateReceiverGstin(client.gstin);
+                    // Client model doesn't have state, user must select manually if needed
+                    Navigator.pop(context);
+                  },
+                );
+              },
+            ),
+          ),
+          actions: [
+            Button(
+              child: const Text("Cancel"),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        );
+      },
     );
   }
 }
