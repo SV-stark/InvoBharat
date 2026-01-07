@@ -7,9 +7,9 @@ import '../models/invoice.dart';
 import '../models/business_profile.dart'; // Import for manual usage if needed
 import '../utils/pdf_generator.dart';
 import '../providers/business_profile_provider.dart';
-import '../data/invoice_repository.dart';
 
 import '../providers/invoice_provider.dart';
+import '../providers/invoice_repository_provider.dart';
 
 // Generates a unique ID
 String _generateId() => DateTime.now().millisecondsSinceEpoch.toString();
@@ -114,6 +114,35 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 10),
+            Card(
+              elevation: 0,
+              color: Theme.of(context).cardColor,
+              shape: RoundedRectangleBorder(
+                  side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+                  borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(children: [
+                    _buildDropdown(
+                      "Reverse Charge",
+                      invoice.reverseCharge.isEmpty
+                          ? "N"
+                          : invoice.reverseCharge,
+                      ['N', 'Y'],
+                      (val) => ref
+                          .read(invoiceProvider.notifier)
+                          .updateReverseCharge(val!),
+                    ),
+                    const SizedBox(height: 10),
+                    _buildTextField(
+                        "Delivery Address (Optional)",
+                        invoice.deliveryAddress ?? "",
+                        (val) => ref
+                            .read(invoiceProvider.notifier)
+                            .updateDeliveryAddress(val)),
+                  ])),
+            ),
             const SizedBox(height: 20),
 
             _buildSectionHeader("Supplier Details (You)"),
@@ -142,6 +171,18 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                 (val) => ref
                     .read(invoiceProvider.notifier)
                     .updateReceiverGstin(val)),
+            _buildTextField(
+                "State",
+                invoice.receiver.state,
+                (val) => ref
+                    .read(invoiceProvider.notifier)
+                    .updateReceiverState(val)),
+            _buildTextField(
+                "State Code",
+                invoice.receiver.stateCode,
+                (val) => ref
+                    .read(invoiceProvider.notifier)
+                    .updateReceiverStateCode(val)),
 
             const SizedBox(height: 20),
             _buildSectionHeader("Items"),
@@ -256,6 +297,22 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                             .read(invoiceProvider.notifier)
                             .updateItemGstRate(index, val);
                       })),
+                    ]),
+                    Row(children: [
+                      Expanded(
+                          child: _buildTextField(
+                              "Qty", item.quantity.toString(), (val) {
+                        ref
+                            .read(invoiceProvider.notifier)
+                            .updateItemQuantity(index, val);
+                      })),
+                      const SizedBox(width: 10),
+                      Expanded(
+                          child: _buildTextField("Unit", item.unit, (val) {
+                        ref
+                            .read(invoiceProvider.notifier)
+                            .updateItemUnit(index, val);
+                      })),
                     ])
                   ]),
                 ),
@@ -315,12 +372,12 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
       toSave = toSave.copyWith(id: _generateId());
     }
 
-    await InvoiceRepository().saveInvoice(toSave);
+    await ref.read(invoiceRepositoryProvider).saveInvoice(toSave);
 
     // Only increment sequence if it was a NEW invoice (id was null initially)
     if (invoice.id == null) {
       await ref
-          .read(businessProfileProvider.notifier)
+          .read(businessProfileNotifierProvider)
           .incrementInvoiceSequence();
     }
 

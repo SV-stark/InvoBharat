@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class BusinessProfile {
+  String id;
   String companyName;
   String address;
   String gstin;
@@ -24,6 +25,7 @@ class BusinessProfile {
   String branchName;
 
   BusinessProfile({
+    required this.id,
     required this.companyName,
     required this.address,
     required this.gstin,
@@ -49,11 +51,12 @@ class BusinessProfile {
 
   factory BusinessProfile.defaults() {
     return BusinessProfile(
+      id: "default", // Will be replaced by UUID for new profiles usually
       companyName: "Your Company Name",
-      address: "Your Business Address",
-      gstin: "29XXXXX0000X0Z1",
-      email: "email@example.com",
-      phone: "9876543210",
+      address: "",
+      gstin: "",
+      email: "",
+      phone: "",
       state: "Karnataka",
       colorValue: Colors.teal.toARGB32(),
       invoiceSeries: "INV-",
@@ -71,6 +74,7 @@ class BusinessProfile {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'companyName': companyName,
       'address': address,
       'gstin': gstin,
@@ -95,6 +99,7 @@ class BusinessProfile {
 
   factory BusinessProfile.fromJson(Map<String, dynamic> json) {
     return BusinessProfile(
+      id: json['id'] ?? 'default', // Backward compatibility
       companyName: json['companyName'] ?? '',
       address: json['address'] ?? '',
       gstin: json['gstin'] ?? '',
@@ -118,6 +123,7 @@ class BusinessProfile {
   }
 
   BusinessProfile copyWith({
+    String? id,
     String? companyName,
     String? address,
     String? gstin,
@@ -139,6 +145,7 @@ class BusinessProfile {
     String? branchName,
   }) {
     return BusinessProfile(
+      id: id ?? this.id,
       companyName: companyName ?? this.companyName,
       address: address ?? this.address,
       gstin: gstin ?? this.gstin,

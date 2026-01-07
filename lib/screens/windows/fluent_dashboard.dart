@@ -1,13 +1,16 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../data/invoice_repository.dart';
+
 import '../../models/invoice.dart';
 import '../../providers/business_profile_provider.dart';
+import '../../widgets/profile_switcher_sheet.dart';
 import 'fluent_invoice_form.dart';
 
+import '../../providers/invoice_repository_provider.dart';
+
 final invoiceListProvider = FutureProvider<List<Invoice>>((ref) async {
-  return InvoiceRepository().getAllInvoices();
+  return ref.watch(invoiceRepositoryProvider).getAllInvoices();
 });
 
 class FluentDashboard extends ConsumerStatefulWidget {
@@ -28,34 +31,43 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     return ScaffoldPage.scrollable(
       header: PageHeader(
         title: const Text('Dashboard'),
-        commandBar: ComboBox<String>(
-          value: _selectedPeriod,
-          items: [
-            "All Time",
-            "This Month",
-            "Last Month",
-            "Q1 (Apr-Jun)",
-            "Q2 (Jul-Sep)",
-            "Q3 (Oct-Dec)",
-            "Q4 (Jan-Mar)"
-          ].map((e) => ComboBoxItem(value: e, child: Text(e))).toList(),
-          onChanged: (v) {
-            if (v != null) setState(() => _selectedPeriod = v);
-          },
-          placeholder: const Text("Select Period"),
+        commandBar: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(FluentIcons.contact),
+              onPressed: () => showProfileSwitcherSheet(context, ref),
+            ),
+            const SizedBox(width: 8),
+            ComboBox<String>(
+              value: _selectedPeriod,
+              items: [
+                "All Time",
+                "This Month",
+                "Last Month",
+                "Q1 (Apr-Jun)",
+                "Q2 (Jul-Sep)",
+                "Q3 (Oct-Dec)",
+                "Q4 (Jan-Mar)"
+              ].map((e) => ComboBoxItem(value: e, child: Text(e))).toList(),
+              onChanged: (v) {
+                if (v != null) setState(() => _selectedPeriod = v);
+              },
+              placeholder: const Text("Select Period"),
+            ),
+          ],
         ),
       ),
       children: [
         Text(
           "Welcome back, ${profile.companyName}",
-          style: FluentTheme.of(context).typography.subtitle,
+          style: FluentTheme.of(context).typography.titleLarge,
         ),
         const SizedBox(height: 20),
         invoiceListAsync.when(
           loading: () => const Center(child: ProgressRing()),
           error: (err, stack) => Text("Error: $err"),
           data: (allInvoices) {
-            // -- Filter Logic --
             final filteredInvoices =
                 _filterInvoices(allInvoices, _selectedPeriod);
 
@@ -75,6 +87,36 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Quick Actions
+                Row(children: [
+                  FilledButton(
+                      child: const Text("Create Invoice"),
+                      onPressed: () async {
+                        await Navigator.push(
+                          context,
+                          FluentPageRoute(
+                            builder: (_) => const FluentInvoiceForm(),
+                          ),
+                        );
+                        ref.invalidate(invoiceListProvider);
+                      }),
+                  const SizedBox(width: 12),
+                  Button(
+                    child: const Text("Export GSTR-1 (Coming Soon)"),
+                    onPressed: () {
+                      displayInfoBar(context, builder: (context, close) {
+                        return InfoBar(
+                          title: const Text("Coming Soon"),
+                          content:
+                              const Text("GSTR-1 Export is under development."),
+                          severity: InfoBarSeverity.info,
+                          onClose: close,
+                        );
+                      });
+                    },
+                  ),
+                ]),
+                const SizedBox(height: 16),
                 // Revenue & Count
                 Row(
                   children: [

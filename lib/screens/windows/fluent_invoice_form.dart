@@ -7,7 +7,8 @@ import '../../models/invoice.dart';
 import '../../models/business_profile.dart';
 import '../../providers/business_profile_provider.dart';
 import '../../providers/invoice_provider.dart';
-import '../../data/invoice_repository.dart';
+
+import '../../providers/invoice_repository_provider.dart';
 import '../../utils/pdf_generator.dart';
 import '../../utils/constants.dart';
 
@@ -180,6 +181,39 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
                   placeholder: "Select State",
                 ),
               ),
+              const SizedBox(height: 10),
+              InfoLabel(
+                label: "Reverse Charge",
+                child: ComboBox<String>(
+                  value: invoice.reverseCharge.isEmpty
+                      ? "N"
+                      : invoice.reverseCharge,
+                  items: const [
+                    ComboBoxItem(value: "N", child: Text("No")),
+                    ComboBoxItem(value: "Y", child: Text("Yes")),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) {
+                      ref
+                          .read(invoiceProvider.notifier)
+                          .updateReverseCharge(val);
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+              InfoLabel(
+                label: "Delivery Address (Optional)",
+                child: TextFormBox(
+                  initialValue: invoice.deliveryAddress,
+                  placeholder: "Leave empty if same as Receiver Address",
+                  minLines: 1,
+                  maxLines: 3,
+                  onChanged: (val) => ref
+                      .read(invoiceProvider.notifier)
+                      .updateDeliveryAddress(val),
+                ),
+              ),
             ],
           ),
         ),
@@ -271,6 +305,34 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
                           .read(invoiceProvider.notifier)
                           .updateReceiverGstin(val),
                     ),
+                    const SizedBox(height: 5),
+                    AutoSuggestBox<String>(
+                      placeholder: "State",
+                      items: IndianStates.states
+                          .map((e) =>
+                              AutoSuggestBoxItem<String>(value: e, label: e))
+                          .toList(),
+                      onSelected: (item) {
+                        ref
+                            .read(invoiceProvider.notifier)
+                            .updateReceiverState(item.value!);
+                      },
+                      onChanged: (text, reason) {
+                        if (reason == TextChangedReason.userInput) {
+                          ref
+                              .read(invoiceProvider.notifier)
+                              .updateReceiverState(text);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 5),
+                    TextFormBox(
+                      placeholder: "State Code (e.g. 29)",
+                      initialValue: invoice.receiver.stateCode,
+                      onChanged: (val) => ref
+                          .read(invoiceProvider.notifier)
+                          .updateReceiverStateCode(val),
+                    ),
                   ],
                 ),
               ),
@@ -329,6 +391,28 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
                                   .updateItemCodeType(index, val);
                             }
                           },
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      // Quantity
+                      Expanded(
+                        child: TextFormBox(
+                          placeholder: "Qty",
+                          initialValue: item.quantity.toString(),
+                          onChanged: (val) => ref
+                              .read(invoiceProvider.notifier)
+                              .updateItemQuantity(index, val),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      // Unit
+                      Expanded(
+                        child: TextFormBox(
+                          placeholder: "Unit",
+                          initialValue: item.unit,
+                          onChanged: (val) => ref
+                              .read(invoiceProvider.notifier)
+                              .updateItemUnit(index, val),
                         ),
                       ),
                       const SizedBox(width: 5),
@@ -400,11 +484,11 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
       toSave = toSave.copyWith(id: _generateId());
     }
 
-    await InvoiceRepository().saveInvoice(toSave);
+    await ref.read(invoiceRepositoryProvider).saveInvoice(toSave);
 
     if (invoice.id == null) {
       await ref
-          .read(businessProfileProvider.notifier)
+          .read(businessProfileNotifierProvider)
           .incrementInvoiceSequence();
     }
 

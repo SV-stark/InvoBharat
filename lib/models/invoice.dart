@@ -14,6 +14,7 @@ class Invoice {
   final String accountNo;
   final String ifscCode;
   final String branch;
+  final String? deliveryAddress; // New field
 
   const Invoice({
     this.id,
@@ -31,6 +32,7 @@ class Invoice {
     this.accountNo = '',
     this.ifscCode = '',
     this.branch = '',
+    this.deliveryAddress,
   });
 
   Invoice copyWith({
@@ -49,6 +51,7 @@ class Invoice {
     String? accountNo,
     String? ifscCode,
     String? branch,
+    String? deliveryAddress,
   }) {
     return Invoice(
       id: id ?? this.id,
@@ -66,6 +69,7 @@ class Invoice {
       accountNo: accountNo ?? this.accountNo,
       ifscCode: ifscCode ?? this.ifscCode,
       branch: branch ?? this.branch,
+      deliveryAddress: deliveryAddress ?? this.deliveryAddress,
     );
   }
 
@@ -106,6 +110,7 @@ class Invoice {
       'accountNo': accountNo,
       'ifscCode': ifscCode,
       'branch': branch,
+      'deliveryAddress': deliveryAddress,
     };
   }
 
@@ -127,6 +132,7 @@ class Invoice {
       accountNo: json['accountNo'],
       ifscCode: json['ifscCode'],
       branch: json['branch'],
+      deliveryAddress: json['deliveryAddress'],
     );
   }
 }
@@ -196,12 +202,16 @@ class Receiver {
   final String address;
   final String gstin;
   final String pan;
+  final String state; // New field
+  final String stateCode; // New field
 
   const Receiver({
     this.name = '',
     this.address = '',
     this.gstin = '',
     this.pan = '',
+    this.state = '',
+    this.stateCode = '',
   });
 
   Receiver copyWith({
@@ -209,12 +219,16 @@ class Receiver {
     String? address,
     String? gstin,
     String? pan,
+    String? state,
+    String? stateCode,
   }) {
     return Receiver(
       name: name ?? this.name,
       address: address ?? this.address,
       gstin: gstin ?? this.gstin,
       pan: pan ?? this.pan,
+      state: state ?? this.state,
+      stateCode: stateCode ?? this.stateCode,
     );
   }
 
@@ -223,6 +237,8 @@ class Receiver {
         'address': address,
         'gstin': gstin,
         'pan': pan,
+        'state': state,
+        'stateCode': stateCode,
       };
 
   factory Receiver.fromJson(Map<String, dynamic> json) => Receiver(
@@ -230,6 +246,8 @@ class Receiver {
         address: json['address'] ?? '',
         gstin: json['gstin'] ?? '',
         pan: json['pan'] ?? '',
+        state: json['state'] ?? '',
+        stateCode: json['stateCode'] ?? '',
       );
 }
 
@@ -239,13 +257,14 @@ class InvoiceItem {
   final String sacCode;
   final String codeType; // 'SAC' or 'HSN'
   final String year; // e.g. "F.Y. 2025-26"
-  final double amount; // Taxable Value
+  final double amount; // Taxable Value per Unit
   final double discount; // Optional
-
+  final double quantity; // New field
+  final String unit; // New field (Nos, Kg, etc.)
   final double gstRate; // e.g. 18.0 for 18%
 
   // Computed helpers
-  double get netAmount => amount - discount;
+  double get netAmount => (amount * quantity) - discount;
   double get cgstRate => gstRate / 2;
   double get sgstRate => gstRate / 2;
 
@@ -261,9 +280,7 @@ class InvoiceItem {
   double calculateIgst(bool isInterState) =>
       isInterState ? netAmount * (gstRate / 100) : 0;
 
-  // Total amount including tax (assuming context agnostic max tax for line item view)
-  // For precise total, we need context. But usually line total is taxable + tax.
-  // The original code aggregated CGST+SGST. IGST is same rate.
+  // Total amount including tax
   double get totalAmount => netAmount * (1 + gstRate / 100);
 
   InvoiceItem({
@@ -274,6 +291,8 @@ class InvoiceItem {
     this.year = '',
     this.amount = 0,
     this.discount = 0,
+    this.quantity = 1.0,
+    this.unit = 'Nos',
     this.gstRate = 18.0,
   }) : id = id ?? DateTime.now().microsecondsSinceEpoch.toString();
 
@@ -285,6 +304,8 @@ class InvoiceItem {
     String? year,
     double? amount,
     double? discount,
+    double? quantity,
+    String? unit,
     double? gstRate,
   }) {
     return InvoiceItem(
@@ -295,6 +316,8 @@ class InvoiceItem {
       year: year ?? this.year,
       amount: amount ?? this.amount,
       discount: discount ?? this.discount,
+      quantity: quantity ?? this.quantity,
+      unit: unit ?? this.unit,
       gstRate: gstRate ?? this.gstRate,
     );
   }
@@ -307,6 +330,8 @@ class InvoiceItem {
         'year': year,
         'amount': amount,
         'discount': discount,
+        'quantity': quantity,
+        'unit': unit,
         'gstRate': gstRate,
       };
 
@@ -318,6 +343,8 @@ class InvoiceItem {
         year: json['year'] ?? '',
         amount: (json['amount'] as num).toDouble(),
         discount: (json['discount'] as num).toDouble(),
+        quantity: (json['quantity'] as num?)?.toDouble() ?? 1.0,
+        unit: json['unit'] ?? 'Nos',
         gstRate: (json['gstRate'] as num).toDouble(),
       );
 }

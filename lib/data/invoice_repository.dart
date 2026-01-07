@@ -5,9 +5,25 @@ import 'package:path_provider/path_provider.dart';
 import '../models/invoice.dart';
 
 class InvoiceRepository {
+  final String profileId;
+
+  InvoiceRepository({required this.profileId});
+
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
-    final path = '${directory.path}/InvoBharat/invoices';
+    // New path structure: .../InvoBharat/profiles/<profileId>/invoices
+    final path = '${directory.path}/InvoBharat/profiles/$profileId/invoices';
+    final dir = Directory(path);
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
+    }
+    return path;
+  }
+
+  // Static helper to get path for a specific profile (useful for backups/migration)
+  static Future<String> getProfilePath(String pid) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final path = '${directory.path}/InvoBharat/profiles/$pid/invoices';
     final dir = Directory(path);
     if (!await dir.exists()) {
       await dir.create(recursive: true);
@@ -20,32 +36,10 @@ class InvoiceRepository {
     String fileName;
 
     if (invoice.id != null) {
-      // Updating existing
-      // Find the file that matches this ID
-      // Ideally, the ID should be part of the filename or we iterate.
-      // For simplicity, let's assume we search or use ID as filename for new ones.
-      // BUT, existing files use timestamp.
-
-      // STRATEGY:
-      // If ID is set, we try to find the file or just overwrite.
-      // However, we don't know the original filename from just the ID unless we store it.
-      // Let's refactor: New invoices use ID as filename. Old invoices...
-      // To support backward compatibility + editing:
-      // 1. If invoice has ID, use it for filename.
-      // 2. If invoice has no ID, generate one, set it, and save.
-
-      // Wait, if we edit an old invoice (no ID), we should probably assign it one now.
-      // Let's stick to using ID as filename for robustness.
-
       fileName = 'inv_${invoice.id}.json';
     } else {
-      // Should have been assigned an ID before reaching here ideally,
-      // but let's handle it.
       final id = DateTime.now().millisecondsSinceEpoch.toString();
       fileName = 'inv_$id.json';
-      // We technically need to start returning the saved invoice or ID,
-      // but the repo signature is void.
-      // For now, let's assume the UI assigns IDs or we just use what's given.
     }
 
     final file = File('$path/$fileName');
@@ -76,6 +70,34 @@ class InvoiceRepository {
       return invoices;
     } catch (e) {
       debugPrint("Error loading invoices: $e");
+      return [];
+    }
+  }
+
+  // Fetch invoices for a specific profile ID (static or instance method)
+  static Future<List<Invoice>> getAllInvoicesForProfile(String pid) async {
+    try {
+      final path = await getProfilePath(pid);
+      final dir = Directory(path);
+      List<Invoice> invoices = [];
+
+      if (!dir.existsSync()) return [];
+
+      final List<FileSystemEntity> files = dir.listSync();
+
+      for (var file in files) {
+        if (file is File && file.path.endsWith('.json')) {
+          final String contents = await file.readAsString();
+          try {
+            invoices.add(Invoice.fromJson(jsonDecode(contents)));
+          } catch (e) {
+            debugPrint("Error parsing ${file.path}: $e");
+          }
+        }
+      }
+      return invoices;
+    } catch (e) {
+      debugPrint("Error loading invoices for profile $pid: $e");
       return [];
     }
   }
