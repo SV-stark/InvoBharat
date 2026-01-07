@@ -4,17 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'invoice_form.dart';
+import 'invoice_detail_screen.dart';
+import 'estimates_screen.dart';
+import 'recurring_invoices_screen.dart';
 
 import 'settings_screen.dart';
 import '../providers/business_profile_provider.dart';
 
-import '../models/invoice.dart';
-
 import '../providers/invoice_repository_provider.dart';
-
-final invoiceListProvider = FutureProvider<List<Invoice>>((ref) async {
-  return ref.watch(invoiceRepositoryProvider).getAllInvoices();
-});
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -117,6 +114,8 @@ class DashboardScreen extends ConsumerWidget {
                             .titleLarge
                             ?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 16),
+
+                    const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(
@@ -131,6 +130,33 @@ class DashboardScreen extends ConsumerWidget {
                                         builder: (_) =>
                                             const InvoiceFormScreen()))
                                 .then((_) => ref.refresh(invoiceListProvider)),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildActionButton(
+                            context,
+                            "Estimates",
+                            Icons.request_quote,
+                            Colors.orange.shade100,
+                            () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const EstimatesScreen())),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildActionButton(
+                            context,
+                            "Recurring",
+                            Icons.autorenew,
+                            Colors.purple.shade100,
+                            () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const RecurringInvoicesScreen())),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -170,7 +196,7 @@ class DashboardScreen extends ConsumerWidget {
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) =>
-                                      InvoiceFormScreen(invoiceToEdit: inv),
+                                      InvoiceDetailScreen(invoice: inv),
                                 ),
                               );
                               ref.invalidate(invoiceListProvider);

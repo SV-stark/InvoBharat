@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/windows/fluent_home.dart';
+import 'screens/linux/linux_home.dart';
+import 'package:adwaita/adwaita.dart';
 import 'providers/business_profile_provider.dart';
 import 'providers/theme_provider.dart';
 
@@ -40,6 +42,17 @@ class InvoBharatApp extends ConsumerWidget {
           accentColor: accentColor,
         ),
         home: const FluentHome(),
+      );
+    }
+
+    if (Platform.isLinux) {
+      return MaterialApp(
+        title: 'InvoBharat',
+        debugShowCheckedModeBanner: false,
+        theme: AdwaitaThemeData.light(),
+        darkTheme: AdwaitaThemeData.dark(),
+        themeMode: ref.watch(themeProvider),
+        home: const LinuxHome(),
       );
     }
 

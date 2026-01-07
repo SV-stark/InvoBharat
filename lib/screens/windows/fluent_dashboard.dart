@@ -11,6 +11,8 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 
 import '../../providers/invoice_repository_provider.dart';
+import '../estimates_screen.dart';
+import '../recurring_invoices_screen.dart';
 
 final invoiceListProvider = FutureProvider<List<Invoice>>((ref) async {
   return ref.watch(invoiceRepositoryProvider).getAllInvoices();
@@ -136,6 +138,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                             outputFile = '$outputFile.csv';
                           }
                           await File(outputFile).writeAsString(csvData);
+                          if (!context.mounted) return;
                           displayInfoBar(context,
                               builder: (context, close) => InfoBar(
                                   title: const Text("Success"),
@@ -144,6 +147,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                                   onClose: close));
                         }
                       } catch (e) {
+                        if (!context.mounted) return;
                         displayInfoBar(context,
                             builder: (context, close) => InfoBar(
                                 title: const Text("Error"),
@@ -152,6 +156,22 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                                 onClose: close));
                       }
                     },
+                  ),
+                  const SizedBox(width: 12),
+                  Button(
+                    child: const Text("Estimates"),
+                    onPressed: () => Navigator.push(
+                        context,
+                        FluentPageRoute(
+                            builder: (_) => const EstimatesScreen())),
+                  ),
+                  const SizedBox(width: 12),
+                  Button(
+                    child: const Text("Recurring"),
+                    onPressed: () => Navigator.push(
+                        context,
+                        FluentPageRoute(
+                            builder: (_) => const RecurringInvoicesScreen())),
                   ),
                 ]),
                 const SizedBox(height: 16),

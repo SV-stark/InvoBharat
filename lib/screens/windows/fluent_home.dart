@@ -59,6 +59,25 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
             body: const FluentSettings(),
           ),
         ],
+        footerItems: [
+          PaneItemAction(
+              icon: const Icon(FluentIcons.info),
+              title: const Text('About'),
+              onTap: () {
+                showDialog(
+                    context: context,
+                    builder: (context) => ContentDialog(
+                          title: const Text("About InvoBharat"),
+                          content: const Text(
+                              "InvoBharat v1.0.0\n\nA comprehensive invoicing solution for Indian businesses.\n\nDeveloped with Flutter & Riverpod."),
+                          actions: [
+                            Button(
+                                child: const Text("Close"),
+                                onPressed: () => Navigator.pop(context)),
+                          ],
+                        ));
+              }),
+        ],
       ),
     );
   }

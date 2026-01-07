@@ -24,6 +24,10 @@ class BusinessProfile {
   String ifscCode;
   String branchName;
 
+  // UPI
+  String? upiId;
+  String? upiName;
+
   BusinessProfile({
     required this.id,
     required this.companyName,
@@ -45,6 +49,8 @@ class BusinessProfile {
     this.accountNumber = '',
     this.ifscCode = '',
     this.branchName = '',
+    this.upiId,
+    this.upiName,
   });
 
   Color get color => Color(colorValue);
@@ -69,6 +75,8 @@ class BusinessProfile {
       accountNumber: "",
       ifscCode: "",
       branchName: "",
+      upiId: "",
+      upiName: "",
     );
   }
 
@@ -94,6 +102,8 @@ class BusinessProfile {
       'accountNumber': accountNumber,
       'ifscCode': ifscCode,
       'branchName': branchName,
+      'upiId': upiId,
+      'upiName': upiName,
     };
   }
 
@@ -119,6 +129,8 @@ class BusinessProfile {
       accountNumber: json['accountNumber'] ?? '',
       ifscCode: json['ifscCode'] ?? '',
       branchName: json['branchName'] ?? '',
+      upiId: json['upiId'],
+      upiName: json['upiName'],
     );
   }
 
@@ -143,6 +155,8 @@ class BusinessProfile {
     String? accountNumber,
     String? ifscCode,
     String? branchName,
+    String? upiId,
+    String? upiName,
   }) {
     return BusinessProfile(
       id: id ?? this.id,
@@ -165,6 +179,8 @@ class BusinessProfile {
       accountNumber: accountNumber ?? this.accountNumber,
       ifscCode: ifscCode ?? this.ifscCode,
       branchName: branchName ?? this.branchName,
+      upiId: upiId ?? this.upiId,
+      upiName: upiName ?? this.upiName,
     );
   }
 }

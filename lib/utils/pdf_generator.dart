@@ -176,6 +176,8 @@ class MinimalTemplate implements InvoiceTemplate {
                                 fontSize: 9, color: PdfColors.grey700),
                           ),
                         ])),
+                pw.SizedBox(width: 10),
+                _buildUpiQr(profile.upiId, profile.upiName, invoice),
                 pw.Expanded(
                     flex: 4,
                     child: pw.Column(children: [
@@ -521,6 +523,7 @@ class ProfessionalTemplate implements InvoiceTemplate {
                       style: const pw.TextStyle(fontSize: 8)),
                 ])),
             pw.SizedBox(width: 20),
+            _buildUpiQr(profile.upiId, profile.upiName, invoice),
             pw.Column(children: [
               if (profile.signaturePath != null &&
                   File(profile.signaturePath!).existsSync())
@@ -836,6 +839,9 @@ class ModernTemplate implements InvoiceTemplate {
                                 pw.Text(profile.termsAndConditions,
                                     style: const pw.TextStyle(
                                         fontSize: 8, color: PdfColors.grey700)),
+                                pw.SizedBox(height: 10),
+                                _buildUpiQr(
+                                    profile.upiId, profile.upiName, invoice),
                               ])),
                       pw.Expanded(
                           flex: 4,
@@ -994,4 +1000,22 @@ String _getCurrencyName(String symbol) {
     default:
       return 'Currency';
   }
+}
+
+pw.Widget _buildUpiQr(String? upiId, String? upiName, Invoice invoice) {
+  if (upiId == null || upiId.isEmpty) return pw.Container();
+
+  final upiUrl =
+      "upi://pay?pa=$upiId&pn=${Uri.encodeComponent(upiName ?? '')}&am=${invoice.grandTotal.toStringAsFixed(2)}&tn=${Uri.encodeComponent('Inv ${invoice.invoiceNo}')}&cu=INR";
+
+  return pw.Column(children: [
+    pw.BarcodeWidget(
+      barcode: pw.Barcode.qrCode(),
+      data: upiUrl,
+      width: 80,
+      height: 80,
+    ),
+    pw.SizedBox(height: 4),
+    pw.Text("Scan to Pay", style: const pw.TextStyle(fontSize: 8)),
+  ]);
 }

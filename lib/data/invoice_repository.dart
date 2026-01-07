@@ -46,6 +46,21 @@ class InvoiceRepository {
     await file.writeAsString(jsonEncode(invoice.toJson()));
   }
 
+  Future<Invoice?> getInvoice(String id) async {
+    try {
+      final path = await _localPath;
+      final file = File('$path/inv_$id.json');
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        return Invoice.fromJson(jsonDecode(content));
+      }
+      return null;
+    } catch (e) {
+      debugPrint("Error fetching invoice $id: $e");
+      return null;
+    }
+  }
+
   Future<List<Invoice>> getAllInvoices() async {
     try {
       final path = await _localPath;

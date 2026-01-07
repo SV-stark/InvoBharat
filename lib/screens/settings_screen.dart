@@ -35,6 +35,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late TextEditingController _accountNumberController;
   late TextEditingController _ifscCodeController;
   late TextEditingController _branchNameController;
+  // UPI
+  late TextEditingController _upiIdController;
+  late TextEditingController _upiNameController;
 
   @override
   void initState() {
@@ -61,6 +64,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         TextEditingController(text: profile.accountNumber);
     _ifscCodeController = TextEditingController(text: profile.ifscCode);
     _branchNameController = TextEditingController(text: profile.branchName);
+    _upiIdController = TextEditingController(text: profile.upiId ?? '');
+    _upiNameController = TextEditingController(text: profile.upiName ?? '');
   }
 
   // Method to reload controllers when profile switches (if we stayed on screen,
@@ -85,6 +90,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _accountNumberController.dispose();
     _ifscCodeController.dispose();
     _branchNameController.dispose();
+    _upiIdController.dispose();
+    _upiNameController.dispose();
     super.dispose();
   }
 
@@ -107,6 +114,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         accountNumber: _accountNumberController.text,
         ifscCode: _ifscCodeController.text,
         branchName: _branchNameController.text,
+        upiId: _upiIdController.text,
+        upiName: _upiNameController.text,
       );
       ref.read(businessProfileNotifierProvider).updateProfile(newProfile);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -240,6 +249,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildTextField("Account Number", _accountNumberController),
             _buildTextField("IFSC Code", _ifscCodeController),
             _buildTextField("Branch Name", _branchNameController),
+            const SizedBox(height: 24),
+            _buildSectionHeader("UPI Details"),
+            _buildTextField("UPI ID (VPA)", _upiIdController),
+            _buildTextField("UPI Name", _upiNameController),
             const SizedBox(height: 24),
             _buildSectionHeader("Branding"),
             Row(

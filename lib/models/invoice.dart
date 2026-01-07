@@ -1,3 +1,5 @@
+import 'payment_transaction.dart';
+
 class Invoice {
   final String? id; // Unique ID
   final String style; // 'Modern', 'Professional', 'Minimal'
@@ -5,16 +7,18 @@ class Invoice {
   final Receiver receiver;
   final String invoiceNo;
   final DateTime invoiceDate;
+  final DateTime? dueDate; // New field
   final String placeOfSupply;
   final String reverseCharge; // Y/N
   final String paymentTerms;
   final List<InvoiceItem> items;
+  final List<PaymentTransaction> payments; // New field
   final String comments;
   final String bankName;
   final String accountNo;
   final String ifscCode;
   final String branch;
-  final String? deliveryAddress; // New field
+  final String? deliveryAddress;
 
   const Invoice({
     this.id,
@@ -23,10 +27,12 @@ class Invoice {
     required this.receiver,
     this.invoiceNo = '',
     required this.invoiceDate,
+    this.dueDate,
     this.placeOfSupply = '',
     this.reverseCharge = 'N',
     this.paymentTerms = '',
     this.items = const [],
+    this.payments = const [],
     this.comments = '',
     this.bankName = '',
     this.accountNo = '',
@@ -42,10 +48,12 @@ class Invoice {
     Receiver? receiver,
     String? invoiceNo,
     DateTime? invoiceDate,
+    DateTime? dueDate,
     String? placeOfSupply,
     String? reverseCharge,
     String? paymentTerms,
     List<InvoiceItem>? items,
+    List<PaymentTransaction>? payments,
     String? comments,
     String? bankName,
     String? accountNo,
@@ -60,10 +68,12 @@ class Invoice {
       receiver: receiver ?? this.receiver,
       invoiceNo: invoiceNo ?? this.invoiceNo,
       invoiceDate: invoiceDate ?? this.invoiceDate,
+      dueDate: dueDate ?? this.dueDate,
       placeOfSupply: placeOfSupply ?? this.placeOfSupply,
       reverseCharge: reverseCharge ?? this.reverseCharge,
       paymentTerms: paymentTerms ?? this.paymentTerms,
       items: items ?? this.items,
+      payments: payments ?? this.payments,
       comments: comments ?? this.comments,
       bankName: bankName ?? this.bankName,
       accountNo: accountNo ?? this.accountNo,
@@ -93,6 +103,22 @@ class Invoice {
   double get grandTotal =>
       totalTaxableValue + totalCGST + totalSGST + totalIGST;
 
+  double get totalPaid => payments.fold(0, (sum, p) => sum + p.amount);
+
+  double get balanceDue => grandTotal - totalPaid;
+
+  String get paymentStatus {
+    if (totalPaid >= grandTotal - 0.01) return 'Paid'; // Tolerance for float
+    if (totalPaid > 0) return 'Partial';
+
+    // Check Overdue
+    if (dueDate != null && DateTime.now().isAfter(dueDate!)) {
+      return 'Overdue';
+    }
+
+    return 'Unpaid';
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -101,10 +127,12 @@ class Invoice {
       'receiver': receiver.toJson(),
       'invoiceNo': invoiceNo,
       'invoiceDate': invoiceDate.toIso8601String(),
+      'dueDate': dueDate?.toIso8601String(),
       'placeOfSupply': placeOfSupply,
       'reverseCharge': reverseCharge,
       'paymentTerms': paymentTerms,
       'items': items.map((i) => i.toJson()).toList(),
+      'payments': payments.map((p) => p.toJson()).toList(),
       'comments': comments,
       'bankName': bankName,
       'accountNo': accountNo,
@@ -122,11 +150,16 @@ class Invoice {
       receiver: Receiver.fromJson(json['receiver']),
       invoiceNo: json['invoiceNo'],
       invoiceDate: DateTime.parse(json['invoiceDate']),
+      dueDate: json['dueDate'] != null ? DateTime.parse(json['dueDate']) : null,
       placeOfSupply: json['placeOfSupply'],
       reverseCharge: json['reverseCharge'],
       paymentTerms: json['paymentTerms'],
       items:
           (json['items'] as List).map((i) => InvoiceItem.fromJson(i)).toList(),
+      payments: (json['payments'] as List?)
+              ?.map((p) => PaymentTransaction.fromJson(p))
+              .toList() ??
+          [],
       comments: json['comments'],
       bankName: json['bankName'],
       accountNo: json['accountNo'],
