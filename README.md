@@ -14,30 +14,39 @@
 
 ## 🚀 Key Features
 
-### 📊 Professional Dashboard and Analytics
-- **Real-time Stats**: Track Total Revenue and Total Invoices generated at a glance.
-- **GST Liability Breakdown**: View detailed **CGST**, **SGST**, and **IGST** liabilities.
-- **Smart Filtering**: Analyze data by **All Time**, **This Month**, **Last Month**, or **Financial Quarters** (Q1-Q4).
-- **Interactive Graphs**: Visual representation of your business growth (Coming Soon).
+### 📊 Professional Dashboard & Analytics
+Gain instant insights into your business performance with a powerful dashboard:
+- **Real-time Financials**: Track Total Revenue, Total Invoices, and Outstanding Batches instantly.
+- **Tax Breakdown**: View detailed split of **CGST**, **SGST**, and **IGST** liabilities to stay on top of tax obligations.
+- **Smart Filtering**: Analyze data by **All Time**, **Current Month**, **Last Month**, or specific **Financial Quarters** (Q1-Q4).
+- **Quick Actions**: One-click access to create invoices, manage clients, or export reports.
 
-### 🧾 Powerful Invoicing
-- **GST Compliant**: Automated tax calculations specialized for Indian billing standards.
-- **Auto-Suggest**: Smart **Place of Supply** selection with all Indian States and UTs.
-- **Full Screen Preview**: Interactive PDF preview with Zoom, Scroll, and Print capabilities before saving.
-- **Item Management**: Easy addition of items with SAC/HSN codes and distinct GST rates.
-- **Client Management**: Save client details for quick reuse. Add, edit, and manage your customers seamlessly.
-- **GSTR-1 Export**: Generate **CSV reports** of your sales for easy GST filing.
+### 🧾 Intelligent Invoicing
+Create GST-compliant invoices effortlessly with smart automation:
+- **Auto-Tax Calculation**: Just enter the amount, and the app calculates Taxable Value, GST, and Total automatically.
+- **Smart Place of Supply**: Auto-detects **Inter-state (IGST)** vs. **Intra-state (CGST+SGST)** transactions based on customer state.
+- **Professional PDF Engine**: 
+  - Generates high-resolution PDFs with your **Brand Logo**.
+  - Supports **A4** layout with standard margins.
+  - Interactive **Full-Screen Preview** with Zoom and Print capability.
+- **Number to Words**: Automatically converts invoice totals into words (e.g., "Rupees One Thousand Only") as per Indian banking standards.
 
-### 🎨 Customization at its Core
-- **Brand Identity**: Upload your **Business Logo** to appear on invoices.
-- **Theme Support**: Choose from **Light** or **Dark** modes to suit your preference.
-- **Accent Colors**: Personalize the app with your brand color (Teal, Blue, Red, Video, etc.).
-- **Currency Support**: Global support for major currencies (₹, $, €, £, ¥).
+### 👥 Client & Inventory Management
+Streamline your workflow by managing data efficiently:
+- **Client Directory**: Save customer details (GSTIN, Address, Contact) once and auto-fill them in future invoices.
+- **Inventory/Services**: Manage your products/services with predefined **HSN/SAC codes** and tax rates (0%, 5%, 12%, 18%, 28%).
+- **Search & Select**: Quickly find clients or items while creating invoices without manual entry.
 
-### 📄 Professional PDF Generation
-- **Multiple Templates**: Choose from **Modern**, **Professional**, and **Minimal** designs.
-- **Unicode Support**: Full support for Indian Rupee (`₹`) and other currency symbols.
-- **Dynamic Content**: Auto-converts numbers to words (e.g., "Rupees One Hundred Only").
+### 📈 Compliance & Exports
+Stay compliant with Indian tax regulations:
+- **GSTR-1 Ready**: Export your sales data into **GSTR-1 compatible CSV format** for easy filing with your Chartered Accountant (CA).
+- **GSTIN Validation**: (Planned) Real-time validation of customer GST numbers.
+
+### 🎨 Cross-Platform Adaptive UI
+Experience a truly native feel on every device:
+- **Windows**: Built with **Fluent UI** (Acrylic effects, Reveal focus) to look and feel like a native Windows 11 app.
+- **Linux & Android**: Adapts to **Material Design 3** (Material You) with dynamic theming and responsive layouts.
+- **Theme Engine**: Complete support for System, Light, and Dark modes with customizable accent colors to match your brand.
 
 ---
 
