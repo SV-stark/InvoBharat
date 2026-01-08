@@ -72,6 +72,8 @@ set_target_properties(${BINARY_NAME}
 
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.
+set(PDFIUM_VERSION "6666" CACHE STRING "" FORCE)
+set(PDFIUM_PLATFORM "linux-x64" CACHE STRING "" FORCE)
 include(flutter/generated_plugins.cmake)
 
 
