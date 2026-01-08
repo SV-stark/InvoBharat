@@ -6,6 +6,8 @@ import 'fluent_dashboard.dart';
 import 'fluent_invoice_form.dart';
 import 'fluent_settings.dart';
 import '../clients_screen.dart';
+import 'fluent_recurring_screen.dart';
+import 'fluent_estimates_screen.dart';
 
 import '../../providers/app_config_provider.dart';
 
@@ -44,19 +46,29 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
             body: const FluentDashboard(),
           ),
           PaneItem(
-            icon: const Icon(FluentIcons.contact),
-            title: const Text('Clients'),
-            body: const ClientsScreen(),
-          ),
-          PaneItem(
             icon: const Icon(FluentIcons.add),
             title: const Text('New Invoice'),
             body: const FluentInvoiceForm(),
           ),
           PaneItem(
+            icon: const Icon(FluentIcons.contact),
+            title: const Text('Clients'),
+            body: const ClientsScreen(),
+          ),
+          PaneItem(
             icon: const Icon(FluentIcons.settings),
             title: const Text('Settings'),
             body: const FluentSettings(),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.list),
+            title: const Text('Estimates'),
+            body: const FluentEstimatesScreen(),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.repeat_all),
+            title: const Text('Recurring'),
+            body: const FluentRecurringScreen(),
           ),
         ],
         footerItems: [

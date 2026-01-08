@@ -2,9 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/utils/pdf_generator.dart';
-import 'package:pdf/widgets.dart'
-    as pw; // Implicitly used by pdf_generator internal logic
-import 'package:printing/printing.dart'; // implicitly used
+// Implicitly used by pdf_generator internal logic
+// implicitly used
 
 void main() {
   test('generateInvoicePdf generates valid PDF for all templates', () async {

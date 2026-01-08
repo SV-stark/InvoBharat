@@ -13,7 +13,7 @@ import 'dart:io';
 import '../../providers/invoice_repository_provider.dart';
 
 import 'fluent_estimates_screen.dart';
-import '../recurring_invoices_screen.dart';
+import 'fluent_recurring_screen.dart';
 
 final invoiceListProvider = FutureProvider<List<Invoice>>((ref) async {
   return ref.watch(invoiceRepositoryProvider).getAllInvoices();
@@ -169,7 +169,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                     onPressed: () => Navigator.push(
                         context,
                         FluentPageRoute(
-                            builder: (_) => const RecurringInvoicesScreen())),
+                            builder: (_) => const FluentRecurringScreen())),
                   ),
                 ]),
                 const SizedBox(height: 16),
