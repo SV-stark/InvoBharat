@@ -15,6 +15,15 @@ class FluentEstimatesScreen extends ConsumerWidget {
 
     return ScaffoldPage(
       header: PageHeader(
+        leading: Navigator.canPop(context)
+            ? Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: IconButton(
+                  icon: const Icon(FluentIcons.back),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              )
+            : null,
         title: const Text('Estimates'),
         commandBar: CommandBar(
           primaryItems: [
