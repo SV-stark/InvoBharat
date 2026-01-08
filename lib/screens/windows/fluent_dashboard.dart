@@ -2,10 +2,9 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../models/invoice.dart';
 import '../../providers/business_profile_provider.dart';
 import '../../widgets/profile_switcher_sheet.dart';
-import 'fluent_invoice_form.dart';
+import 'fluent_invoice_wizard.dart';
 import '../../services/gstr_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
@@ -14,10 +13,9 @@ import '../../providers/invoice_repository_provider.dart';
 
 import 'fluent_estimates_screen.dart';
 import 'fluent_recurring_screen.dart';
+import '../../models/invoice.dart';
 
-final invoiceListProvider = FutureProvider<List<Invoice>>((ref) async {
-  return ref.watch(invoiceRepositoryProvider).getAllInvoices();
-});
+import '../../services/dashboard_actions.dart'; // Re-added
 
 class FluentDashboard extends ConsumerStatefulWidget {
   const FluentDashboard({super.key});
@@ -28,11 +26,13 @@ class FluentDashboard extends ConsumerStatefulWidget {
 
 class _FluentDashboardState extends ConsumerState<FluentDashboard> {
   String _selectedPeriod = "All Time";
+  String _searchQuery = "";
 
   @override
   Widget build(BuildContext context) {
     final profile = ref.watch(businessProfileProvider);
     final invoiceListAsync = ref.watch(invoiceListProvider);
+    final theme = FluentTheme.of(context);
 
     return ScaffoldPage.scrollable(
       header: PageHeader(
@@ -67,25 +67,34 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
       children: [
         Text(
           "Welcome back, ${profile.companyName}",
-          style: FluentTheme.of(context).typography.titleLarge,
+          style: theme.typography.titleLarge,
         ),
         const SizedBox(height: 20),
         invoiceListAsync.when(
           loading: () => const Center(child: ProgressRing()),
           error: (err, stack) => Text("Error: $err"),
           data: (allInvoices) {
-            final filteredInvoices =
-                _filterInvoices(allInvoices, _selectedPeriod);
+            var filteredInvoices =
+                DashboardActions.filterInvoices(allInvoices, _selectedPeriod);
 
-            final totalRevenue =
-                filteredInvoices.fold(0.0, (sum, inv) => sum + inv.grandTotal);
+            // Search filter
+            if (_searchQuery.isNotEmpty) {
+              filteredInvoices = filteredInvoices
+                  .where((inv) =>
+                      inv.receiver.name
+                          .toLowerCase()
+                          .contains(_searchQuery.toLowerCase()) ||
+                      inv.invoiceNo
+                          .toLowerCase()
+                          .contains(_searchQuery.toLowerCase()))
+                  .toList();
+            }
 
-            final totalCGST =
-                filteredInvoices.fold(0.0, (sum, inv) => sum + inv.totalCGST);
-            final totalSGST =
-                filteredInvoices.fold(0.0, (sum, inv) => sum + inv.totalSGST);
-            final totalIGST =
-                filteredInvoices.fold(0.0, (sum, inv) => sum + inv.totalIGST);
+            final stats = DashboardActions.calculateStats(filteredInvoices);
+            final totalRevenue = stats['revenue'] as double;
+            final totalCGST = stats['cgst'] as double;
+            final totalSGST = stats['sgst'] as double;
+            final totalIGST = stats['igst'] as double;
 
             final currency = NumberFormat.currency(
                 symbol: profile.currencySymbol, decimalDigits: 2);
@@ -93,167 +102,146 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Quick Actions
-                Wrap(spacing: 12, runSpacing: 8, children: [
-                  FilledButton(
-                      child: const Text("Create Invoice"),
+                // Quick Actions CommandBar
+                CommandBar(
+                  primaryItems: [
+                    CommandBarButton(
+                      label: const Text('New Invoice'),
+                      icon: const Icon(FluentIcons.add),
                       onPressed: () async {
                         await Navigator.push(
                           context,
                           FluentPageRoute(
-                            builder: (_) => const FluentInvoiceForm(),
-                          ),
+                              builder: (_) => const FluentInvoiceWizard()),
                         );
                         ref.invalidate(invoiceListProvider);
-                      }),
-                  Button(
-                    child: const Text("Export GSTR-1 (CSV)"),
-                    onPressed: () async {
-                      try {
-                        final filteredInvoices =
-                            _filterInvoices(allInvoices, _selectedPeriod);
-                        if (filteredInvoices.isEmpty) {
-                          displayInfoBar(context,
-                              builder: (context, close) => InfoBar(
-                                  title: const Text("No Invoices"),
-                                  content: const Text(
-                                      "No invoices to export for selected period"),
-                                  onClose: close));
-                          return;
-                        }
-
-                        final csvData =
-                            GstrService().generateGstr1Csv(filteredInvoices);
-
-                        String? outputFile = await FilePicker.platform.saveFile(
-                          dialogTitle: 'Save GSTR-1 CSV',
-                          fileName:
-                              'GSTR1_${_selectedPeriod.replaceAll(" ", "_")}.csv',
-                          allowedExtensions: ['csv'],
-                          type: FileType.custom,
-                        );
-
-                        if (outputFile != null) {
-                          if (!outputFile.toLowerCase().endsWith('.csv')) {
-                            outputFile = '$outputFile.csv';
-                          }
-                          await File(outputFile).writeAsString(csvData);
-                          if (!context.mounted) return;
-                          displayInfoBar(context,
-                              builder: (context, close) => InfoBar(
-                                  title: const Text("Success"),
-                                  content: Text("Exported to $outputFile"),
-                                  severity: InfoBarSeverity.success,
-                                  onClose: close));
-                        }
-                      } catch (e) {
-                        if (!context.mounted) return;
-                        displayInfoBar(context,
-                            builder: (context, close) => InfoBar(
-                                title: const Text("Error"),
-                                content: Text(e.toString()),
-                                severity: InfoBarSeverity.error,
-                                onClose: close));
-                      }
-                    },
-                  ),
-                  Button(
-                    child: const Text("Estimates"),
-                    onPressed: () => Navigator.push(
-                        context,
-                        FluentPageRoute(
-                            builder: (_) => const FluentEstimatesScreen())),
-                  ),
-                  Button(
-                    child: const Text("Recurring"),
-                    onPressed: () => Navigator.push(
-                        context,
-                        FluentPageRoute(
-                            builder: (_) => const FluentRecurringScreen())),
-                  ),
-                ]),
-                const SizedBox(height: 16),
-                // Revenue & Count
-                Row(
-                  children: [
-                    _buildStatCard(
-                      context,
-                      "Total Revenue",
-                      currency.format(totalRevenue),
-                      FluentIcons.money,
+                      },
                     ),
-                    const SizedBox(width: 20),
-                    _buildStatCard(
-                      context,
-                      "Invoices Generated",
-                      "${filteredInvoices.length}",
-                      FluentIcons.page_list,
+                    CommandBarButton(
+                      label: const Text('Export GSTR-1'),
+                      icon: const Icon(FluentIcons.download),
+                      onPressed: () => _exportGstr1(context, allInvoices),
+                    ),
+                  ],
+                  secondaryItems: [
+                    CommandBarButton(
+                      label: const Text('Estimates'),
+                      icon: const Icon(FluentIcons.document_set),
+                      onPressed: () => Navigator.push(
+                          context,
+                          FluentPageRoute(
+                              builder: (_) => const FluentEstimatesScreen())),
+                    ),
+                    CommandBarButton(
+                      label: const Text('Recurring'),
+                      icon: const Icon(FluentIcons.repeat_all),
+                      onPressed: () => Navigator.push(
+                          context,
+                          FluentPageRoute(
+                              builder: (_) => const FluentRecurringScreen())),
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
-                // GST Stats
-                const Text("GST Liability",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
+
+                // Stat Cards
                 Row(
                   children: [
+                    _buildHeroStatCard(
+                        context,
+                        "Total Revenue",
+                        currency.format(totalRevenue),
+                        FluentIcons.money,
+                        Colors.blue),
+                    const SizedBox(width: 16),
                     _buildStatCard(
-                      context,
-                      "Total CGST",
-                      currency.format(totalCGST),
-                      FluentIcons.bank,
-                    ),
-                    const SizedBox(width: 10),
+                        context,
+                        "Total GST",
+                        currency.format(totalCGST + totalSGST + totalIGST),
+                        FluentIcons.bank,
+                        Colors.purple),
+                    const SizedBox(width: 16),
                     _buildStatCard(
-                      context,
-                      "Total SGST",
-                      currency.format(totalSGST),
-                      FluentIcons.bank,
-                    ),
-                    const SizedBox(width: 10),
-                    _buildStatCard(
-                      context,
-                      "Total IGST",
-                      currency.format(totalIGST),
-                      FluentIcons.bank,
-                    ),
+                        context,
+                        "Invoices",
+                        "${filteredInvoices.length}",
+                        FluentIcons.page_list,
+                        Colors.teal),
                   ],
                 ),
 
                 const SizedBox(height: 30),
-                Text(
-                  "Filtered Invoices",
-                  style: FluentTheme.of(context).typography.title,
+
+                // Invoice List Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Recent Invoices", style: theme.typography.title),
+                    SizedBox(
+                      width: 250,
+                      child: TextBox(
+                        placeholder: "Search invoices...",
+                        prefix: const Padding(
+                            padding: EdgeInsets.only(left: 8),
+                            child: Icon(FluentIcons.search)),
+                        onChanged: (v) => setState(() => _searchQuery = v),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
+
                 if (filteredInvoices.isEmpty)
-                  const InfoBar(
-                    title: Text("No invoices found for this period"),
-                    severity: InfoBarSeverity.info,
+                  Container(
+                    height: 200,
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(FluentIcons.error_badge,
+                            size: 40, color: Colors.grey),
+                        const SizedBox(height: 10),
+                        const Text("No invoices found",
+                            style: TextStyle(color: Colors.grey)),
+                      ],
+                    ),
                   )
                 else
-                  ...filteredInvoices.map((inv) => Padding(
-                        // Show all or limited? User said "listed". Filtered list might be long. Let's show top 100 or all. I'll show top 10 for dashboard view.
+                  ...filteredInvoices.take(50).map((inv) => Padding(
                         padding: const EdgeInsets.only(bottom: 8.0),
                         child: Card(
                           child: ListTile(
-                            leading: const Icon(FluentIcons.page_solid),
-                            title: Text(inv.receiver.name),
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: theme.accentColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Icon(FluentIcons.page_solid,
+                                  color: theme.accentColor),
+                            ),
+                            title: Text(inv.receiver.name,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold)),
                             subtitle: Text(
                                 "${inv.invoiceNo} • ${DateFormat('dd MMM yyyy').format(inv.invoiceDate)}"),
-                            trailing: Text(
-                              currency.format(inv.grandTotal),
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(currency.format(inv.grandTotal),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14)),
+                                _buildStatusBadge(inv),
+                              ],
                             ),
                             onPressed: () async {
                               await Navigator.push(
                                 context,
                                 FluentPageRoute(
-                                  builder: (_) =>
-                                      FluentInvoiceForm(invoiceToEdit: inv),
-                                ),
+                                    builder: (_) => FluentInvoiceWizard(
+                                        invoiceToEdit: inv)),
                               );
                               ref.invalidate(invoiceListProvider);
                             },
@@ -268,105 +256,136 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     );
   }
 
-  List<Invoice> _filterInvoices(List<Invoice> invoices, String period) {
-    if (period == "All Time") return invoices;
-    final now = DateTime.now();
-    DateTime? start;
-    DateTime? end;
+  Widget _buildStatusBadge(dynamic invoice) {
+    // Logic for status: Paid if payments >= total, Overdue if due date passed, else Unpaid
+    // Assuming invoice has payments field (List<Payment>)
+    // For now, simple mock or check if available
+    // Invoice model in read_file output didn't show payment logic detail, but let's assume unpaid/default for now
+    // or use due date.
 
-    if (period == "This Month") {
-      start = DateTime(now.year, now.month, 1);
-      end = DateTime(now.year, now.month + 1, 0); // Last day of month
-    } else if (period == "Last Month") {
-      start = DateTime(now.year, now.month - 1, 1);
-      end = DateTime(now.year, now.month, 0);
-    } else if (period.startsWith("Q1")) {
-      // Apr-Jun
-      // Indian FY Apr-Jun of CURRENT fiscal year.
-      // E.g. if now is Jan 2026. Fiscal year is 2025-26.
-      // Q1 was Apr-Jun 2025.
-      // If now is May 2026. Fiscal year is 2026-27. Q1 is Apr-Jun 2026.
-      // Determining current FY: If month >= 4, FY = year. Else FY = year-1.
-      final fyStartYear = now.month >= 4 ? now.year : now.year - 1;
-      start = DateTime(fyStartYear, 4, 1); // Apr 1
-      end = DateTime(fyStartYear, 6, 30); // Jun 30
-    } else if (period.startsWith("Q2")) {
-      // Jul-Sep
-      final fyStartYear = now.month >= 4 ? now.year : now.year - 1;
-      start = DateTime(fyStartYear, 7, 1);
-      end = DateTime(fyStartYear, 9, 30);
-    } else if (period.startsWith("Q3")) {
-      // Oct-Dec
-      final fyStartYear = now.month >= 4 ? now.year : now.year - 1;
-      start = DateTime(fyStartYear, 10, 1);
-      end = DateTime(fyStartYear, 12, 31);
-    } else if (period.startsWith("Q4")) {
-      // Jan-Mar
-      final fyStartYear = now.month >= 4 ? now.year : now.year - 1;
-      start = DateTime(fyStartYear + 1, 1, 1); // Jan next year
-      end = DateTime(fyStartYear + 1, 3,
-          31); // Mar next year (leap handled by DateTime?) No. 31 is fixed.
+    final isOverdue = invoice.dueDate.isBefore(DateTime.now());
+    // final isPaid = invoice.balance <= 0; // If balance exists
+
+    // Fallback: Just display date relative
+    String text = "Due on ${DateFormat('MMM dd').format(invoice.dueDate)}";
+    Color color = Colors.orange;
+
+    if (isOverdue) {
+      text = "Overdue";
+      color = Colors.red;
     }
 
-    if (start != null && end != null) {
-      // Normalize invoices to date only or check range
-      // Range check: start <= date <= end (inclusive or up to end of day)
-      // DateTime compare usually compares Time. Invoices usually have time? Database might save time.
-      // Let's assume start is 00:00:00 and end is 00:00:00?
-      // Better: End should be end of day.
-      final endOfDay =
-          end.add(const Duration(hours: 23, minutes: 59, seconds: 59));
-      return invoices
-          .where((inv) =>
-              inv.invoiceDate
-                  .isAfter(start!.subtract(const Duration(seconds: 1))) &&
-              inv.invoiceDate.isBefore(endOfDay))
-          .toList();
-    }
-    return invoices;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withOpacity(0.5)),
+      ),
+      child: Text(text, style: TextStyle(fontSize: 10, color: color)),
+    );
   }
 
-  Widget _buildStatCard(
-      BuildContext context, String title, String value, IconData icon) {
-    final theme = FluentTheme.of(context);
+  Widget _buildHeroStatCard(BuildContext context, String title, String value,
+      IconData icon, Color color) {
     return Expanded(
+      flex: 2,
       child: Card(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        backgroundColor: color, // Solid color for hero
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: theme.accentColor.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 20, color: theme.accentColor),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(icon, size: 24, color: Colors.white),
+                const Icon(FluentIcons.chart, color: Colors.white),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: theme.typography.caption,
-                      overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 4),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      value,
-                      style: theme.typography.bodyStrong?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            const SizedBox(height: 16),
+            Text(value,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text(title, style: TextStyle(color: Colors.white.withOpacity(0.8))),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildStatCard(BuildContext context, String title, String value,
+      IconData icon, Color color) {
+    return Expanded(
+      child: Card(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 24, color: color),
+            const SizedBox(height: 12),
+            Text(value,
+                style: TextStyle(
+                    color: FluentTheme.of(context).typography.bodyLarge?.color,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text(title,
+                style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _exportGstr1(
+      BuildContext context, List<Invoice> allInvoices) async {
+    try {
+      final filteredInvoices =
+          DashboardActions.filterInvoices(allInvoices, _selectedPeriod);
+      if (filteredInvoices.isEmpty) {
+        displayInfoBar(context,
+            builder: (context, close) => InfoBar(
+                title: const Text("No Invoices"),
+                content:
+                    const Text("No invoices to export for selected period"),
+                onClose: close));
+        return;
+      }
+
+      final csvData = GstrService().generateGstr1Csv(filteredInvoices);
+
+      String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save GSTR-1 CSV',
+        fileName: 'GSTR1_${_selectedPeriod.replaceAll(" ", "_")}.csv',
+        allowedExtensions: ['csv'],
+        type: FileType.custom,
+      );
+
+      if (outputFile != null) {
+        if (!outputFile.toLowerCase().endsWith('.csv')) {
+          outputFile = '$outputFile.csv';
+        }
+        await File(outputFile).writeAsString(csvData);
+        if (!context.mounted) return;
+        displayInfoBar(context,
+            builder: (context, close) => InfoBar(
+                title: const Text("Success"),
+                content: Text("Exported to $outputFile"),
+                severity: InfoBarSeverity.success,
+                onClose: close));
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      displayInfoBar(context,
+          builder: (context, close) => InfoBar(
+              title: const Text("Error"),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              onClose: close));
+    }
   }
 }

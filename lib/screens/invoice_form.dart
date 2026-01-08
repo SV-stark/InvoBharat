@@ -10,10 +10,10 @@ import '../utils/pdf_generator.dart';
 import '../providers/business_profile_provider.dart';
 import '../providers/client_provider.dart';
 import '../providers/invoice_provider.dart';
-import '../providers/invoice_repository_provider.dart';
+
+import '../services/invoice_actions.dart'; // NEW Import
 
 // Generates a unique ID
-String _generateId() => DateTime.now().millisecondsSinceEpoch.toString();
 
 class InvoiceFormScreen extends ConsumerStatefulWidget {
   final Invoice? invoiceToEdit;
@@ -575,33 +575,8 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
 
   Future<void> _saveInvoice(
       BuildContext context, WidgetRef ref, Invoice invoice) async {
-    Invoice toSave = invoice;
-    final profile = ref.read(businessProfileProvider);
-
-    // Auto-fill supplier info from profile
-    toSave = toSave.copyWith(
-        supplier: toSave.supplier.copyWith(
-      name: profile.companyName,
-      address: profile.address,
-      gstin: profile.gstin,
-      phone: profile.phone,
-      email: profile.email,
-      state: profile.state,
-    ));
-
-    if (toSave.id == null) {
-      toSave = toSave.copyWith(id: _generateId());
-    }
-
     try {
-      await ref.read(invoiceRepositoryProvider).saveInvoice(toSave);
-
-      // Only increment sequence if it was a NEW invoice
-      if (invoice.id == null) {
-        await ref
-            .read(businessProfileNotifierProvider)
-            .incrementInvoiceSequence();
-      }
+      await InvoiceActions.saveInvoice(ref, invoice);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context)

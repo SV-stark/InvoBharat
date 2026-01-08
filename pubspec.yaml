@@ -4,7 +4,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.5.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -26,6 +26,8 @@ dependencies:
   url_launcher: ^6.3.2
 
   qr_flutter: ^4.1.0
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.9.0
 
 dev_dependencies:
   flutter_test:
@@ -33,18 +35,11 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
   flutter_launcher_icons: ^0.14.4
+  build_runner: ^2.10.4
+  freezed: ^3.2.3
+  json_serializable: ^6.11.2
 
-dependency_overrides:
-  image: ^4.7.2
-  xml: ^6.6.1
-  petitparser: ^7.0.1
-  characters: ^1.4.1
-  matcher: ^0.12.18
-  material_color_utilities: ^0.13.0
-  math_expressions: ^3.1.0
-  test: ^1.28.0
-  test_api: ^0.7.8
-  test_core: ^0.6.14
+
 
 flutter_launcher_icons:
   android: false

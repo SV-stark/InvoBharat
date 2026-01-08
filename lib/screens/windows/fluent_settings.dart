@@ -7,6 +7,10 @@ import '../../models/business_profile.dart';
 import '../../providers/business_profile_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../providers/app_config_provider.dart';
+import '../../providers/client_provider.dart'; // NEW
+import '../../providers/estimate_provider.dart'; // NEW
+import '../../providers/recurring_provider.dart'; // NEW
+import '../../providers/invoice_repository_provider.dart'; // NEW
 import '../../utils/constants.dart';
 import '../../services/backup_service.dart';
 
@@ -593,6 +597,57 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                     color: FluentTheme.of(context).accentColor)),
             content: Column(
               children: [
+                // Stats Dashboard
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _buildDataCard(
+                        context,
+                        "Invoices",
+                        ref.watch(invoiceListProvider),
+                        FluentIcons.invoice,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildClientDataCard(
+                        context,
+                        "Clients",
+                        ref.watch(clientListProvider),
+                        FluentIcons.contact,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _buildDataCard(
+                        context,
+                        "Estimates",
+                        ref.watch(estimateListProvider),
+                        FluentIcons.document_set,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildDataCard(
+                        context,
+                        "Recurring",
+                        ref.watch(recurringListProvider),
+                        FluentIcons.repeat_all,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Divider(),
+                const SizedBox(height: 20),
+
+                // Backup Actions
                 InfoLabel(
                   label: "Backup & Restore",
                   child: const Text(
@@ -693,6 +748,98 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 10),
+                // Danger Zone
+                Expander(
+                  header:
+                      Text("Danger Zone", style: TextStyle(color: Colors.red)),
+                  content: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Irreversible actions. Proceed with caution."),
+                      const SizedBox(height: 10),
+                      Button(
+                        style: ButtonStyle(
+                          backgroundColor: ButtonState.all(Colors.red),
+                          foregroundColor: ButtonState.all(Colors.white),
+                        ),
+                        child: const Text("Clear All App Data"),
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return ContentDialog(
+                                  title: const Text("Reset Everything?"),
+                                  content: const Text(
+                                      "This will delete ALL invoices, clients, estimates, and settings. This cannot be undone."),
+                                  actions: [
+                                    Button(
+                                        child: const Text("Cancel"),
+                                        onPressed: () =>
+                                            Navigator.pop(context)),
+                                    FilledButton(
+                                        style: ButtonStyle(
+                                            backgroundColor:
+                                                ButtonState.all(Colors.red)),
+                                        child: const Text("Delete Everything"),
+                                        onPressed: () async {
+                                          Navigator.pop(context);
+                                          try {
+                                            await ref
+                                                .read(invoiceRepositoryProvider)
+                                                .deleteAll();
+                                            await ref
+                                                .read(clientRepositoryProvider)
+                                                .deleteAll();
+                                            await ref
+                                                .read(
+                                                    estimateRepositoryProvider)
+                                                .deleteAll();
+                                            await ref
+                                                .read(
+                                                    recurringRepositoryProvider)
+                                                .deleteAll();
+
+                                            ref.invalidate(invoiceListProvider);
+                                            ref.invalidate(clientListProvider);
+                                            ref.invalidate(
+                                                estimateListProvider);
+                                            ref.invalidate(
+                                                recurringListProvider);
+
+                                            if (mounted) {
+                                              displayInfoBar(context,
+                                                  builder: (c, close) => InfoBar(
+                                                      severity: InfoBarSeverity
+                                                          .success,
+                                                      title: const Text(
+                                                          "Reset Complete"),
+                                                      content: const Text(
+                                                          "All data has been cleared."),
+                                                      onClose: close));
+                                            }
+                                          } catch (e) {
+                                            if (mounted) {
+                                              displayInfoBar(context,
+                                                  builder: (c, close) => InfoBar(
+                                                      severity:
+                                                          InfoBarSeverity.error,
+                                                      title:
+                                                          const Text("Error"),
+                                                      content: Text(
+                                                          "Failed to clear data: $e"),
+                                                      onClose: close));
+                                            }
+                                          }
+                                        })
+                                  ],
+                                );
+                              });
+                        },
+                      )
+                    ],
+                  ),
                 )
               ],
             )),
@@ -829,6 +976,50 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           },
         )
       ],
+    );
+  }
+
+  Widget _buildDataCard<T>(BuildContext context, String title,
+      AsyncValue<List<T>> asyncValue, IconData icon) {
+    return Card(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(icon, size: 16, color: FluentTheme.of(context).accentColor),
+            const SizedBox(width: 8),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          ]),
+          const SizedBox(height: 8),
+          asyncValue.when(
+            data: (data) => Text("${data.length} Items",
+                style: FluentTheme.of(context).typography.bodyLarge),
+            loading: () => const ProgressRing(strokeWidth: 2),
+            error: (e, s) => Text("Error", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClientDataCard(
+      BuildContext context, String title, List<dynamic> data, IconData icon) {
+    return Card(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(icon, size: 16, color: FluentTheme.of(context).accentColor),
+            const SizedBox(width: 8),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          ]),
+          const SizedBox(height: 8),
+          Text("${data.length} Items",
+              style: FluentTheme.of(context).typography.bodyLarge),
+        ],
+      ),
     );
   }
 }

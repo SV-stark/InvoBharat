@@ -1,92 +1,39 @@
-import 'package:uuid/uuid.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'payment_transaction.dart';
 
-class Invoice {
-  final String? id; // Unique ID
-  final String style; // 'Modern', 'Professional', 'Minimal'
-  final Supplier supplier;
-  final Receiver receiver;
-  final String invoiceNo;
-  final DateTime invoiceDate;
-  final DateTime? dueDate; // New field
-  final String placeOfSupply;
-  final String reverseCharge; // Y/N
-  final String paymentTerms;
-  final List<InvoiceItem> items;
-  final List<PaymentTransaction> payments; // New field
-  final String comments;
-  final String bankName;
-  final String accountNo;
-  final String ifscCode;
-  final String branch;
-  final String? deliveryAddress;
+part 'invoice.freezed.dart';
+part 'invoice.g.dart';
 
-  const Invoice({
-    this.id,
-    this.style = 'Modern',
-    required this.supplier,
-    required this.receiver,
-    this.invoiceNo = '',
-    required this.invoiceDate,
-    this.dueDate,
-    this.placeOfSupply = '',
-    this.reverseCharge = 'N',
-    this.paymentTerms = '',
-    this.items = const [],
-    this.payments = const [],
-    this.comments = '',
-    this.bankName = '',
-    this.accountNo = '',
-    this.ifscCode = '',
-    this.branch = '',
-    this.deliveryAddress,
-  });
+@freezed
+class Invoice with _$Invoice {
+  const Invoice._(); // Needed for custom methods/getters
 
-  Invoice copyWith({
+  const factory Invoice({
     String? id,
-    String? style,
-    Supplier? supplier,
-    Receiver? receiver,
-    String? invoiceNo,
-    DateTime? invoiceDate,
+    @Default('Modern') String style,
+    required Supplier supplier,
+    required Receiver receiver,
+    @Default('') String invoiceNo,
+    required DateTime invoiceDate,
     DateTime? dueDate,
-    String? placeOfSupply,
-    String? reverseCharge,
-    String? paymentTerms,
-    List<InvoiceItem>? items,
-    List<PaymentTransaction>? payments,
-    String? comments,
-    String? bankName,
-    String? accountNo,
-    String? ifscCode,
-    String? branch,
+    @Default('') String placeOfSupply,
+    @Default('N') String reverseCharge,
+    @Default('') String paymentTerms,
+    @Default([]) List<InvoiceItem> items,
+    @Default([]) List<PaymentTransaction> payments,
+    @Default('') String comments,
+    @Default('') String bankName,
+    @Default('') String accountNo,
+    @Default('') String ifscCode,
+    @Default('') String branch,
     String? deliveryAddress,
-  }) {
-    return Invoice(
-      id: id ?? this.id,
-      style: style ?? this.style,
-      supplier: supplier ?? this.supplier,
-      receiver: receiver ?? this.receiver,
-      invoiceNo: invoiceNo ?? this.invoiceNo,
-      invoiceDate: invoiceDate ?? this.invoiceDate,
-      dueDate: dueDate ?? this.dueDate,
-      placeOfSupply: placeOfSupply ?? this.placeOfSupply,
-      reverseCharge: reverseCharge ?? this.reverseCharge,
-      paymentTerms: paymentTerms ?? this.paymentTerms,
-      items: items ?? this.items,
-      payments: payments ?? this.payments,
-      comments: comments ?? this.comments,
-      bankName: bankName ?? this.bankName,
-      accountNo: accountNo ?? this.accountNo,
-      ifscCode: ifscCode ?? this.ifscCode,
-      branch: branch ?? this.branch,
-      deliveryAddress: deliveryAddress ?? this.deliveryAddress,
-    );
-  }
+  }) = _Invoice;
+
+  factory Invoice.fromJson(Map<String, dynamic> json) =>
+      _$InvoiceFromJson(json);
 
   bool get isInterState {
     if (supplier.state.isEmpty || placeOfSupply.isEmpty) return false;
-    // Simple normalization for comparison
     return supplier.state.trim().toLowerCase() !=
         placeOfSupply.trim().toLowerCase();
   }
@@ -109,200 +56,80 @@ class Invoice {
   double get balanceDue => grandTotal - totalPaid;
 
   String get paymentStatus {
-    if (totalPaid >= grandTotal - 0.01) return 'Paid'; // Tolerance for float
+    if (totalPaid >= grandTotal - 0.01) return 'Paid';
     if (totalPaid > 0) return 'Partial';
-
-    // Check Overdue
     if (dueDate != null && DateTime.now().isAfter(dueDate!)) {
       return 'Overdue';
     }
-
     return 'Unpaid';
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'style': style,
-      'supplier': supplier.toJson(),
-      'receiver': receiver.toJson(),
-      'invoiceNo': invoiceNo,
-      'invoiceDate': invoiceDate.toIso8601String(),
-      'dueDate': dueDate?.toIso8601String(),
-      'placeOfSupply': placeOfSupply,
-      'reverseCharge': reverseCharge,
-      'paymentTerms': paymentTerms,
-      'items': items.map((i) => i.toJson()).toList(),
-      'payments': payments.map((p) => p.toJson()).toList(),
-      'comments': comments,
-      'bankName': bankName,
-      'accountNo': accountNo,
-      'ifscCode': ifscCode,
-      'branch': branch,
-      'deliveryAddress': deliveryAddress,
-    };
-  }
-
-  factory Invoice.fromJson(Map<String, dynamic> json) {
-    return Invoice(
-      id: json['id'],
-      style: json['style'] ?? 'Modern',
-      supplier: Supplier.fromJson(json['supplier']),
-      receiver: Receiver.fromJson(json['receiver']),
-      invoiceNo: json['invoiceNo'],
-      invoiceDate: DateTime.parse(json['invoiceDate']),
-      dueDate: json['dueDate'] != null ? DateTime.parse(json['dueDate']) : null,
-      placeOfSupply: json['placeOfSupply'],
-      reverseCharge: json['reverseCharge'],
-      paymentTerms: json['paymentTerms'],
-      items:
-          (json['items'] as List).map((i) => InvoiceItem.fromJson(i)).toList(),
-      payments: (json['payments'] as List?)
-              ?.map((p) => PaymentTransaction.fromJson(p))
-              .toList() ??
-          [],
-      comments: json['comments'],
-      bankName: json['bankName'],
-      accountNo: json['accountNo'],
-      ifscCode: json['ifscCode'],
-      branch: json['branch'],
-      deliveryAddress: json['deliveryAddress'],
-    );
-  }
 }
 
-class Supplier {
-  final String name;
-  final String address;
-  final String gstin;
-  final String pan;
-  final String email;
-  final String phone;
-  final String state;
+@freezed
+class Supplier with _$Supplier {
+  const factory Supplier({
+    @Default('') String name,
+    @Default('') String address,
+    @Default('') String gstin,
+    @Default('') String pan,
+    @Default('') String email,
+    @Default('') String phone,
+    @Default('') String state,
+  }) = _Supplier;
 
-  const Supplier({
-    this.name = '',
-    this.address = '',
-    this.gstin = '',
-    this.pan = '',
-    this.email = '',
-    this.phone = '',
-    this.state = '',
-  });
-
-  Supplier copyWith({
-    String? name,
-    String? address,
-    String? gstin,
-    String? pan,
-    String? email,
-    String? phone,
-    String? state,
-  }) {
-    return Supplier(
-      name: name ?? this.name,
-      address: address ?? this.address,
-      gstin: gstin ?? this.gstin,
-      pan: pan ?? this.pan,
-      email: email ?? this.email,
-      phone: phone ?? this.phone,
-      state: state ?? this.state,
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'name': name,
-        'address': address,
-        'gstin': gstin,
-        'pan': pan,
-        'email': email,
-        'phone': phone,
-        'state': state,
-      };
-
-  factory Supplier.fromJson(Map<String, dynamic> json) => Supplier(
-        name: json['name'] ?? '',
-        address: json['address'] ?? '',
-        gstin: json['gstin'] ?? '',
-        pan: json['pan'] ?? '',
-        email: json['email'] ?? '',
-        phone: json['phone'] ?? '',
-        state: json['state'] ?? '',
-      );
+  factory Supplier.fromJson(Map<String, dynamic> json) =>
+      _$SupplierFromJson(json);
 }
 
-class Receiver {
-  final String name;
-  final String address;
-  final String gstin;
-  final String pan;
-  final String state; // New field
-  final String stateCode; // New field
+@freezed
+class Receiver with _$Receiver {
+  const factory Receiver({
+    @Default('') String name,
+    @Default('') String address,
+    @Default('') String gstin,
+    @Default('') String pan,
+    @Default('') String state,
+    @Default('') String stateCode,
+  }) = _Receiver;
 
-  const Receiver({
-    this.name = '',
-    this.address = '',
-    this.gstin = '',
-    this.pan = '',
-    this.state = '',
-    this.stateCode = '',
-  });
-
-  Receiver copyWith({
-    String? name,
-    String? address,
-    String? gstin,
-    String? pan,
-    String? state,
-    String? stateCode,
-  }) {
-    return Receiver(
-      name: name ?? this.name,
-      address: address ?? this.address,
-      gstin: gstin ?? this.gstin,
-      pan: pan ?? this.pan,
-      state: state ?? this.state,
-      stateCode: stateCode ?? this.stateCode,
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'name': name,
-        'address': address,
-        'gstin': gstin,
-        'pan': pan,
-        'state': state,
-        'stateCode': stateCode,
-      };
-
-  factory Receiver.fromJson(Map<String, dynamic> json) => Receiver(
-        name: json['name'] ?? '',
-        address: json['address'] ?? '',
-        gstin: json['gstin'] ?? '',
-        pan: json['pan'] ?? '',
-        state: json['state'] ?? '',
-        stateCode: json['stateCode'] ?? '',
-      );
+  factory Receiver.fromJson(Map<String, dynamic> json) =>
+      _$ReceiverFromJson(json);
 }
 
-class InvoiceItem {
-  final String id;
-  final String description;
-  final String sacCode;
-  final String codeType; // 'SAC' or 'HSN'
-  final String year; // e.g. "F.Y. 2025-26"
-  final double amount; // Taxable Value per Unit
-  final double discount; // Optional
-  final double quantity; // New field
-  final String unit; // New field (Nos, Kg, etc.)
-  final double gstRate; // e.g. 18.0 for 18%
+@freezed
+class InvoiceItem with _$InvoiceItem {
+  const InvoiceItem._();
 
-  // Computed helpers
+  const factory InvoiceItem({
+    String?
+        id, // Will be generated in factory constructor if null? No, freezed doesn't support logic in constructor easily.
+    // We'll handle ID generation in the code that creates the item, or use @Default(Uuid().v4())?
+    // Default values must be const. Uuid().v4() is not const.
+    // We'll make it nullable and handle it.
+    // OR we'll use a custom factory?
+    // Let's make it nullable here, but commonly generated.
+    // In original code: id = id ?? const Uuid().v4();
+    // In freezed, if we pass null, it stays null.
+    // We can't have logic.
+    // Best Practice: Accept null in constructor, but ensure it's set before saving?
+    // Or better: Let's assume it's optional string. If null, we treat as new.
+    @Default('') String description,
+    @Default('') String sacCode,
+    @Default('SAC') String codeType,
+    @Default('') String year, // e.g. "F.Y. 2025-26"
+    @Default(0) double amount,
+    @Default(0) double discount,
+    @Default(1.0) double quantity,
+    @Default('Nos') String unit,
+    @Default(18.0) double gstRate,
+  }) = _InvoiceItem;
+
+  factory InvoiceItem.fromJson(Map<String, dynamic> json) =>
+      _$InvoiceItemFromJson(json);
+
   double get netAmount => (amount * quantity) - discount;
   double get cgstRate => gstRate / 2;
   double get sgstRate => gstRate / 2;
-
-  // Deprecated direct access, prefer calculate methods with context
   double get cgstAmount => netAmount * (cgstRate / 100);
   double get sgstAmount => netAmount * (sgstRate / 100);
   double get igstAmount => netAmount * (gstRate / 100);
@@ -314,71 +141,8 @@ class InvoiceItem {
   double calculateIgst(bool isInterState) =>
       isInterState ? netAmount * (gstRate / 100) : 0;
 
-  // Total amount including tax
   double get totalAmount => netAmount * (1 + gstRate / 100);
-
-  InvoiceItem({
-    String? id,
-    this.description = '',
-    this.sacCode = '',
-    this.codeType = 'SAC',
-    this.year = '',
-    this.amount = 0,
-    this.discount = 0,
-    this.quantity = 1.0,
-    this.unit = 'Nos',
-    this.gstRate = 18.0,
-  }) : id = id ?? const Uuid().v4();
-
-  InvoiceItem copyWith({
-    String? id,
-    String? description,
-    String? sacCode,
-    String? codeType,
-    String? year,
-    double? amount,
-    double? discount,
-    double? quantity,
-    String? unit,
-    double? gstRate,
-  }) {
-    return InvoiceItem(
-      id: id ?? this.id,
-      description: description ?? this.description,
-      sacCode: sacCode ?? this.sacCode,
-      codeType: codeType ?? this.codeType,
-      year: year ?? this.year,
-      amount: amount ?? this.amount,
-      discount: discount ?? this.discount,
-      quantity: quantity ?? this.quantity,
-      unit: unit ?? this.unit,
-      gstRate: gstRate ?? this.gstRate,
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'description': description,
-        'sacCode': sacCode,
-        'codeType': codeType,
-        'year': year,
-        'amount': amount,
-        'discount': discount,
-        'quantity': quantity,
-        'unit': unit,
-        'gstRate': gstRate,
-      };
-
-  factory InvoiceItem.fromJson(Map<String, dynamic> json) => InvoiceItem(
-        id: json['id'],
-        description: json['description'] ?? '',
-        sacCode: json['sacCode'] ?? '',
-        codeType: json['codeType'] ?? 'SAC',
-        year: json['year'] ?? '',
-        amount: (json['amount'] as num).toDouble(),
-        discount: (json['discount'] as num).toDouble(),
-        quantity: (json['quantity'] as num?)?.toDouble() ?? 1.0,
-        unit: json['unit'] ?? 'Nos',
-        gstRate: (json['gstRate'] as num).toDouble(),
-      );
 }
+
+// NOTE: InvoiceItem default UUID generation is removed from constructor.
+// Callers must generate UUID if they want one, or we handle it in services.

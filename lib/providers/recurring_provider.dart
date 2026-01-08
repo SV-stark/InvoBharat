@@ -34,6 +34,14 @@ class RecurringRepository {
     }
   }
 
+  Future<void> deleteAll() async {
+    final path = await _localPath;
+    final dir = Directory(path);
+    if (await dir.exists()) {
+      await dir.delete(recursive: true);
+    }
+  }
+
   Future<List<RecurringProfile>> getAllProfiles(
       String businessProfileId) async {
     try {

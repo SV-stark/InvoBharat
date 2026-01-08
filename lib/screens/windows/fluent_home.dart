@@ -1,9 +1,10 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:io';
 import 'fluent_dashboard.dart';
 
-import 'fluent_invoice_form.dart';
+import 'fluent_invoice_wizard.dart';
 import 'fluent_settings.dart';
 import '../clients_screen.dart';
 import 'fluent_recurring_screen.dart';
@@ -48,8 +49,19 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
           PaneItem(
             icon: const Icon(FluentIcons.add),
             title: const Text('New Invoice'),
-            body: const FluentInvoiceForm(),
+            body: const FluentInvoiceWizard(),
           ),
+          PaneItem(
+            icon: const Icon(FluentIcons.document_set),
+            title: const Text('Estimates'),
+            body: const FluentEstimatesScreen(),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.repeat_all),
+            title: const Text('Recurring'),
+            body: const FluentRecurringScreen(),
+          ),
+          PaneItemSeparator(),
           PaneItem(
             icon: const Icon(FluentIcons.contact),
             title: const Text('Clients'),
@@ -59,16 +71,6 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
             icon: const Icon(FluentIcons.settings),
             title: const Text('Settings'),
             body: const FluentSettings(),
-          ),
-          PaneItem(
-            icon: const Icon(FluentIcons.list),
-            title: const Text('Estimates'),
-            body: const FluentEstimatesScreen(),
-          ),
-          PaneItem(
-            icon: const Icon(FluentIcons.repeat_all),
-            title: const Text('Recurring'),
-            body: const FluentRecurringScreen(),
           ),
         ],
         footerItems: [
@@ -85,43 +87,100 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Container(
-                                    width: 60,
-                                    height: 60,
+                                    width: 80,
+                                    height: 80,
                                     decoration: BoxDecoration(
-                                      color:
-                                          FluentTheme.of(context).accentColor,
-                                      borderRadius: BorderRadius.circular(8),
+                                      color: FluentTheme.of(context)
+                                          .accentColor
+                                          .withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: const Center(
-                                        child: Icon(FluentIcons.invoice,
-                                            size: 32, color: Colors.white)),
+                                    child: Center(
+                                      child: Image.asset(
+                                        'assets/logo.png',
+                                        width: 60,
+                                        height: 60,
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                          return Icon(FluentIcons.invoice,
+                                              size: 40,
+                                              color: FluentTheme.of(context)
+                                                  .accentColor);
+                                        },
+                                      ),
+                                    ),
                                   ),
-                                  const SizedBox(width: 15),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text("InvoBharat",
-                                          style: FluentTheme.of(context)
-                                              .typography
-                                              .title),
-                                      const Text("Version 1.0.0"),
-                                    ],
+                                  const SizedBox(width: 20),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text("InvoBharat",
+                                            style: FluentTheme.of(context)
+                                                .typography
+                                                .titleLarge!
+                                                .copyWith(
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                        const SizedBox(height: 4),
+                                        Text("Version 1.0.0 (Beta)",
+                                            style: FluentTheme.of(context)
+                                                .typography
+                                                .caption),
+                                        const SizedBox(height: 12),
+                                        const Text(
+                                            "A modern, high-performance invoicing solution tailored for Indian businesses. Built with Flutter & Riverpod."),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 20),
-                              const Text(
-                                  "A comprehensive invoicing solution for Indian businesses.\n\nDeveloped with Flutter & Riverpod for Windows & Linux."),
-                              const SizedBox(height: 10),
-                              HyperlinkButton(
-                                child: const Text("Visit Website"),
-                                onPressed: () {
-                                  // Open URL
-                                },
+                              const SizedBox(height: 24),
+                              const Text("Links & Resources",
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 10,
+                                runSpacing: 10,
+                                children: [
+                                  HyperlinkButton(
+                                    child: const Text("GitHub Repository"),
+                                    onPressed: () {
+                                      // Launch URL
+                                    },
+                                  ),
+                                  HyperlinkButton(
+                                    child: const Text("Report an Issue"),
+                                    onPressed: () {
+                                      // Launch URL
+                                    },
+                                  ),
+                                  HyperlinkButton(
+                                    child: const Text("License"),
+                                    onPressed: () {
+                                      // Launch URL
+                                    },
+                                  ),
+                                ],
                               ),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  const Icon(FluentIcons.system, size: 14),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    "Running on ${Platform.operatingSystem} ${Platform.operatingSystemVersion}",
+                                    style: FluentTheme.of(context)
+                                        .typography
+                                        .caption,
+                                  ),
+                                ],
+                              )
                             ],
                           ),
                           actions: [
