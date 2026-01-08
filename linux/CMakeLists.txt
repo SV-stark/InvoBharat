@@ -37,36 +37,3 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
 
 add_subdirectory("runner")
-add_dependencies(${BINARY_NAME} flutter_assemble)
-
-include(flutter/generated_plugins.cmake)
-
-set_target_properties(${BINARY_NAME}
-  PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/intermediates_do_not_run"
-)
-
-set(BUNDLE_OUTPUT_DIR "${CMAKE_BINARY_DIR}/bundle")
-set_target_properties(${BINARY_NAME}
-  PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BUNDLE_OUTPUT_DIR}"
-)
-
-add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-  "${FLUTTER_ASSETS_DIR}" "${BUNDLE_OUTPUT_DIR}/data/flutter_assets"
-)
-
-add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-  "${FLUTTER_ICU_DATA_DIR}" "${BUNDLE_OUTPUT_DIR}/data"
-)
-
-install(TARGETS ${BINARY_NAME} RUNTIME DESTINATION "."
-  COMPONENT Runtime)
-
-install(DIRECTORY "${BUNDLE_OUTPUT_DIR}/data" DESTINATION "."
-  COMPONENT Runtime)
-
-if(BUILD_SHARED_LIBS)
-  install(FILES "${FLUTTER_LIBRARY}" DESTINATION "."
-    COMPONENT Runtime)
-endif()
