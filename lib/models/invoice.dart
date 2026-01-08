@@ -5,7 +5,7 @@ part 'invoice.freezed.dart';
 part 'invoice.g.dart';
 
 @freezed
-class Invoice with _$Invoice {
+abstract class Invoice with _$Invoice {
   const Invoice._(); // Needed for custom methods/getters
 
   const factory Invoice({
@@ -66,7 +66,7 @@ class Invoice with _$Invoice {
 }
 
 @freezed
-class Supplier with _$Supplier {
+abstract class Supplier with _$Supplier {
   const factory Supplier({
     @Default('') String name,
     @Default('') String address,
@@ -82,7 +82,7 @@ class Supplier with _$Supplier {
 }
 
 @freezed
-class Receiver with _$Receiver {
+abstract class Receiver with _$Receiver {
   const factory Receiver({
     @Default('') String name,
     @Default('') String address,
@@ -97,7 +97,7 @@ class Receiver with _$Receiver {
 }
 
 @freezed
-class InvoiceItem with _$InvoiceItem {
+abstract class InvoiceItem with _$InvoiceItem {
   const InvoiceItem._();
 
   const factory InvoiceItem({
