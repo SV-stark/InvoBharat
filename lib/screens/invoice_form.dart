@@ -443,15 +443,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                                     ref.read(invoiceProvider.notifier);
                                 notifier.updateReceiverName(client.name);
                                 notifier.updateReceiverGstin(client.gstin);
-                                notifier.updateReceiverState(client
-                                    .address); // Using address as state placeholder? No.
-                                // We need to map correctly.
-                                // Client has address and state? Client model has address.
-                                // Does Client have state field?
-                                // Checked Client model: address, email, phone, notes, gstin, primaryContact.
-                                // NO STATE field in Client model. That's a potential issue for GST.
-                                // Usually state is part of address or separate.
-                                // For now we map address -> address.
+                                notifier.updateReceiverState(client.state);
                                 notifier.updateReceiverAddress(client.address);
                                 // We don't have explicit state in client, usage implies manual entry or extraction.
                                 Navigator.pop(context);

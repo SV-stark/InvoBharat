@@ -7,6 +7,7 @@ class Client {
   final String phone;
   final String primaryContact;
   final String notes;
+  final String state;
 
   const Client({
     required this.id,
@@ -17,6 +18,7 @@ class Client {
     this.phone = '',
     this.primaryContact = '',
     this.notes = '',
+    this.state = '',
   });
 
   Client copyWith({
@@ -28,6 +30,7 @@ class Client {
     String? phone,
     String? primaryContact,
     String? notes,
+    String? state,
   }) {
     return Client(
       id: id ?? this.id,
@@ -38,6 +41,7 @@ class Client {
       phone: phone ?? this.phone,
       primaryContact: primaryContact ?? this.primaryContact,
       notes: notes ?? this.notes,
+      state: state ?? this.state,
     );
   }
 
@@ -51,12 +55,13 @@ class Client {
       'phone': phone,
       'primaryContact': primaryContact,
       'notes': notes,
+      'state': state,
     };
   }
 
   factory Client.fromJson(Map<String, dynamic> json) {
     return Client(
-      id: json['id'],
+      id: json['id'] ?? '',
       name: json['name'] ?? '',
       gstin: json['gstin'] ?? '',
       address: json['address'] ?? '',
@@ -64,6 +69,7 @@ class Client {
       phone: json['phone'] ?? '',
       primaryContact: json['primaryContact'] ?? '',
       notes: json['notes'] ?? '',
+      state: json['state'] ?? '',
     );
   }
 }

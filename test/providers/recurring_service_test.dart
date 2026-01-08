@@ -32,7 +32,8 @@ void main() {
     test('Monthly interval adds 1 month', () {
       final date = DateTime(2023, 1, 31);
       final next = service.calculateNextDate(date, RecurringInterval.monthly);
-      expect(next.month, 3);
+      expect(next.month, 2);
+      expect(next.day, 28);
     });
 
     test('Monthly interval normal case', () {

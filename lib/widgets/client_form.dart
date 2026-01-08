@@ -22,6 +22,7 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
   late TextEditingController _phoneController;
   late TextEditingController _contactController;
   late TextEditingController _notesController;
+  late TextEditingController _stateController;
 
   @override
   void initState() {
@@ -35,6 +36,7 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
     _contactController =
         TextEditingController(text: widget.client?.primaryContact ?? '');
     _notesController = TextEditingController(text: widget.client?.notes ?? '');
+    _stateController = TextEditingController(text: widget.client?.state ?? '');
   }
 
   @override
@@ -46,6 +48,7 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
     _phoneController.dispose();
     _contactController.dispose();
     _notesController.dispose();
+    _stateController.dispose();
     super.dispose();
   }
 
@@ -60,6 +63,7 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
         phone: _phoneController.text,
         primaryContact: _contactController.text,
         notes: _notesController.text,
+        state: _stateController.text,
       );
 
       if (widget.client == null) {
@@ -107,6 +111,14 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
                   placeholder: 'Enter full address',
                   minLines: 3,
                   maxLines: 5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              InfoLabel(
+                label: 'State',
+                child: TextFormBox(
+                  controller: _stateController,
+                  placeholder: 'e.g. Maharashtra',
                 ),
               ),
               const SizedBox(height: 8),
