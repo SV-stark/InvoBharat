@@ -10,12 +10,12 @@ import '../../providers/invoice_provider.dart';
 
 import '../../models/client.dart';
 import '../../providers/client_provider.dart';
-import '../../providers/invoice_repository_provider.dart';
+
 import '../../utils/pdf_generator.dart';
 import '../../utils/constants.dart';
+import '../../services/invoice_actions.dart'; // NEW Import
 
 // Generates a unique ID
-String _generateId() => DateTime.now().millisecondsSinceEpoch.toString();
 
 class FluentInvoiceForm extends ConsumerStatefulWidget {
   final Invoice? invoiceToEdit;
@@ -485,42 +485,34 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
 
   Future<void> _saveInvoice(
       BuildContext context, WidgetRef ref, Invoice invoice) async {
-    Invoice toSave = invoice;
+    try {
+      await InvoiceActions.saveInvoice(ref, invoice);
 
-    // Sync supplier state from profile if not present
-    final profile = ref.read(businessProfileProvider);
-    if (toSave.supplier.state.isEmpty && profile.state.isNotEmpty) {
-      toSave = toSave.copyWith(
-          supplier: toSave.supplier.copyWith(state: profile.state));
-    }
-
-    if (toSave.id == null) {
-      toSave = toSave.copyWith(id: _generateId());
-    }
-
-    await ref.read(invoiceRepositoryProvider).saveInvoice(toSave);
-
-    if (invoice.id == null) {
-      await ref
-          .read(businessProfileNotifierProvider)
-          .incrementInvoiceSequence();
-    }
-
-    if (context.mounted) {
-      displayInfoBar(
-        context,
-        builder: (context, close) {
-          return InfoBar(
-            title: const Text('Success'),
-            content: const Text('Invoice saved successfully'),
-            action: IconButton(
-              icon: const Icon(FluentIcons.clear),
-              onPressed: close,
-            ),
-            severity: InfoBarSeverity.success,
-          );
-        },
-      );
+      if (context.mounted) {
+        displayInfoBar(
+          context,
+          builder: (context, close) {
+            return InfoBar(
+              title: const Text('Success'),
+              content: const Text('Invoice saved successfully'),
+              action: IconButton(
+                icon: const Icon(FluentIcons.clear),
+                onPressed: close,
+              ),
+              severity: InfoBarSeverity.success,
+            );
+          },
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        displayInfoBar(context,
+            builder: (context, close) => InfoBar(
+                title: const Text("Error"),
+                content: Text(e.toString()),
+                severity: InfoBarSeverity.error,
+                onClose: close));
+      }
     }
   }
 

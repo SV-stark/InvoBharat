@@ -9,6 +9,8 @@ import '../../invoice_template.dart';
 import '../../number_to_words.dart';
 import '../pdf_helpers.dart';
 
+// ... imports
+
 class ProfessionalTemplate implements InvoiceTemplate {
   @override
   String get name => 'Professional';
@@ -30,8 +32,14 @@ class ProfessionalTemplate implements InvoiceTemplate {
     final headerValueStyle =
         pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold);
     final tableHeaderStyle = pw.TextStyle(
-        fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.white);
-    final itemsStyle = const pw.TextStyle(fontSize: 9);
+        fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.white);
+    final itemsStyle = const pw.TextStyle(fontSize: 8);
+
+    // Determines Supply Type
+    String supplyType = "Tax Invoice";
+    if (invoice.receiver.gstin.isEmpty) {
+      supplyType = "Retail Invoice";
+    }
 
     pdf.addPage(pw.Page(
       pageFormat: PdfPageFormat.a4,
@@ -72,7 +80,8 @@ class ProfessionalTemplate implements InvoiceTemplate {
                 pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
-                      pw.Text("INVOICE", style: titleStyle),
+                      pw.Text(supplyType.toUpperCase(),
+                          style: titleStyle.copyWith(fontSize: 18)),
                       pw.SizedBox(height: 10),
                       _buildHeaderField("Invoice #", invoice.invoiceNo,
                           headerLabelStyle, headerValueStyle),
@@ -103,9 +112,10 @@ class ProfessionalTemplate implements InvoiceTemplate {
               borderRadius: pw.BorderRadius.all(pw.Radius.circular(4)),
             ),
             child: pw.Row(children: [
-              pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
+              pw.Expanded(
+                  child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
                     pw.Text("Bill To:",
                         style: pw.TextStyle(
                             fontSize: 10,
@@ -116,20 +126,21 @@ class ProfessionalTemplate implements InvoiceTemplate {
                     if (invoice.receiver.address.isNotEmpty)
                       pw.Text(invoice.receiver.address,
                           style: headerLabelStyle),
-                    pw.Text("GSTIN: ${invoice.receiver.gstin}",
+                    pw.Text(
+                        "GSTIN: ${invoice.receiver.gstin.isEmpty ? 'Unregistered' : invoice.receiver.gstin}",
                         style: headerLabelStyle),
                     if (invoice.receiver.state.isNotEmpty)
-                      pw.Text(
-                          "State: ${invoice.receiver.state} (Code: ${invoice.receiver.stateCode})",
+                      pw.Text("State: ${invoice.receiver.state}",
                           style: headerLabelStyle),
-                  ]),
+                  ])),
               if (invoice.deliveryAddress != null &&
                   invoice.deliveryAddress!.isNotEmpty &&
                   invoice.deliveryAddress != invoice.receiver.address) ...[
                 pw.SizedBox(width: 20),
-                pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
+                pw.Expanded(
+                    child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
                       pw.Text("Shipped To:",
                           style: pw.TextStyle(
                               fontSize: 10,
@@ -138,7 +149,7 @@ class ProfessionalTemplate implements InvoiceTemplate {
                       pw.SizedBox(height: 5),
                       pw.Text(invoice.deliveryAddress!,
                           style: headerLabelStyle),
-                    ])
+                    ]))
               ]
             ]),
           ),
@@ -152,9 +163,10 @@ class ProfessionalTemplate implements InvoiceTemplate {
           // --- TOTALS ---
           pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Expanded(
-                    flex: 6,
+                    flex: 5,
                     child: pw.Padding(
                         padding: const pw.EdgeInsets.only(right: 20),
                         child: pw.Column(
@@ -169,9 +181,19 @@ class ProfessionalTemplate implements InvoiceTemplate {
                                   style: pw.TextStyle(
                                       fontSize: 9,
                                       fontStyle: pw.FontStyle.italic)),
+                              pw.SizedBox(height: 10),
+                              pw.Text("Tax Amount in words:",
+                                  style: pw.TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text(
+                                  "${getCurrencyName(profile.currencySymbol)} ${numberToWords(invoice.totalCGST + invoice.totalSGST + invoice.totalIGST)} Only",
+                                  style: pw.TextStyle(
+                                      fontSize: 9,
+                                      fontStyle: pw.FontStyle.italic)),
                             ]))),
                 pw.Expanded(
-                    flex: 4,
+                    flex: 5,
                     child: pw.Container(
                         padding: const pw.EdgeInsets.all(10),
                         decoration: pw.BoxDecoration(
@@ -180,20 +202,20 @@ class ProfessionalTemplate implements InvoiceTemplate {
                                 pw.Radius.circular(4))),
                         child: pw.Column(children: [
                           _buildTotalRow(
-                              "Taxable Value",
+                              "Total Taxable Value",
                               invoice.totalTaxableValue,
                               profile.currencySymbol),
                           if (invoice.totalCGST > 0)
-                            _buildTotalRow("CGST", invoice.totalCGST,
+                            _buildTotalRow("Total CGST", invoice.totalCGST,
                                 profile.currencySymbol),
                           if (invoice.totalSGST > 0)
-                            _buildTotalRow("SGST", invoice.totalSGST,
+                            _buildTotalRow("Total SGST", invoice.totalSGST,
                                 profile.currencySymbol),
                           if (invoice.totalIGST > 0)
-                            _buildTotalRow("IGST", invoice.totalIGST,
+                            _buildTotalRow("Total IGST", invoice.totalIGST,
                                 profile.currencySymbol),
                           pw.Divider(),
-                          _buildTotalRow("Total", invoice.grandTotal,
+                          _buildTotalRow("Grand Total", invoice.grandTotal,
                               profile.currencySymbol,
                               isBold: true),
                         ])))
@@ -282,33 +304,49 @@ class ProfessionalTemplate implements InvoiceTemplate {
       Invoice invoice, pw.TextStyle headerStyle, pw.TextStyle itemStyle) {
     final isInterState = invoice.isInterState;
 
-    final headers = [
+    List<String> headers = [
       '#',
-      'Description',
+      'Item',
       'HSN/SAC',
       'Qty',
       'Rate',
-      if (!isInterState) 'CGST',
-      if (!isInterState) 'SGST',
-      if (isInterState) 'IGST',
-      'Total'
+      'Taxable Val'
     ];
+    if (isInterState) {
+      headers.addAll(['IGST %', 'IGST Amt']);
+    } else {
+      headers.addAll(['CGST %', 'CGST Amt', 'SGST %', 'SGST Amt']);
+    }
+    headers.add('Total');
 
     final data = invoice.items.asMap().entries.map((entry) {
       final index = entry.key;
       final item = entry.value;
+      final taxableValue = item.netAmount;
 
-      return [
+      final row = [
         (index + 1).toString(),
         item.description,
         item.sacCode,
         "${item.quantity} ${item.unit}",
         item.amount.toStringAsFixed(2),
-        if (!isInterState) item.calculateCgst(false).toStringAsFixed(2),
-        if (!isInterState) item.calculateSgst(false).toStringAsFixed(2),
-        if (isInterState) item.calculateIgst(true).toStringAsFixed(2),
-        item.totalAmount.toStringAsFixed(2),
+        taxableValue.toStringAsFixed(2),
       ];
+
+      if (isInterState) {
+        row.add("${item.gstRate}%");
+        row.add(item.calculateIgst(true).toStringAsFixed(2));
+      } else {
+        final halfRate = item.gstRate / 2;
+        row.add("$halfRate%");
+        row.add(item.calculateCgst(false).toStringAsFixed(2));
+        row.add("$halfRate%");
+        row.add(item.calculateSgst(false).toStringAsFixed(2));
+      }
+
+      row.add(item.totalAmount.toStringAsFixed(2));
+
+      return row;
     }).toList();
 
     return pw.TableHelper.fromTextArray(
@@ -318,16 +356,19 @@ class ProfessionalTemplate implements InvoiceTemplate {
       headerStyle: headerStyle,
       headerDecoration: const pw.BoxDecoration(color: PdfColors.blue900),
       cellStyle: itemStyle,
+      columnWidths: {
+        1: const pw.FlexColumnWidth(3),
+      },
       cellAlignments: {
         0: pw.Alignment.center,
         1: pw.Alignment.centerLeft,
-        2: pw.Alignment.center,
-        3: pw.Alignment.center,
-        4: pw.Alignment.centerRight,
-        5: pw.Alignment.centerRight,
+        2: pw.Alignment.centerLeft, // HSN
+        3: pw.Alignment.centerRight, // Qty
+        4: pw.Alignment.centerRight, // Rate
+        5: pw.Alignment.centerRight, // Taxable
         6: pw.Alignment.centerRight,
         7: pw.Alignment.centerRight,
-        8: pw.Alignment.centerRight,
+        headers.length - 1: pw.Alignment.centerRight,
       },
       oddRowDecoration: const pw.BoxDecoration(color: PdfColors.grey100),
       cellPadding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 5),
