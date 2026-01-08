@@ -5,6 +5,7 @@ set(BINARY_NAME "invobharat")
 set(APPLICATION_ID "com.example.invobharat")
 
 cmake_policy(SET CMP0063 NEW)
+cmake_policy(SET CMP0079 NEW)
 
 set(CMAKE_INSTALL_RPATH "$ORIGIN/lib")
 
