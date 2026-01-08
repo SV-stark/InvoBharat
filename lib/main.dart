@@ -3,15 +3,13 @@ import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'screens/dashboard_screen.dart';
-import 'screens/windows/fluent_home.dart';
-import 'screens/linux/linux_home.dart';
 
-import 'providers/business_profile_provider.dart';
-import 'providers/theme_provider.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/theme_provider.dart';
+import 'package:invobharat/screens/dashboard_screen.dart';
+import 'package:invobharat/screens/windows/fluent_home.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() {
   runApp(const ProviderScope(child: InvoBharatApp()));
 }
 
@@ -22,9 +20,9 @@ class InvoBharatApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(businessProfileProvider);
 
-    if (Platform.isWindows) {
+    if (Platform.isWindows || Platform.isLinux) {
       final accentColor = _getAccentColor(profile.color);
-      // Return FluentApp for Windows
+      // Return FluentApp for Windows and Linux
       return fluent.FluentApp(
         title: 'InvoBharat',
         debugShowCheckedModeBanner: false,
@@ -45,26 +43,7 @@ class InvoBharatApp extends ConsumerWidget {
       );
     }
 
-    if (Platform.isLinux) {
-      return MaterialApp(
-        title: 'InvoBharat',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        ),
-        darkTheme: ThemeData(
-          useMaterial3: true,
-          brightness: Brightness.dark,
-          colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.blue, brightness: Brightness.dark),
-        ),
-        themeMode: ref.watch(themeProvider),
-        home: const LinuxHome(),
-      );
-    }
-
-    // Return MaterialApp for Android/Other (profile already watched above)
+    // Return MaterialApp for Android/Other
     final themeMode = ref.watch(themeProvider);
 
     return MaterialApp(

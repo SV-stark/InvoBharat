@@ -37,10 +37,24 @@ class ClientsScreen extends ConsumerWidget {
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: Card(
                     child: ListTile(
-                      leading: CircleAvatar(
-                        child: Text(client.name.isNotEmpty
-                            ? client.name[0].toUpperCase()
-                            : '?'),
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            client.name.isNotEmpty
+                                ? client.name[0].toUpperCase()
+                                : '?',
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ),
                       title: Text(client.name,
                           style: const TextStyle(fontWeight: FontWeight.bold)),
