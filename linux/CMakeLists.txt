@@ -1,14 +1,13 @@
-cmake_minimum_required(VERSION 3.22)
-project(invobharat LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.10)
+project(runner LANGUAGES CXX)
 
-# Standard Flutter Linux config ONLY
 set(BINARY_NAME "invobharat")
 set(APPLICATION_ID "com.example.invobharat")
 
 cmake_policy(SET CMP0063 NEW)
+
 set(CMAKE_INSTALL_RPATH "$ORIGIN/lib")
 
-# Cross-compile support
 if(FLUTTER_TARGET_PLATFORM_SYSROOT)
   set(CMAKE_SYSROOT ${FLUTTER_TARGET_PLATFORM_SYSROOT})
   set(CMAKE_FIND_ROOT_PATH ${CMAKE_SYSROOT})
