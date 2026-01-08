@@ -49,3 +49,6 @@ invoices/
 
 # Environment variables
 .env
+
+# FVM Version Cache
+.fvm/
