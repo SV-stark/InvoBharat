@@ -22,10 +22,10 @@ class GstrService {
       final Map<double, double> rateWiseTaxable = {};
 
       for (final item in inv.items) {
-        // item.amount is typically the taxable value (quantity * price)
-        // If your model is different, adjust. Assuming item.amount is line taxable value.
-        rateWiseTaxable.update(item.gstRate, (value) => value + item.amount,
-            ifAbsent: () => item.amount);
+        // item.amount is typically the unit value. We want the Taxable Value (netAmount).
+        // netAmount = (amount * quantity) - discount
+        rateWiseTaxable.update(item.gstRate, (value) => value + item.netAmount,
+            ifAbsent: () => item.netAmount);
       }
 
       // If no items, output one row with 0 values?

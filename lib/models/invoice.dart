@@ -1,3 +1,4 @@
+import 'package:uuid/uuid.dart';
 import 'payment_transaction.dart';
 
 class Invoice {
@@ -327,7 +328,7 @@ class InvoiceItem {
     this.quantity = 1.0,
     this.unit = 'Nos',
     this.gstRate = 18.0,
-  }) : id = id ?? DateTime.now().microsecondsSinceEpoch.toString();
+  }) : id = id ?? const Uuid().v4();
 
   InvoiceItem copyWith({
     String? id,

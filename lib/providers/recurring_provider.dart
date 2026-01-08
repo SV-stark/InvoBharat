@@ -111,7 +111,10 @@ class RecurringService {
       case RecurringInterval.weekly:
         return current.add(const Duration(days: 7));
       case RecurringInterval.monthly:
-        return DateTime(current.year, current.month + 1, current.day);
+        var next = DateTime(current.year, current.month + 1, 1);
+        final lastDayOfMonth = DateTime(next.year, next.month + 1, 0).day;
+        return DateTime(
+            next.year, next.month, current.day.clamp(1, lastDayOfMonth));
       case RecurringInterval.yearly:
         return DateTime(current.year + 1, current.month, current.day);
     }

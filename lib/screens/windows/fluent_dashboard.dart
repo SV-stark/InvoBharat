@@ -94,7 +94,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Quick Actions
-                Row(children: [
+                Wrap(spacing: 12, runSpacing: 8, children: [
                   FilledButton(
                       child: const Text("Create Invoice"),
                       onPressed: () async {
@@ -106,7 +106,6 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                         );
                         ref.invalidate(invoiceListProvider);
                       }),
-                  const SizedBox(width: 12),
                   Button(
                     child: const Text("Export GSTR-1 (CSV)"),
                     onPressed: () async {
@@ -158,7 +157,6 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                       }
                     },
                   ),
-                  const SizedBox(width: 12),
                   Button(
                     child: const Text("Estimates"),
                     onPressed: () => Navigator.push(
@@ -166,7 +164,6 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                         FluentPageRoute(
                             builder: (_) => const FluentEstimatesScreen())),
                   ),
-                  const SizedBox(width: 12),
                   Button(
                     child: const Text("Recurring"),
                     onPressed: () => Navigator.push(

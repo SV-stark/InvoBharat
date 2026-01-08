@@ -27,12 +27,12 @@ void main() {
     expect(
         csv,
         contains(
-            'Invoice No,Invoice Date,Receiver Name,GSTIN,State,Taxable Value,IGST,CGST,SGST,Total Invoice Value'));
+            'GSTIN/UIN,Trade Name,Invoice No,Date of Invoice,Invoice Value,GST%,Taxable Value,CESS,Place Of Supply,RCM Applicable'));
 
     // Check Row Content
     expect(
         csv,
         contains(
-            'INV-001,01-04-2025,John Doe,29ABCDE1234F1Z5,Karnataka,2000.00,0.00,180.00,180.00,2360.00'));
+            '29ABCDE1234F1Z5,John Doe,INV-001,01-04-2025,2360.00,18.00,2000.00,0.00,Karnataka,N'));
   });
 }
