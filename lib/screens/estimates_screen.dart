@@ -14,6 +14,9 @@ class EstimatesScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Estimates"),
+      ),
       body: estimatesAsync.when(
         data: (estimates) {
           if (estimates.isEmpty) {

@@ -154,12 +154,16 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                         FluentIcons.money,
                         Colors.blue),
                     const SizedBox(width: 16),
-                    _buildStatCard(
-                        context,
-                        "Total GST",
-                        currency.format(totalCGST + totalSGST + totalIGST),
-                        FluentIcons.bank,
-                        Colors.purple),
+                    GestureDetector(
+                      onTap: () => _showGstBreakdown(context, totalCGST,
+                          totalSGST, totalIGST, profile.currencySymbol),
+                      child: _buildStatCard(
+                          context,
+                          "Total GST",
+                          currency.format(totalCGST + totalSGST + totalIGST),
+                          FluentIcons.bank,
+                          Colors.purple),
+                    ),
                     const SizedBox(width: 16),
                     _buildStatCard(
                         context,
@@ -387,5 +391,53 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
               severity: InfoBarSeverity.error,
               onClose: close));
     }
+  }
+
+  void _showGstBreakdown(BuildContext context, double cgst, double sgst,
+      double igst, String currencySymbol) {
+    showDialog(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text("GST Breakdown"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildGstRow("CGST", cgst, currencySymbol),
+            const SizedBox(height: 8),
+            _buildGstRow("SGST", sgst, currencySymbol),
+            const SizedBox(height: 8),
+            _buildGstRow("IGST", igst, currencySymbol),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 16),
+            _buildGstRow("Total", cgst + sgst + igst, currencySymbol,
+                isBold: true),
+          ],
+        ),
+        actions: [
+          Button(
+              child: const Text("Close"),
+              onPressed: () => Navigator.pop(context)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGstRow(String label, double amount, String symbol,
+      {bool isBold = false}) {
+    final style = isBold
+        ? const TextStyle(fontWeight: FontWeight.bold)
+        : const TextStyle();
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: style),
+        Text(
+            NumberFormat.currency(symbol: symbol, decimalDigits: 2)
+                .format(amount),
+            style: style),
+      ],
+    );
   }
 }

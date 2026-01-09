@@ -1,7 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:io';
 import 'fluent_dashboard.dart';
 
 import 'fluent_invoice_wizard.dart';
@@ -75,121 +74,94 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
         ],
         footerItems: [
           PaneItemAction(
-              icon: const Icon(FluentIcons.info),
-              title: const Text('About'),
-              onTap: () {
-                showDialog(
-                    context: context,
-                    builder: (context) => ContentDialog(
-                          title: const Text("About InvoBharat"),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    width: 80,
-                                    height: 80,
-                                    decoration: BoxDecoration(
-                                      color: FluentTheme.of(context)
-                                          .accentColor
-                                          .withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Center(
-                                      child: Image.asset(
-                                        'assets/logo.png',
-                                        width: 60,
-                                        height: 60,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                          return Icon(FluentIcons.invoice,
-                                              size: 40,
-                                              color: FluentTheme.of(context)
-                                                  .accentColor);
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 20),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text("InvoBharat",
-                                            style: FluentTheme.of(context)
-                                                .typography
-                                                .titleLarge!
-                                                .copyWith(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                        const SizedBox(height: 4),
-                                        Text("Version 1.0.0 (Beta)",
-                                            style: FluentTheme.of(context)
-                                                .typography
-                                                .caption),
-                                        const SizedBox(height: 12),
-                                        const Text(
-                                            "A modern, high-performance invoicing solution tailored for Indian businesses. Built with Flutter & Riverpod."),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+            icon: const Icon(FluentIcons.info),
+            title: const Text('About'),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => ContentDialog(
+                  title: const Text("About InvoBharat"),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: FluentTheme.of(context)
+                                  .accentColor
+                                  .withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: Image.asset(
+                                'logo.png',
+                                width: 60,
+                                height: 60,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(FluentIcons.invoice,
+                                      size: 40,
+                                      color:
+                                          FluentTheme.of(context).accentColor);
+                                },
                               ),
-                              const SizedBox(height: 24),
-                              const Text("Links & Resources",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 8),
-                              Wrap(
-                                spacing: 10,
-                                runSpacing: 10,
-                                children: [
-                                  HyperlinkButton(
-                                    child: const Text("GitHub Repository"),
-                                    onPressed: () {
-                                      // Launch URL
-                                    },
-                                  ),
-                                  HyperlinkButton(
-                                    child: const Text("Report an Issue"),
-                                    onPressed: () {
-                                      // Launch URL
-                                    },
-                                  ),
-                                  HyperlinkButton(
-                                    child: const Text("License"),
-                                    onPressed: () {
-                                      // Launch URL
-                                    },
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  const Icon(FluentIcons.system, size: 14),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    "Running on ${Platform.operatingSystem} ${Platform.operatingSystemVersion}",
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("InvoBharat",
                                     style: FluentTheme.of(context)
                                         .typography
-                                        .caption,
-                                  ),
-                                ],
-                              )
-                            ],
+                                        .titleLarge!
+                                        .copyWith(fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 4),
+                                Text("Version 1.0.0",
+                                    style: FluentTheme.of(context)
+                                        .typography
+                                        .caption),
+                                const SizedBox(height: 12),
+                                const Text(
+                                    "A modern, high-performance invoicing solution tailored for Indian businesses. Built with Flutter & Riverpod."),
+                                const SizedBox(height: 8),
+                                const Text(
+                                  "Made with ❤️ in India",
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                                const Text(
+                                  "Developed by SV-stark",
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ],
+                            ),
                           ),
-                          actions: [
-                            Button(
-                                child: const Text("Close"),
-                                onPressed: () => Navigator.pop(context)),
-                          ],
-                        ));
-              }),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      const Text("Links & Resources",
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      // Links placeholders
+                      const Text("Visit GitHub Repository"),
+                    ],
+                  ),
+                  actions: [
+                    Button(
+                        child: const Text("Close"),
+                        onPressed: () => Navigator.pop(context)),
+                  ],
+                ),
+              );
+            },
+          ),
         ],
       ),
     );

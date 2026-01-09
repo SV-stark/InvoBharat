@@ -15,6 +15,7 @@ import '../providers/invoice_repository_provider.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import '../services/gstr_service.dart';
+import '../services/dashboard_actions.dart';
 import 'material_clients_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -83,8 +84,11 @@ class DashboardScreen extends ConsumerWidget {
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (err, stack) => Text("Error: $err"),
                 data: (invoices) {
-                  final totalRevenue =
-                      invoices.fold(0.0, (sum, inv) => sum + inv.grandTotal);
+                  final stats = DashboardActions.calculateStats(invoices);
+                  final totalRevenue = stats['revenue'] as double;
+                  final totalCGST = stats['cgst'] as double;
+                  final totalSGST = stats['sgst'] as double;
+                  final totalIGST = stats['igst'] as double;
                   final currency = NumberFormat.simpleCurrency(
                       locale: 'en_IN', decimalDigits: 0);
 
@@ -107,6 +111,26 @@ class DashboardScreen extends ConsumerWidget {
                                 "${invoices.length}",
                                 Icons.description,
                                 Colors.blue)),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+
+                    // GST Card (New)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _showGstBreakdown(context, totalCGST,
+                                totalSGST, totalIGST, profile.currencySymbol),
+                            child: _buildStatCard(
+                                context,
+                                "Total GST",
+                                currency
+                                    .format(totalCGST + totalSGST + totalIGST),
+                                Icons.percent,
+                                Colors.purple),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 32),
@@ -334,5 +358,48 @@ class DashboardScreen extends ConsumerWidget {
 
   void _showProfileSwitcher(BuildContext context, WidgetRef ref) {
     showProfileSwitcherSheet(context, ref);
+  }
+
+  void _showGstBreakdown(BuildContext context, double cgst, double sgst,
+      double igst, String currencySymbol) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("GST Breakdown"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildGstRow("CGST", cgst, currencySymbol),
+            const SizedBox(height: 8),
+            _buildGstRow("SGST", sgst, currencySymbol),
+            const SizedBox(height: 8),
+            _buildGstRow("IGST", igst, currencySymbol),
+            const Divider(height: 24),
+            _buildGstRow("Total", cgst + sgst + igst, currencySymbol,
+                isBold: true),
+          ],
+        ),
+        actions: [
+          TextButton(
+              child: const Text("Close"),
+              onPressed: () => Navigator.pop(context)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGstRow(String label, double amount, String symbol,
+      {bool isBold = false}) {
+    final style = isBold ? const TextStyle(fontWeight: FontWeight.bold) : null;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: style),
+        Text(
+            NumberFormat.currency(symbol: symbol, decimalDigits: 2)
+                .format(amount),
+            style: style),
+      ],
+    );
   }
 }
