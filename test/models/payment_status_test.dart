@@ -14,7 +14,7 @@ void main() {
       invoiceDate: DateTime.now(),
       invoiceNo: '001',
       items: [
-        InvoiceItem(
+        const InvoiceItem(
             description: 'Item 1', amount: 1000, gstRate: 0) // Total 1000
       ],
       dueDate: DateTime.now().add(const Duration(days: 7)),

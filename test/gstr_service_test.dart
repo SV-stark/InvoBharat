@@ -12,7 +12,7 @@ void main() {
       receiver: const Receiver(
           name: 'John Doe', state: 'Karnataka', gstin: '29ABCDE1234F1Z5'),
       items: [
-        InvoiceItem(
+        const InvoiceItem(
           description: 'Item 1',
           amount: 1000,
           quantity: 2,

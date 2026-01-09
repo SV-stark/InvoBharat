@@ -4,7 +4,7 @@ import 'package:invobharat/models/invoice.dart';
 void main() {
   group('CGST Compliance Model Tests', () {
     test('InvoiceItem calculates netAmount correctly with quantity', () {
-      final item = InvoiceItem(
+      final item = const InvoiceItem(
         amount: 100, // Price per unit
         quantity: 2,
         discount: 0,
@@ -15,7 +15,7 @@ void main() {
     });
 
     test('InvoiceItem calculates netAmount correctly with discount', () {
-      final item = InvoiceItem(
+      final item = const InvoiceItem(
         amount: 100,
         quantity: 5,
         discount: 50,
@@ -25,7 +25,7 @@ void main() {
     });
 
     test('InvoiceItem serializes quantity and unit', () {
-      final item = InvoiceItem(
+      final item = const InvoiceItem(
         quantity: 2.5,
         unit: 'Kg',
         amount: 50,

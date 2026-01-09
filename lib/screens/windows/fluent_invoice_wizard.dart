@@ -285,8 +285,8 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                       ),
                       const SizedBox(width: 8),
                       Button(
-                        child: const Icon(FluentIcons.add),
                         onPressed: _showAddClientDialog,
+                        child: const Icon(FluentIcons.add),
                       )
                     ],
                   )
@@ -319,7 +319,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                 const SizedBox(height: 20),
                 InfoLabel(
                   label: "Client Not Found?",
-                  child: Text(
+                  child: const Text(
                       "You can create a one-time client by searching, or add a permanent client using the '+' button."),
                 )
               ],
@@ -401,7 +401,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
         Container(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           color: FluentTheme.of(context).accentColor.withOpacity(0.1),
-          child: Row(
+          child: const Row(
             children: [
               Expanded(
                   flex: 4,
