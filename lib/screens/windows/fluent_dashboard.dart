@@ -218,7 +218,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                             leading: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: theme.accentColor.withOpacity(0.1),
+                                color: theme.accentColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Icon(FluentIcons.page_solid,
@@ -282,9 +282,9 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withOpacity(0.5)),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(text, style: TextStyle(fontSize: 10, color: color)),
     );
@@ -314,7 +314,8 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                     fontSize: 28,
                     fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
-            Text(title, style: TextStyle(color: Colors.white.withOpacity(0.8))),
+            Text(title,
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.8))),
           ],
         ),
       ),

@@ -761,14 +761,15 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                       const SizedBox(height: 10),
                       Button(
                         style: ButtonStyle(
-                          backgroundColor: ButtonState.all(Colors.red),
-                          foregroundColor: ButtonState.all(Colors.white),
+                          backgroundColor: WidgetStateProperty.all(Colors.red),
+                          foregroundColor:
+                              WidgetStateProperty.all(Colors.white),
                         ),
                         child: const Text("Clear All App Data"),
                         onPressed: () {
                           showDialog(
                               context: context,
-                              builder: (context) {
+                              builder: (dialogContext) {
                                 return ContentDialog(
                                   title: const Text("Reset Everything?"),
                                   content: const Text(
@@ -777,14 +778,15 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                                     Button(
                                         child: const Text("Cancel"),
                                         onPressed: () =>
-                                            Navigator.pop(context)),
+                                            Navigator.pop(dialogContext)),
                                     FilledButton(
                                         style: ButtonStyle(
                                             backgroundColor:
-                                                ButtonState.all(Colors.red)),
+                                                WidgetStateProperty.all(
+                                                    Colors.red)),
                                         child: const Text("Delete Everything"),
                                         onPressed: () async {
-                                          Navigator.pop(context);
+                                          Navigator.pop(dialogContext);
                                           try {
                                             await ref
                                                 .read(invoiceRepositoryProvider)
@@ -808,29 +810,26 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                                             ref.invalidate(
                                                 recurringListProvider);
 
-                                            if (mounted) {
-                                              displayInfoBar(context,
-                                                  builder: (c, close) => InfoBar(
-                                                      severity: InfoBarSeverity
-                                                          .success,
-                                                      title: const Text(
-                                                          "Reset Complete"),
-                                                      content: const Text(
-                                                          "All data has been cleared."),
-                                                      onClose: close));
-                                            }
+                                            if (!context.mounted) return;
+                                            displayInfoBar(context,
+                                                builder: (c, close) => InfoBar(
+                                                    severity:
+                                                        InfoBarSeverity.success,
+                                                    title: const Text(
+                                                        "Reset Complete"),
+                                                    content: const Text(
+                                                        "All data has been cleared."),
+                                                    onClose: close));
                                           } catch (e) {
-                                            if (mounted) {
-                                              displayInfoBar(context,
-                                                  builder: (c, close) => InfoBar(
-                                                      severity:
-                                                          InfoBarSeverity.error,
-                                                      title:
-                                                          const Text("Error"),
-                                                      content: Text(
-                                                          "Failed to clear data: $e"),
-                                                      onClose: close));
-                                            }
+                                            if (!context.mounted) return;
+                                            displayInfoBar(context,
+                                                builder: (c, close) => InfoBar(
+                                                    severity:
+                                                        InfoBarSeverity.error,
+                                                    title: const Text("Error"),
+                                                    content: Text(
+                                                        "Failed to clear data: $e"),
+                                                    onClose: close));
                                           }
                                         })
                                   ],

@@ -13,7 +13,7 @@ class SqlClientRepository implements ClientRepository {
     await database.into(database.clients).insertOnConflictUpdate(
           ClientsCompanion(
             id: Value(client.id),
-            profileId: const Value("default"), // TODO: Pass profileId context
+            profileId: Value(client.profileId),
             name: Value(client.name),
             address: Value(client.address),
             gstin: Value(client.gstin),
@@ -63,6 +63,7 @@ class SqlClientRepository implements ClientRepository {
       state: row.state,
       pan: row.pan,
       stateCode: row.stateCode,
+      profileId: row.profileId,
     );
   }
 }
