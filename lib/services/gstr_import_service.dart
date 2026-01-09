@@ -19,9 +19,10 @@ class GstrImportService {
   /// Expects CSV format: GSTIN,Trade Name,Invoice No,Date,Value,GST%,Taxable,CESS,Place,RCM,HSN
   GstrImportResult parseGstr1Csv(String csvContent) {
     final lines = const LineSplitter().convert(csvContent);
-    if (lines.isEmpty)
+    if (lines.isEmpty) {
       return GstrImportResult(
           invoices: [], missingInvoiceNumbers: [], totalRowsProcessed: 0);
+    }
 
     // Skip header if present (Naive check: contains "Invoice No" or starts with GSTIN label)
     // We'll assume first line is header if it contains specific keywords
