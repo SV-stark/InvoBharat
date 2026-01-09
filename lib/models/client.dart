@@ -9,6 +9,9 @@ class Client {
   final String notes;
   final String state;
 
+  final String pan;
+  final String stateCode;
+
   const Client({
     required this.id,
     required this.name,
@@ -19,6 +22,8 @@ class Client {
     this.primaryContact = '',
     this.notes = '',
     this.state = '',
+    this.pan = '',
+    this.stateCode = '',
   });
 
   Client copyWith({
@@ -31,6 +36,8 @@ class Client {
     String? primaryContact,
     String? notes,
     String? state,
+    String? pan,
+    String? stateCode,
   }) {
     return Client(
       id: id ?? this.id,
@@ -42,6 +49,8 @@ class Client {
       primaryContact: primaryContact ?? this.primaryContact,
       notes: notes ?? this.notes,
       state: state ?? this.state,
+      pan: pan ?? this.pan,
+      stateCode: stateCode ?? this.stateCode,
     );
   }
 
@@ -56,6 +65,8 @@ class Client {
       'primaryContact': primaryContact,
       'notes': notes,
       'state': state,
+      'pan': pan,
+      'stateCode': stateCode,
     };
   }
 
@@ -70,6 +81,8 @@ class Client {
       primaryContact: json['primaryContact'] ?? '',
       notes: json['notes'] ?? '',
       state: json['state'] ?? '',
+      pan: json['pan'] ?? '',
+      stateCode: json['stateCode'] ?? '',
     );
   }
 }

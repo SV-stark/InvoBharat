@@ -11,7 +11,7 @@ import '../providers/business_profile_provider.dart';
 
 import '../providers/invoice_repository_provider.dart';
 import 'package:archive/archive.dart';
-import '../data/invoice_repository.dart';
+import '../data/file_invoice_repository.dart';
 
 class BackupService {
   // final InvoiceRepository _invoiceRepository = InvoiceRepository(); // Removed
@@ -70,7 +70,7 @@ class BackupService {
         // We need to instantiate a temporary repository access or use the provider if we can switch it?
         // Provider depends on 'current profile'.
         // So we manually create InvoiceRepository with the profile ID.
-        final repo = InvoiceRepository(profileId: profile.id);
+        final repo = FileInvoiceRepository(profileId: profile.id);
         final invoices = await repo.getAllInvoices();
 
         final backupData = {
