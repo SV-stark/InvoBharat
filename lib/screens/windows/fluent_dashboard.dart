@@ -452,8 +452,12 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         final csvContent = await file.readAsString();
         final importResult = GstrImportService().parseGstr1Csv(csvContent);
 
-        // Here we would typically save to DB. For now, we simulate success and show missing numbers.
-        // await ref.read(invoiceRepositoryProvider).bulkAdd(importResult.invoices);
+        // Save imported invoices
+        final repo = ref.read(invoiceRepositoryProvider);
+        for (final inv in importResult.invoices) {
+          await repo.saveInvoice(inv);
+        }
+        ref.invalidate(invoiceListProvider);
 
         if (!context.mounted) return;
 
@@ -470,7 +474,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 const SizedBox(height: 10),
                 if (importResult.missingInvoiceNumbers.isNotEmpty) ...[
                   Text("Missing Invoice Numbers (Gap in sequence):",
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontWeight: FontWeight.bold, color: Colors.red)),
                   Container(
                     margin: const EdgeInsets.only(top: 8),
@@ -478,6 +482,12 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                     color: Colors.grey.withValues(alpha: 0.1),
                     child: SelectableText(
                         importResult.missingInvoiceNumbers.join(", ")),
+                  ),
+                  const SizedBox(height: 10),
+                  Button(
+                    child: const Text("Export Missing Report"),
+                    onPressed: () => _exportMissingReport(
+                        context, importResult.missingInvoiceNumbers),
                   ),
                 ] else
                   Text("No sequence gaps found.",
@@ -497,6 +507,46 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
       displayInfoBar(context,
           builder: (context, close) => InfoBar(
               title: const Text("Import Error"),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              onClose: close));
+    }
+  }
+
+  Future<void> _exportMissingReport(
+      BuildContext context, List<String> missingNumbers) async {
+    try {
+      final buffer = StringBuffer();
+      buffer.writeln("Missing Invoice Numbers Report");
+      buffer.writeln("Generated on: ${DateTime.now()}");
+      buffer.writeln("");
+      buffer.writeln("Missing Numbers:");
+      for (final num in missingNumbers) {
+        buffer.writeln(num);
+      }
+
+      String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save Missing Invoices Report',
+        fileName: 'Missing_Invoices_Report.csv',
+        allowedExtensions: ['csv', 'txt'],
+        type: FileType.custom,
+      );
+
+      if (outputFile != null) {
+        await File(outputFile).writeAsString(buffer.toString());
+        if (!context.mounted) return;
+        displayInfoBar(context,
+            builder: (context, close) => InfoBar(
+                title: const Text("Success"),
+                content: Text("Report saved to $outputFile"),
+                severity: InfoBarSeverity.success,
+                onClose: close));
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      displayInfoBar(context,
+          builder: (context, close) => InfoBar(
+              title: const Text("Error"),
               content: Text(e.toString()),
               severity: InfoBarSeverity.error,
               onClose: close));

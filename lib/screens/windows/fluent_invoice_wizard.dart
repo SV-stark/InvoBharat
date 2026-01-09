@@ -312,8 +312,12 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
           child: const Row(
             children: [
               Expanded(
-                  flex: 4,
+                  flex: 3,
                   child: Text("Description",
+                      style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(
+                  flex: 1,
+                  child: Text("HSN/SAC",
                       style: TextStyle(fontWeight: FontWeight.bold))),
               Expanded(
                   flex: 1,
@@ -324,8 +328,8 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                   child: Text("Price",
                       style: TextStyle(fontWeight: FontWeight.bold))),
               Expanded(
-                  flex: 2,
-                  child: Text("GST %",
+                  flex: 1,
+                  child: Text("GST",
                       style: TextStyle(fontWeight: FontWeight.bold))),
               Expanded(
                   flex: 2,
@@ -336,11 +340,20 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
           ),
         ),
 
-        Expanded(
-          child: ListView.builder(
-            itemCount: _items.length,
-            itemBuilder: (context, index) {
-              final item = _items[index];
+        // List of Items (Using Column/Map instead of ListView for proper scrolling)
+        if (_items.isEmpty)
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Center(
+              child: Text("No items added yet.",
+                  style: TextStyle(color: Colors.grey.withValues(alpha: 0.8))),
+            ),
+          )
+        else
+          Column(
+            children: _items.asMap().entries.map((entry) {
+              final index = entry.key;
+              final item = entry.value;
               return Container(
                 decoration: BoxDecoration(
                   border: Border(
@@ -352,15 +365,18 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                 child: Row(
                   children: [
                     Expanded(
-                        flex: 4,
+                        flex: 3,
                         child: Text(item.description.isEmpty
                             ? "(No description)"
                             : item.description)),
                     Expanded(
+                        flex: 1,
+                        child: Text(item.sacCode.isEmpty ? "-" : item.sacCode)),
+                    Expanded(
                         flex: 1, child: Text("${item.quantity} ${item.unit}")),
                     Expanded(
                         flex: 2, child: Text(currency.format(item.amount))),
-                    Expanded(flex: 2, child: Text("${item.gstRate}%")),
+                    Expanded(flex: 1, child: Text("${item.gstRate}%")),
                     Expanded(
                         flex: 2,
                         child: Text(currency.format(item.totalAmount),
@@ -389,9 +405,8 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                   ],
                 ),
               );
-            },
+            }).toList(),
           ),
-        ),
 
         const SizedBox(height: 10),
 
@@ -617,6 +632,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
     double discount = item?.discount ?? 0;
     double gst = item?.gstRate ?? 18;
     String unit = item?.unit ?? "Nos";
+    String sacCode = item?.sacCode ?? "";
 
     await showDialog(
         context: context,
@@ -640,12 +656,11 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                   children: [
                     Expanded(
                       child: InfoLabel(
-                        label: "Quantity",
-                        child: NumberBox<double>(
-                          value: qty,
-                          onChanged: (v) => qty = v ?? 1,
-                          min: 0.1,
-                          mode: SpinButtonPlacementMode.inline,
+                        label: "HSN/SAC Code",
+                        child: TextBox(
+                          placeholder: "e.g. 998311",
+                          controller: TextEditingController(text: sacCode),
+                          onChanged: (v) => sacCode = v,
                         ),
                       ),
                     ),
@@ -667,6 +682,18 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                   children: [
                     Expanded(
                       child: InfoLabel(
+                        label: "Quantity",
+                        child: NumberBox<double>(
+                          value: qty,
+                          onChanged: (v) => qty = v ?? 1,
+                          min: 0.1,
+                          mode: SpinButtonPlacementMode.inline,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: InfoLabel(
                         label: "Price",
                         child: NumberBox<double>(
                           value: price,
@@ -675,7 +702,11 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
                     Expanded(
                       child: InfoLabel(
                         label: "Discount",
@@ -686,19 +717,22 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                         ),
                       ),
                     ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: InfoLabel(
+                        label: "GST Rate",
+                        child: ComboBox<double>(
+                          value: gst,
+                          items: [0.0, 5.0, 12.0, 18.0, 28.0]
+                              .map((r) =>
+                                  ComboBoxItem(value: r, child: Text("$r%")))
+                              .toList(),
+                          onChanged: (v) => gst = v ?? 0,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 10),
-                InfoLabel(
-                  label: "GST Rate",
-                  child: ComboBox<double>(
-                    value: gst,
-                    items: [0.0, 5.0, 12.0, 18.0, 28.0]
-                        .map((r) => ComboBoxItem(value: r, child: Text("$r%")))
-                        .toList(),
-                    onChanged: (v) => gst = v ?? 0,
-                  ),
-                )
               ],
             ),
             actions: [
@@ -715,6 +749,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                       discount: discount,
                       gstRate: gst,
                       unit: unit,
+                      sacCode: sacCode,
                     );
 
                     setState(() {
