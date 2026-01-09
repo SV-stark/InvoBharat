@@ -144,117 +144,141 @@ class DashboardScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
 
                     const SizedBox(height: 16),
+                      children: [
+                        _buildActionButton(
+                          context,
+                          "New Invoice",
+                          Icons.add,
+                          Theme.of(context).colorScheme.primaryContainer,
+                          () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const InvoiceFormScreen()))
+                              .then((_) => ref.refresh(invoiceListProvider)),
+                        ),
+                        const SizedBox(width: 16),
+                        _buildActionButton(
+                          context,
+                          "Clients",
+                          Icons.contacts,
+                          Colors.blue.shade100,
+                          () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      const MaterialClientsScreen())),
+                        ),
+                        const SizedBox(width: 16),
+                        _buildActionButton(
+                          context,
+                          "Estimates",
+                          Icons.request_quote,
+                          Colors.orange.shade100,
+                          () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
                     Row(
                       children: [
-                        Expanded(
-                          child: _buildActionButton(
-                            context,
-                            "New Invoice",
-                            Icons.add,
-                            Theme.of(context).colorScheme.primaryContainer,
-                            () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                            const InvoiceFormScreen()))
-                                .then((_) => ref.refresh(invoiceListProvider)),
-                          ),
+                        _buildActionButton(
+                          context,
+                          "New Invoice",
+                          Icons.add,
+                          Theme.of(context).colorScheme.primaryContainer,
+                          () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const InvoiceFormScreen()))
+                              .then((_) => ref.refresh(invoiceListProvider)),
                         ),
                         const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildActionButton(
-                            context,
-                            "Clients",
-                            Icons.contacts,
-                            Colors.blue.shade100,
-                            () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) =>
-                                        const MaterialClientsScreen())),
-                          ),
+                        _buildActionButton(
+                          context,
+                          "Clients",
+                          Icons.contacts,
+                          Colors.blue.shade100,
+                          () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      const MaterialClientsScreen())),
                         ),
                         const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildActionButton(
-                            context,
-                            "Estimates",
-                            Icons.request_quote,
-                            Colors.orange.shade100,
-                            () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => const EstimatesScreen())),
-                          ),
+                        _buildActionButton(
+                          context,
+                          "Estimates",
+                          Icons.request_quote,
+                          Colors.orange.shade100,
+                          () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const EstimatesScreen())),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        Expanded(
-                          child: _buildActionButton(
-                            context,
-                            "Recurring",
-                            Icons.autorenew,
-                            Colors.purple.shade100,
-                            () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) =>
-                                        const RecurringInvoicesScreen())),
-                          ),
+                        _buildActionButton(
+                          context,
+                          "Recurring",
+                          Icons.autorenew,
+                          Colors.purple.shade100,
+                          () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      const RecurringInvoicesScreen())),
                         ),
                         const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildActionButton(
-                            context,
-                            "Export GSTR-1",
-                            Icons.table_chart,
-                            Theme.of(context).colorScheme.tertiaryContainer,
-                            () async {
-                              try {
-                                final filteredInvoices =
-                                    invoices; // Export all for now or filter? Dashboard usually shows recent. Let's export all visible.
-                                if (filteredInvoices.isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content:
-                                              Text("No invoices to export")));
-                                  return;
+                        _buildActionButton(
+                          context,
+                          "Export GSTR-1",
+                          Icons.table_chart,
+                          Theme.of(context).colorScheme.tertiaryContainer,
+                          () async {
+                            try {
+                              final filteredInvoices =
+                                  invoices; // Export all for now or filter? Dashboard usually shows recent. Let's export all visible.
+                              if (filteredInvoices.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content:
+                                            Text("No invoices to export")));
+                                return;
+                              }
+
+                              final csvData = GstrService()
+                                  .generateGstr1Csv(filteredInvoices);
+
+                              String? outputFile =
+                                  await FilePicker.platform.saveFile(
+                                dialogTitle: 'Save GSTR-1 CSV',
+                                fileName: 'GSTR1_All_Time.csv',
+                                allowedExtensions: ['csv'],
+                                type: FileType.custom,
+                              );
+
+                              if (outputFile != null) {
+                                if (!outputFile
+                                    .toLowerCase()
+                                    .endsWith('.csv')) {
+                                  outputFile = '$outputFile.csv';
                                 }
-
-                                final csvData = GstrService()
-                                    .generateGstr1Csv(filteredInvoices);
-
-                                String? outputFile =
-                                    await FilePicker.platform.saveFile(
-                                  dialogTitle: 'Save GSTR-1 CSV',
-                                  fileName: 'GSTR1_All_Time.csv',
-                                  allowedExtensions: ['csv'],
-                                  type: FileType.custom,
-                                );
-
-                                if (outputFile != null) {
-                                  if (!outputFile
-                                      .toLowerCase()
-                                      .endsWith('.csv')) {
-                                    outputFile = '$outputFile.csv';
-                                  }
-                                  await File(outputFile).writeAsString(csvData);
-                                  if (!context.mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content:
-                                              Text("Exported to $outputFile")));
-                                }
-                              } catch (e) {
+                                await File(outputFile).writeAsString(csvData);
                                 if (!context.mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(e.toString())));
+                                    SnackBar(
+                                        content:
+                                            Text("Exported to $outputFile")));
                               }
-                            },
-                          ),
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(e.toString())));
+                            }
+                          },
                         ),
                       ],
                     ),
@@ -330,27 +354,29 @@ class DashboardScreen extends ConsumerWidget {
 
   Widget _buildActionButton(BuildContext context, String label, IconData icon,
       Color bgColor, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        height: 100,
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon,
-                size: 32,
-                color: Theme.of(context).colorScheme.onSurfaceVariant),
-            const SizedBox(height: 8),
-            Text(label,
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ],
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          height: 100,
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon,
+                  size: 32,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+              const SizedBox(height: 8),
+              Text(label,
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            ],
+          ),
         ),
       ),
     );
