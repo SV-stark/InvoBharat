@@ -26,7 +26,7 @@ jobs:
           
       - name: Cache Inno Setup
         id: cache-innosetup
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: "C:\\Program Files (x86)\\Inno Setup 6"
           key: ${{ runner.os }}-innosetup
