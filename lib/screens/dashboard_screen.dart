@@ -143,41 +143,6 @@ class DashboardScreen extends ConsumerWidget {
                             ?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 16),
 
-                    const SizedBox(height: 16),
-                      children: [
-                        _buildActionButton(
-                          context,
-                          "New Invoice",
-                          Icons.add,
-                          Theme.of(context).colorScheme.primaryContainer,
-                          () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) =>
-                                          const InvoiceFormScreen()))
-                              .then((_) => ref.refresh(invoiceListProvider)),
-                        ),
-                        const SizedBox(width: 16),
-                        _buildActionButton(
-                          context,
-                          "Clients",
-                          Icons.contacts,
-                          Colors.blue.shade100,
-                          () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) =>
-                                      const MaterialClientsScreen())),
-                        ),
-                        const SizedBox(width: 16),
-                        _buildActionButton(
-                          context,
-                          "Estimates",
-                          Icons.request_quote,
-                          Colors.orange.shade100,
-                          () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
                     Row(
                       children: [
                         _buildActionButton(

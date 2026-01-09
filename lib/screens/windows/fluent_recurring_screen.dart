@@ -105,7 +105,8 @@ class FluentRecurringScreen extends ConsumerWidget {
                                   FilledButton(
                                     style: ButtonStyle(
                                         backgroundColor:
-                                            ButtonState.all(Colors.red)),
+                                            WidgetStateProperty.all(
+                                                Colors.red)),
                                     child: const Text("Delete"),
                                     onPressed: () =>
                                         Navigator.pop(context, true),

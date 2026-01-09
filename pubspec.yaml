@@ -25,6 +25,7 @@ dependencies:
   drift: ^2.14.0
   sqlite3: ^2.3.0
   sqlite3_flutter_libs: ^0.5.18
+  path: ^1.9.0
 
   archive: ^4.0.7
   url_launcher: ^6.3.2

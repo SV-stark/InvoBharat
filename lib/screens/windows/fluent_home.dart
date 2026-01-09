@@ -94,7 +94,7 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                             decoration: BoxDecoration(
                               color: FluentTheme.of(context)
                                   .accentColor
-                                  .withOpacity(0.1),
+                                  .withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Center(

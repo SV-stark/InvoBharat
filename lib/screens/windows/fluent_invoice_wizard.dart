@@ -224,7 +224,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
     return Expanded(
       child: Container(
           height: 2,
-          color: Colors.grey.withOpacity(0.3),
+          color: Colors.grey.withValues(alpha: 0.3),
           margin: const EdgeInsets.symmetric(horizontal: 10)),
     );
   }
@@ -400,7 +400,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
         // Items Table Header
         Container(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          color: FluentTheme.of(context).accentColor.withOpacity(0.1),
+          color: FluentTheme.of(context).accentColor.withValues(alpha: 0.1),
           child: const Row(
             children: [
               Expanded(
@@ -436,7 +436,8 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
               return Container(
                 decoration: BoxDecoration(
                   border: Border(
-                      bottom: BorderSide(color: Colors.grey.withOpacity(0.2))),
+                      bottom: BorderSide(
+                          color: Colors.grey.withValues(alpha: 0.2))),
                 ),
                 padding:
                     const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
@@ -563,7 +564,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
 
     await showDialog(
         context: context,
-        builder: (context) {
+        builder: (dialogContext) {
           return ContentDialog(
             title: const Text("Add New Client"),
             content: Column(
@@ -639,35 +640,12 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
             actions: [
               Button(
                   child: const Text("Cancel"),
-                  onPressed: () => Navigator.pop(context)),
+                  onPressed: () => Navigator.pop(dialogContext)),
               FilledButton(
                   child: const Text("Save Client"),
                   onPressed: () async {
                     if (name.isEmpty) return;
-
-                    // Create Client object for Repository
-                    // We need to import Client or rely on transitivity
-                    // Assuming Client is available via client_provider import or similar
-                    // We will use dynamic or cast if needed, but better to be explicit.
-                    // Actually, let's assume imports are correct.
-                    // Wait, I need to make sure Client is imported.
-                    // If not, I'll implicitly define fields for now or add import.
-                    // But I can't add import in this block easily without touching top of file.
-                    // I'll check if Client is available.
-                    // ref.watch(clientListProvider) returns List<Client>.
-                    // So Client class IS available.
-
-                    // We need to construct a Client.
-                    // To avoid type error 'Receiver' -> 'Client', we must make a Client.
-
-                    // Hack: I can't construct Client if I don't import it?
-                    // It IS imported via client_provider?
-                    // No, providers usually export the type?
-                    // client_provider.dart: import '../models/client.dart'; ... final clientListProvider ...
-                    // Converting Receiver to Client might be needed?
-
-                    // Let's modify the code to use the Client constructor.
-                    // Client(id: ..., name: ...)
+                    final context = this.context;
 
                     final newClient = Client(
                       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -694,18 +672,18 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                       // Receiver doesn't have ID, email, phone
                     );
 
-                    if (mounted) {
-                      setState(() {
-                        _selectedClient = newReceiver;
-                      });
-                      Navigator.pop(context);
-                      displayInfoBar(context,
-                          builder: (c, close) => InfoBar(
-                              title: const Text("Success"),
-                              content: const Text("Client added successfully"),
-                              severity: InfoBarSeverity.success,
-                              onClose: close));
-                    }
+                    if (!context.mounted) return;
+
+                    setState(() {
+                      _selectedClient = newReceiver;
+                    });
+                    Navigator.pop(dialogContext);
+                    displayInfoBar(context,
+                        builder: (c, close) => InfoBar(
+                            title: const Text("Success"),
+                            content: const Text("Client added successfully"),
+                            severity: InfoBarSeverity.success,
+                            onClose: close));
                   }),
             ],
           );

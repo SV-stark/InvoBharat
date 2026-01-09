@@ -10,11 +10,13 @@ class Client {
   final String state;
 
   final String pan;
+  final String profileId;
   final String stateCode;
 
   const Client({
     required this.id,
     required this.name,
+    this.profileId = 'default',
     this.gstin = '',
     this.address = '',
     this.email = '',
@@ -28,6 +30,7 @@ class Client {
 
   Client copyWith({
     String? id,
+    String? profileId,
     String? name,
     String? gstin,
     String? address,
@@ -41,6 +44,7 @@ class Client {
   }) {
     return Client(
       id: id ?? this.id,
+      profileId: profileId ?? this.profileId,
       name: name ?? this.name,
       gstin: gstin ?? this.gstin,
       address: address ?? this.address,
@@ -57,6 +61,7 @@ class Client {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'profileId': profileId,
       'name': name,
       'gstin': gstin,
       'address': address,
@@ -73,6 +78,7 @@ class Client {
   factory Client.fromJson(Map<String, dynamic> json) {
     return Client(
       id: json['id'] ?? '',
+      profileId: json['profileId'] ?? 'default',
       name: json['name'] ?? '',
       gstin: json['gstin'] ?? '',
       address: json['address'] ?? '',
