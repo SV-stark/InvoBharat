@@ -9,6 +9,7 @@ import '../../providers/business_profile_provider.dart';
 import '../../providers/client_provider.dart';
 import '../../providers/invoice_repository_provider.dart';
 import '../../utils/pdf_generator.dart';
+import '../../utils/constants.dart';
 
 class FluentInvoiceWizard extends ConsumerStatefulWidget {
   final Invoice? invoiceToEdit;
@@ -262,12 +263,21 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
               const SizedBox(height: 10),
               InfoLabel(
                 label: "Place of Supply",
-                child: TextBox(
+                child: AutoSuggestBox<String>(
                   placeholder: "State Name",
-                  controller: TextEditingController(text: _placeOfSupply)
-                    ..selection =
-                        TextSelection.collapsed(offset: _placeOfSupply.length),
-                  onChanged: (v) => _placeOfSupply = v,
+                  controller: TextEditingController(text: _placeOfSupply),
+                  items: IndianStates.states
+                      .map(
+                          (e) => AutoSuggestBoxItem<String>(value: e, label: e))
+                      .toList(),
+                  onSelected: (item) {
+                    setState(() => _placeOfSupply = item.value ?? "");
+                  },
+                  onChanged: (text, reason) {
+                    if (reason == TextChangedReason.userInput) {
+                      _placeOfSupply = text;
+                    }
+                  },
                 ),
               ),
               const SizedBox(height: 10),
@@ -500,10 +510,21 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                     Expanded(
                       child: InfoLabel(
                         label: "State",
-                        child: TextBox(
+                        child: AutoSuggestBox<String>(
                           placeholder: "e.g. Karnataka",
                           controller: TextEditingController(text: state),
-                          onChanged: (v) => state = v,
+                          items: IndianStates.states
+                              .map((e) => AutoSuggestBoxItem<String>(
+                                  value: e, label: e))
+                              .toList(),
+                          onSelected: (item) {
+                            state = item.value ?? "";
+                          },
+                          onChanged: (text, reason) {
+                            if (reason == TextChangedReason.userInput) {
+                              state = text;
+                            }
+                          },
                         ),
                       ),
                     ),
