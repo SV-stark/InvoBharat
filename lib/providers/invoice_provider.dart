@@ -30,7 +30,7 @@ class InvoiceNotifier extends Notifier<Invoice> {
           "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}",
       items: [
         // One empty item to start
-        InvoiceItem(description: "", amount: 0, gstRate: 18),
+        const InvoiceItem(description: "", amount: 0, gstRate: 18),
       ],
       // Pre-fill bank details
       bankName: profile.bankName,
@@ -157,6 +157,7 @@ class InvoiceNotifier extends Notifier<Invoice> {
   void addItem() {
     state = state.copyWith(items: [
       ...state.items,
+      // ignore: prefer_const_constructors
       InvoiceItem(description: "", amount: 0, gstRate: 18)
     ]);
   }

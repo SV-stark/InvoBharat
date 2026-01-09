@@ -11,7 +11,7 @@ void main() {
         invoiceDate: DateTime.now(),
         receiver: const Receiver(),
         items: [
-          InvoiceItem(amount: 100, gstRate: 18),
+          const InvoiceItem(amount: 100, gstRate: 18),
         ],
       );
 
@@ -30,7 +30,7 @@ void main() {
         invoiceDate: DateTime.now(),
         receiver: const Receiver(),
         items: [
-          InvoiceItem(amount: 100, gstRate: 18),
+          const InvoiceItem(amount: 100, gstRate: 18),
         ],
       );
 
@@ -49,7 +49,7 @@ void main() {
         invoiceDate: DateTime.now(),
         receiver: const Receiver(),
         items: [
-          InvoiceItem(amount: 100, gstRate: 18),
+          const InvoiceItem(amount: 100, gstRate: 18),
         ],
       );
 
@@ -65,7 +65,7 @@ void main() {
         invoiceDate: DateTime.now(),
         receiver: const Receiver(),
         items: [
-          InvoiceItem(amount: 100, gstRate: 18),
+          const InvoiceItem(amount: 100, gstRate: 18),
         ],
       );
       // If supplier state is empty, isInterState returns false logic in my code

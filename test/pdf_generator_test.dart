@@ -13,7 +13,7 @@ void main() {
       id: '1',
       invoiceNo: 'INV-001',
       invoiceDate: DateTime.now(),
-      items: [InvoiceItem(description: 'Test', amount: 100)],
+      items: [const InvoiceItem(description: 'Test', amount: 100)],
       supplier: const Supplier(state: 'Karnataka'),
       receiver: const Receiver(name: 'Test Client', state: 'Karnataka'),
     );

@@ -195,13 +195,13 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                   Container(
                     height: 200,
                     alignment: Alignment.center,
-                    child: Column(
+                    child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(FluentIcons.error_badge,
+                        Icon(FluentIcons.error_badge,
                             size: 40, color: Colors.grey),
-                        const SizedBox(height: 10),
-                        const Text("No invoices found",
+                        SizedBox(height: 10),
+                        Text("No invoices found",
                             style: TextStyle(color: Colors.grey)),
                       ],
                     ),
