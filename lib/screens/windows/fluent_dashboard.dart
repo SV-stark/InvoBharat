@@ -16,6 +16,7 @@ import 'fluent_recurring_screen.dart';
 import '../../models/invoice.dart';
 
 import '../../services/dashboard_actions.dart'; // Re-added
+import '../../services/gstr_import_service.dart';
 
 class FluentDashboard extends ConsumerStatefulWidget {
   const FluentDashboard({super.key});
@@ -126,6 +127,11 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                       label: const Text('Export GSTR-1'),
                       icon: const Icon(FluentIcons.download),
                       onPressed: () => _exportGstr1(context, allInvoices),
+                    ),
+                    CommandBarButton(
+                      label: const Text('Quick Import'),
+                      icon: const Icon(FluentIcons.upload),
+                      onPressed: () => _importGstr1(context),
                     ),
                   ],
                   secondaryItems: [
@@ -427,6 +433,70 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
       displayInfoBar(context,
           builder: (context, close) => InfoBar(
               title: const Text("Error"),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              onClose: close));
+    }
+  }
+
+  Future<void> _importGstr1(BuildContext context) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        dialogTitle: 'Select GSTR-1 CSV',
+        allowedExtensions: ['csv'],
+        type: FileType.custom,
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final file = File(result.files.single.path!);
+        final csvContent = await file.readAsString();
+        final importResult = GstrImportService().parseGstr1Csv(csvContent);
+
+        // Here we would typically save to DB. For now, we simulate success and show missing numbers.
+        // await ref.read(invoiceRepositoryProvider).bulkAdd(importResult.invoices);
+
+        if (!context.mounted) return;
+
+        showDialog(
+          context: context,
+          builder: (context) => ContentDialog(
+            title: const Text("Import Results"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Processed ${importResult.totalRowsProcessed} rows."),
+                Text("Found ${importResult.invoices.length} invoices."),
+                const SizedBox(height: 10),
+                if (importResult.missingInvoiceNumbers.isNotEmpty) ...[
+                  Text("Missing Invoice Numbers (Gap in sequence):",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.red)),
+                  Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.all(8),
+                    color: Colors.grey.withValues(alpha: 0.1),
+                    child: SelectableText(
+                        importResult.missingInvoiceNumbers.join(", ")),
+                  ),
+                ] else
+                  Text("No sequence gaps found.",
+                      style: TextStyle(color: Colors.green)),
+              ],
+            ),
+            actions: [
+              Button(
+                  child: const Text("OK"),
+                  onPressed: () => Navigator.pop(context)),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      displayInfoBar(context,
+          builder: (context, close) => InfoBar(
+              title: const Text("Import Error"),
               content: Text(e.toString()),
               severity: InfoBarSeverity.error,
               onClose: close));
