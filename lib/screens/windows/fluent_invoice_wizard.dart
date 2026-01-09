@@ -20,8 +20,6 @@ class FluentInvoiceWizard extends ConsumerStatefulWidget {
 }
 
 class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
-  int _currentStep = 0;
-
   // Invoice Data State
   late String _invoiceNo;
   DateTime _invoiceDate = DateTime.now();
@@ -109,289 +107,189 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
 
   @override
   Widget build(BuildContext context) {
-    return ScaffoldPage(
+    return ScaffoldPage.scrollable(
       header: PageHeader(
         title:
             Text(widget.invoiceToEdit == null ? 'New Invoice' : 'Edit Invoice'),
         commandBar: CommandBar(
           primaryItems: [
             CommandBarButton(
+              icon: const Icon(FluentIcons.print),
+              label: const Text("Preview PDF"),
+              onPressed: _showPreviewDialog,
+            ),
+            CommandBarButton(
               icon: const Icon(FluentIcons.save),
               label: const Text("Save Invoice"),
-              onPressed: _currentStep == 2 ? _saveInvoice : null,
-            )
+              onPressed: _saveInvoice,
+            ),
           ],
         ),
       ),
-      content: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            // Process Stepper
-            Row(
-              children: [
-                _buildStep(0, "Details", FluentIcons.contact),
-                _buildStepDivider(),
-                _buildStep(1, "Items", FluentIcons.product_list),
-                _buildStepDivider(),
-                _buildStep(2, "Preview", FluentIcons.print),
-              ],
-            ),
-            const SizedBox(height: 30),
-            Expanded(
-              child: _buildStepContent(),
-            ),
-            const SizedBox(height: 20),
-            // Navigation Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Button(
-                  onPressed: _currentStep > 0
-                      ? () => setState(() => _currentStep--)
-                      : null,
-                  child: const Text("Back"),
-                ),
-                FilledButton(
-                  onPressed: _currentStep < 2 ? _validateAndNext : _saveInvoice,
-                  child: Text(_currentStep < 2 ? "Next" : "Save & Close"),
-                ),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _validateAndNext() {
-    if (_currentStep == 0) {
-      if (_selectedClient == null || _selectedClient!.name.isEmpty) {
-        displayInfoBar(context, builder: (context, close) {
-          return InfoBar(
-              title: const Text("Required"),
-              content: const Text("Please select a client"),
-              severity: InfoBarSeverity.warning,
-              onClose: close);
-        });
-        return;
-      }
-      if (_invoiceNo.isEmpty) {
-        displayInfoBar(context, builder: (context, close) {
-          return InfoBar(
-              title: const Text("Required"),
-              content: const Text("Invoice Number is required"),
-              severity: InfoBarSeverity.warning,
-              onClose: close);
-        });
-        return;
-      }
-    }
-    setState(() => _currentStep++);
-  }
-
-  Widget _buildStep(int index, String title, IconData icon) {
-    final isCompleted = _currentStep > index;
-    final isCurrent = _currentStep == index;
-    final theme = FluentTheme.of(context);
-    final color = isCurrent || isCompleted ? theme.accentColor : Colors.grey;
-
-    return Row(
       children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: isCurrent ? color : Colors.transparent,
-            border: Border.all(color: color, width: 2),
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Icon(isCompleted ? FluentIcons.check_mark : icon,
-                size: 16, color: isCurrent ? Colors.white : color),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(title,
-            style: TextStyle(
-                fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-                color: color)),
+        _buildDetailsSection(),
+        const SizedBox(height: 20),
+        const Divider(),
+        const SizedBox(height: 20),
+        _buildItemsSection(),
+        const SizedBox(height: 20),
+        const Divider(),
+        const SizedBox(height: 20),
+        _buildFooterSection(),
       ],
     );
   }
 
-  Widget _buildStepDivider() {
-    return Expanded(
-      child: Container(
-          height: 2,
-          color: Colors.grey.withValues(alpha: 0.3),
-          margin: const EdgeInsets.symmetric(horizontal: 10)),
-    );
-  }
-
-  Widget _buildStepContent() {
-    switch (_currentStep) {
-      case 0:
-        return _buildDetailsStep();
-      case 1:
-        return _buildItemsStep();
-      case 2:
-        return _buildPreviewStep();
-      default:
-        return Container();
-    }
-  }
-
-  Widget _buildDetailsStep() {
+  // Renamed from _buildDetailsStep and removed ParametricScroll
+  Widget _buildDetailsSection() {
     final clients = ref.watch(clientListProvider);
-    return ParametricScroll(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Left Column: Client Selection
-          Expanded(
-            flex: 4,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Bill To",
-                    style: FluentTheme.of(context).typography.subtitle),
-                const SizedBox(height: 10),
-                if (_selectedClient == null)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AutoSuggestBox<String>(
-                          placeholder: "Search Client Name...",
-                          items: clients
-                              .map((c) => AutoSuggestBoxItem<String>(
-                                  value: c.id,
-                                  label: c.name,
-                                  child: Text(c.name)))
-                              .toList(),
-                          onSelected: (item) {
-                            final client =
-                                clients.firstWhere((c) => c.id == item.value);
-                            setState(() {
-                              _selectedClient = Receiver(
-                                name: client.name,
-                                address: client.address,
-                                gstin: client.gstin,
-                                state: client.state,
-                              );
-                            });
-                          },
-                        ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Left Column: Client Selection
+        Expanded(
+          flex: 4,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Bill To",
+                  style: FluentTheme.of(context).typography.subtitle),
+              const SizedBox(height: 10),
+              if (_selectedClient == null)
+                Row(
+                  children: [
+                    Expanded(
+                      child: AutoSuggestBox<String>(
+                        placeholder: "Search Client Name...",
+                        items: clients
+                            .map((c) => AutoSuggestBoxItem<String>(
+                                value: c.id,
+                                label: c.name,
+                                child: Text(c.name)))
+                            .toList(),
+                        onSelected: (item) {
+                          final client =
+                              clients.firstWhere((c) => c.id == item.value);
+                          setState(() {
+                            _selectedClient = Receiver(
+                              name: client.name,
+                              address: client.address,
+                              gstin: client.gstin,
+                              state: client.state,
+                            );
+                          });
+                        },
                       ),
-                      const SizedBox(width: 8),
-                      Button(
-                        onPressed: _showAddClientDialog,
-                        child: const Icon(FluentIcons.add),
-                      )
-                    ],
-                  )
-                else
-                  Card(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(_selectedClient!.name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
-                            IconButton(
-                                icon: const Icon(FluentIcons.edit),
-                                onPressed: () =>
-                                    setState(() => _selectedClient = null))
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(_selectedClient!.address),
-                        if (_selectedClient!.gstin.isNotEmpty)
-                          Text("GSTIN: ${_selectedClient!.gstin}"),
-                        if (_selectedClient!.state.isNotEmpty)
-                          Text("State: ${_selectedClient!.state}"),
-                      ],
                     ),
-                  ),
-                const SizedBox(height: 20),
-                InfoLabel(
-                  label: "Client Not Found?",
-                  child: const Text(
-                      "You can create a one-time client by searching, or add a permanent client using the '+' button."),
+                    const SizedBox(width: 8),
+                    Button(
+                      onPressed: _showAddClientDialog,
+                      child: const Icon(FluentIcons.add),
+                    )
+                  ],
                 )
-              ],
-            ),
+              else
+                Card(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(_selectedClient!.name,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold)),
+                          IconButton(
+                              icon: const Icon(FluentIcons.edit),
+                              onPressed: () =>
+                                  setState(() => _selectedClient = null))
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(_selectedClient!.address),
+                      if (_selectedClient!.gstin.isNotEmpty)
+                        Text("GSTIN: ${_selectedClient!.gstin}"),
+                      if (_selectedClient!.state.isNotEmpty)
+                        Text("State: ${_selectedClient!.state}"),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 20),
+              InfoLabel(
+                label: "Client Not Found?",
+                child: const Text(
+                    "You can create a one-time client by searching, or add a permanent client using the '+' button."),
+              )
+            ],
           ),
-          const SizedBox(width: 40),
-          // Right Column: Invoice Details
-          Expanded(
-            flex: 3,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Invoice Details",
-                    style: FluentTheme.of(context).typography.subtitle),
-                const SizedBox(height: 10),
-                InfoLabel(
-                  label: "Invoice Number",
-                  child: TextBox(
-                    placeholder: "INV-001",
-                    controller: TextEditingController(text: _invoiceNo)
-                      ..selection =
-                          TextSelection.collapsed(offset: _invoiceNo.length),
-                    onChanged: (v) => _invoiceNo = v,
-                  ),
+        ),
+        const SizedBox(width: 40),
+        // Right Column: Invoice Details
+        Expanded(
+          flex: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Invoice Details",
+                  style: FluentTheme.of(context).typography.subtitle),
+              const SizedBox(height: 10),
+              InfoLabel(
+                label: "Invoice Number",
+                child: TextBox(
+                  placeholder: "INV-001",
+                  controller: TextEditingController(text: _invoiceNo)
+                    ..selection =
+                        TextSelection.collapsed(offset: _invoiceNo.length),
+                  onChanged: (v) => _invoiceNo = v,
                 ),
-                const SizedBox(height: 10),
-                InfoLabel(
-                  label: "Invoice Date",
-                  child: DatePicker(
-                    selected: _invoiceDate,
-                    onChanged: (v) => setState(() => _invoiceDate = v),
-                  ),
+              ),
+              const SizedBox(height: 10),
+              InfoLabel(
+                label: "Invoice Date",
+                child: DatePicker(
+                  selected: _invoiceDate,
+                  onChanged: (v) => setState(() => _invoiceDate = v),
                 ),
-                const SizedBox(height: 10),
-                InfoLabel(
-                  label: "Due Date",
-                  child: DatePicker(
-                    selected: _dueDate ?? DateTime.now(),
-                    onChanged: (v) => setState(() => _dueDate = v),
-                  ),
+              ),
+              const SizedBox(height: 10),
+              InfoLabel(
+                label: "Due Date",
+                child: DatePicker(
+                  selected: _dueDate ?? DateTime.now(),
+                  onChanged: (v) => setState(() => _dueDate = v),
                 ),
-                const SizedBox(height: 10),
-                InfoLabel(
-                  label: "Place of Supply",
-                  child: TextBox(
-                    placeholder: "State Name",
-                    controller: TextEditingController(text: _placeOfSupply)
-                      ..selection = TextSelection.collapsed(
-                          offset: _placeOfSupply.length),
-                    onChanged: (v) => _placeOfSupply = v,
-                  ),
+              ),
+              const SizedBox(height: 10),
+              InfoLabel(
+                label: "Place of Supply",
+                child: TextBox(
+                  placeholder: "State Name",
+                  controller: TextEditingController(text: _placeOfSupply)
+                    ..selection =
+                        TextSelection.collapsed(offset: _placeOfSupply.length),
+                  onChanged: (v) => _placeOfSupply = v,
                 ),
-                const SizedBox(height: 10),
-                InfoLabel(
-                  label: "Payment Terms",
-                  child: TextBox(
-                    placeholder: "e.g. Due on Receipt",
-                    controller: TextEditingController(text: _paymentTerms)
-                      ..selection =
-                          TextSelection.collapsed(offset: _paymentTerms.length),
-                    onChanged: (v) => _paymentTerms = v,
-                  ),
+              ),
+              const SizedBox(height: 10),
+              InfoLabel(
+                label: "Payment Terms",
+                child: TextBox(
+                  placeholder: "e.g. Due on Receipt",
+                  controller: TextEditingController(text: _paymentTerms)
+                    ..selection =
+                        TextSelection.collapsed(offset: _paymentTerms.length),
+                  onChanged: (v) => _paymentTerms = v,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildItemsStep() {
+  // Renamed from _buildItemsStep
+  Widget _buildItemsSection() {
     final currency = NumberFormat.simpleCurrency(name: 'INR');
 
     return Column(
@@ -812,60 +710,128 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
         });
   }
 
-  Widget _buildPreviewStep() {
+  Widget _buildFooterSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Additional Notes",
+            style: FluentTheme.of(context).typography.subtitle),
+        const SizedBox(height: 10),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: InfoLabel(
+                label: "Terms & Conditions / Comments",
+                child: TextBox(
+                  placeholder: "Thanks for your business.",
+                  controller: TextEditingController(text: _comments),
+                  onChanged: (v) => _comments = v,
+                  maxLines: 4,
+                ),
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InfoLabel(
+                    label: "Invoice Style",
+                    child: ComboBox<String>(
+                      value: _invoiceStyle,
+                      items: ['Modern', 'Professional', 'Minimal']
+                          .map((e) => ComboBoxItem(value: e, child: Text(e)))
+                          .toList(),
+                      onChanged: (v) {
+                        if (v != null) setState(() => _invoiceStyle = v);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _showPreviewDialog() {
     final invoice = _buildCurrentInvoice();
     final profile = ref.read(businessProfileProvider);
 
-    return Column(
-      children: [
-        // Style Selector
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text("Invoice Style: "),
-            const SizedBox(width: 8),
-            ComboBox<String>(
-              value: _invoiceStyle,
-              items: ['Modern', 'Professional', 'Minimal']
-                  .map((e) => ComboBoxItem(value: e, child: Text(e)))
-                  .toList(),
-              onChanged: (v) {
-                if (v != null) setState(() => _invoiceStyle = v);
-              },
-            ),
-            const SizedBox(width: 20),
-            // Note area
-            SizedBox(
-              width: 300,
-              child: TextBox(
-                placeholder: "Add Notes / Comments...",
-                controller: TextEditingController(text: _comments),
-                onChanged: (v) => _comments = v,
-              ),
-            )
-          ],
-        ),
-        const SizedBox(height: 20),
-        Expanded(
-          child: PdfPreview(
+    showDialog(
+      context: context,
+      builder: (context) {
+        return ContentDialog(
+          constraints: const BoxConstraints(maxWidth: 1000, maxHeight: 800),
+          title: const Text("Invoice Preview"),
+          content: PdfPreview(
             build: (format) => generateInvoicePdf(invoice, profile),
             canChangeOrientation: false,
             canChangePageFormat: false,
             canDebug: false,
             pdfFileName: "${invoice.invoiceNo}.pdf",
           ),
-        ),
-      ],
+          actions: [
+            Button(
+              child: const Text("Close"),
+              onPressed: () => Navigator.pop(context),
+            ),
+            FilledButton(
+              child: const Text("Save & Close"),
+              onPressed: () {
+                Navigator.pop(context);
+                _saveInvoice();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
   Future<void> _saveInvoice() async {
+    // Validation
+    if (_selectedClient == null || _selectedClient!.name.isEmpty) {
+      displayInfoBar(context, builder: (context, close) {
+        return InfoBar(
+            title: const Text("Required"),
+            content: const Text("Please select a client"),
+            severity: InfoBarSeverity.warning,
+            onClose: close);
+      });
+      return;
+    }
+    if (_invoiceNo.isEmpty) {
+      displayInfoBar(context, builder: (context, close) {
+        return InfoBar(
+            title: const Text("Required"),
+            content: const Text("Invoice Number is required"),
+            severity: InfoBarSeverity.warning,
+            onClose: close);
+      });
+      return;
+    }
+    if (_items.isEmpty) {
+      displayInfoBar(context, builder: (context, close) {
+        return InfoBar(
+            title: const Text("Required"),
+            content: const Text("Please add at least one item"),
+            severity: InfoBarSeverity.warning,
+            onClose: close);
+      });
+      return;
+    }
+
     final repository = ref.read(invoiceRepositoryProvider);
     final invoice = _buildCurrentInvoice();
 
     try {
       await repository.saveInvoice(invoice);
-      if (!mounted) return;
+      final context = this.context;
+      if (!context.mounted) return;
 
       displayInfoBar(context, builder: (context, close) {
         return InfoBar(
@@ -877,7 +843,8 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
 
       Navigator.pop(context); // Go back to dashboard/list
     } catch (e) {
-      if (!mounted) return;
+      final context = this.context;
+      if (!context.mounted) return;
       displayInfoBar(context, builder: (context, close) {
         return InfoBar(
             title: const Text("Error"),
@@ -886,14 +853,5 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
             onClose: close);
       });
     }
-  }
-}
-
-class ParametricScroll extends StatelessWidget {
-  final Widget child;
-  const ParametricScroll({super.key, required this.child});
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(child: child);
   }
 }

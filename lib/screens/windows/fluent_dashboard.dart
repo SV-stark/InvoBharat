@@ -96,6 +96,11 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
             final totalSGST = stats['sgst'] as double;
             final totalIGST = stats['igst'] as double;
 
+            final paymentsReceived =
+                filteredInvoices.fold(0.0, (sum, inv) => sum + inv.totalPaid);
+            final paymentsDue =
+                filteredInvoices.fold(0.0, (sum, inv) => sum + inv.balanceDue);
+
             final currency = NumberFormat.currency(
                 symbol: profile.currencySymbol, decimalDigits: 2);
 
@@ -145,32 +150,72 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 const SizedBox(height: 20),
 
                 // Stat Cards
+                // Row 1: Revenue (Hero)
                 Row(
                   children: [
-                    _buildHeroStatCard(
+                    Expanded(
+                      child: _buildHeroStatCard(
                         context,
                         "Total Revenue",
                         currency.format(totalRevenue),
                         FluentIcons.money,
-                        Colors.blue),
-                    const SizedBox(width: 16),
-                    GestureDetector(
-                      onTap: () => _showGstBreakdown(context, totalCGST,
-                          totalSGST, totalIGST, profile.currencySymbol),
+                        theme.accentColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Row 2: Received & Due
+                Row(
+                  children: [
+                    Expanded(
                       child: _buildStatCard(
-                          context,
-                          "Total GST",
-                          currency.format(totalCGST + totalSGST + totalIGST),
-                          FluentIcons.bank,
-                          Colors.purple),
+                        context,
+                        "Received",
+                        currency.format(paymentsReceived),
+                        FluentIcons.check_mark,
+                        Colors.green,
+                      ),
                     ),
                     const SizedBox(width: 16),
-                    _buildStatCard(
+                    Expanded(
+                      child: _buildStatCard(
                         context,
-                        "Invoices",
-                        "${filteredInvoices.length}",
-                        FluentIcons.page_list,
-                        Colors.teal),
+                        "Due",
+                        currency.format(paymentsDue),
+                        FluentIcons.warning,
+                        Colors.orange,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Row 3: GST & Invoices
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _showGstBreakdown(context, totalCGST,
+                            totalSGST, totalIGST, profile.currencySymbol),
+                        child: _buildStatCard(
+                            context,
+                            "GST Liability",
+                            currency.format(totalCGST + totalSGST + totalIGST),
+                            FluentIcons.bank,
+                            Colors.purple),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildStatCard(
+                          context,
+                          "Total Invoices",
+                          "${filteredInvoices.length}",
+                          FluentIcons.page_list,
+                          Colors.teal),
+                    ),
                   ],
                 ),
 
@@ -292,56 +337,50 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
 
   Widget _buildHeroStatCard(BuildContext context, String title, String value,
       IconData icon, Color color) {
-    return Expanded(
-      flex: 2,
-      child: Card(
-        padding: const EdgeInsets.all(16),
-        backgroundColor: color, // Solid color for hero
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(icon, size: 24, color: Colors.white),
-                const Icon(FluentIcons.chart, color: Colors.white),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(value,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text(title,
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.8))),
-          ],
-        ),
+    return Card(
+      padding: const EdgeInsets.all(16),
+      backgroundColor: color, // Solid color for hero
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Icon(icon, size: 24, color: Colors.white),
+              const Icon(FluentIcons.chart, color: Colors.white),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(value,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(title,
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.8))),
+        ],
       ),
     );
   }
 
   Widget _buildStatCard(BuildContext context, String title, String value,
       IconData icon, Color color) {
-    return Expanded(
-      child: Card(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, size: 24, color: color),
-            const SizedBox(height: 12),
-            Text(value,
-                style: TextStyle(
-                    color: FluentTheme.of(context).typography.bodyLarge?.color,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text(title,
-                style: const TextStyle(color: Colors.grey, fontSize: 12)),
-          ],
-        ),
+    return Card(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 24, color: color),
+          const SizedBox(height: 12),
+          Text(value,
+              style: TextStyle(
+                  color: FluentTheme.of(context).typography.bodyLarge?.color,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        ],
       ),
     );
   }
