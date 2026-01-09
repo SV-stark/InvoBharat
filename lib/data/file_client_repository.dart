@@ -29,6 +29,22 @@ class FileClientRepository implements ClientRepository {
   }
 
   @override
+  Future<Client?> getClient(String id) async {
+    try {
+      final path = await _localPath;
+      final file = File('$path/client_$id.json');
+      if (await file.exists()) {
+        final contents = await file.readAsString();
+        return Client.fromJson(jsonDecode(contents));
+      }
+      return null;
+    } catch (e) {
+      debugPrint("Error loading client $id: $e");
+      return null;
+    }
+  }
+
+  @override
   Future<void> deleteClient(String clientId) async {
     final path = await _localPath;
     final fileName = 'client_$clientId.json';
