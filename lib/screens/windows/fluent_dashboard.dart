@@ -474,7 +474,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 const SizedBox(height: 10),
                 if (importResult.missingInvoiceNumbers.isNotEmpty) ...[
                   Text("Missing Invoice Numbers (Gap in sequence):",
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontWeight: FontWeight.bold, color: Colors.red)),
                   Container(
                     margin: const EdgeInsets.only(top: 8),
