@@ -29,7 +29,7 @@ class ItemTemplatesScreen extends ConsumerWidget {
                   child: ListTile(
                     title: Text(template.description),
                     subtitle: Text(
-                        "₹${template.amount} / ${template.unit} (GST: ${template.gstRate}%)"),
+                        "₹${template.amount} / ${template.unit} (GST: ${template.gstRate}%) • Qty: ${template.quantity}"),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -66,6 +66,9 @@ class ItemTemplatesScreen extends ConsumerWidget {
     final gstCtrl =
         TextEditingController(text: template?.gstRate.toString() ?? '18');
     final sacCtrl = TextEditingController(text: template?.sacCode ?? '');
+    final qtyCtrl = TextEditingController(
+        text: template?.quantity.toString() ?? '1'); // NEW
+
     String codeType = template?.codeType ?? 'SAC';
 
     showDialog(
@@ -101,6 +104,13 @@ class ItemTemplatesScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
                 Row(
                   children: [
+                    Expanded(
+                        child: TextField(
+                            controller: qtyCtrl,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                                labelText: "Default Qty"))),
+                    const SizedBox(width: 8),
                     Expanded(
                         child: TextField(
                             controller: gstCtrl,
@@ -141,6 +151,7 @@ class ItemTemplatesScreen extends ConsumerWidget {
                     gstRate: double.tryParse(gstCtrl.text) ?? 18,
                     codeType: codeType,
                     sacCode: sacCtrl.text,
+                    quantity: double.tryParse(qtyCtrl.text) ?? 1,
                   );
 
                   if (template == null) {

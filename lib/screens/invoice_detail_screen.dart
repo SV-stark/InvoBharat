@@ -9,9 +9,10 @@ import '../models/recurring_profile.dart'; // New
 import '../providers/invoice_repository_provider.dart';
 import '../providers/recurring_provider.dart'; // New
 import '../providers/business_profile_provider.dart'; // New
-import 'invoice_form.dart';
-
+import 'package:url_launcher/url_launcher.dart'; // New
 import 'package:printing/printing.dart';
+
+import 'windows/fluent_invoice_wizard.dart';
 import '../utils/pdf_generator.dart';
 
 class InvoiceDetailScreen extends ConsumerStatefulWidget {
@@ -77,12 +78,41 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             : _invoice.invoiceNo),
         actions: [
           IconButton(
+            icon: const Icon(Icons.email),
+            tooltip: "Email Client",
+            onPressed: () async {
+              final email = _invoice.receiver.email;
+              if (email.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Client has no email")));
+                return;
+              }
+
+              final Uri emailLaunchUri = Uri(
+                scheme: 'mailto',
+                path: email,
+                query:
+                    'subject=Invoice ${_invoice.invoiceNo}&body=Dear ${_invoice.receiver.name},\n\nPlease find attached invoice ${_invoice.invoiceNo}.\n\nRegards,\n${_invoice.supplier.name}',
+              );
+
+              if (await canLaunchUrl(emailLaunchUri)) {
+                await launchUrl(emailLaunchUri);
+              } else {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text("Could not launch email client")));
+                }
+              }
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () async {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (_) => InvoiceFormScreen(invoiceToEdit: _invoice)),
+                    builder: (_) =>
+                        FluentInvoiceWizard(invoiceToEdit: _invoice)),
               );
               _refreshInvoice();
             },

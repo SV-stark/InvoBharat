@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../providers/estimate_provider.dart';
+import '../../models/invoice.dart';
+import '../../models/estimate.dart';
 import 'fluent_estimate_form.dart';
+import 'fluent_invoice_form.dart';
 
 class FluentEstimatesScreen extends ConsumerWidget {
   const FluentEstimatesScreen({super.key});
@@ -84,16 +87,32 @@ class FluentEstimatesScreen extends ConsumerWidget {
                         style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text(
                         '${estimate.estimateNo} • ${DateFormat('dd MMM yyyy').format(estimate.date)}'),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          '₹${estimate.totalAmount.toStringAsFixed(2)}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '₹${estimate.totalAmount.toStringAsFixed(2)}',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            _buildStatusBadge(
+                                theme, estimate.status ?? 'Draft'),
+                          ],
                         ),
-                        const SizedBox(height: 4),
-                        _buildStatusBadge(theme, estimate.status ?? 'Draft'),
+                        if (estimate.status != 'Converted') ...[
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon:
+                                const Icon(FluentIcons.switch_widget, size: 18),
+                            onPressed: () =>
+                                _convertToInvoice(context, estimate),
+                          ),
+                        ],
                       ],
                     ),
                     onPressed: () {
@@ -144,6 +163,31 @@ class FluentEstimatesScreen extends ConsumerWidget {
       child: Text(
         status,
         style: TextStyle(fontSize: 10, color: color),
+      ),
+    );
+  }
+
+  void _convertToInvoice(BuildContext context, Estimate estimate) {
+    final invoice = Invoice(
+      supplier: estimate.supplier,
+      receiver: estimate.receiver,
+      items: estimate.items,
+      invoiceDate: DateTime.now(),
+      dueDate: DateTime.now().add(const Duration(days: 14)),
+      invoiceNo: '', // Let form/user generate
+      style: 'Modern',
+      // Convert Notes/Terms to comments?
+      comments: estimate.notes.isNotEmpty ? estimate.notes : '',
+      paymentTerms: estimate.terms.isNotEmpty ? estimate.terms : '',
+    );
+
+    Navigator.push(
+      context,
+      FluentPageRoute(
+        builder: (context) => FluentInvoiceForm(
+          invoiceToEdit: invoice,
+          estimateIdToMarkConverted: estimate.id,
+        ),
       ),
     );
   }

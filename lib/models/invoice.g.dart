@@ -36,6 +36,13 @@ _Invoice _$InvoiceFromJson(Map<String, dynamic> json) => _Invoice(
       deliveryAddress: json['deliveryAddress'] as String?,
       isArchived: json['isArchived'] as bool? ?? false,
       currency: json['currency'] as String? ?? 'INR',
+      discountAmount: (json['discountAmount'] as num?)?.toDouble() ?? 0.0,
+      type: $enumDecodeNullable(_$InvoiceTypeEnumMap, json['type']) ??
+          InvoiceType.invoice,
+      originalInvoiceNumber: json['originalInvoiceNumber'] as String?,
+      originalInvoiceDate: json['originalInvoiceDate'] == null
+          ? null
+          : DateTime.parse(json['originalInvoiceDate'] as String),
     );
 
 Map<String, dynamic> _$InvoiceToJson(_Invoice instance) => <String, dynamic>{
@@ -59,7 +66,18 @@ Map<String, dynamic> _$InvoiceToJson(_Invoice instance) => <String, dynamic>{
       'deliveryAddress': instance.deliveryAddress,
       'isArchived': instance.isArchived,
       'currency': instance.currency,
+      'discountAmount': instance.discountAmount,
+      'type': _$InvoiceTypeEnumMap[instance.type]!,
+      'originalInvoiceNumber': instance.originalInvoiceNumber,
+      'originalInvoiceDate': instance.originalInvoiceDate?.toIso8601String(),
     };
+
+const _$InvoiceTypeEnumMap = {
+  InvoiceType.invoice: 'invoice',
+  InvoiceType.deliveryChallan: 'deliveryChallan',
+  InvoiceType.creditNote: 'creditNote',
+  InvoiceType.debitNote: 'debitNote',
+};
 
 _Supplier _$SupplierFromJson(Map<String, dynamic> json) => _Supplier(
       name: json['name'] as String? ?? '',
@@ -88,6 +106,7 @@ _Receiver _$ReceiverFromJson(Map<String, dynamic> json) => _Receiver(
       pan: json['pan'] as String? ?? '',
       state: json['state'] as String? ?? '',
       stateCode: json['stateCode'] as String? ?? '',
+      email: json['email'] as String? ?? '',
     );
 
 Map<String, dynamic> _$ReceiverToJson(_Receiver instance) => <String, dynamic>{
@@ -97,6 +116,7 @@ Map<String, dynamic> _$ReceiverToJson(_Receiver instance) => <String, dynamic>{
       'pan': instance.pan,
       'state': instance.state,
       'stateCode': instance.stateCode,
+      'email': instance.email,
     };
 
 _InvoiceItem _$InvoiceItemFromJson(Map<String, dynamic> json) => _InvoiceItem(

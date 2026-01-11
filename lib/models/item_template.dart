@@ -13,6 +13,7 @@ abstract class ItemTemplate with _$ItemTemplate {
     @Default(18.0) double gstRate,
     @Default('SAC') String codeType,
     @Default('') String sacCode,
+    @Default(1.0) double quantity,
   }) = _ItemTemplate;
 
   factory ItemTemplate.fromJson(Map<String, dynamic> json) =>

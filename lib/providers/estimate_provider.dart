@@ -111,4 +111,16 @@ class EstimateListNotifier extends AsyncNotifier<List<Estimate>> {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() => _loadEstimates());
   }
+
+  Future<void> markAsConverted(String id) async {
+    final repo = ref.read(estimateRepositoryProvider);
+    final estimates = await repo.getAllEstimates();
+    final estimate = estimates.firstWhere((e) => e.id == id);
+    final updated = estimate.copyWith(status: 'Converted');
+    await repo.saveEstimate(updated);
+
+    // Update local state without full reload if possible, but reload is safer
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() => _loadEstimates());
+  }
 }

@@ -33,7 +33,12 @@ mixin _$Invoice {
   String get branch;
   String? get deliveryAddress;
   bool get isArchived; // Phase 4
-  String get currency;
+  String get currency; // Phase 4
+  double get discountAmount; // NEW: Invoice level discount
+  InvoiceType get type; // NEW: Delivery Challan Support
+// Credit/Debit Note Fields
+  String? get originalInvoiceNumber;
+  DateTime? get originalInvoiceDate;
 
   /// Create a copy of Invoice
   /// with the given fields replaced by the non-null parameter values.
@@ -83,7 +88,14 @@ mixin _$Invoice {
             (identical(other.isArchived, isArchived) ||
                 other.isArchived == isArchived) &&
             (identical(other.currency, currency) ||
-                other.currency == currency));
+                other.currency == currency) &&
+            (identical(other.discountAmount, discountAmount) ||
+                other.discountAmount == discountAmount) &&
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.originalInvoiceNumber, originalInvoiceNumber) ||
+                other.originalInvoiceNumber == originalInvoiceNumber) &&
+            (identical(other.originalInvoiceDate, originalInvoiceDate) ||
+                other.originalInvoiceDate == originalInvoiceDate));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -109,12 +121,16 @@ mixin _$Invoice {
         branch,
         deliveryAddress,
         isArchived,
-        currency
+        currency,
+        discountAmount,
+        type,
+        originalInvoiceNumber,
+        originalInvoiceDate
       ]);
 
   @override
   String toString() {
-    return 'Invoice(id: $id, style: $style, supplier: $supplier, receiver: $receiver, invoiceNo: $invoiceNo, invoiceDate: $invoiceDate, dueDate: $dueDate, placeOfSupply: $placeOfSupply, reverseCharge: $reverseCharge, paymentTerms: $paymentTerms, items: $items, payments: $payments, comments: $comments, bankName: $bankName, accountNo: $accountNo, ifscCode: $ifscCode, branch: $branch, deliveryAddress: $deliveryAddress, isArchived: $isArchived, currency: $currency)';
+    return 'Invoice(id: $id, style: $style, supplier: $supplier, receiver: $receiver, invoiceNo: $invoiceNo, invoiceDate: $invoiceDate, dueDate: $dueDate, placeOfSupply: $placeOfSupply, reverseCharge: $reverseCharge, paymentTerms: $paymentTerms, items: $items, payments: $payments, comments: $comments, bankName: $bankName, accountNo: $accountNo, ifscCode: $ifscCode, branch: $branch, deliveryAddress: $deliveryAddress, isArchived: $isArchived, currency: $currency, discountAmount: $discountAmount, type: $type, originalInvoiceNumber: $originalInvoiceNumber, originalInvoiceDate: $originalInvoiceDate)';
   }
 }
 
@@ -143,7 +159,11 @@ abstract mixin class $InvoiceCopyWith<$Res> {
       String branch,
       String? deliveryAddress,
       bool isArchived,
-      String currency});
+      String currency,
+      double discountAmount,
+      InvoiceType type,
+      String? originalInvoiceNumber,
+      DateTime? originalInvoiceDate});
 
   $SupplierCopyWith<$Res> get supplier;
   $ReceiverCopyWith<$Res> get receiver;
@@ -181,6 +201,10 @@ class _$InvoiceCopyWithImpl<$Res> implements $InvoiceCopyWith<$Res> {
     Object? deliveryAddress = freezed,
     Object? isArchived = null,
     Object? currency = null,
+    Object? discountAmount = null,
+    Object? type = null,
+    Object? originalInvoiceNumber = freezed,
+    Object? originalInvoiceDate = freezed,
   }) {
     return _then(_self.copyWith(
       id: freezed == id
@@ -263,6 +287,22 @@ class _$InvoiceCopyWithImpl<$Res> implements $InvoiceCopyWith<$Res> {
           ? _self.currency
           : currency // ignore: cast_nullable_to_non_nullable
               as String,
+      discountAmount: null == discountAmount
+          ? _self.discountAmount
+          : discountAmount // ignore: cast_nullable_to_non_nullable
+              as double,
+      type: null == type
+          ? _self.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as InvoiceType,
+      originalInvoiceNumber: freezed == originalInvoiceNumber
+          ? _self.originalInvoiceNumber
+          : originalInvoiceNumber // ignore: cast_nullable_to_non_nullable
+              as String?,
+      originalInvoiceDate: freezed == originalInvoiceDate
+          ? _self.originalInvoiceDate
+          : originalInvoiceDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 
@@ -400,7 +440,11 @@ extension InvoicePatterns on Invoice {
             String branch,
             String? deliveryAddress,
             bool isArchived,
-            String currency)?
+            String currency,
+            double discountAmount,
+            InvoiceType type,
+            String? originalInvoiceNumber,
+            DateTime? originalInvoiceDate)?
         $default, {
     required TResult orElse(),
   }) {
@@ -427,7 +471,11 @@ extension InvoicePatterns on Invoice {
             _that.branch,
             _that.deliveryAddress,
             _that.isArchived,
-            _that.currency);
+            _that.currency,
+            _that.discountAmount,
+            _that.type,
+            _that.originalInvoiceNumber,
+            _that.originalInvoiceDate);
       case _:
         return orElse();
     }
@@ -468,7 +516,11 @@ extension InvoicePatterns on Invoice {
             String branch,
             String? deliveryAddress,
             bool isArchived,
-            String currency)
+            String currency,
+            double discountAmount,
+            InvoiceType type,
+            String? originalInvoiceNumber,
+            DateTime? originalInvoiceDate)
         $default,
   ) {
     final _that = this;
@@ -494,7 +546,11 @@ extension InvoicePatterns on Invoice {
             _that.branch,
             _that.deliveryAddress,
             _that.isArchived,
-            _that.currency);
+            _that.currency,
+            _that.discountAmount,
+            _that.type,
+            _that.originalInvoiceNumber,
+            _that.originalInvoiceDate);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -534,7 +590,11 @@ extension InvoicePatterns on Invoice {
             String branch,
             String? deliveryAddress,
             bool isArchived,
-            String currency)?
+            String currency,
+            double discountAmount,
+            InvoiceType type,
+            String? originalInvoiceNumber,
+            DateTime? originalInvoiceDate)?
         $default,
   ) {
     final _that = this;
@@ -560,7 +620,11 @@ extension InvoicePatterns on Invoice {
             _that.branch,
             _that.deliveryAddress,
             _that.isArchived,
-            _that.currency);
+            _that.currency,
+            _that.discountAmount,
+            _that.type,
+            _that.originalInvoiceNumber,
+            _that.originalInvoiceDate);
       case _:
         return null;
     }
@@ -590,7 +654,11 @@ class _Invoice extends Invoice {
       this.branch = '',
       this.deliveryAddress,
       this.isArchived = false,
-      this.currency = 'INR'})
+      this.currency = 'INR',
+      this.discountAmount = 0.0,
+      this.type = InvoiceType.invoice,
+      this.originalInvoiceNumber,
+      this.originalInvoiceDate})
       : _items = items,
         _payments = payments,
         super._();
@@ -664,6 +732,20 @@ class _Invoice extends Invoice {
   @override
   @JsonKey()
   final String currency;
+// Phase 4
+  @override
+  @JsonKey()
+  final double discountAmount;
+// NEW: Invoice level discount
+  @override
+  @JsonKey()
+  final InvoiceType type;
+// NEW: Delivery Challan Support
+// Credit/Debit Note Fields
+  @override
+  final String? originalInvoiceNumber;
+  @override
+  final DateTime? originalInvoiceDate;
 
   /// Create a copy of Invoice
   /// with the given fields replaced by the non-null parameter values.
@@ -718,7 +800,14 @@ class _Invoice extends Invoice {
             (identical(other.isArchived, isArchived) ||
                 other.isArchived == isArchived) &&
             (identical(other.currency, currency) ||
-                other.currency == currency));
+                other.currency == currency) &&
+            (identical(other.discountAmount, discountAmount) ||
+                other.discountAmount == discountAmount) &&
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.originalInvoiceNumber, originalInvoiceNumber) ||
+                other.originalInvoiceNumber == originalInvoiceNumber) &&
+            (identical(other.originalInvoiceDate, originalInvoiceDate) ||
+                other.originalInvoiceDate == originalInvoiceDate));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -744,12 +833,16 @@ class _Invoice extends Invoice {
         branch,
         deliveryAddress,
         isArchived,
-        currency
+        currency,
+        discountAmount,
+        type,
+        originalInvoiceNumber,
+        originalInvoiceDate
       ]);
 
   @override
   String toString() {
-    return 'Invoice(id: $id, style: $style, supplier: $supplier, receiver: $receiver, invoiceNo: $invoiceNo, invoiceDate: $invoiceDate, dueDate: $dueDate, placeOfSupply: $placeOfSupply, reverseCharge: $reverseCharge, paymentTerms: $paymentTerms, items: $items, payments: $payments, comments: $comments, bankName: $bankName, accountNo: $accountNo, ifscCode: $ifscCode, branch: $branch, deliveryAddress: $deliveryAddress, isArchived: $isArchived, currency: $currency)';
+    return 'Invoice(id: $id, style: $style, supplier: $supplier, receiver: $receiver, invoiceNo: $invoiceNo, invoiceDate: $invoiceDate, dueDate: $dueDate, placeOfSupply: $placeOfSupply, reverseCharge: $reverseCharge, paymentTerms: $paymentTerms, items: $items, payments: $payments, comments: $comments, bankName: $bankName, accountNo: $accountNo, ifscCode: $ifscCode, branch: $branch, deliveryAddress: $deliveryAddress, isArchived: $isArchived, currency: $currency, discountAmount: $discountAmount, type: $type, originalInvoiceNumber: $originalInvoiceNumber, originalInvoiceDate: $originalInvoiceDate)';
   }
 }
 
@@ -779,7 +872,11 @@ abstract mixin class _$InvoiceCopyWith<$Res> implements $InvoiceCopyWith<$Res> {
       String branch,
       String? deliveryAddress,
       bool isArchived,
-      String currency});
+      String currency,
+      double discountAmount,
+      InvoiceType type,
+      String? originalInvoiceNumber,
+      DateTime? originalInvoiceDate});
 
   @override
   $SupplierCopyWith<$Res> get supplier;
@@ -819,6 +916,10 @@ class __$InvoiceCopyWithImpl<$Res> implements _$InvoiceCopyWith<$Res> {
     Object? deliveryAddress = freezed,
     Object? isArchived = null,
     Object? currency = null,
+    Object? discountAmount = null,
+    Object? type = null,
+    Object? originalInvoiceNumber = freezed,
+    Object? originalInvoiceDate = freezed,
   }) {
     return _then(_Invoice(
       id: freezed == id
@@ -901,6 +1002,22 @@ class __$InvoiceCopyWithImpl<$Res> implements _$InvoiceCopyWith<$Res> {
           ? _self.currency
           : currency // ignore: cast_nullable_to_non_nullable
               as String,
+      discountAmount: null == discountAmount
+          ? _self.discountAmount
+          : discountAmount // ignore: cast_nullable_to_non_nullable
+              as double,
+      type: null == type
+          ? _self.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as InvoiceType,
+      originalInvoiceNumber: freezed == originalInvoiceNumber
+          ? _self.originalInvoiceNumber
+          : originalInvoiceNumber // ignore: cast_nullable_to_non_nullable
+              as String?,
+      originalInvoiceDate: freezed == originalInvoiceDate
+          ? _self.originalInvoiceDate
+          : originalInvoiceDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 
@@ -1358,6 +1475,7 @@ mixin _$Receiver {
   String get pan;
   String get state;
   String get stateCode;
+  String get email;
 
   /// Create a copy of Receiver
   /// with the given fields replaced by the non-null parameter values.
@@ -1380,17 +1498,18 @@ mixin _$Receiver {
             (identical(other.pan, pan) || other.pan == pan) &&
             (identical(other.state, state) || other.state == state) &&
             (identical(other.stateCode, stateCode) ||
-                other.stateCode == stateCode));
+                other.stateCode == stateCode) &&
+            (identical(other.email, email) || other.email == email));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, name, address, gstin, pan, state, stateCode);
+  int get hashCode => Object.hash(
+      runtimeType, name, address, gstin, pan, state, stateCode, email);
 
   @override
   String toString() {
-    return 'Receiver(name: $name, address: $address, gstin: $gstin, pan: $pan, state: $state, stateCode: $stateCode)';
+    return 'Receiver(name: $name, address: $address, gstin: $gstin, pan: $pan, state: $state, stateCode: $stateCode, email: $email)';
   }
 }
 
@@ -1405,7 +1524,8 @@ abstract mixin class $ReceiverCopyWith<$Res> {
       String gstin,
       String pan,
       String state,
-      String stateCode});
+      String stateCode,
+      String email});
 }
 
 /// @nodoc
@@ -1426,6 +1546,7 @@ class _$ReceiverCopyWithImpl<$Res> implements $ReceiverCopyWith<$Res> {
     Object? pan = null,
     Object? state = null,
     Object? stateCode = null,
+    Object? email = null,
   }) {
     return _then(_self.copyWith(
       name: null == name
@@ -1451,6 +1572,10 @@ class _$ReceiverCopyWithImpl<$Res> implements $ReceiverCopyWith<$Res> {
       stateCode: null == stateCode
           ? _self.stateCode
           : stateCode // ignore: cast_nullable_to_non_nullable
+              as String,
+      email: null == email
+          ? _self.email
+          : email // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -1550,7 +1675,7 @@ extension ReceiverPatterns on Receiver {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(String name, String address, String gstin, String pan,
-            String state, String stateCode)?
+            String state, String stateCode, String email)?
         $default, {
     required TResult orElse(),
   }) {
@@ -1558,7 +1683,7 @@ extension ReceiverPatterns on Receiver {
     switch (_that) {
       case _Receiver() when $default != null:
         return $default(_that.name, _that.address, _that.gstin, _that.pan,
-            _that.state, _that.stateCode);
+            _that.state, _that.stateCode, _that.email);
       case _:
         return orElse();
     }
@@ -1580,14 +1705,14 @@ extension ReceiverPatterns on Receiver {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(String name, String address, String gstin, String pan,
-            String state, String stateCode)
+            String state, String stateCode, String email)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _Receiver():
         return $default(_that.name, _that.address, _that.gstin, _that.pan,
-            _that.state, _that.stateCode);
+            _that.state, _that.stateCode, _that.email);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -1608,14 +1733,14 @@ extension ReceiverPatterns on Receiver {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(String name, String address, String gstin, String pan,
-            String state, String stateCode)?
+            String state, String stateCode, String email)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _Receiver() when $default != null:
         return $default(_that.name, _that.address, _that.gstin, _that.pan,
-            _that.state, _that.stateCode);
+            _that.state, _that.stateCode, _that.email);
       case _:
         return null;
     }
@@ -1631,7 +1756,8 @@ class _Receiver implements Receiver {
       this.gstin = '',
       this.pan = '',
       this.state = '',
-      this.stateCode = ''});
+      this.stateCode = '',
+      this.email = ''});
   factory _Receiver.fromJson(Map<String, dynamic> json) =>
       _$ReceiverFromJson(json);
 
@@ -1653,6 +1779,9 @@ class _Receiver implements Receiver {
   @override
   @JsonKey()
   final String stateCode;
+  @override
+  @JsonKey()
+  final String email;
 
   /// Create a copy of Receiver
   /// with the given fields replaced by the non-null parameter values.
@@ -1680,17 +1809,18 @@ class _Receiver implements Receiver {
             (identical(other.pan, pan) || other.pan == pan) &&
             (identical(other.state, state) || other.state == state) &&
             (identical(other.stateCode, stateCode) ||
-                other.stateCode == stateCode));
+                other.stateCode == stateCode) &&
+            (identical(other.email, email) || other.email == email));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, name, address, gstin, pan, state, stateCode);
+  int get hashCode => Object.hash(
+      runtimeType, name, address, gstin, pan, state, stateCode, email);
 
   @override
   String toString() {
-    return 'Receiver(name: $name, address: $address, gstin: $gstin, pan: $pan, state: $state, stateCode: $stateCode)';
+    return 'Receiver(name: $name, address: $address, gstin: $gstin, pan: $pan, state: $state, stateCode: $stateCode, email: $email)';
   }
 }
 
@@ -1707,7 +1837,8 @@ abstract mixin class _$ReceiverCopyWith<$Res>
       String gstin,
       String pan,
       String state,
-      String stateCode});
+      String stateCode,
+      String email});
 }
 
 /// @nodoc
@@ -1728,6 +1859,7 @@ class __$ReceiverCopyWithImpl<$Res> implements _$ReceiverCopyWith<$Res> {
     Object? pan = null,
     Object? state = null,
     Object? stateCode = null,
+    Object? email = null,
   }) {
     return _then(_Receiver(
       name: null == name
@@ -1753,6 +1885,10 @@ class __$ReceiverCopyWithImpl<$Res> implements _$ReceiverCopyWith<$Res> {
       stateCode: null == stateCode
           ? _self.stateCode
           : stateCode // ignore: cast_nullable_to_non_nullable
+              as String,
+      email: null == email
+          ? _self.email
+          : email // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }

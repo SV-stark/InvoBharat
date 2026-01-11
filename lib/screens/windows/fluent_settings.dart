@@ -12,6 +12,7 @@ import '../../providers/estimate_provider.dart'; // NEW
 import '../../providers/recurring_provider.dart'; // NEW
 import '../../providers/invoice_repository_provider.dart'; // NEW
 import '../../utils/constants.dart';
+import '../../utils/validators.dart';
 import '../../services/backup_service.dart';
 
 class FluentSettings extends ConsumerStatefulWidget {
@@ -405,6 +406,8 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 label: "GSTIN",
                 child: TextFormBox(
                   initialValue: profile.gstin,
+                  validator: Validators.gstin,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   onChanged: (v) => ref
                       .read(businessProfileNotifierProvider)
                       .updateProfile(profile.copyWith(gstin: v)),

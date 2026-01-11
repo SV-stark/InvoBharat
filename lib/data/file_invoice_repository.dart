@@ -138,4 +138,13 @@ class FileInvoiceRepository implements InvoiceRepository {
       await dir.delete(recursive: true);
     }
   }
+
+  @override
+  Future<bool> checkInvoiceExists(String invoiceNumber,
+      {String? excludeId}) async {
+    final allInvoices = await getAllInvoices();
+    return allInvoices.any((inv) =>
+        inv.invoiceNo == invoiceNumber &&
+        (excludeId == null || inv.id != excludeId));
+  }
 }

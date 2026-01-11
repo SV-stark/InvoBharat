@@ -11,15 +11,20 @@ import '../../providers/invoice_provider.dart';
 import '../../models/client.dart';
 import '../../providers/client_provider.dart';
 
+import '../../providers/estimate_provider.dart';
+
 import '../../utils/pdf_generator.dart';
 import '../../utils/constants.dart';
+import '../../utils/validators.dart';
 import '../../services/invoice_actions.dart'; // NEW Import
 
 // Generates a unique ID
 
 class FluentInvoiceForm extends ConsumerStatefulWidget {
   final Invoice? invoiceToEdit;
-  const FluentInvoiceForm({super.key, this.invoiceToEdit});
+  final String? estimateIdToMarkConverted;
+  const FluentInvoiceForm(
+      {super.key, this.invoiceToEdit, this.estimateIdToMarkConverted});
 
   @override
   ConsumerState<FluentInvoiceForm> createState() => _FluentInvoiceFormState();
@@ -315,6 +320,8 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
                     TextFormBox(
                       placeholder: "GSTIN",
                       initialValue: invoice.receiver.gstin,
+                      validator: Validators.gstin,
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
                       onChanged: (val) => ref
                           .read(invoiceProvider.notifier)
                           .updateReceiverGstin(val),
@@ -503,6 +510,13 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm> {
             );
           },
         );
+      }
+
+      // Mark estimate as converted if applicable
+      if (widget.estimateIdToMarkConverted != null) {
+        await ref
+            .read(estimateListProvider.notifier)
+            .markAsConverted(widget.estimateIdToMarkConverted!);
       }
     } catch (e) {
       if (context.mounted) {
