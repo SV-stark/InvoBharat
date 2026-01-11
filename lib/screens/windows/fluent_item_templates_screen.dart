@@ -95,8 +95,8 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
           ),
           FilledButton(
             style: ButtonStyle(
-                backgroundColor: ButtonState.all(Colors.red),
-                foregroundColor: ButtonState.all(Colors.white)),
+                backgroundColor: WidgetStateProperty.all(Colors.red),
+                foregroundColor: WidgetStateProperty.all(Colors.white)),
             child: const Text("Delete"),
             onPressed: () {
               ref.read(itemTemplateListProvider.notifier).deleteTemplate(id);

@@ -1,15 +1,11 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:uuid/uuid.dart';
-
-import '../../models/estimate.dart';
 import '../../models/invoice.dart';
-import '../../providers/business_profile_provider.dart';
-import '../../providers/estimate_provider.dart';
-import '../../providers/invoice_repository_provider.dart';
 import '../../utils/constants.dart';
 import '../../utils/validators.dart';
+import '../../mixins/estimate_form_mixin.dart';
+import '../../widgets/adaptive_widgets.dart';
 
 class FluentEstimateForm extends ConsumerStatefulWidget {
   final String? estimateId;
@@ -20,173 +16,78 @@ class FluentEstimateForm extends ConsumerStatefulWidget {
   ConsumerState<FluentEstimateForm> createState() => _FluentEstimateFormState();
 }
 
-class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm> {
-  late DateTime _date;
-  late DateTime? _expiryDate;
-  late TextEditingController _estimateNoController;
-  late TextEditingController _notesController;
-  late TextEditingController _termsController;
+class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
+    with EstimateFormMixin {
+  // For state autocomplete logic (specific to Fluent UI widget)
+  // We will sync this with the mixin's receiverStateCtrl
 
-  final _receiverNameController = TextEditingController();
-  final _receiverAddressController = TextEditingController();
-  final _receiverGstinController = TextEditingController();
-  final _receiverStateController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    initEstimateControllers();
 
-  // For state autocomplete
-  final TextEditingController _stateAutoSuggestController =
-      TextEditingController();
-
-  List<InvoiceItem> _items = [];
-  bool _isInit = true;
-  Estimate? _existingEstimate;
+    // Sync mixin controller changes to local state if needed
+    // But AutoSuggestBox can just use the mixin's controller directly!
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_isInit) {
-      _initializeData();
-      _isInit = false;
+    if (isInit) {
+      initializeEstimateData(estimateId: widget.estimateId);
+      isInit = false;
     }
   }
 
   @override
   void dispose() {
-    _estimateNoController.dispose();
-    _notesController.dispose();
-    _termsController.dispose();
-    _receiverNameController.dispose();
-    _receiverAddressController.dispose();
-    _receiverGstinController.dispose();
-    _receiverStateController.dispose();
-    _stateAutoSuggestController.dispose();
+    disposeEstimateControllers();
     super.dispose();
   }
 
-  Future<void> _initializeData() async {
-    final profile = ref.read(businessProfileProvider);
-    _date = DateTime.now();
-    _expiryDate = DateTime.now().add(const Duration(days: 30));
-    _estimateNoController = TextEditingController(
-        text:
-            'EST-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}');
-    _notesController = TextEditingController(text: profile.defaultNotes);
-    _termsController = TextEditingController(text: profile.termsAndConditions);
-
-    if (widget.estimateId != null) {
-      final estimates = await ref.read(estimateListProvider.future);
-      try {
-        _existingEstimate =
-            estimates.firstWhere((e) => e.id == widget.estimateId);
-        _date = _existingEstimate!.date;
-        _expiryDate = _existingEstimate!.expiryDate;
-        _estimateNoController.text = _existingEstimate!.estimateNo;
-        _notesController.text = _existingEstimate!.notes;
-        _termsController.text = _existingEstimate!.terms;
-
-        _receiverNameController.text = _existingEstimate!.receiver.name;
-        _receiverAddressController.text = _existingEstimate!.receiver.address;
-        _receiverGstinController.text = _existingEstimate!.receiver.gstin;
-        _receiverStateController.text = _existingEstimate!.receiver.state;
-        _stateAutoSuggestController.text = _existingEstimate!.receiver.state;
-
-        _items = List.from(_existingEstimate!.items);
-      } catch (e) {
-        // Handle not found
+  Future<void> _saveEstimateUI() async {
+    try {
+      await saveEstimate(context);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        displayInfoBar(context, builder: (context, close) {
+          return InfoBar(
+            title: const Text("Error"),
+            content: Text(e.toString()),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          );
+        });
       }
     }
-    if (mounted) setState(() {});
   }
 
-  void _saveEstimate() async {
-    // Fluent TextFormBox doesn't have same validator form key logic easily,
-    // but we can check basics manually.
-    if (_items.isEmpty) {
-      displayInfoBar(context, builder: (context, close) {
-        return InfoBar(
-          title: const Text("Validation Error"),
-          content: const Text("Please add at least one item."),
-          severity: InfoBarSeverity.warning,
-          onClose: close,
-        );
-      });
-      return;
-    }
-
-    final profile = ref.read(businessProfileProvider);
-
-    final supplier = Supplier(
-      name: profile.companyName,
-      address: profile.address,
-      gstin: profile.gstin,
-      email: profile.email,
-      phone: profile.phone,
-      state: profile.state,
-    );
-
-    final receiver = Receiver(
-      name: _receiverNameController.text,
-      address: _receiverAddressController.text,
-      gstin: _receiverGstinController.text,
-      state: _stateAutoSuggestController.text.isNotEmpty
-          ? _stateAutoSuggestController.text
-          : _receiverStateController.text,
-    );
-
-    final newEstimate = Estimate(
-      id: _existingEstimate?.id ?? const Uuid().v4(),
-      estimateNo: _estimateNoController.text,
-      date: _date,
-      expiryDate: _expiryDate,
-      supplier: supplier,
-      receiver: receiver,
-      items: _items,
-      notes: _notesController.text,
-      terms: _termsController.text,
-      status: _existingEstimate?.status ?? 'Draft',
-    );
-
-    await ref.read(estimateListProvider.notifier).saveEstimate(newEstimate);
-    if (mounted) Navigator.pop(context);
-  }
-
-  void _convertToInvoice() async {
-    if (_existingEstimate == null) return;
-
-    final profile = ref.read(businessProfileProvider);
-    final invoiceNo = '${profile.invoiceSeries}${profile.invoiceSequence}';
-
-    final newInvoice = Invoice(
-      id: const Uuid().v4(),
-      style: 'Modern',
-      supplier: _existingEstimate!.supplier,
-      receiver: _existingEstimate!.receiver,
-      invoiceNo: invoiceNo,
-      invoiceDate: DateTime.now(),
-      placeOfSupply: _existingEstimate!.receiver.state,
-      items: _existingEstimate!.items,
-      comments: _existingEstimate!.notes,
-      bankName: profile.bankName,
-      accountNo: profile.accountNumber,
-      ifscCode: profile.ifscCode,
-      branch: profile.branchName,
-    );
-
-    await ref.read(invoiceRepositoryProvider).saveInvoice(newInvoice);
-
-    final updatedEstimate = _existingEstimate!.copyWith(status: 'Converted');
-    await ref.read(estimateListProvider.notifier).saveEstimate(updatedEstimate);
-    await ref.read(businessProfileNotifierProvider).incrementInvoiceSequence();
-
-    if (mounted) {
-      displayInfoBar(context, builder: (context, close) {
-        return InfoBar(
-          title: const Text("Success"),
-          content: Text('Converted to Invoice $invoiceNo'),
-          severity: InfoBarSeverity.success,
-          onClose: close,
-        );
-      });
-      Navigator.pop(context);
+  void _convertToInvoiceUI() async {
+    try {
+      final invoiceNo = await convertToInvoice();
+      if (mounted) {
+        displayInfoBar(context, builder: (context, close) {
+          return InfoBar(
+            title: const Text("Success"),
+            content: Text('Converted to Invoice $invoiceNo'),
+            severity: InfoBarSeverity.success,
+            onClose: close,
+          );
+        });
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        displayInfoBar(context, builder: (context, close) {
+          return InfoBar(
+            title: const Text("Error"),
+            content: Text(e.toString()),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          );
+        });
+      }
     }
   }
 
@@ -205,17 +106,17 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm> {
         ),
         commandBar: CommandBar(
           primaryItems: [
-            if (_existingEstimate != null &&
-                _existingEstimate!.status != 'Converted')
+            if (existingEstimate != null &&
+                existingEstimate!.status != 'Converted')
               CommandBarButton(
                 icon: const Icon(FluentIcons.switch_widget),
                 label: const Text("Convert to Invoice"),
-                onPressed: _convertToInvoice,
+                onPressed: _convertToInvoiceUI,
               ),
             CommandBarButton(
               icon: const Icon(FluentIcons.save),
               label: const Text("Save"),
-              onPressed: _saveEstimate,
+              onPressed: _saveEstimateUI,
             ),
           ],
         ),
@@ -230,11 +131,9 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm> {
               Row(
                 children: [
                   Expanded(
-                    child: InfoLabel(
+                    child: AppTextInput(
                       label: "Estimate No",
-                      child: TextFormBox(
-                        controller: _estimateNoController,
-                      ),
+                      controller: estimateNoCtrl,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -242,34 +141,31 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm> {
                     child: InfoLabel(
                       label: "Date",
                       child: DatePicker(
-                        selected: _date,
-                        onChanged: (d) => setState(() => _date = d),
+                        selected: date,
+                        onChanged: (d) => setState(() => date = d),
                       ),
                     ),
                   )
                 ],
               ),
               const SizedBox(height: 10),
-              InfoLabel(
+              AppTextInput(
                 label: "Client Name",
-                child: TextFormBox(controller: _receiverNameController),
+                controller: receiverNameCtrl,
               ),
               const SizedBox(height: 10),
-              InfoLabel(
+              AppTextInput(
                 label: "Address",
-                child: TextFormBox(controller: _receiverAddressController),
+                controller: receiverAddressCtrl,
               ),
               const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
-                    child: InfoLabel(
+                    child: AppTextInput(
                       label: "GSTIN",
-                      child: TextFormBox(
-                        controller: _receiverGstinController,
-                        validator: Validators.gstin,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                      ),
+                      controller: receiverGstinCtrl,
+                      validator: Validators.gstin,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -277,7 +173,7 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm> {
                     child: InfoLabel(
                       label: "State",
                       child: AutoSuggestBox<String>(
-                        controller: _stateAutoSuggestController,
+                        controller: receiverStateCtrl,
                         items: IndianStates.states
                             .map((e) =>
                                 AutoSuggestBoxItem<String>(value: e, label: e))
@@ -306,12 +202,12 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm> {
           initiallyExpanded: true,
           content: Column(
             children: [
-              if (_items.isEmpty)
+              if (items.isEmpty)
                 const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Text("No items added"),
                 ),
-              ..._items.asMap().entries.map((entry) {
+              ...items.asMap().entries.map((entry) {
                 final index = entry.key;
                 final item = entry.value;
                 return Padding(
@@ -339,7 +235,7 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                        "Total: ₹${_items.fold(0.0, (sum, i) => sum + i.totalAmount).toStringAsFixed(2)}",
+                        "Total: ₹${items.fold(0.0, (sum, i) => sum + i.totalAmount).toStringAsFixed(2)}",
                         style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold)),
                   ],
@@ -354,15 +250,9 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm> {
               style: TextStyle(fontWeight: FontWeight.bold)),
           content: Column(
             children: [
-              InfoLabel(
-                label: "Notes",
-                child: TextFormBox(controller: _notesController, maxLines: 3),
-              ),
+              AppTextInput(label: "Notes", controller: notesCtrl, maxLines: 3),
               const SizedBox(height: 10),
-              InfoLabel(
-                label: "Terms",
-                child: TextFormBox(controller: _termsController, maxLines: 3),
-              ),
+              AppTextInput(label: "Terms", controller: termsCtrl, maxLines: 3),
             ],
           ),
         )
@@ -376,22 +266,22 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm> {
       builder: (context) => const _FluentItemEditDialog(),
     );
     if (newItem != null) {
-      setState(() => _items.add(newItem));
+      setState(() => items.add(newItem));
     }
   }
 
   void _editItem(int index) async {
     final newItem = await showDialog<InvoiceItem>(
       context: context,
-      builder: (context) => _FluentItemEditDialog(item: _items[index]),
+      builder: (context) => _FluentItemEditDialog(item: items[index]),
     );
     if (newItem != null) {
-      setState(() => _items[index] = newItem);
+      setState(() => items[index] = newItem);
     }
   }
 
   void _removeItem(int index) {
-    setState(() => _items.removeAt(index));
+    setState(() => items.removeAt(index));
   }
 }
 
@@ -440,24 +330,17 @@ class _FluentItemEditDialogState extends State<_FluentItemEditDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InfoLabel(
-              label: "Description", child: TextFormBox(controller: _descCtrl)),
+          AppTextInput(label: "Description", controller: _descCtrl),
           const SizedBox(height: 8),
           Row(
             children: [
-              Expanded(
-                  child: InfoLabel(
-                      label: "Qty", child: TextFormBox(controller: _qtyCtrl))),
+              Expanded(child: AppTextInput(label: "Qty", controller: _qtyCtrl)),
               const SizedBox(width: 8),
               Expanded(
-                  child: InfoLabel(
-                      label: "Rate",
-                      child: TextFormBox(controller: _rateCtrl))),
+                  child: AppTextInput(label: "Rate", controller: _rateCtrl)),
               const SizedBox(width: 8),
               Expanded(
-                  child: InfoLabel(
-                      label: "GST %",
-                      child: TextFormBox(controller: _gstCtrl))),
+                  child: AppTextInput(label: "GST %", controller: _gstCtrl)),
             ],
           )
         ],

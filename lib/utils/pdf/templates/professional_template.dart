@@ -5,13 +5,16 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
 import '../../../models/invoice.dart';
 import '../../../models/business_profile.dart';
-import '../../invoice_template.dart';
 import '../../number_to_words.dart';
 import '../pdf_helpers.dart';
 
 // ... imports
 
-class ProfessionalTemplate implements InvoiceTemplate {
+import 'base_template.dart';
+
+// ... imports
+
+class ProfessionalTemplate extends BasePdfTemplate {
   @override
   String get name => 'Professional';
 
@@ -84,19 +87,16 @@ class ProfessionalTemplate implements InvoiceTemplate {
                       pw.Text(supplyType.toUpperCase(),
                           style: titleStyle.copyWith(fontSize: 18)),
                       pw.SizedBox(height: 10),
-                      _buildHeaderField("Invoice #", invoice.invoiceNo,
+                      buildField("Invoice #", invoice.invoiceNo,
                           headerLabelStyle, headerValueStyle),
-                      _buildHeaderField(
+                      buildField(
                           "Date",
                           DateFormat('dd MMM yyyy').format(invoice.invoiceDate),
                           headerLabelStyle,
                           headerValueStyle),
-                      _buildHeaderField(
-                          "Place of Supply",
-                          invoice.placeOfSupply,
-                          headerLabelStyle,
-                          headerValueStyle),
-                      _buildHeaderField("Reverse Charge", invoice.reverseCharge,
+                      buildField("Place of Supply", invoice.placeOfSupply,
+                          headerLabelStyle, headerValueStyle),
+                      buildField("Reverse Charge", invoice.reverseCharge,
                           headerLabelStyle, headerValueStyle),
                     ])
               ]),
@@ -157,7 +157,19 @@ class ProfessionalTemplate implements InvoiceTemplate {
           pw.SizedBox(height: 20),
 
           // --- ITEMS TABLE ---
-          _buildItemsTable(invoice, tableHeaderStyle, itemsStyle),
+          buildItemsTable(invoice,
+              headerStyle: tableHeaderStyle,
+              cellStyle: itemsStyle,
+              headerDecoration:
+                  const pw.BoxDecoration(color: PdfColors.blue900),
+              oddRowDecoration:
+                  const pw.BoxDecoration(color: PdfColors.grey100),
+              border: null,
+              columnWidths: {
+                1: const pw.FlexColumnWidth(3),
+              },
+              cellPadding:
+                  const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 5)),
 
           pw.SizedBox(height: 20),
 
@@ -202,21 +214,21 @@ class ProfessionalTemplate implements InvoiceTemplate {
                             borderRadius: const pw.BorderRadius.all(
                                 pw.Radius.circular(4))),
                         child: pw.Column(children: [
-                          _buildTotalRow(
+                          buildSummaryRow(
                               "Total Taxable Value",
                               invoice.totalTaxableValue,
                               profile.currencySymbol),
                           if (invoice.totalCGST > 0)
-                            _buildTotalRow("Total CGST", invoice.totalCGST,
+                            buildSummaryRow("Total CGST", invoice.totalCGST,
                                 profile.currencySymbol),
                           if (invoice.totalSGST > 0)
-                            _buildTotalRow("Total SGST", invoice.totalSGST,
+                            buildSummaryRow("Total SGST", invoice.totalSGST,
                                 profile.currencySymbol),
                           if (invoice.totalIGST > 0)
-                            _buildTotalRow("Total IGST", invoice.totalIGST,
+                            buildSummaryRow("Total IGST", invoice.totalIGST,
                                 profile.currencySymbol),
                           pw.Divider(),
-                          _buildTotalRow("Grand Total", invoice.grandTotal,
+                          buildSummaryRow("Grand Total", invoice.grandTotal,
                               profile.currencySymbol,
                               isBold: true),
                         ])))
@@ -274,105 +286,5 @@ class ProfessionalTemplate implements InvoiceTemplate {
       },
     ));
     return pdf.save();
-  }
-
-  pw.Widget _buildHeaderField(String label, String value,
-      pw.TextStyle labelStyle, pw.TextStyle valueStyle) {
-    return pw.Container(
-      margin: const pw.EdgeInsets.only(bottom: 2),
-      child: pw.Row(mainAxisSize: pw.MainAxisSize.min, children: [
-        pw.Text("$label: ", style: labelStyle),
-        pw.Text(value, style: valueStyle),
-      ]),
-    );
-  }
-
-  pw.Widget _buildTotalRow(String label, double amount, String symbol,
-      {bool isBold = false}) {
-    final style = pw.TextStyle(
-        fontSize: 9, fontWeight: isBold ? pw.FontWeight.bold : null);
-    return pw.Padding(
-        padding: const pw.EdgeInsets.symmetric(vertical: 2),
-        child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text(label, style: style),
-              pw.Text("$symbol ${amount.toStringAsFixed(2)}", style: style),
-            ]));
-  }
-
-  pw.Widget _buildItemsTable(
-      Invoice invoice, pw.TextStyle headerStyle, pw.TextStyle itemStyle) {
-    final isInterState = invoice.isInterState;
-
-    List<String> headers = [
-      '#',
-      'Item',
-      'HSN/SAC',
-      'Qty',
-      'Rate',
-      'Taxable Val'
-    ];
-    if (isInterState) {
-      headers.addAll(['IGST %', 'IGST Amt']);
-    } else {
-      headers.addAll(['CGST %', 'CGST Amt', 'SGST %', 'SGST Amt']);
-    }
-    headers.add('Total');
-
-    final data = invoice.items.asMap().entries.map((entry) {
-      final index = entry.key;
-      final item = entry.value;
-      final taxableValue = item.netAmount;
-
-      final row = [
-        (index + 1).toString(),
-        item.description,
-        item.sacCode,
-        "${item.quantity} ${item.unit}",
-        item.amount.toStringAsFixed(2),
-        taxableValue.toStringAsFixed(2),
-      ];
-
-      if (isInterState) {
-        row.add("${item.gstRate}%");
-        row.add(item.calculateIgst(true).toStringAsFixed(2));
-      } else {
-        final halfRate = item.gstRate / 2;
-        row.add("$halfRate%");
-        row.add(item.calculateCgst(false).toStringAsFixed(2));
-        row.add("$halfRate%");
-        row.add(item.calculateSgst(false).toStringAsFixed(2));
-      }
-
-      row.add(item.totalAmount.toStringAsFixed(2));
-
-      return row;
-    }).toList();
-
-    return pw.TableHelper.fromTextArray(
-      headers: headers,
-      data: data,
-      border: null,
-      headerStyle: headerStyle,
-      headerDecoration: const pw.BoxDecoration(color: PdfColors.blue900),
-      cellStyle: itemStyle,
-      columnWidths: {
-        1: const pw.FlexColumnWidth(3),
-      },
-      cellAlignments: {
-        0: pw.Alignment.center,
-        1: pw.Alignment.centerLeft,
-        2: pw.Alignment.centerLeft, // HSN
-        3: pw.Alignment.centerRight, // Qty
-        4: pw.Alignment.centerRight, // Rate
-        5: pw.Alignment.centerRight, // Taxable
-        6: pw.Alignment.centerRight,
-        7: pw.Alignment.centerRight,
-        headers.length - 1: pw.Alignment.centerRight,
-      },
-      oddRowDecoration: const pw.BoxDecoration(color: PdfColors.grey100),
-      cellPadding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-    );
   }
 }

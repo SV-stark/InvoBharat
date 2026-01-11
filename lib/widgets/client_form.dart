@@ -1,7 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/client.dart';
-import '../providers/client_provider.dart';
+import '../providers/client_form_provider.dart';
+import '../widgets/adaptive_widgets.dart';
 
 class ClientFormDialog extends ConsumerStatefulWidget {
   final Client? client;
@@ -14,29 +15,65 @@ class ClientFormDialog extends ConsumerStatefulWidget {
 
 class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
   final _formKey = GlobalKey<FormState>();
-
-  late TextEditingController _nameController;
-  late TextEditingController _gstinController;
-  late TextEditingController _addressController;
-  late TextEditingController _emailController;
-  late TextEditingController _phoneController;
-  late TextEditingController _contactController;
-  late TextEditingController _notesController;
-  late TextEditingController _stateController;
+  late final TextEditingController _nameController;
+  late final TextEditingController _gstinController;
+  late final TextEditingController _addressController;
+  late final TextEditingController _stateController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _contactController;
+  late final TextEditingController _notesController;
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize provider with existing client data
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(clientFormProvider.notifier).loadClient(widget.client);
+    });
+
+    // Initialize controllers with existing data
     _nameController = TextEditingController(text: widget.client?.name ?? '');
     _gstinController = TextEditingController(text: widget.client?.gstin ?? '');
     _addressController =
         TextEditingController(text: widget.client?.address ?? '');
+    _stateController = TextEditingController(text: widget.client?.state ?? '');
     _emailController = TextEditingController(text: widget.client?.email ?? '');
     _phoneController = TextEditingController(text: widget.client?.phone ?? '');
     _contactController =
         TextEditingController(text: widget.client?.primaryContact ?? '');
     _notesController = TextEditingController(text: widget.client?.notes ?? '');
-    _stateController = TextEditingController(text: widget.client?.state ?? '');
+
+    // Sync controllers to provider
+    _nameController.addListener(() {
+      ref.read(clientFormProvider.notifier).updateName(_nameController.text);
+    });
+    _gstinController.addListener(() {
+      ref.read(clientFormProvider.notifier).updateGstin(_gstinController.text);
+    });
+    _addressController.addListener(() {
+      ref
+          .read(clientFormProvider.notifier)
+          .updateAddress(_addressController.text);
+    });
+    _stateController.addListener(() {
+      ref.read(clientFormProvider.notifier).updateState(_stateController.text);
+    });
+    _emailController.addListener(() {
+      ref.read(clientFormProvider.notifier).updateEmail(_emailController.text);
+    });
+    _phoneController.addListener(() {
+      ref.read(clientFormProvider.notifier).updatePhone(_phoneController.text);
+    });
+    _contactController.addListener(() {
+      ref
+          .read(clientFormProvider.notifier)
+          .updatePrimaryContact(_contactController.text);
+    });
+    _notesController.addListener(() {
+      ref.read(clientFormProvider.notifier).updateNotes(_notesController.text);
+    });
   }
 
   @override
@@ -44,40 +81,49 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
     _nameController.dispose();
     _gstinController.dispose();
     _addressController.dispose();
+    _stateController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     _contactController.dispose();
     _notesController.dispose();
-    _stateController.dispose();
     super.dispose();
   }
 
-  void _save() async {
-    if (_formKey.currentState!.validate()) {
-      final client = Client(
-        id: widget.client?.id ?? '',
-        name: _nameController.text,
-        gstin: _gstinController.text,
-        address: _addressController.text,
-        email: _emailController.text,
-        phone: _phoneController.text,
-        primaryContact: _contactController.text,
-        notes: _notesController.text,
-        state: _stateController.text,
-      );
-
-      if (widget.client == null) {
-        await ref.read(clientListProvider.notifier).addClient(client);
-      } else {
-        await ref.read(clientListProvider.notifier).updateClient(client);
-      }
-
-      if (mounted) Navigator.pop(context);
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
     }
+
+    final success = await ref.read(clientFormProvider.notifier).save();
+
+    if (success && mounted) {
+      Navigator.pop(context);
+    } else if (mounted) {
+      final error = ref.read(clientFormProvider).errorMessage;
+      if (error != null) {
+        displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            title: const Text('Error'),
+            content: Text(error),
+            severity: InfoBarSeverity.error,
+          ),
+        );
+      }
+    }
+  }
+
+  String? _validateName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Client name is required';
+    }
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
+    final formState = ref.watch(clientFormProvider);
+
     return ContentDialog(
       title: Text(widget.client == null ? 'Add Client' : 'Edit Client'),
       content: Form(
@@ -87,76 +133,59 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              InfoLabel(
+              AppTextInput(
                 label: 'Client / Business Name',
-                child: TextFormBox(
-                  controller: _nameController,
-                  placeholder: 'Enter client name',
-                  validator: (v) => v!.isEmpty ? 'Name is required' : null,
-                ),
+                controller: _nameController,
+                placeholder: 'Enter client name',
+                validator: _validateName,
               ),
               const SizedBox(height: 8),
-              InfoLabel(
+              AppTextInput(
                 label: 'GSTIN',
-                child: TextFormBox(
-                  controller: _gstinController,
-                  placeholder: 'e.g. 29ABCDE1234F1Z5',
-                ),
+                controller: _gstinController,
+                placeholder: 'e.g. 29ABCDE1234F1Z5',
               ),
               const SizedBox(height: 8),
-              InfoLabel(
+              AppTextInput(
                 label: 'Billing Address',
-                child: TextFormBox(
-                  controller: _addressController,
-                  placeholder: 'Enter full address',
-                  minLines: 3,
-                  maxLines: 5,
-                ),
+                controller: _addressController,
+                placeholder: 'Enter full address',
+                maxLines: 3,
               ),
               const SizedBox(height: 8),
-              InfoLabel(
+              AppTextInput(
                 label: 'State',
-                child: TextFormBox(
-                  controller: _stateController,
-                  placeholder: 'e.g. Maharashtra',
-                ),
+                controller: _stateController,
+                placeholder: 'e.g. Maharashtra',
               ),
               const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
-                    child: InfoLabel(
+                    child: AppTextInput(
                       label: 'Email',
-                      child: TextFormBox(
-                        controller: _emailController,
-                      ),
+                      controller: _emailController,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: InfoLabel(
+                    child: AppTextInput(
                       label: 'Phone',
-                      child: TextFormBox(
-                        controller: _phoneController,
-                      ),
+                      controller: _phoneController,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              InfoLabel(
+              AppTextInput(
                 label: 'Primary Contact Person',
-                child: TextFormBox(
-                  controller: _contactController,
-                ),
+                controller: _contactController,
               ),
               const SizedBox(height: 8),
-              InfoLabel(
+              AppTextInput(
                 label: 'Notes (Internal)',
-                child: TextFormBox(
-                  controller: _notesController,
-                  placeholder: 'Private notes about this client',
-                ),
+                controller: _notesController,
+                placeholder: 'Private notes about this client',
               ),
             ],
           ),
@@ -168,8 +197,14 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
           onPressed: () => Navigator.pop(context),
         ),
         FilledButton(
-          onPressed: _save,
-          child: const Text('Save'),
+          onPressed: formState.isLoading ? null : _save,
+          child: formState.isLoading
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: ProgressRing(strokeWidth: 2),
+                )
+              : const Text('Save'),
         ),
       ],
     );
