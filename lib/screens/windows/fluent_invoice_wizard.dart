@@ -12,6 +12,8 @@ import '../../providers/item_template_provider.dart';
 import '../../utils/pdf_generator.dart';
 import 'package:url_launcher/url_launcher.dart'; // New
 import '../../utils/validators.dart';
+import '../../mixins/invoice_form_mixin.dart';
+import '../../providers/invoice_provider.dart'; // NEW Import
 
 import '../../utils/constants.dart';
 
@@ -24,114 +26,43 @@ class FluentInvoiceWizard extends ConsumerStatefulWidget {
       _FluentInvoiceWizardState();
 }
 
-class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
-  // Invoice Data State
-  late String _invoiceNo;
-  DateTime _invoiceDate = DateTime.now();
-  DateTime? _dueDate;
-  String _placeOfSupply = "";
-  late String _paymentTerms;
-  late String _comments;
-  String _invoiceStyle = "Modern";
-  InvoiceType _invoiceType = InvoiceType.invoice; // NEW
+class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
+    with InvoiceFormMixin {
+  // Invoice Data State - REMOVED (Handled by Provider & Mixin)
 
-  // Credit/Debit Note State
-  String? _originalInvoiceNo;
-  DateTime? _originalInvoiceDate;
-
-  // Client Data
-  Receiver? _selectedClient;
-
-  // Items
-  List<InvoiceItem> _items = [];
-  double _discountAmount = 0.0;
+  // Unused fields removed
 
   @override
   void initState() {
     super.initState();
-    _invoiceNo = "";
-    _items = [];
-    _paymentTerms = "Due on Receipt";
-    _comments = "Thanks for your business.";
+    initInvoiceControllers(widget.invoiceToEdit); // Mixin init
+
+    if (widget.invoiceToEdit != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(invoiceProvider.notifier).setInvoice(widget.invoiceToEdit!);
+        syncInvoiceControllers(ref.read(invoiceProvider));
+      });
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Ensure reset if new
+        ref.read(invoiceProvider.notifier).reset();
+        syncInvoiceControllers(ref.read(invoiceProvider));
+      });
+    }
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_invoiceNo.isEmpty) {
-      _initializeData();
-    }
+  void dispose() {
+    disposeInvoiceControllers(); // Mixin dispose
+    super.dispose();
   }
 
-  void _initializeData() {
-    if (widget.invoiceToEdit != null) {
-      final inv = widget.invoiceToEdit!;
-      _invoiceNo = inv.invoiceNo;
-      _invoiceDate = inv.invoiceDate;
-      _dueDate = inv.dueDate;
-      _placeOfSupply = inv.placeOfSupply;
-      _selectedClient = inv.receiver;
-      _items = List.from(inv.items);
-      _paymentTerms = inv.paymentTerms;
-      _comments = inv.comments;
-      _invoiceStyle = inv.style;
-      _discountAmount = inv.discountAmount;
-      _invoiceType = inv.type; // NEW
-
-      _originalInvoiceNo = inv.originalInvoiceNumber;
-      _originalInvoiceDate = inv.originalInvoiceDate;
-    } else {
-      final profile = ref.read(businessProfileProvider);
-      _invoiceNo =
-          "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}";
-      _items = [const InvoiceItem(description: "", amount: 0, gstRate: 18)];
-      _paymentTerms = "Due on Receipt";
-      _dueDate = DateTime.now().add(const Duration(days: 15));
-      _comments = "Thanks for your business.";
-      _invoiceStyle = "Modern"; // Default
-      _discountAmount = 0.0;
-      _invoiceType = InvoiceType.invoice; // Default
-    }
-  }
-
-  Invoice _buildCurrentInvoice() {
-    final profile = ref.read(businessProfileProvider);
-    return Invoice(
-      id: widget.invoiceToEdit?.id, // Keep ID if editing
-      invoiceNo: _invoiceNo,
-      invoiceDate: _invoiceDate,
-      dueDate: _dueDate,
-      placeOfSupply: _placeOfSupply,
-      paymentTerms: _paymentTerms,
-      comments: _comments,
-      style: _invoiceStyle,
-      type: _invoiceType, // NEW
-
-      // Credit/Debit Notes
-      originalInvoiceNumber: _originalInvoiceNo,
-      originalInvoiceDate: _originalInvoiceDate,
-
-      receiver: _selectedClient ?? const Receiver(),
-      supplier: Supplier(
-        name: profile.companyName,
-        address: profile.address,
-        gstin: profile.gstin,
-        email: profile.email,
-        phone: profile.phone,
-        state: profile.state,
-        pan: "", // Add if mapped
-      ),
-      items: _items,
-      bankName: profile.bankName,
-      accountNo: profile.accountNumber,
-      ifscCode: profile.ifscCode,
-      branch: profile.branchName,
-      discountAmount: _discountAmount,
-    );
-  }
+  // Removed _initializeData and _buildCurrentInvoice as they are replaced by Provider logic
 
   @override
   Widget build(BuildContext context) {
+    final invoice = ref.watch(invoiceProvider);
+
     return ScaffoldPage.scrollable(
       header: PageHeader(
         title:
@@ -141,12 +72,12 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
             CommandBarButton(
               icon: const Icon(FluentIcons.print),
               label: const Text("Preview PDF"),
-              onPressed: _showPreviewDialog,
+              onPressed: () => _showPreviewDialog(invoice),
             ),
             CommandBarButton(
               icon: const Icon(FluentIcons.save),
               label: const Text("Save Invoice"),
-              onPressed: _saveInvoice,
+              onPressed: () => _saveInvoice(invoice),
             ),
           ],
         ),
@@ -167,7 +98,10 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
 
   // Renamed from _buildDetailsStep and removed ParametricScroll
   Widget _buildDetailsSection() {
+    final invoice = ref.watch(invoiceProvider);
+    final notifier = ref.read(invoiceProvider.notifier);
     final clients = ref.watch(clientListProvider);
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -180,7 +114,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
               Text("Bill To",
                   style: FluentTheme.of(context).typography.subtitle),
               const SizedBox(height: 10),
-              if (_selectedClient == null)
+              if (invoice.receiver.name.isEmpty)
                 Row(
                   children: [
                     Expanded(
@@ -195,14 +129,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                         onSelected: (item) {
                           final client =
                               clients.firstWhere((c) => c.id == item.value);
-                          setState(() {
-                            _selectedClient = Receiver(
-                              name: client.name,
-                              address: client.address,
-                              gstin: client.gstin,
-                              state: client.state,
-                            );
-                          });
+                          onClientSelected(client); // Mixin method
                         },
                       ),
                     ),
@@ -221,21 +148,21 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(_selectedClient!.name,
+                          Text(invoice.receiver.name,
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold)),
                           IconButton(
                               icon: const Icon(FluentIcons.edit),
-                              onPressed: () =>
-                                  setState(() => _selectedClient = null))
+                              onPressed: () => notifier.updateReceiverName(
+                                  "")) // Clear name to reset selection
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text(_selectedClient!.address),
-                      if (_selectedClient!.gstin.isNotEmpty)
-                        Text("GSTIN: ${_selectedClient!.gstin}"),
-                      if (_selectedClient!.state.isNotEmpty)
-                        Text("State: ${_selectedClient!.state}"),
+                      Text(invoice.receiver.address),
+                      if (invoice.receiver.gstin.isNotEmpty)
+                        Text("GSTIN: ${invoice.receiver.gstin}"),
+                      if (invoice.receiver.state.isNotEmpty)
+                        Text("State: ${invoice.receiver.state}"),
                     ],
                   ),
                 ),
@@ -261,7 +188,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
               InfoLabel(
                 label: "Document Type",
                 child: ComboBox<InvoiceType>(
-                  value: _invoiceType,
+                  value: invoice.type,
                   items: InvoiceType.values.map((e) {
                     String label = e.name;
                     if (e == InvoiceType.deliveryChallan) {
@@ -282,28 +209,29 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                     );
                   }).toList(),
                   onChanged: (v) {
-                    if (v != null) setState(() => _invoiceType = v);
+                    if (v != null) notifier.updateInvoiceType(v);
                   },
                 ),
               ),
-              if (_invoiceType == InvoiceType.creditNote ||
-                  _invoiceType == InvoiceType.debitNote) ...[
+              if (invoice.type == InvoiceType.creditNote ||
+                  invoice.type == InvoiceType.debitNote) ...[
                 const SizedBox(height: 10),
                 InfoLabel(
                   label: "Original Invoice No.",
                   child: TextBox(
                     placeholder: "e.g. INV-001",
-                    onChanged: (v) => setState(() => _originalInvoiceNo = v),
-                    controller: TextEditingController(text: _originalInvoiceNo)
+                    onChanged: (v) => notifier.updateOriginalInvoiceNumber(v),
+                    controller: TextEditingController(
+                        text: invoice.originalInvoiceNumber)
                       ..selection = TextSelection.fromPosition(TextPosition(
-                          offset: _originalInvoiceNo?.length ?? 0)),
+                          offset: invoice.originalInvoiceNumber?.length ?? 0)),
                   ),
                 ),
                 const SizedBox(height: 10),
                 DatePicker(
                   header: "Original Invoice Date",
-                  selected: _originalInvoiceDate ?? DateTime.now(),
-                  onChanged: (d) => setState(() => _originalInvoiceDate = d),
+                  selected: invoice.originalInvoiceDate ?? DateTime.now(),
+                  onChanged: (d) => notifier.updateOriginalInvoiceDate(d),
                 ),
               ],
               const SizedBox(height: 10),
@@ -311,26 +239,24 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                 label: "Invoice Number",
                 child: TextBox(
                   placeholder: "INV-001",
-                  controller: TextEditingController(text: _invoiceNo)
-                    ..selection =
-                        TextSelection.collapsed(offset: _invoiceNo.length),
-                  onChanged: (v) => _invoiceNo = v,
+                  controller: invoiceNoCtrl, // Mixin Controller
+                  onChanged: (v) => notifier.updateInvoiceNo(v),
                 ),
               ),
               const SizedBox(height: 10),
               InfoLabel(
                 label: "Invoice Date",
                 child: DatePicker(
-                  selected: _invoiceDate,
-                  onChanged: (v) => setState(() => _invoiceDate = v),
+                  selected: invoice.invoiceDate,
+                  onChanged: (v) => notifier.updateDate(v),
                 ),
               ),
               const SizedBox(height: 10),
               InfoLabel(
                 label: "Due Date",
                 child: DatePicker(
-                  selected: _dueDate ?? DateTime.now(),
-                  onChanged: (v) => setState(() => _dueDate = v),
+                  selected: invoice.dueDate ?? DateTime.now(),
+                  onChanged: (v) => notifier.updateDueDate(v),
                 ),
               ),
               const SizedBox(height: 10),
@@ -338,17 +264,17 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                 label: "Place of Supply",
                 child: AutoSuggestBox<String>(
                   placeholder: "State Name",
-                  controller: TextEditingController(text: _placeOfSupply),
+                  controller: posCtrl, // Mixin Controller
                   items: IndianStates.states
                       .map(
                           (e) => AutoSuggestBoxItem<String>(value: e, label: e))
                       .toList(),
                   onSelected: (item) {
-                    setState(() => _placeOfSupply = item.value ?? "");
+                    notifier.updatePlaceOfSupply(item.value ?? "");
                   },
                   onChanged: (text, reason) {
                     if (reason == TextChangedReason.userInput) {
-                      _placeOfSupply = text;
+                      notifier.updatePlaceOfSupply(text);
                     }
                   },
                 ),
@@ -358,10 +284,8 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                 label: "Payment Terms",
                 child: TextBox(
                   placeholder: "e.g. Due on Receipt",
-                  controller: TextEditingController(text: _paymentTerms)
-                    ..selection =
-                        TextSelection.collapsed(offset: _paymentTerms.length),
-                  onChanged: (v) => _paymentTerms = v,
+                  controller: paymentTermsCtrl, // Mixin Controller
+                  onChanged: (v) => notifier.updatePaymentTerms(v),
                 ),
               ),
             ],
@@ -371,9 +295,10 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
     );
   }
 
-  // Renamed from _buildItemsStep
   Widget _buildItemsSection() {
     final currency = NumberFormat.simpleCurrency(name: 'INR');
+    final invoice = ref.watch(invoiceProvider);
+    final notifier = ref.read(invoiceProvider.notifier);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -413,8 +338,8 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
           ),
         ),
 
-        // List of Items (Using Column/Map instead of ListView for proper scrolling)
-        if (_items.isEmpty)
+        // List of Items
+        if (invoice.items.isEmpty)
           Padding(
             padding: const EdgeInsets.all(20),
             child: Center(
@@ -424,7 +349,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
           )
         else
           Column(
-            children: _items.asMap().entries.map((entry) {
+            children: invoice.items.asMap().entries.map((entry) {
               final index = entry.key;
               final item = entry.value;
               return Container(
@@ -466,11 +391,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                           ),
                           IconButton(
                             icon: Icon(FluentIcons.delete, color: Colors.red),
-                            onPressed: () {
-                              setState(() {
-                                _items.removeAt(index);
-                              });
-                            },
+                            onPressed: () => notifier.removeItem(index),
                           ),
                         ],
                       ),
@@ -517,18 +438,12 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                 child: Column(
                   children: [
                     _buildSummaryRow(
-                        "Subtotal",
-                        currency.format(
-                            _items.fold(0.0, (sum, i) => sum + i.netAmount))),
+                        "Subtotal", currency.format(invoice.totalTaxableValue)),
                     _buildSummaryRow(
                         "Total GST",
-                        currency.format(_items.fold(
-                            0.0,
-                            (sum, i) =>
-                                sum +
-                                i.cgstAmount +
-                                i.sgstAmount +
-                                i.igstAmount))),
+                        currency.format(invoice.totalCGST +
+                            invoice.totalSGST +
+                            invoice.totalIGST)),
                     const Divider(),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -539,9 +454,9 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                           SizedBox(
                             width: 100,
                             child: NumberBox<double>(
-                              value: _discountAmount,
+                              value: invoice.discountAmount,
                               onChanged: (v) =>
-                                  setState(() => _discountAmount = v ?? 0),
+                                  notifier.updateDiscountAmount(v.toString()),
                               mode: SpinButtonPlacementMode.none,
                             ),
                           ),
@@ -549,10 +464,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                       ),
                     ),
                     _buildSummaryRow(
-                        "Grand Total",
-                        currency.format(
-                            _items.fold(0.0, (sum, i) => sum + i.totalAmount) -
-                                _discountAmount),
+                        "Grand Total", currency.format(invoice.grandTotal),
                         isBold: true),
                   ],
                 ),
@@ -708,20 +620,9 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
 
                     ref.invalidate(clientListProvider);
 
-                    // Create Receiver for UI selection
-                    final newReceiver = Receiver(
-                      name: name,
-                      address: address,
-                      gstin: gstin,
-                      state: state,
-                      // Receiver doesn't have ID, email, phone
-                    );
-
                     if (!context.mounted) return;
 
-                    setState(() {
-                      _selectedClient = newReceiver;
-                    });
+                    onClientSelected(newClient); // Mixin method to update state
                     Navigator.pop(dialogContext);
                     displayInfoBar(context,
                         builder: (c, close) => InfoBar(
@@ -773,9 +674,8 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                               sacCode: t.sacCode,
                               codeType: t.codeType,
                             );
-                            setState(() {
-                              _items.add(newItem);
-                            });
+                            final notifier = ref.read(invoiceProvider.notifier);
+                            notifier.addInvoiceItem(newItem);
                             Navigator.pop(context);
                           },
                         ),
@@ -925,13 +825,12 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                       sacCode: sacCode,
                     );
 
-                    setState(() {
-                      if (index != null) {
-                        _items[index] = newItem;
-                      } else {
-                        _items.add(newItem);
-                      }
-                    });
+                    final notifier = ref.read(invoiceProvider.notifier);
+                    if (index != null) {
+                      notifier.replaceItem(index, newItem);
+                    } else {
+                      notifier.addInvoiceItem(newItem);
+                    }
                     Navigator.pop(context);
                   }),
             ],
@@ -940,6 +839,8 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
   }
 
   Widget _buildFooterSection() {
+    final invoice = ref.watch(invoiceProvider);
+    final notifier = ref.read(invoiceProvider.notifier);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -954,8 +855,8 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                 label: "Terms & Conditions / Comments",
                 child: TextBox(
                   placeholder: "Thanks for your business.",
-                  controller: TextEditingController(text: _comments),
-                  onChanged: (v) => _comments = v,
+                  controller: TextEditingController(text: invoice.comments),
+                  onChanged: (v) => notifier.updateTermComments(v),
                   maxLines: 4,
                 ),
               ),
@@ -968,12 +869,12 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
                   InfoLabel(
                     label: "Invoice Style",
                     child: ComboBox<String>(
-                      value: _invoiceStyle,
+                      value: invoice.style,
                       items: ['Modern', 'Professional', 'Minimal']
                           .map((e) => ComboBoxItem(value: e, child: Text(e)))
                           .toList(),
                       onChanged: (v) {
-                        if (v != null) setState(() => _invoiceStyle = v);
+                        if (v != null) notifier.updateStyle(v);
                       },
                     ),
                   ),
@@ -986,8 +887,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
     );
   }
 
-  void _showPreviewDialog() {
-    final invoice = _buildCurrentInvoice();
+  void _showPreviewDialog(Invoice invoice) {
     final profile = ref.read(businessProfileProvider);
 
     showDialog(
@@ -1048,7 +948,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
               child: const Text("Save & Close"),
               onPressed: () {
                 Navigator.pop(context);
-                _saveInvoice();
+                _saveInvoice(invoice);
               },
             ),
           ],
@@ -1057,9 +957,9 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
     );
   }
 
-  Future<void> _saveInvoice() async {
+  Future<void> _saveInvoice(Invoice invoice) async {
     // Validation
-    if (_selectedClient == null || _selectedClient!.name.isEmpty) {
+    if (invoice.receiver.name.isEmpty) {
       displayInfoBar(context, builder: (context, close) {
         return InfoBar(
             title: const Text("Required"),
@@ -1069,7 +969,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
       });
       return;
     }
-    if (_invoiceNo.isEmpty) {
+    if (invoice.invoiceNo.isEmpty) {
       displayInfoBar(context, builder: (context, close) {
         return InfoBar(
             title: const Text("Required"),
@@ -1079,7 +979,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
       });
       return;
     }
-    if (_items.isEmpty) {
+    if (invoice.items.isEmpty) {
       displayInfoBar(context, builder: (context, close) {
         return InfoBar(
             title: const Text("Required"),
@@ -1092,7 +992,8 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
 
     // Check for uniqueness
     final repository = ref.read(invoiceRepositoryProvider);
-    final exists = await repository.checkInvoiceExists(_invoiceNo,
+    // Use invoice.invoiceNo, which is updated via provider
+    final exists = await repository.checkInvoiceExists(invoice.invoiceNo,
         excludeId: widget.invoiceToEdit?.id);
 
     if (!mounted) return;
@@ -1101,15 +1002,18 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
       displayInfoBar(context, builder: (context, close) {
         return InfoBar(
             title: const Text("Duplicate Invoice Number"),
-            content: Text("Invoice number '$_invoiceNo' already exists."),
+            content:
+                Text("Invoice number '${invoice.invoiceNo}' already exists."),
             severity: InfoBarSeverity.warning,
             onClose: close);
       });
       return;
     }
-    final invoice = _buildCurrentInvoice();
 
     try {
+      // Use Mixin's saveInvoice? No, mixin saveInvoice returns bool and handles specific actions.
+      // But we have custom UI here.
+      // Let's call repository directly as before.
       await repository.saveInvoice(invoice);
       final context = this.context;
       if (!context.mounted) return;
