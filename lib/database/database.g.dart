@@ -1560,6 +1560,13 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
   late final GeneratedColumn<String> invoiceNo = GeneratedColumn<String>(
       'invoice_no', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+      'type', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('invoice'));
   static const VerificationMeta _invoiceDateMeta =
       const VerificationMeta('invoiceDate');
   @override
@@ -1628,12 +1635,55 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
   late final GeneratedColumn<String> branch = GeneratedColumn<String>(
       'branch', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _supplierNameMeta =
+      const VerificationMeta('supplierName');
+  @override
+  late final GeneratedColumn<String> supplierName = GeneratedColumn<String>(
+      'supplier_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _supplierAddressMeta =
+      const VerificationMeta('supplierAddress');
+  @override
+  late final GeneratedColumn<String> supplierAddress = GeneratedColumn<String>(
+      'supplier_address', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _supplierGstinMeta =
+      const VerificationMeta('supplierGstin');
+  @override
+  late final GeneratedColumn<String> supplierGstin = GeneratedColumn<String>(
+      'supplier_gstin', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _supplierEmailMeta =
+      const VerificationMeta('supplierEmail');
+  @override
+  late final GeneratedColumn<String> supplierEmail = GeneratedColumn<String>(
+      'supplier_email', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _supplierPhoneMeta =
+      const VerificationMeta('supplierPhone');
+  @override
+  late final GeneratedColumn<String> supplierPhone = GeneratedColumn<String>(
+      'supplier_phone', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _originalInvoiceNumberMeta =
+      const VerificationMeta('originalInvoiceNumber');
+  @override
+  late final GeneratedColumn<String> originalInvoiceNumber =
+      GeneratedColumn<String>('original_invoice_number', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _originalInvoiceDateMeta =
+      const VerificationMeta('originalInvoiceDate');
+  @override
+  late final GeneratedColumn<DateTime> originalInvoiceDate =
+      GeneratedColumn<DateTime>('original_invoice_date', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
         id,
         profileId,
         clientId,
         invoiceNo,
+        type,
         invoiceDate,
         dueDate,
         placeOfSupply,
@@ -1644,7 +1694,14 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
         bankName,
         accountNo,
         ifscCode,
-        branch
+        branch,
+        supplierName,
+        supplierAddress,
+        supplierGstin,
+        supplierEmail,
+        supplierPhone,
+        originalInvoiceNumber,
+        originalInvoiceDate
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1678,6 +1735,10 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
           invoiceNo.isAcceptableOrUnknown(data['invoice_no']!, _invoiceNoMeta));
     } else if (isInserting) {
       context.missing(_invoiceNoMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+          _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
     }
     if (data.containsKey('invoice_date')) {
       context.handle(
@@ -1747,6 +1808,48 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
     } else if (isInserting) {
       context.missing(_branchMeta);
     }
+    if (data.containsKey('supplier_name')) {
+      context.handle(
+          _supplierNameMeta,
+          supplierName.isAcceptableOrUnknown(
+              data['supplier_name']!, _supplierNameMeta));
+    }
+    if (data.containsKey('supplier_address')) {
+      context.handle(
+          _supplierAddressMeta,
+          supplierAddress.isAcceptableOrUnknown(
+              data['supplier_address']!, _supplierAddressMeta));
+    }
+    if (data.containsKey('supplier_gstin')) {
+      context.handle(
+          _supplierGstinMeta,
+          supplierGstin.isAcceptableOrUnknown(
+              data['supplier_gstin']!, _supplierGstinMeta));
+    }
+    if (data.containsKey('supplier_email')) {
+      context.handle(
+          _supplierEmailMeta,
+          supplierEmail.isAcceptableOrUnknown(
+              data['supplier_email']!, _supplierEmailMeta));
+    }
+    if (data.containsKey('supplier_phone')) {
+      context.handle(
+          _supplierPhoneMeta,
+          supplierPhone.isAcceptableOrUnknown(
+              data['supplier_phone']!, _supplierPhoneMeta));
+    }
+    if (data.containsKey('original_invoice_number')) {
+      context.handle(
+          _originalInvoiceNumberMeta,
+          originalInvoiceNumber.isAcceptableOrUnknown(
+              data['original_invoice_number']!, _originalInvoiceNumberMeta));
+    }
+    if (data.containsKey('original_invoice_date')) {
+      context.handle(
+          _originalInvoiceDateMeta,
+          originalInvoiceDate.isAcceptableOrUnknown(
+              data['original_invoice_date']!, _originalInvoiceDateMeta));
+    }
     return context;
   }
 
@@ -1764,6 +1867,8 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
           .read(DriftSqlType.string, data['${effectivePrefix}client_id'])!,
       invoiceNo: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}invoice_no'])!,
+      type: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}type'])!,
       invoiceDate: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}invoice_date'])!,
       dueDate: attachedDatabase.typeMapping
@@ -1786,6 +1891,22 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
           .read(DriftSqlType.string, data['${effectivePrefix}ifsc_code'])!,
       branch: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}branch'])!,
+      supplierName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}supplier_name']),
+      supplierAddress: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}supplier_address']),
+      supplierGstin: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}supplier_gstin']),
+      supplierEmail: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}supplier_email']),
+      supplierPhone: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}supplier_phone']),
+      originalInvoiceNumber: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}original_invoice_number']),
+      originalInvoiceDate: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime,
+          data['${effectivePrefix}original_invoice_date']),
     );
   }
 
@@ -1800,6 +1921,7 @@ class Invoice extends DataClass implements Insertable<Invoice> {
   final String profileId;
   final String clientId;
   final String invoiceNo;
+  final String type;
   final DateTime invoiceDate;
   final DateTime? dueDate;
   final String placeOfSupply;
@@ -1811,11 +1933,19 @@ class Invoice extends DataClass implements Insertable<Invoice> {
   final String accountNo;
   final String ifscCode;
   final String branch;
+  final String? supplierName;
+  final String? supplierAddress;
+  final String? supplierGstin;
+  final String? supplierEmail;
+  final String? supplierPhone;
+  final String? originalInvoiceNumber;
+  final DateTime? originalInvoiceDate;
   const Invoice(
       {required this.id,
       required this.profileId,
       required this.clientId,
       required this.invoiceNo,
+      required this.type,
       required this.invoiceDate,
       this.dueDate,
       required this.placeOfSupply,
@@ -1826,7 +1956,14 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       required this.bankName,
       required this.accountNo,
       required this.ifscCode,
-      required this.branch});
+      required this.branch,
+      this.supplierName,
+      this.supplierAddress,
+      this.supplierGstin,
+      this.supplierEmail,
+      this.supplierPhone,
+      this.originalInvoiceNumber,
+      this.originalInvoiceDate});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1834,6 +1971,7 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     map['profile_id'] = Variable<String>(profileId);
     map['client_id'] = Variable<String>(clientId);
     map['invoice_no'] = Variable<String>(invoiceNo);
+    map['type'] = Variable<String>(type);
     map['invoice_date'] = Variable<DateTime>(invoiceDate);
     if (!nullToAbsent || dueDate != null) {
       map['due_date'] = Variable<DateTime>(dueDate);
@@ -1847,6 +1985,27 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     map['account_no'] = Variable<String>(accountNo);
     map['ifsc_code'] = Variable<String>(ifscCode);
     map['branch'] = Variable<String>(branch);
+    if (!nullToAbsent || supplierName != null) {
+      map['supplier_name'] = Variable<String>(supplierName);
+    }
+    if (!nullToAbsent || supplierAddress != null) {
+      map['supplier_address'] = Variable<String>(supplierAddress);
+    }
+    if (!nullToAbsent || supplierGstin != null) {
+      map['supplier_gstin'] = Variable<String>(supplierGstin);
+    }
+    if (!nullToAbsent || supplierEmail != null) {
+      map['supplier_email'] = Variable<String>(supplierEmail);
+    }
+    if (!nullToAbsent || supplierPhone != null) {
+      map['supplier_phone'] = Variable<String>(supplierPhone);
+    }
+    if (!nullToAbsent || originalInvoiceNumber != null) {
+      map['original_invoice_number'] = Variable<String>(originalInvoiceNumber);
+    }
+    if (!nullToAbsent || originalInvoiceDate != null) {
+      map['original_invoice_date'] = Variable<DateTime>(originalInvoiceDate);
+    }
     return map;
   }
 
@@ -1856,6 +2015,7 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       profileId: Value(profileId),
       clientId: Value(clientId),
       invoiceNo: Value(invoiceNo),
+      type: Value(type),
       invoiceDate: Value(invoiceDate),
       dueDate: dueDate == null && nullToAbsent
           ? const Value.absent()
@@ -1869,6 +2029,27 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       accountNo: Value(accountNo),
       ifscCode: Value(ifscCode),
       branch: Value(branch),
+      supplierName: supplierName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(supplierName),
+      supplierAddress: supplierAddress == null && nullToAbsent
+          ? const Value.absent()
+          : Value(supplierAddress),
+      supplierGstin: supplierGstin == null && nullToAbsent
+          ? const Value.absent()
+          : Value(supplierGstin),
+      supplierEmail: supplierEmail == null && nullToAbsent
+          ? const Value.absent()
+          : Value(supplierEmail),
+      supplierPhone: supplierPhone == null && nullToAbsent
+          ? const Value.absent()
+          : Value(supplierPhone),
+      originalInvoiceNumber: originalInvoiceNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(originalInvoiceNumber),
+      originalInvoiceDate: originalInvoiceDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(originalInvoiceDate),
     );
   }
 
@@ -1880,6 +2061,7 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       profileId: serializer.fromJson<String>(json['profileId']),
       clientId: serializer.fromJson<String>(json['clientId']),
       invoiceNo: serializer.fromJson<String>(json['invoiceNo']),
+      type: serializer.fromJson<String>(json['type']),
       invoiceDate: serializer.fromJson<DateTime>(json['invoiceDate']),
       dueDate: serializer.fromJson<DateTime?>(json['dueDate']),
       placeOfSupply: serializer.fromJson<String>(json['placeOfSupply']),
@@ -1891,6 +2073,15 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       accountNo: serializer.fromJson<String>(json['accountNo']),
       ifscCode: serializer.fromJson<String>(json['ifscCode']),
       branch: serializer.fromJson<String>(json['branch']),
+      supplierName: serializer.fromJson<String?>(json['supplierName']),
+      supplierAddress: serializer.fromJson<String?>(json['supplierAddress']),
+      supplierGstin: serializer.fromJson<String?>(json['supplierGstin']),
+      supplierEmail: serializer.fromJson<String?>(json['supplierEmail']),
+      supplierPhone: serializer.fromJson<String?>(json['supplierPhone']),
+      originalInvoiceNumber:
+          serializer.fromJson<String?>(json['originalInvoiceNumber']),
+      originalInvoiceDate:
+          serializer.fromJson<DateTime?>(json['originalInvoiceDate']),
     );
   }
   @override
@@ -1901,6 +2092,7 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       'profileId': serializer.toJson<String>(profileId),
       'clientId': serializer.toJson<String>(clientId),
       'invoiceNo': serializer.toJson<String>(invoiceNo),
+      'type': serializer.toJson<String>(type),
       'invoiceDate': serializer.toJson<DateTime>(invoiceDate),
       'dueDate': serializer.toJson<DateTime?>(dueDate),
       'placeOfSupply': serializer.toJson<String>(placeOfSupply),
@@ -1912,6 +2104,14 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       'accountNo': serializer.toJson<String>(accountNo),
       'ifscCode': serializer.toJson<String>(ifscCode),
       'branch': serializer.toJson<String>(branch),
+      'supplierName': serializer.toJson<String?>(supplierName),
+      'supplierAddress': serializer.toJson<String?>(supplierAddress),
+      'supplierGstin': serializer.toJson<String?>(supplierGstin),
+      'supplierEmail': serializer.toJson<String?>(supplierEmail),
+      'supplierPhone': serializer.toJson<String?>(supplierPhone),
+      'originalInvoiceNumber':
+          serializer.toJson<String?>(originalInvoiceNumber),
+      'originalInvoiceDate': serializer.toJson<DateTime?>(originalInvoiceDate),
     };
   }
 
@@ -1920,6 +2120,7 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           String? profileId,
           String? clientId,
           String? invoiceNo,
+          String? type,
           DateTime? invoiceDate,
           Value<DateTime?> dueDate = const Value.absent(),
           String? placeOfSupply,
@@ -1930,12 +2131,20 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           String? bankName,
           String? accountNo,
           String? ifscCode,
-          String? branch}) =>
+          String? branch,
+          Value<String?> supplierName = const Value.absent(),
+          Value<String?> supplierAddress = const Value.absent(),
+          Value<String?> supplierGstin = const Value.absent(),
+          Value<String?> supplierEmail = const Value.absent(),
+          Value<String?> supplierPhone = const Value.absent(),
+          Value<String?> originalInvoiceNumber = const Value.absent(),
+          Value<DateTime?> originalInvoiceDate = const Value.absent()}) =>
       Invoice(
         id: id ?? this.id,
         profileId: profileId ?? this.profileId,
         clientId: clientId ?? this.clientId,
         invoiceNo: invoiceNo ?? this.invoiceNo,
+        type: type ?? this.type,
         invoiceDate: invoiceDate ?? this.invoiceDate,
         dueDate: dueDate.present ? dueDate.value : this.dueDate,
         placeOfSupply: placeOfSupply ?? this.placeOfSupply,
@@ -1947,6 +2156,23 @@ class Invoice extends DataClass implements Insertable<Invoice> {
         accountNo: accountNo ?? this.accountNo,
         ifscCode: ifscCode ?? this.ifscCode,
         branch: branch ?? this.branch,
+        supplierName:
+            supplierName.present ? supplierName.value : this.supplierName,
+        supplierAddress: supplierAddress.present
+            ? supplierAddress.value
+            : this.supplierAddress,
+        supplierGstin:
+            supplierGstin.present ? supplierGstin.value : this.supplierGstin,
+        supplierEmail:
+            supplierEmail.present ? supplierEmail.value : this.supplierEmail,
+        supplierPhone:
+            supplierPhone.present ? supplierPhone.value : this.supplierPhone,
+        originalInvoiceNumber: originalInvoiceNumber.present
+            ? originalInvoiceNumber.value
+            : this.originalInvoiceNumber,
+        originalInvoiceDate: originalInvoiceDate.present
+            ? originalInvoiceDate.value
+            : this.originalInvoiceDate,
       );
   Invoice copyWithCompanion(InvoicesCompanion data) {
     return Invoice(
@@ -1954,6 +2180,7 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       profileId: data.profileId.present ? data.profileId.value : this.profileId,
       clientId: data.clientId.present ? data.clientId.value : this.clientId,
       invoiceNo: data.invoiceNo.present ? data.invoiceNo.value : this.invoiceNo,
+      type: data.type.present ? data.type.value : this.type,
       invoiceDate:
           data.invoiceDate.present ? data.invoiceDate.value : this.invoiceDate,
       dueDate: data.dueDate.present ? data.dueDate.value : this.dueDate,
@@ -1972,6 +2199,27 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       accountNo: data.accountNo.present ? data.accountNo.value : this.accountNo,
       ifscCode: data.ifscCode.present ? data.ifscCode.value : this.ifscCode,
       branch: data.branch.present ? data.branch.value : this.branch,
+      supplierName: data.supplierName.present
+          ? data.supplierName.value
+          : this.supplierName,
+      supplierAddress: data.supplierAddress.present
+          ? data.supplierAddress.value
+          : this.supplierAddress,
+      supplierGstin: data.supplierGstin.present
+          ? data.supplierGstin.value
+          : this.supplierGstin,
+      supplierEmail: data.supplierEmail.present
+          ? data.supplierEmail.value
+          : this.supplierEmail,
+      supplierPhone: data.supplierPhone.present
+          ? data.supplierPhone.value
+          : this.supplierPhone,
+      originalInvoiceNumber: data.originalInvoiceNumber.present
+          ? data.originalInvoiceNumber.value
+          : this.originalInvoiceNumber,
+      originalInvoiceDate: data.originalInvoiceDate.present
+          ? data.originalInvoiceDate.value
+          : this.originalInvoiceDate,
     );
   }
 
@@ -1982,6 +2230,7 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           ..write('profileId: $profileId, ')
           ..write('clientId: $clientId, ')
           ..write('invoiceNo: $invoiceNo, ')
+          ..write('type: $type, ')
           ..write('invoiceDate: $invoiceDate, ')
           ..write('dueDate: $dueDate, ')
           ..write('placeOfSupply: $placeOfSupply, ')
@@ -1992,28 +2241,44 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           ..write('bankName: $bankName, ')
           ..write('accountNo: $accountNo, ')
           ..write('ifscCode: $ifscCode, ')
-          ..write('branch: $branch')
+          ..write('branch: $branch, ')
+          ..write('supplierName: $supplierName, ')
+          ..write('supplierAddress: $supplierAddress, ')
+          ..write('supplierGstin: $supplierGstin, ')
+          ..write('supplierEmail: $supplierEmail, ')
+          ..write('supplierPhone: $supplierPhone, ')
+          ..write('originalInvoiceNumber: $originalInvoiceNumber, ')
+          ..write('originalInvoiceDate: $originalInvoiceDate')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-      id,
-      profileId,
-      clientId,
-      invoiceNo,
-      invoiceDate,
-      dueDate,
-      placeOfSupply,
-      style,
-      reverseCharge,
-      paymentTerms,
-      comments,
-      bankName,
-      accountNo,
-      ifscCode,
-      branch);
+  int get hashCode => Object.hashAll([
+        id,
+        profileId,
+        clientId,
+        invoiceNo,
+        type,
+        invoiceDate,
+        dueDate,
+        placeOfSupply,
+        style,
+        reverseCharge,
+        paymentTerms,
+        comments,
+        bankName,
+        accountNo,
+        ifscCode,
+        branch,
+        supplierName,
+        supplierAddress,
+        supplierGstin,
+        supplierEmail,
+        supplierPhone,
+        originalInvoiceNumber,
+        originalInvoiceDate
+      ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2022,6 +2287,7 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           other.profileId == this.profileId &&
           other.clientId == this.clientId &&
           other.invoiceNo == this.invoiceNo &&
+          other.type == this.type &&
           other.invoiceDate == this.invoiceDate &&
           other.dueDate == this.dueDate &&
           other.placeOfSupply == this.placeOfSupply &&
@@ -2032,7 +2298,14 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           other.bankName == this.bankName &&
           other.accountNo == this.accountNo &&
           other.ifscCode == this.ifscCode &&
-          other.branch == this.branch);
+          other.branch == this.branch &&
+          other.supplierName == this.supplierName &&
+          other.supplierAddress == this.supplierAddress &&
+          other.supplierGstin == this.supplierGstin &&
+          other.supplierEmail == this.supplierEmail &&
+          other.supplierPhone == this.supplierPhone &&
+          other.originalInvoiceNumber == this.originalInvoiceNumber &&
+          other.originalInvoiceDate == this.originalInvoiceDate);
 }
 
 class InvoicesCompanion extends UpdateCompanion<Invoice> {
@@ -2040,6 +2313,7 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
   final Value<String> profileId;
   final Value<String> clientId;
   final Value<String> invoiceNo;
+  final Value<String> type;
   final Value<DateTime> invoiceDate;
   final Value<DateTime?> dueDate;
   final Value<String> placeOfSupply;
@@ -2051,12 +2325,20 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
   final Value<String> accountNo;
   final Value<String> ifscCode;
   final Value<String> branch;
+  final Value<String?> supplierName;
+  final Value<String?> supplierAddress;
+  final Value<String?> supplierGstin;
+  final Value<String?> supplierEmail;
+  final Value<String?> supplierPhone;
+  final Value<String?> originalInvoiceNumber;
+  final Value<DateTime?> originalInvoiceDate;
   final Value<int> rowid;
   const InvoicesCompanion({
     this.id = const Value.absent(),
     this.profileId = const Value.absent(),
     this.clientId = const Value.absent(),
     this.invoiceNo = const Value.absent(),
+    this.type = const Value.absent(),
     this.invoiceDate = const Value.absent(),
     this.dueDate = const Value.absent(),
     this.placeOfSupply = const Value.absent(),
@@ -2068,6 +2350,13 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     this.accountNo = const Value.absent(),
     this.ifscCode = const Value.absent(),
     this.branch = const Value.absent(),
+    this.supplierName = const Value.absent(),
+    this.supplierAddress = const Value.absent(),
+    this.supplierGstin = const Value.absent(),
+    this.supplierEmail = const Value.absent(),
+    this.supplierPhone = const Value.absent(),
+    this.originalInvoiceNumber = const Value.absent(),
+    this.originalInvoiceDate = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   InvoicesCompanion.insert({
@@ -2075,6 +2364,7 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     required String profileId,
     required String clientId,
     required String invoiceNo,
+    this.type = const Value.absent(),
     required DateTime invoiceDate,
     this.dueDate = const Value.absent(),
     required String placeOfSupply,
@@ -2086,6 +2376,13 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     required String accountNo,
     required String ifscCode,
     required String branch,
+    this.supplierName = const Value.absent(),
+    this.supplierAddress = const Value.absent(),
+    this.supplierGstin = const Value.absent(),
+    this.supplierEmail = const Value.absent(),
+    this.supplierPhone = const Value.absent(),
+    this.originalInvoiceNumber = const Value.absent(),
+    this.originalInvoiceDate = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         profileId = Value(profileId),
@@ -2104,6 +2401,7 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     Expression<String>? profileId,
     Expression<String>? clientId,
     Expression<String>? invoiceNo,
+    Expression<String>? type,
     Expression<DateTime>? invoiceDate,
     Expression<DateTime>? dueDate,
     Expression<String>? placeOfSupply,
@@ -2115,6 +2413,13 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     Expression<String>? accountNo,
     Expression<String>? ifscCode,
     Expression<String>? branch,
+    Expression<String>? supplierName,
+    Expression<String>? supplierAddress,
+    Expression<String>? supplierGstin,
+    Expression<String>? supplierEmail,
+    Expression<String>? supplierPhone,
+    Expression<String>? originalInvoiceNumber,
+    Expression<DateTime>? originalInvoiceDate,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2122,6 +2427,7 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
       if (profileId != null) 'profile_id': profileId,
       if (clientId != null) 'client_id': clientId,
       if (invoiceNo != null) 'invoice_no': invoiceNo,
+      if (type != null) 'type': type,
       if (invoiceDate != null) 'invoice_date': invoiceDate,
       if (dueDate != null) 'due_date': dueDate,
       if (placeOfSupply != null) 'place_of_supply': placeOfSupply,
@@ -2133,6 +2439,15 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
       if (accountNo != null) 'account_no': accountNo,
       if (ifscCode != null) 'ifsc_code': ifscCode,
       if (branch != null) 'branch': branch,
+      if (supplierName != null) 'supplier_name': supplierName,
+      if (supplierAddress != null) 'supplier_address': supplierAddress,
+      if (supplierGstin != null) 'supplier_gstin': supplierGstin,
+      if (supplierEmail != null) 'supplier_email': supplierEmail,
+      if (supplierPhone != null) 'supplier_phone': supplierPhone,
+      if (originalInvoiceNumber != null)
+        'original_invoice_number': originalInvoiceNumber,
+      if (originalInvoiceDate != null)
+        'original_invoice_date': originalInvoiceDate,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2142,6 +2457,7 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
       Value<String>? profileId,
       Value<String>? clientId,
       Value<String>? invoiceNo,
+      Value<String>? type,
       Value<DateTime>? invoiceDate,
       Value<DateTime?>? dueDate,
       Value<String>? placeOfSupply,
@@ -2153,12 +2469,20 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
       Value<String>? accountNo,
       Value<String>? ifscCode,
       Value<String>? branch,
+      Value<String?>? supplierName,
+      Value<String?>? supplierAddress,
+      Value<String?>? supplierGstin,
+      Value<String?>? supplierEmail,
+      Value<String?>? supplierPhone,
+      Value<String?>? originalInvoiceNumber,
+      Value<DateTime?>? originalInvoiceDate,
       Value<int>? rowid}) {
     return InvoicesCompanion(
       id: id ?? this.id,
       profileId: profileId ?? this.profileId,
       clientId: clientId ?? this.clientId,
       invoiceNo: invoiceNo ?? this.invoiceNo,
+      type: type ?? this.type,
       invoiceDate: invoiceDate ?? this.invoiceDate,
       dueDate: dueDate ?? this.dueDate,
       placeOfSupply: placeOfSupply ?? this.placeOfSupply,
@@ -2170,6 +2494,14 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
       accountNo: accountNo ?? this.accountNo,
       ifscCode: ifscCode ?? this.ifscCode,
       branch: branch ?? this.branch,
+      supplierName: supplierName ?? this.supplierName,
+      supplierAddress: supplierAddress ?? this.supplierAddress,
+      supplierGstin: supplierGstin ?? this.supplierGstin,
+      supplierEmail: supplierEmail ?? this.supplierEmail,
+      supplierPhone: supplierPhone ?? this.supplierPhone,
+      originalInvoiceNumber:
+          originalInvoiceNumber ?? this.originalInvoiceNumber,
+      originalInvoiceDate: originalInvoiceDate ?? this.originalInvoiceDate,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2188,6 +2520,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     }
     if (invoiceNo.present) {
       map['invoice_no'] = Variable<String>(invoiceNo.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
     }
     if (invoiceDate.present) {
       map['invoice_date'] = Variable<DateTime>(invoiceDate.value);
@@ -2222,6 +2557,29 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     if (branch.present) {
       map['branch'] = Variable<String>(branch.value);
     }
+    if (supplierName.present) {
+      map['supplier_name'] = Variable<String>(supplierName.value);
+    }
+    if (supplierAddress.present) {
+      map['supplier_address'] = Variable<String>(supplierAddress.value);
+    }
+    if (supplierGstin.present) {
+      map['supplier_gstin'] = Variable<String>(supplierGstin.value);
+    }
+    if (supplierEmail.present) {
+      map['supplier_email'] = Variable<String>(supplierEmail.value);
+    }
+    if (supplierPhone.present) {
+      map['supplier_phone'] = Variable<String>(supplierPhone.value);
+    }
+    if (originalInvoiceNumber.present) {
+      map['original_invoice_number'] =
+          Variable<String>(originalInvoiceNumber.value);
+    }
+    if (originalInvoiceDate.present) {
+      map['original_invoice_date'] =
+          Variable<DateTime>(originalInvoiceDate.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2235,6 +2593,7 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
           ..write('profileId: $profileId, ')
           ..write('clientId: $clientId, ')
           ..write('invoiceNo: $invoiceNo, ')
+          ..write('type: $type, ')
           ..write('invoiceDate: $invoiceDate, ')
           ..write('dueDate: $dueDate, ')
           ..write('placeOfSupply: $placeOfSupply, ')
@@ -2246,6 +2605,13 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
           ..write('accountNo: $accountNo, ')
           ..write('ifscCode: $ifscCode, ')
           ..write('branch: $branch, ')
+          ..write('supplierName: $supplierName, ')
+          ..write('supplierAddress: $supplierAddress, ')
+          ..write('supplierGstin: $supplierGstin, ')
+          ..write('supplierEmail: $supplierEmail, ')
+          ..write('supplierPhone: $supplierPhone, ')
+          ..write('originalInvoiceNumber: $originalInvoiceNumber, ')
+          ..write('originalInvoiceDate: $originalInvoiceDate, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4175,6 +4541,7 @@ typedef $$InvoicesTableCreateCompanionBuilder = InvoicesCompanion Function({
   required String profileId,
   required String clientId,
   required String invoiceNo,
+  Value<String> type,
   required DateTime invoiceDate,
   Value<DateTime?> dueDate,
   required String placeOfSupply,
@@ -4186,6 +4553,13 @@ typedef $$InvoicesTableCreateCompanionBuilder = InvoicesCompanion Function({
   required String accountNo,
   required String ifscCode,
   required String branch,
+  Value<String?> supplierName,
+  Value<String?> supplierAddress,
+  Value<String?> supplierGstin,
+  Value<String?> supplierEmail,
+  Value<String?> supplierPhone,
+  Value<String?> originalInvoiceNumber,
+  Value<DateTime?> originalInvoiceDate,
   Value<int> rowid,
 });
 typedef $$InvoicesTableUpdateCompanionBuilder = InvoicesCompanion Function({
@@ -4193,6 +4567,7 @@ typedef $$InvoicesTableUpdateCompanionBuilder = InvoicesCompanion Function({
   Value<String> profileId,
   Value<String> clientId,
   Value<String> invoiceNo,
+  Value<String> type,
   Value<DateTime> invoiceDate,
   Value<DateTime?> dueDate,
   Value<String> placeOfSupply,
@@ -4204,6 +4579,13 @@ typedef $$InvoicesTableUpdateCompanionBuilder = InvoicesCompanion Function({
   Value<String> accountNo,
   Value<String> ifscCode,
   Value<String> branch,
+  Value<String?> supplierName,
+  Value<String?> supplierAddress,
+  Value<String?> supplierGstin,
+  Value<String?> supplierEmail,
+  Value<String?> supplierPhone,
+  Value<String?> originalInvoiceNumber,
+  Value<DateTime?> originalInvoiceDate,
   Value<int> rowid,
 });
 
@@ -4287,6 +4669,9 @@ class $$InvoicesTableFilterComposer
   ColumnFilters<String> get invoiceNo => $composableBuilder(
       column: $table.invoiceNo, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<DateTime> get invoiceDate => $composableBuilder(
       column: $table.invoiceDate, builder: (column) => ColumnFilters(column));
 
@@ -4319,6 +4704,30 @@ class $$InvoicesTableFilterComposer
 
   ColumnFilters<String> get branch => $composableBuilder(
       column: $table.branch, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get supplierName => $composableBuilder(
+      column: $table.supplierName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get supplierAddress => $composableBuilder(
+      column: $table.supplierAddress,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get supplierGstin => $composableBuilder(
+      column: $table.supplierGstin, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get supplierEmail => $composableBuilder(
+      column: $table.supplierEmail, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get supplierPhone => $composableBuilder(
+      column: $table.supplierPhone, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get originalInvoiceNumber => $composableBuilder(
+      column: $table.originalInvoiceNumber,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get originalInvoiceDate => $composableBuilder(
+      column: $table.originalInvoiceDate,
+      builder: (column) => ColumnFilters(column));
 
   $$BusinessProfilesTableFilterComposer get profileId {
     final $$BusinessProfilesTableFilterComposer composer = $composerBuilder(
@@ -4418,6 +4827,9 @@ class $$InvoicesTableOrderingComposer
   ColumnOrderings<String> get invoiceNo => $composableBuilder(
       column: $table.invoiceNo, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get invoiceDate => $composableBuilder(
       column: $table.invoiceDate, builder: (column) => ColumnOrderings(column));
 
@@ -4453,6 +4865,34 @@ class $$InvoicesTableOrderingComposer
 
   ColumnOrderings<String> get branch => $composableBuilder(
       column: $table.branch, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get supplierName => $composableBuilder(
+      column: $table.supplierName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get supplierAddress => $composableBuilder(
+      column: $table.supplierAddress,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get supplierGstin => $composableBuilder(
+      column: $table.supplierGstin,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get supplierEmail => $composableBuilder(
+      column: $table.supplierEmail,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get supplierPhone => $composableBuilder(
+      column: $table.supplierPhone,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get originalInvoiceNumber => $composableBuilder(
+      column: $table.originalInvoiceNumber,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get originalInvoiceDate => $composableBuilder(
+      column: $table.originalInvoiceDate,
+      builder: (column) => ColumnOrderings(column));
 
   $$BusinessProfilesTableOrderingComposer get profileId {
     final $$BusinessProfilesTableOrderingComposer composer = $composerBuilder(
@@ -4510,6 +4950,9 @@ class $$InvoicesTableAnnotationComposer
   GeneratedColumn<String> get invoiceNo =>
       $composableBuilder(column: $table.invoiceNo, builder: (column) => column);
 
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
   GeneratedColumn<DateTime> get invoiceDate => $composableBuilder(
       column: $table.invoiceDate, builder: (column) => column);
 
@@ -4542,6 +4985,27 @@ class $$InvoicesTableAnnotationComposer
 
   GeneratedColumn<String> get branch =>
       $composableBuilder(column: $table.branch, builder: (column) => column);
+
+  GeneratedColumn<String> get supplierName => $composableBuilder(
+      column: $table.supplierName, builder: (column) => column);
+
+  GeneratedColumn<String> get supplierAddress => $composableBuilder(
+      column: $table.supplierAddress, builder: (column) => column);
+
+  GeneratedColumn<String> get supplierGstin => $composableBuilder(
+      column: $table.supplierGstin, builder: (column) => column);
+
+  GeneratedColumn<String> get supplierEmail => $composableBuilder(
+      column: $table.supplierEmail, builder: (column) => column);
+
+  GeneratedColumn<String> get supplierPhone => $composableBuilder(
+      column: $table.supplierPhone, builder: (column) => column);
+
+  GeneratedColumn<String> get originalInvoiceNumber => $composableBuilder(
+      column: $table.originalInvoiceNumber, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get originalInvoiceDate => $composableBuilder(
+      column: $table.originalInvoiceDate, builder: (column) => column);
 
   $$BusinessProfilesTableAnnotationComposer get profileId {
     final $$BusinessProfilesTableAnnotationComposer composer = $composerBuilder(
@@ -4657,6 +5121,7 @@ class $$InvoicesTableTableManager extends RootTableManager<
             Value<String> profileId = const Value.absent(),
             Value<String> clientId = const Value.absent(),
             Value<String> invoiceNo = const Value.absent(),
+            Value<String> type = const Value.absent(),
             Value<DateTime> invoiceDate = const Value.absent(),
             Value<DateTime?> dueDate = const Value.absent(),
             Value<String> placeOfSupply = const Value.absent(),
@@ -4668,6 +5133,13 @@ class $$InvoicesTableTableManager extends RootTableManager<
             Value<String> accountNo = const Value.absent(),
             Value<String> ifscCode = const Value.absent(),
             Value<String> branch = const Value.absent(),
+            Value<String?> supplierName = const Value.absent(),
+            Value<String?> supplierAddress = const Value.absent(),
+            Value<String?> supplierGstin = const Value.absent(),
+            Value<String?> supplierEmail = const Value.absent(),
+            Value<String?> supplierPhone = const Value.absent(),
+            Value<String?> originalInvoiceNumber = const Value.absent(),
+            Value<DateTime?> originalInvoiceDate = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               InvoicesCompanion(
@@ -4675,6 +5147,7 @@ class $$InvoicesTableTableManager extends RootTableManager<
             profileId: profileId,
             clientId: clientId,
             invoiceNo: invoiceNo,
+            type: type,
             invoiceDate: invoiceDate,
             dueDate: dueDate,
             placeOfSupply: placeOfSupply,
@@ -4686,6 +5159,13 @@ class $$InvoicesTableTableManager extends RootTableManager<
             accountNo: accountNo,
             ifscCode: ifscCode,
             branch: branch,
+            supplierName: supplierName,
+            supplierAddress: supplierAddress,
+            supplierGstin: supplierGstin,
+            supplierEmail: supplierEmail,
+            supplierPhone: supplierPhone,
+            originalInvoiceNumber: originalInvoiceNumber,
+            originalInvoiceDate: originalInvoiceDate,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -4693,6 +5173,7 @@ class $$InvoicesTableTableManager extends RootTableManager<
             required String profileId,
             required String clientId,
             required String invoiceNo,
+            Value<String> type = const Value.absent(),
             required DateTime invoiceDate,
             Value<DateTime?> dueDate = const Value.absent(),
             required String placeOfSupply,
@@ -4704,6 +5185,13 @@ class $$InvoicesTableTableManager extends RootTableManager<
             required String accountNo,
             required String ifscCode,
             required String branch,
+            Value<String?> supplierName = const Value.absent(),
+            Value<String?> supplierAddress = const Value.absent(),
+            Value<String?> supplierGstin = const Value.absent(),
+            Value<String?> supplierEmail = const Value.absent(),
+            Value<String?> supplierPhone = const Value.absent(),
+            Value<String?> originalInvoiceNumber = const Value.absent(),
+            Value<DateTime?> originalInvoiceDate = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               InvoicesCompanion.insert(
@@ -4711,6 +5199,7 @@ class $$InvoicesTableTableManager extends RootTableManager<
             profileId: profileId,
             clientId: clientId,
             invoiceNo: invoiceNo,
+            type: type,
             invoiceDate: invoiceDate,
             dueDate: dueDate,
             placeOfSupply: placeOfSupply,
@@ -4722,6 +5211,13 @@ class $$InvoicesTableTableManager extends RootTableManager<
             accountNo: accountNo,
             ifscCode: ifscCode,
             branch: branch,
+            supplierName: supplierName,
+            supplierAddress: supplierAddress,
+            supplierGstin: supplierGstin,
+            supplierEmail: supplierEmail,
+            supplierPhone: supplierPhone,
+            originalInvoiceNumber: originalInvoiceNumber,
+            originalInvoiceDate: originalInvoiceDate,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0

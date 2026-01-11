@@ -398,26 +398,52 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                   ]),
 
               const SizedBox(height: 16),
-              // Grand Total Summary
+              // Discount and Grand Total
               Card(
                 elevation: 0,
                 color:
-                    theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
+                    theme.colorScheme.primaryContainer.withValues(alpha: 0.1),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
                 child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
                     children: [
-                      const Text("Grand Total",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text("₹${invoice.grandTotal.toStringAsFixed(2)}",
-                          style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.primary)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          const Text("Discount (Flat ₹): ",
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          const SizedBox(width: 8),
+                          SizedBox(
+                            width: 120,
+                            child: _buildTextField(
+                              controller: TextEditingController(
+                                  text: invoice.discountAmount.toString()),
+                              label: "Amount",
+                              onChanged: (val) => ref
+                                  .read(invoiceProvider.notifier)
+                                  .updateDiscountAmount(val),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      const Divider(),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text("Grand Total",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text("₹${invoice.grandTotal.toStringAsFixed(2)}",
+                              style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.primary)),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -680,6 +706,8 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                                       idx, template.description);
                                   notifier.updateItemAmount(
                                       idx, template.amount.toString());
+                                  notifier.updateItemQuantity(
+                                      idx, template.quantity.toString()); // NEW
                                   notifier.updateItemUnit(idx, template.unit);
                                   notifier.updateItemGstRate(
                                       idx, template.gstRate.toString());

@@ -8,6 +8,7 @@ import 'fluent_settings.dart';
 import '../clients_screen.dart';
 import 'fluent_recurring_screen.dart';
 import 'fluent_estimates_screen.dart';
+import 'fluent_item_templates_screen.dart';
 
 import '../../providers/app_config_provider.dart';
 
@@ -59,6 +60,11 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
             icon: const Icon(FluentIcons.repeat_all),
             title: const Text('Recurring'),
             body: const FluentRecurringScreen(),
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.page_list),
+            title: const Text('Templates'),
+            body: const FluentItemTemplatesScreen(),
           ),
           PaneItemSeparator(),
           PaneItem(

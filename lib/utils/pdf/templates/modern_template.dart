@@ -106,6 +106,15 @@ class ModernTemplate implements InvoiceTemplate {
                                 "Place Of Supply", invoice.placeOfSupply),
                             _buildWhiteField(
                                 "Reverse Charge", invoice.reverseCharge),
+                            if (invoice.originalInvoiceNumber != null &&
+                                invoice.originalInvoiceNumber!.isNotEmpty)
+                              _buildWhiteField("Orig. Invoice No.",
+                                  invoice.originalInvoiceNumber!),
+                            if (invoice.originalInvoiceDate != null)
+                              _buildWhiteField(
+                                  "Orig. Invoice Date",
+                                  DateFormat('dd MMM yyyy')
+                                      .format(invoice.originalInvoiceDate!)),
                           ])
                     ])),
 

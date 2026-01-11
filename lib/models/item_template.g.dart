@@ -15,6 +15,7 @@ _ItemTemplate _$ItemTemplateFromJson(Map<String, dynamic> json) =>
       gstRate: (json['gstRate'] as num?)?.toDouble() ?? 18.0,
       codeType: json['codeType'] as String? ?? 'SAC',
       sacCode: json['sacCode'] as String? ?? '',
+      quantity: (json['quantity'] as num?)?.toDouble() ?? 1.0,
     );
 
 Map<String, dynamic> _$ItemTemplateToJson(_ItemTemplate instance) =>
@@ -26,4 +27,5 @@ Map<String, dynamic> _$ItemTemplateToJson(_ItemTemplate instance) =>
       'gstRate': instance.gstRate,
       'codeType': instance.codeType,
       'sacCode': instance.sacCode,
+      'quantity': instance.quantity,
     };

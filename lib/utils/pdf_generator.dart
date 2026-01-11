@@ -27,5 +27,19 @@ Future<Uint8List> generateInvoicePdf(Invoice invoice, BusinessProfile profile,
       break;
   }
 
-  return template.generate(invoice, profile, font, fontBold, title: title);
+  String? effectiveTitle = title;
+  if (effectiveTitle == null) {
+    if (invoice.type == InvoiceType.deliveryChallan) {
+      effectiveTitle = "DELIVERY CHALLAN";
+    } else if (invoice.type == InvoiceType.creditNote) {
+      effectiveTitle = "CREDIT NOTE";
+    } else if (invoice.type == InvoiceType.debitNote) {
+      effectiveTitle = "DEBIT NOTE";
+    } else {
+      effectiveTitle = "TAX INVOICE";
+    }
+  }
+
+  return template.generate(invoice, profile, font, fontBold,
+      title: effectiveTitle);
 }

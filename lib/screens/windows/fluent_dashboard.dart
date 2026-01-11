@@ -14,6 +14,8 @@ import '../../providers/invoice_repository_provider.dart';
 import 'fluent_estimates_screen.dart';
 import 'fluent_recurring_screen.dart';
 import '../../models/invoice.dart';
+import '../../models/payment_transaction.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../services/dashboard_actions.dart'; // Re-added
 import '../../services/gstr_import_service.dart';
@@ -27,6 +29,7 @@ class FluentDashboard extends ConsumerStatefulWidget {
 
 class _FluentDashboardState extends ConsumerState<FluentDashboard> {
   String _selectedPeriod = "All Time";
+  String _selectedType = "All"; // NEW
   String _searchQuery = "";
 
   @override
@@ -44,6 +47,21 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
             IconButton(
               icon: const Icon(FluentIcons.contact),
               onPressed: () => showProfileSwitcherSheet(context, ref),
+            ),
+            const SizedBox(width: 8),
+            // Type Filter
+            ComboBox<String>(
+              value: _selectedType,
+              items: [
+                "All",
+                "Invoices",
+                "Challans",
+                "Credit Notes",
+                "Debit Notes"
+              ].map((e) => ComboBoxItem(value: e, child: Text(e))).toList(),
+              onChanged: (v) {
+                if (v != null) setState(() => _selectedType = v);
+              },
             ),
             const SizedBox(width: 8),
             ComboBox<String>(
@@ -77,6 +95,22 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
           data: (allInvoices) {
             var filteredInvoices =
                 DashboardActions.filterInvoices(allInvoices, _selectedPeriod);
+
+            // Type Filter
+            if (_selectedType != "All") {
+              filteredInvoices = filteredInvoices.where((inv) {
+                if (_selectedType == "Invoices") {
+                  return inv.type == InvoiceType.invoice;
+                } else if (_selectedType == "Challans") {
+                  return inv.type == InvoiceType.deliveryChallan;
+                } else if (_selectedType == "Credit Notes") {
+                  return inv.type == InvoiceType.creditNote;
+                } else if (_selectedType == "Debit Notes") {
+                  return inv.type == InvoiceType.debitNote;
+                }
+                return true;
+              }).toList();
+            }
 
             // Search filter
             if (_searchQuery.isNotEmpty) {
@@ -454,8 +488,21 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
 
         // Save imported invoices
         final repo = ref.read(invoiceRepositoryProvider);
+        final profile = ref.read(businessProfileProvider);
+
         for (final inv in importResult.invoices) {
-          await repo.saveInvoice(inv);
+          // Inject current profile as supplier
+          final updatedInv = inv.copyWith(
+            supplier: Supplier(
+              name: profile.companyName,
+              address: profile.address,
+              gstin: profile.gstin,
+              email: profile.email,
+              phone: profile.phone,
+              state: profile.state,
+            ),
+          );
+          await repo.saveInvoice(updatedInv);
         }
         ref.invalidate(invoiceListProvider);
 
@@ -597,6 +644,104 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
             NumberFormat.currency(symbol: symbol, decimalDigits: 2)
                 .format(amount),
             style: style),
+      ],
+    );
+  }
+}
+
+class _PaymentDialog extends StatefulWidget {
+  final Invoice invoice;
+  final WidgetRef ref;
+
+  const _PaymentDialog({required this.invoice, required this.ref});
+
+  @override
+  State<_PaymentDialog> createState() => _PaymentDialogState();
+}
+
+class _PaymentDialogState extends State<_PaymentDialog> {
+  final _amountCtrl = TextEditingController();
+  final _notesCtrl = TextEditingController();
+  String _selectedMode = 'Cash';
+  DateTime _selectedDate = DateTime.now();
+
+  @override
+  Widget build(BuildContext context) {
+    return ContentDialog(
+      title: const Text("Record Payment"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InfoLabel(
+            label: "Amount",
+            child: NumberBox<double>(
+              mode: SpinButtonPlacementMode.none,
+              placeholder: "Enter Amount",
+              value: double.tryParse(_amountCtrl.text) ?? 0,
+              onChanged: (v) {
+                if (v != null) _amountCtrl.text = v.toString();
+              },
+            ),
+          ),
+          const SizedBox(height: 10),
+          DatePicker(
+            selected: _selectedDate,
+            onChanged: (v) => setState(() => _selectedDate = v),
+          ),
+          const SizedBox(height: 10),
+          InfoLabel(
+            label: "Payment Mode",
+            child: ComboBox<String>(
+              value: _selectedMode,
+              items: ['Cash', 'UPI', 'Bank Transfer', 'Cheque', 'Other']
+                  .map((e) => ComboBoxItem(value: e, child: Text(e)))
+                  .toList(),
+              onChanged: (v) {
+                if (v != null) setState(() => _selectedMode = v);
+              },
+            ),
+          ),
+          const SizedBox(height: 10),
+          InfoLabel(
+            label: "Notes",
+            child: TextFormBox(
+              controller: _notesCtrl,
+              placeholder: "Transaction ID / Notes",
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        Button(
+          child: const Text("Cancel"),
+          onPressed: () => Navigator.pop(context),
+        ),
+        FilledButton(
+          child: const Text("Save Payment"),
+          onPressed: () async {
+            final amount = double.tryParse(_amountCtrl.text) ?? 0.0;
+            if (amount <= 0) return;
+
+            final newPayment = PaymentTransaction(
+              id: const Uuid().v4(),
+              invoiceId: widget.invoice.id!,
+              date: _selectedDate,
+              amount: amount,
+              paymentMode: _selectedMode,
+              notes: _notesCtrl.text,
+            );
+
+            final updatedInvoice = widget.invoice
+                .copyWith(payments: [...widget.invoice.payments, newPayment]);
+
+            await widget.ref
+                .read(invoiceRepositoryProvider)
+                .saveInvoice(updatedInvoice);
+            widget.ref.invalidate(invoiceListProvider);
+            if (context.mounted) Navigator.pop(context);
+          },
+        ),
       ],
     );
   }

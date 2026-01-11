@@ -6,7 +6,6 @@ abstract class InvoiceRepository {
   Future<List<Invoice>> getAllInvoices();
   Future<void> deleteInvoice(String id);
   Future<void> deleteAll();
-  // static methods in interface? No, dart interfaces are just classes.
-  // We can't enforce static methods.
-  // We'll stick to instance methods for the provider integration.
+
+  Future<bool> checkInvoiceExists(String invoiceNumber, {String? excludeId});
 }

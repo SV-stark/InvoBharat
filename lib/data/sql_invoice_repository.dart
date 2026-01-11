@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import '../database/database.dart';
 import '../models/invoice.dart' as model;
+import '../models/payment_transaction.dart';
 import 'invoice_repository.dart';
 
 class SqlInvoiceRepository implements InvoiceRepository {
@@ -45,6 +46,18 @@ class SqlInvoiceRepository implements InvoiceRepository {
       );
     }).toList();
 
+    // Convert Payments
+    final payments = invoice.payments.map((p) {
+      return PaymentsCompanion(
+        id: Value(p.id),
+        invoiceId: Value(invoice.id ?? ''),
+        date: Value(p.date),
+        amount: Value(p.amount),
+        method: Value(p.paymentMode),
+        notes: Value(p.notes),
+      );
+    }).toList();
+
     // Transaction
     await database.transaction(() async {
       // Upsert Invoice
@@ -66,6 +79,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
             clientId: Value(clientId),
             invoiceNo: Value(invoice.invoiceNo),
             invoiceDate: Value(invoice.invoiceDate),
+            type: Value(invoice.type.name),
             dueDate: Value(invoice.dueDate),
             placeOfSupply: Value(invoice.placeOfSupply),
             style: Value(invoice.style),
@@ -75,7 +89,19 @@ class SqlInvoiceRepository implements InvoiceRepository {
             bankName: Value(invoice.bankName),
             accountNo: Value(invoice.accountNo),
             ifscCode: Value(invoice.ifscCode),
+
             branch: Value(invoice.branch),
+
+            // Supplier Snapshot
+            supplierName: Value(invoice.supplier.name),
+            supplierAddress: Value(invoice.supplier.address),
+            supplierGstin: Value(invoice.supplier.gstin),
+            supplierEmail: Value(invoice.supplier.email),
+            supplierPhone: Value(invoice.supplier.phone),
+
+            // Credit/Debit Note
+            originalInvoiceNumber: Value(invoice.originalInvoiceNumber),
+            originalInvoiceDate: Value(invoice.originalInvoiceDate),
           ));
 
       // Replace Items
@@ -84,6 +110,14 @@ class SqlInvoiceRepository implements InvoiceRepository {
           .go();
       for (var item in items) {
         await database.into(database.invoiceItems).insert(item);
+      }
+
+      // Replace Payments
+      await (database.delete(database.payments)
+            ..where((t) => t.invoiceId.equals(invoice.id ?? '')))
+          .go();
+      for (var p in payments) {
+        await database.into(database.payments).insert(p);
       }
     });
   }
@@ -104,11 +138,19 @@ class SqlInvoiceRepository implements InvoiceRepository {
           ..where((t) => t.id.equals(invoiceRow.clientId)))
         .getSingleOrNull();
 
+    final paymentRows = await (database.select(database.payments)
+          ..where((t) => t.invoiceId.equals(id)))
+        .get();
+
     // Map to Model
     return model.Invoice(
       id: invoiceRow.id,
       invoiceNo: invoiceRow.invoiceNo,
       invoiceDate: invoiceRow.invoiceDate,
+      type: model.InvoiceType.values.firstWhere(
+        (e) => e.name == invoiceRow.type,
+        orElse: () => model.InvoiceType.invoice,
+      ),
       dueDate: invoiceRow.dueDate,
       placeOfSupply: invoiceRow.placeOfSupply,
       style: invoiceRow.style,
@@ -140,20 +182,43 @@ class SqlInvoiceRepository implements InvoiceRepository {
               ))
           .toList(),
 
-      // Map Client -> Receiver
+      payments: paymentRows
+          .map((row) => PaymentTransaction(
+                id: row.id,
+                invoiceId: row.invoiceId,
+                date: row.date,
+                amount: row.amount,
+                paymentMode: row.method,
+                notes: row.notes,
+              ))
+          .toList(),
+
       receiver: clientRow != null
           ? model.Receiver(
               name: clientRow.name,
               address: clientRow.address,
               gstin: clientRow.gstin,
-              // pan: clientRow.pan, // Receiver model has pan? Yes.
               state: clientRow.state,
               stateCode: clientRow.stateCode,
+              email: clientRow.email,
             )
           : const model.Receiver(name: "Unknown"),
 
-      supplier: const model.Supplier(
-          name: "My Company"), // Placeholder, should fetch Profile
+      // Map Supplier from Snapshot or Fallback
+      supplier: (invoiceRow.supplierName != null &&
+              invoiceRow.supplierName!.isNotEmpty)
+          ? model.Supplier(
+              name: invoiceRow.supplierName!,
+              address: invoiceRow.supplierAddress ?? "",
+              gstin: invoiceRow.supplierGstin ?? "",
+              email: invoiceRow.supplierEmail ?? "",
+              phone: invoiceRow.supplierPhone ?? "",
+            )
+          : const model.Supplier(name: "My Company"),
+
+      // Credit/Debit Note
+      originalInvoiceNumber: invoiceRow.originalInvoiceNumber,
+      originalInvoiceDate: invoiceRow.originalInvoiceDate,
     );
   }
 
@@ -176,6 +241,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
     await (database.delete(database.invoiceItems)
           ..where((t) => t.invoiceId.equals(id)))
         .go();
+    await (database.delete(database.payments)
+          ..where((t) => t.invoiceId.equals(id)))
+        .go();
     await (database.delete(database.invoices)..where((t) => t.id.equals(id)))
         .go();
   }
@@ -184,5 +252,19 @@ class SqlInvoiceRepository implements InvoiceRepository {
   Future<void> deleteAll() async {
     await database.delete(database.invoiceItems).go();
     await database.delete(database.invoices).go();
+  }
+
+  @override
+  Future<bool> checkInvoiceExists(String invoiceNumber,
+      {String? excludeId}) async {
+    final query = database.select(database.invoices)
+      ..where((tbl) => tbl.invoiceNo.equals(invoiceNumber));
+
+    if (excludeId != null) {
+      query.where((tbl) => tbl.id.isNotValue(excludeId));
+    }
+
+    final result = await query.get();
+    return result.isNotEmpty;
   }
 }

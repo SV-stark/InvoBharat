@@ -21,6 +21,7 @@ mixin _$ItemTemplate {
   double get gstRate;
   String get codeType;
   String get sacCode;
+  double get quantity;
 
   /// Create a copy of ItemTemplate
   /// with the given fields replaced by the non-null parameter values.
@@ -46,17 +47,19 @@ mixin _$ItemTemplate {
             (identical(other.gstRate, gstRate) || other.gstRate == gstRate) &&
             (identical(other.codeType, codeType) ||
                 other.codeType == codeType) &&
-            (identical(other.sacCode, sacCode) || other.sacCode == sacCode));
+            (identical(other.sacCode, sacCode) || other.sacCode == sacCode) &&
+            (identical(other.quantity, quantity) ||
+                other.quantity == quantity));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, description, unit, amount, gstRate, codeType, sacCode);
+  int get hashCode => Object.hash(runtimeType, id, description, unit, amount,
+      gstRate, codeType, sacCode, quantity);
 
   @override
   String toString() {
-    return 'ItemTemplate(id: $id, description: $description, unit: $unit, amount: $amount, gstRate: $gstRate, codeType: $codeType, sacCode: $sacCode)';
+    return 'ItemTemplate(id: $id, description: $description, unit: $unit, amount: $amount, gstRate: $gstRate, codeType: $codeType, sacCode: $sacCode, quantity: $quantity)';
   }
 }
 
@@ -73,7 +76,8 @@ abstract mixin class $ItemTemplateCopyWith<$Res> {
       double amount,
       double gstRate,
       String codeType,
-      String sacCode});
+      String sacCode,
+      double quantity});
 }
 
 /// @nodoc
@@ -95,6 +99,7 @@ class _$ItemTemplateCopyWithImpl<$Res> implements $ItemTemplateCopyWith<$Res> {
     Object? gstRate = null,
     Object? codeType = null,
     Object? sacCode = null,
+    Object? quantity = null,
   }) {
     return _then(_self.copyWith(
       id: null == id
@@ -125,6 +130,10 @@ class _$ItemTemplateCopyWithImpl<$Res> implements $ItemTemplateCopyWith<$Res> {
           ? _self.sacCode
           : sacCode // ignore: cast_nullable_to_non_nullable
               as String,
+      quantity: null == quantity
+          ? _self.quantity
+          : quantity // ignore: cast_nullable_to_non_nullable
+              as double,
     ));
   }
 }
@@ -223,7 +232,7 @@ extension ItemTemplatePatterns on ItemTemplate {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(String id, String description, String unit, double amount,
-            double gstRate, String codeType, String sacCode)?
+            double gstRate, String codeType, String sacCode, double quantity)?
         $default, {
     required TResult orElse(),
   }) {
@@ -231,7 +240,7 @@ extension ItemTemplatePatterns on ItemTemplate {
     switch (_that) {
       case _ItemTemplate() when $default != null:
         return $default(_that.id, _that.description, _that.unit, _that.amount,
-            _that.gstRate, _that.codeType, _that.sacCode);
+            _that.gstRate, _that.codeType, _that.sacCode, _that.quantity);
       case _:
         return orElse();
     }
@@ -253,14 +262,14 @@ extension ItemTemplatePatterns on ItemTemplate {
   @optionalTypeArgs
   TResult when<TResult extends Object?>(
     TResult Function(String id, String description, String unit, double amount,
-            double gstRate, String codeType, String sacCode)
+            double gstRate, String codeType, String sacCode, double quantity)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _ItemTemplate():
         return $default(_that.id, _that.description, _that.unit, _that.amount,
-            _that.gstRate, _that.codeType, _that.sacCode);
+            _that.gstRate, _that.codeType, _that.sacCode, _that.quantity);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -281,14 +290,14 @@ extension ItemTemplatePatterns on ItemTemplate {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(String id, String description, String unit, double amount,
-            double gstRate, String codeType, String sacCode)?
+            double gstRate, String codeType, String sacCode, double quantity)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _ItemTemplate() when $default != null:
         return $default(_that.id, _that.description, _that.unit, _that.amount,
-            _that.gstRate, _that.codeType, _that.sacCode);
+            _that.gstRate, _that.codeType, _that.sacCode, _that.quantity);
       case _:
         return null;
     }
@@ -305,7 +314,8 @@ class _ItemTemplate implements ItemTemplate {
       this.amount = 0.0,
       this.gstRate = 18.0,
       this.codeType = 'SAC',
-      this.sacCode = ''});
+      this.sacCode = '',
+      this.quantity = 1.0});
   factory _ItemTemplate.fromJson(Map<String, dynamic> json) =>
       _$ItemTemplateFromJson(json);
 
@@ -327,6 +337,9 @@ class _ItemTemplate implements ItemTemplate {
   @override
   @JsonKey()
   final String sacCode;
+  @override
+  @JsonKey()
+  final double quantity;
 
   /// Create a copy of ItemTemplate
   /// with the given fields replaced by the non-null parameter values.
@@ -356,17 +369,19 @@ class _ItemTemplate implements ItemTemplate {
             (identical(other.gstRate, gstRate) || other.gstRate == gstRate) &&
             (identical(other.codeType, codeType) ||
                 other.codeType == codeType) &&
-            (identical(other.sacCode, sacCode) || other.sacCode == sacCode));
+            (identical(other.sacCode, sacCode) || other.sacCode == sacCode) &&
+            (identical(other.quantity, quantity) ||
+                other.quantity == quantity));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, description, unit, amount, gstRate, codeType, sacCode);
+  int get hashCode => Object.hash(runtimeType, id, description, unit, amount,
+      gstRate, codeType, sacCode, quantity);
 
   @override
   String toString() {
-    return 'ItemTemplate(id: $id, description: $description, unit: $unit, amount: $amount, gstRate: $gstRate, codeType: $codeType, sacCode: $sacCode)';
+    return 'ItemTemplate(id: $id, description: $description, unit: $unit, amount: $amount, gstRate: $gstRate, codeType: $codeType, sacCode: $sacCode, quantity: $quantity)';
   }
 }
 
@@ -385,7 +400,8 @@ abstract mixin class _$ItemTemplateCopyWith<$Res>
       double amount,
       double gstRate,
       String codeType,
-      String sacCode});
+      String sacCode,
+      double quantity});
 }
 
 /// @nodoc
@@ -408,6 +424,7 @@ class __$ItemTemplateCopyWithImpl<$Res>
     Object? gstRate = null,
     Object? codeType = null,
     Object? sacCode = null,
+    Object? quantity = null,
   }) {
     return _then(_ItemTemplate(
       id: null == id
@@ -438,6 +455,10 @@ class __$ItemTemplateCopyWithImpl<$Res>
           ? _self.sacCode
           : sacCode // ignore: cast_nullable_to_non_nullable
               as String,
+      quantity: null == quantity
+          ? _self.quantity
+          : quantity // ignore: cast_nullable_to_non_nullable
+              as double,
     ));
   }
 }

@@ -4,6 +4,8 @@ import 'payment_transaction.dart';
 part 'invoice.freezed.dart';
 part 'invoice.g.dart';
 
+enum InvoiceType { invoice, deliveryChallan, creditNote, debitNote }
+
 @freezed
 abstract class Invoice with _$Invoice {
   const Invoice._(); // Needed for custom methods/getters
@@ -29,6 +31,12 @@ abstract class Invoice with _$Invoice {
     String? deliveryAddress,
     @Default(false) bool isArchived, // Phase 4
     @Default('INR') String currency, // Phase 4
+    @Default(0.0) double discountAmount, // NEW: Invoice level discount
+    @Default(InvoiceType.invoice)
+    InvoiceType type, // NEW: Delivery Challan Support
+    // Credit/Debit Note Fields
+    String? originalInvoiceNumber,
+    DateTime? originalInvoiceDate,
   }) = _Invoice;
 
   factory Invoice.fromJson(Map<String, dynamic> json) =>
@@ -50,8 +58,10 @@ abstract class Invoice with _$Invoice {
   double get totalIGST => items.fold(
       0, (sum, item) => sum + (isInterState ? item.calculateIgst(true) : 0));
 
-  double get grandTotal =>
-      totalTaxableValue + totalCGST + totalSGST + totalIGST;
+  double get grandTotal {
+    final total = totalTaxableValue + totalCGST + totalSGST + totalIGST;
+    return total - discountAmount;
+  }
 
   double get totalPaid => payments.fold(0, (sum, p) => sum + p.amount);
 
@@ -92,6 +102,7 @@ abstract class Receiver with _$Receiver {
     @Default('') String pan,
     @Default('') String state,
     @Default('') String stateCode,
+    @Default('') String email, // NEW
   }) = _Receiver;
 
   factory Receiver.fromJson(Map<String, dynamic> json) =>

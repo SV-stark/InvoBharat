@@ -9,6 +9,7 @@ import '../../providers/business_profile_provider.dart';
 import '../../providers/estimate_provider.dart';
 import '../../providers/invoice_repository_provider.dart';
 import '../../utils/constants.dart';
+import '../../utils/validators.dart';
 
 class FluentEstimateForm extends ConsumerStatefulWidget {
   final String? estimateId;
@@ -264,7 +265,11 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm> {
                   Expanded(
                     child: InfoLabel(
                       label: "GSTIN",
-                      child: TextFormBox(controller: _receiverGstinController),
+                      child: TextFormBox(
+                        controller: _receiverGstinController,
+                        validator: Validators.gstin,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),

@@ -81,6 +81,10 @@ class InvoiceNotifier extends Notifier<Invoice> {
     state = state.copyWith(currency: val);
   }
 
+  void updateDiscountAmount(String val) {
+    state = state.copyWith(discountAmount: double.tryParse(val) ?? 0.0);
+  }
+
   void updateSupplierName(String val) {
     state = state.copyWith(supplier: state.supplier.copyWith(name: val));
   }
