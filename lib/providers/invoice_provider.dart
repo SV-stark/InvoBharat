@@ -97,6 +97,10 @@ class InvoiceNotifier extends Notifier<Invoice> {
     state = state.copyWith(paymentTerms: val);
   }
 
+  void updateTermComments(String val) {
+    state = state.copyWith(comments: val);
+  }
+
   void updateStyle(String val) {
     state = state.copyWith(style: val);
   }
@@ -218,11 +222,35 @@ class InvoiceNotifier extends Notifier<Invoice> {
     ]);
   }
 
+  void updateInvoiceType(InvoiceType type) {
+    state = state.copyWith(type: type);
+  }
+
+  void updateOriginalInvoiceNumber(String val) {
+    state = state.copyWith(originalInvoiceNumber: val);
+  }
+
+  void updateOriginalInvoiceDate(DateTime? date) {
+    state = state.copyWith(originalInvoiceDate: date);
+  }
+
   void removeItem(int index) {
     if (state.items.length > 1) {
       final newItems = List<InvoiceItem>.from(state.items);
       newItems.removeAt(index);
       state = state.copyWith(items: newItems);
     }
+  }
+
+  void replaceItem(int index, InvoiceItem item) {
+    if (index >= 0 && index < state.items.length) {
+      final newItems = List<InvoiceItem>.from(state.items);
+      newItems[index] = item;
+      state = state.copyWith(items: newItems);
+    }
+  }
+
+  void addInvoiceItem(InvoiceItem item) {
+    state = state.copyWith(items: [...state.items, item]);
   }
 }
