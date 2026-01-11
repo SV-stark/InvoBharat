@@ -313,7 +313,8 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               side: BorderSide(
-                                  color: theme.primaryColor.withOpacity(0.5)),
+                                  color: theme.primaryColor
+                                      .withValues(alpha: 0.5)),
                             ),
                           ),
                         ),
@@ -326,7 +327,8 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               side: BorderSide(
-                                  color: theme.primaryColor.withOpacity(0.5)),
+                                  color: theme.primaryColor
+                                      .withValues(alpha: 0.5)),
                             ),
                           ),
                         ),
@@ -338,7 +340,8 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
               // Discount and Grand Total
               Card(
                 elevation: 0,
-                color: theme.colorScheme.primaryContainer.withOpacity(0.1),
+                color:
+                    theme.colorScheme.primaryContainer.withValues(alpha: 0.1),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
                 child: Padding(
@@ -404,14 +407,14 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
         invoice: invoice,
         context: context,
       );
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Invoice saved successfully")),
         );
         Navigator.pop(context);
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Error saving invoice: $e")),
         );
@@ -428,7 +431,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
       elevation: 0,
       color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(
-          side: BorderSide(color: Colors.grey.withOpacity(0.2)),
+          side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
           borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),

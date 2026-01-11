@@ -98,7 +98,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
               if (await canLaunchUrl(emailLaunchUri)) {
                 await launchUrl(emailLaunchUri);
               } else {
-                if (mounted) {
+                if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                       content: Text("Could not launch email client")));
                 }

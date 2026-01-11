@@ -53,23 +53,30 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   /// Syncs controllers with provider state.
   /// call this inside a ref.listen callback or when setting initial data.
   void syncInvoiceControllers(Invoice invoice) {
-    if (invoiceNoCtrl.text != invoice.invoiceNo)
+    if (invoiceNoCtrl.text != invoice.invoiceNo) {
       invoiceNoCtrl.text = invoice.invoiceNo;
-    if (posCtrl.text != invoice.placeOfSupply)
+    }
+    if (posCtrl.text != invoice.placeOfSupply) {
       posCtrl.text = invoice.placeOfSupply;
-    if (receiverNameCtrl.text != invoice.receiver.name)
+    }
+    if (receiverNameCtrl.text != invoice.receiver.name) {
       receiverNameCtrl.text = invoice.receiver.name;
-    if (receiverGstinCtrl.text != invoice.receiver.gstin)
+    }
+    if (receiverGstinCtrl.text != invoice.receiver.gstin) {
       receiverGstinCtrl.text = invoice.receiver.gstin;
-    if (receiverStateCtrl.text != invoice.receiver.state)
+    }
+    if (receiverStateCtrl.text != invoice.receiver.state) {
       receiverStateCtrl.text = invoice.receiver.state;
-    if (receiverAddressCtrl.text != invoice.receiver.address)
+    }
+    if (receiverAddressCtrl.text != invoice.receiver.address) {
       receiverAddressCtrl.text = invoice.receiver.address;
+    }
     if (deliveryAddressCtrl.text != (invoice.deliveryAddress ?? '')) {
       deliveryAddressCtrl.text = invoice.deliveryAddress ?? '';
     }
-    if (paymentTermsCtrl.text != invoice.paymentTerms)
+    if (paymentTermsCtrl.text != invoice.paymentTerms) {
       paymentTermsCtrl.text = invoice.paymentTerms;
+    }
   }
 
   /// Updates provider and controllers when a client is selected

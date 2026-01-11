@@ -45,6 +45,34 @@ class InvoiceNotifier extends Notifier<Invoice> {
     state = invoice;
   }
 
+  void reset() {
+    final profile = ref.read(businessProfileProvider);
+    state = Invoice(
+      id: null,
+      style: 'Modern',
+      supplier: Supplier(
+        name: profile.companyName,
+        address: profile.address,
+        gstin: profile.gstin,
+        pan: "",
+        email: profile.email,
+        phone: profile.phone,
+        state: profile.state,
+      ),
+      receiver: const Receiver(),
+      invoiceDate: DateTime.now(),
+      invoiceNo:
+          "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}",
+      items: [
+        const InvoiceItem(description: "", amount: 0, gstRate: 18),
+      ],
+      bankName: profile.bankName,
+      accountNo: profile.accountNumber,
+      ifscCode: profile.ifscCode,
+      branch: profile.branchName,
+    );
+  }
+
   void updateDate(DateTime date) {
     state = state.copyWith(invoiceDate: date);
   }
