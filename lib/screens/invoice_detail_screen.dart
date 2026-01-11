@@ -68,7 +68,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final currency =
-        NumberFormat.simpleCurrency(locale: 'en_IN', decimalDigits: 2);
+        NumberFormat.simpleCurrency(name: _invoice.currency, decimalDigits: 2);
 
     return Scaffold(
       appBar: AppBar(
@@ -88,20 +88,27 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.print),
+            icon: const Icon(Icons.share),
+            tooltip: "Share",
             onPressed: () async {
               final profile = ref.read(businessProfileProvider);
-              await Printing.layoutPdf(
-                  onLayout: (format) => generateInvoicePdf(_invoice, profile));
+              final bytes = await generateInvoicePdf(_invoice, profile);
+              await Printing.sharePdf(
+                  bytes: bytes, filename: 'invoice_${_invoice.invoiceNo}.pdf');
             },
           ),
           PopupMenuButton<String>(
             onSelected: (val) {
               if (val == 'recurring') _setupRecurring();
+              if (val == 'archive') _toggleArchive();
             },
             itemBuilder: (context) => [
               const PopupMenuItem(
                   value: 'recurring', child: Text("Make Recurring")),
+              PopupMenuItem(
+                  value: 'archive',
+                  child: Text(
+                      _invoice.isArchived ? "Unarchive" : "Archive Invoice")),
             ],
           ),
         ],
@@ -336,6 +343,19 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Recurring Profile Created")));
       }
+    }
+  }
+
+  void _toggleArchive() async {
+    final updated = _invoice.copyWith(isArchived: !_invoice.isArchived);
+    await ref.read(invoiceRepositoryProvider).saveInvoice(updated);
+    _refreshInvoice();
+    ref.invalidate(invoiceListProvider); // Refresh list
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(_invoice.isArchived
+              ? "Invoice Unarchived"
+              : "Invoice Archived")));
     }
   }
 }

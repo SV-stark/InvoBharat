@@ -741,7 +741,8 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                     displayInfoBar(context, builder: (context, close) {
                       return InfoBar(
                         title: const Text('Import Result'),
-                        content: Text(result),
+                        content: Text(
+                            "Restored: ${result.successCount}, Skipped: ${result.skippedCount}"),
                         action: IconButton(
                             icon: const Icon(FluentIcons.clear),
                             onPressed: close),

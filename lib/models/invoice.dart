@@ -27,6 +27,8 @@ abstract class Invoice with _$Invoice {
     @Default('') String ifscCode,
     @Default('') String branch,
     String? deliveryAddress,
+    @Default(false) bool isArchived, // Phase 4
+    @Default('INR') String currency, // Phase 4
   }) = _Invoice;
 
   factory Invoice.fromJson(Map<String, dynamic> json) =>

@@ -8,8 +8,8 @@ import 'pdf/templates/modern_template.dart';
 import 'pdf/templates/professional_template.dart';
 import 'pdf/templates/minimal_template.dart';
 
-Future<Uint8List> generateInvoicePdf(
-    Invoice invoice, BusinessProfile profile) async {
+Future<Uint8List> generateInvoicePdf(Invoice invoice, BusinessProfile profile,
+    {String? title}) async {
   final font = await PdfGoogleFonts.notoSansRegular();
   final fontBold = await PdfGoogleFonts.notoSansBold();
 
@@ -27,5 +27,5 @@ Future<Uint8List> generateInvoicePdf(
       break;
   }
 
-  return template.generate(invoice, profile, font, fontBold);
+  return template.generate(invoice, profile, font, fontBold, title: title);
 }

@@ -52,3 +52,6 @@ invoices/
 
 # FVM Version Cache
 .fvm/
+
+# Project reports (internal use)
+BUGS_AND_FEATURES.md

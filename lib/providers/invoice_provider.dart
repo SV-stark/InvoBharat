@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/invoice.dart';
+import '../utils/gst_helper.dart'; // New Import
 
 import '../providers/business_profile_provider.dart';
 
@@ -60,12 +61,24 @@ class InvoiceNotifier extends Notifier<Invoice> {
     state = state.copyWith(deliveryAddress: val);
   }
 
+  void updateDueDate(DateTime? date) {
+    state = state.copyWith(dueDate: date);
+  }
+
+  void updatePaymentTerms(String val) {
+    state = state.copyWith(paymentTerms: val);
+  }
+
   void updateStyle(String val) {
     state = state.copyWith(style: val);
   }
 
   void updateInvoiceNo(String val) {
     state = state.copyWith(invoiceNo: val);
+  }
+
+  void updateCurrency(String val) {
+    state = state.copyWith(currency: val);
   }
 
   void updateSupplierName(String val) {
@@ -82,6 +95,17 @@ class InvoiceNotifier extends Notifier<Invoice> {
 
   void updateReceiverGstin(String val) {
     state = state.copyWith(receiver: state.receiver.copyWith(gstin: val));
+
+    // Auto-populate state
+    if (val.length >= 2) {
+      final stateName = GstUtils.getStateName(val);
+      if (stateName != null) {
+        // Only update if state is empty or user wants auto-update?
+        // Usually, if they type GSTIN, they expect State to match.
+        // We will overwrite state.
+        updateReceiverState(stateName);
+      }
+    }
   }
 
   void updateReceiverState(String val) {

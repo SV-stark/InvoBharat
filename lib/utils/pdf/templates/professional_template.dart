@@ -16,8 +16,9 @@ class ProfessionalTemplate implements InvoiceTemplate {
   String get name => 'Professional';
 
   @override
-  Future<Uint8List> generate(Invoice invoice, BusinessProfile profile,
-      pw.Font font, pw.Font fontBold) async {
+  Future<Uint8List> generate(
+      Invoice invoice, BusinessProfile profile, pw.Font font, pw.Font fontBold,
+      {String? title}) async {
     final pdf = pw.Document(
         theme: pw.ThemeData.withFont(
       base: font,
@@ -36,8 +37,8 @@ class ProfessionalTemplate implements InvoiceTemplate {
     final itemsStyle = const pw.TextStyle(fontSize: 8);
 
     // Determines Supply Type
-    String supplyType = "Tax Invoice";
-    if (invoice.receiver.gstin.isEmpty) {
+    String supplyType = title ?? "Tax Invoice";
+    if (title == null && invoice.receiver.gstin.isEmpty) {
       supplyType = "Retail Invoice";
     }
 
