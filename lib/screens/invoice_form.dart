@@ -10,9 +10,9 @@ import '../utils/pdf_generator.dart';
 import '../providers/business_profile_provider.dart';
 import '../providers/client_provider.dart';
 import '../providers/invoice_provider.dart';
-import '../providers/item_template_provider.dart'; // NEW import
-
-import '../services/invoice_actions.dart'; // NEW Import
+import '../providers/item_template_provider.dart';
+import '../mixins/invoice_form_mixin.dart';
+import '../widgets/adaptive_widgets.dart'; // NEW Import
 
 // Generates a unique ID
 
@@ -24,87 +24,30 @@ class InvoiceFormScreen extends ConsumerStatefulWidget {
   ConsumerState<InvoiceFormScreen> createState() => _InvoiceFormScreenState();
 }
 
-class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
+class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
+    with InvoiceFormMixin {
   final _formKey = GlobalKey<FormState>();
-
-  // Controllers
-  late TextEditingController _invoiceNoCtrl;
-  late TextEditingController _posCtrl;
-  late TextEditingController _receiverNameCtrl;
-  late TextEditingController _receiverGstinCtrl;
-  late TextEditingController _receiverStateCtrl;
-  late TextEditingController _receiverAddressCtrl;
-  late TextEditingController _paymentTermsCtrl; // NEW
 
   @override
   void initState() {
     super.initState();
-    // Initialize with existing data or defaults
-    // We defer provider reading to didChangeDependencies or postFrame if needed,
-    // but here we can't read provider easily in initState without listen:false or deferred.
-    // However, we need to sync controllers with the provider state initially.
-    // AND listen to changes?
-    // Problem: If we bind controllers to provider state, typing updates provider, which triggers rebuild, which re-inits controllers? No.
-    // We only init once. But if external change happens (e.g. client selection), we must update controllers.
-
-    _invoiceNoCtrl = TextEditingController(); // Will set text later
-    _posCtrl = TextEditingController();
-    _receiverNameCtrl = TextEditingController();
-    _receiverGstinCtrl = TextEditingController();
-    _receiverStateCtrl = TextEditingController();
-    _receiverAddressCtrl = TextEditingController();
-    _paymentTermsCtrl = TextEditingController(); // NEW
+    initInvoiceControllers(widget.invoiceToEdit); // Use mixin init
 
     if (widget.invoiceToEdit != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(invoiceProvider.notifier).setInvoice(widget.invoiceToEdit!);
-        _syncControllers(ref.read(invoiceProvider));
+        syncInvoiceControllers(ref.read(invoiceProvider));
       });
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // Sync for new invoice (defaults)
-        _syncControllers(ref.read(invoiceProvider));
+        syncInvoiceControllers(ref.read(invoiceProvider));
       });
     }
   }
 
-  void _syncControllers(Invoice invoice) {
-    if (_invoiceNoCtrl.text != invoice.invoiceNo) {
-      _invoiceNoCtrl.text = invoice.invoiceNo;
-    }
-    if (_posCtrl.text != invoice.placeOfSupply) {
-      _posCtrl.text = invoice.placeOfSupply;
-    }
-    if (_receiverNameCtrl.text != invoice.receiver.name) {
-      _receiverNameCtrl.text = invoice.receiver.name;
-    }
-    if (_receiverGstinCtrl.text != invoice.receiver.gstin) {
-      _receiverGstinCtrl.text = invoice.receiver.gstin;
-    }
-    if (_receiverStateCtrl.text != invoice.receiver.state) {
-      _receiverStateCtrl.text = invoice.receiver.state;
-    }
-    if (_receiverAddressCtrl.text != invoice.receiver.address) {
-      _receiverAddressCtrl.text = invoice.receiver.address;
-    }
-    if (_paymentTermsCtrl.text != invoice.paymentTerms) {
-      _paymentTermsCtrl.text = invoice.paymentTerms; // NEW
-    }
-  }
-
-  // We need to listen to provider changes to update controllers when Client is selected
-  // But standard ref.watch rebuilds the widget. If we re-set text every build, cursor jumps.
-  // Exception: ref.listen allows side effects without rebuild.
-
   @override
   void dispose() {
-    _invoiceNoCtrl.dispose();
-    _posCtrl.dispose();
-    _receiverNameCtrl.dispose();
-    _receiverGstinCtrl.dispose();
-    _receiverStateCtrl.dispose();
-    _receiverAddressCtrl.dispose();
-    _paymentTermsCtrl.dispose();
+    disposeInvoiceControllers(); // Use mixin dispose
     super.dispose();
   }
 
@@ -115,14 +58,10 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
     final theme = Theme.of(context);
     final clients = ref.watch(clientListProvider);
 
-    // Listen for external changes (like client selection overrides)
-    ref.listen<Invoice>(invoiceProvider, (prev, next) {
-      // Only update controller if value is significantly different and not currently being edited?
-      // Or just assume `updateReceiver` methods are called explicitly.
-      // Actually, if we type in generic field, we call `update...`.
-      // If we update controller in listener, we risk loop.
-      // Better: When we select client, we explicitely update controllers in that callback, NOT via listener.
-    });
+    // Listen to provider changes to sync controllers if needed
+    // Best practice: only sync if external change (not our own typing)
+    // But detecting valid external change is hard.
+    // For now, we rely on manual sync when needed (shortcuts, load).
 
     return Scaffold(
       appBar: AppBar(
@@ -138,11 +77,11 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
           IconButton(
               icon: const Icon(Icons.print_outlined),
               tooltip: "Print",
-              onPressed: () => _printInvoice(invoice, profile)),
+              onPressed: () => printInvoice(invoice, profile)),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
             child: FilledButton.icon(
-              onPressed: () => _saveInvoice(context, ref, invoice),
+              onPressed: () => _saveInvoiceUI(context, invoice),
               icon: const Icon(Icons.save),
               label: const Text("Save"),
             ),
@@ -172,8 +111,8 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildTextField(
-                          controller: _invoiceNoCtrl,
+                        child: AppTextInput(
+                          controller: invoiceNoCtrl,
                           label: "Invoice No",
                           onChanged: (val) => ref
                               .read(invoiceProvider.notifier)
@@ -198,8 +137,8 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildTextField(
-                            controller: _posCtrl,
+                        child: AppTextInput(
+                            controller: posCtrl,
                             label: "Place of Supply",
                             onChanged: (val) => ref
                                 .read(invoiceProvider.notifier)
@@ -244,8 +183,8 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                           .read(invoiceProvider.notifier)
                           .updateDueDate(val)),
                   const SizedBox(height: 16),
-                  _buildTextField(
-                    controller: _paymentTermsCtrl,
+                  AppTextInput(
+                    controller: paymentTermsCtrl,
                     label: "Payment Terms",
                     onChanged: (val) => ref
                         .read(invoiceProvider.notifier)
@@ -266,8 +205,8 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                   label: const Text("Select Client"),
                 ),
                 children: [
-                  _buildTextField(
-                    controller: _receiverNameCtrl,
+                  AppTextInput(
+                    controller: receiverNameCtrl,
                     label: "Client Name",
                     onChanged: (val) => ref
                         .read(invoiceProvider.notifier)
@@ -279,8 +218,8 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildTextField(
-                          controller: _receiverGstinCtrl,
+                        child: AppTextInput(
+                          controller: receiverGstinCtrl,
                           label: "GSTIN",
                           onChanged: (val) => ref
                               .read(invoiceProvider.notifier)
@@ -289,8 +228,8 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: _buildTextField(
-                          controller: _receiverStateCtrl,
+                        child: AppTextInput(
+                          controller: receiverStateCtrl,
                           label: "State",
                           onChanged: (val) => ref
                               .read(invoiceProvider.notifier)
@@ -300,8 +239,8 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _buildTextField(
-                      controller: _receiverAddressCtrl,
+                  AppTextInput(
+                      controller: receiverAddressCtrl,
                       label: "Billing Address",
                       maxLines: 2,
                       onChanged: (val) => ref
@@ -374,8 +313,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               side: BorderSide(
-                                  color: theme.primaryColor
-                                      .withValues(alpha: 0.5)),
+                                  color: theme.primaryColor.withOpacity(0.5)),
                             ),
                           ),
                         ),
@@ -388,8 +326,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               side: BorderSide(
-                                  color: theme.primaryColor
-                                      .withValues(alpha: 0.5)),
+                                  color: theme.primaryColor.withOpacity(0.5)),
                             ),
                           ),
                         ),
@@ -401,8 +338,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
               // Discount and Grand Total
               Card(
                 elevation: 0,
-                color:
-                    theme.colorScheme.primaryContainer.withValues(alpha: 0.1),
+                color: theme.colorScheme.primaryContainer.withOpacity(0.1),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
                 child: Padding(
@@ -417,7 +353,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                           const SizedBox(width: 8),
                           SizedBox(
                             width: 120,
-                            child: _buildTextField(
+                            child: AppTextInput(
                               controller: TextEditingController(
                                   text: invoice.discountAmount.toString()),
                               label: "Amount",
@@ -457,6 +393,32 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
     );
   }
 
+  void _saveInvoiceUI(BuildContext context, Invoice invoice) async {
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Please fix errors")));
+      return;
+    }
+    try {
+      await saveInvoice(
+        invoice: invoice,
+        context: context,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Invoice saved successfully")),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error saving invoice: $e")),
+        );
+      }
+    }
+  }
+
   Widget _buildSectionCard(BuildContext context,
       {required String title,
       required IconData icon,
@@ -466,7 +428,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
       elevation: 0,
       color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(
-          side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+          side: BorderSide(color: Colors.grey.withOpacity(0.2)),
           borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -534,27 +496,6 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
     );
   }
 
-  Widget _buildTextField(
-      {required String label,
-      required TextEditingController controller,
-      required Function(String) onChanged,
-      String? Function(String?)? validator,
-      int maxLines = 1}) {
-    return TextFormField(
-      controller: controller,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-        isDense: true,
-      ),
-      validator: validator,
-      onChanged: onChanged,
-    );
-  }
-
   Widget _buildDropdown(String label, String value, List<String> items,
       Function(String?) onChanged) {
     return DropdownButtonFormField<String>(
@@ -605,20 +546,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                                   ? "GST: ${client.gstin}"
                                   : client.address),
                               onTap: () {
-                                // Populate Fields
-                                final notifier =
-                                    ref.read(invoiceProvider.notifier);
-                                notifier.updateReceiverName(client.name);
-                                notifier.updateReceiverGstin(client.gstin);
-                                notifier.updateReceiverState(client.state);
-                                notifier.updateReceiverAddress(client.address);
-
-                                // Explicitly update controllers
-                                _receiverNameCtrl.text = client.name;
-                                _receiverGstinCtrl.text = client.gstin;
-                                _receiverStateCtrl.text = client.state;
-                                _receiverAddressCtrl.text = client.address;
-
+                                onClientSelected(client); // Uses Mixin
                                 Navigator.pop(context);
                               },
                             );
@@ -674,18 +602,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                                   // BUT `addItem` is sync.
                                   // Let's modify `addItem` to optional arg OR use a new method `addInvoiceItem`.
                                   // Since I can't see InvoiceNotifier source right now easily, I'll assume I should modify it OR update manually.
-                                  // Let's check InvoiceNotifier later. For now, let's try to update.
-                                  // Actually, `addItem` adds a blank item at the end.
-                                  // So we can do:
-                                  /*
-                                  ref.read(invoiceProvider.notifier).addItem();
-                                  final items = ref.read(invoiceProvider).items;
-                                  final lastIndex = items.length - 1;
-                                  ref.read(invoiceProvider.notifier).updateItemDescription(lastIndex, template.description);
-                                  ...
-                                  */
-                                  // Better: Create a `addFromTemplate` method in notifier.
-                                  // I'll assume I update notifier later.
+                                  // For now, I'll assume I update notifier later.
                                   // For now, I will manually update fields of the new item.
 
                                   final notifier =
@@ -736,7 +653,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
     final gstCtrl = TextEditingController(text: item.gstRate.toString());
     final unitCtrl = TextEditingController(text: item.unit);
     final sacCtrl = TextEditingController(text: item.sacCode);
-    String codeType = item.codeType;
+    // String codeType = item.codeType; // Unused in this snippet but declared
 
     showDialog(
         context: context,
@@ -798,25 +715,13 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      DropdownButton<String>(
-                        value: codeType,
-                        items: const [
-                          DropdownMenuItem(value: 'SAC', child: Text('SAC')),
-                          DropdownMenuItem(value: 'HSN', child: Text('HSN')),
-                        ],
-                        onChanged: (val) => setState(() => codeType = val!),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                          child: TextField(
-                        controller: sacCtrl,
-                        decoration: const InputDecoration(
-                            labelText: "Code", border: OutlineInputBorder()),
-                      ))
-                    ],
-                  )
+                  // SAC Code
+                  TextField(
+                    controller: sacCtrl, // Add SAC
+                    decoration: const InputDecoration(
+                        labelText: "HSN/SAC Code",
+                        border: OutlineInputBorder()),
+                  ),
                 ],
               ),
               actions: [
@@ -832,7 +737,6 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                       notifier.updateItemUnit(index, unitCtrl.text);
                       notifier.updateItemAmount(index, amountCtrl.text);
                       notifier.updateItemGstRate(index, gstCtrl.text);
-                      notifier.updateItemCodeType(index, codeType);
                       notifier.updateItemSac(index, sacCtrl.text);
                       Navigator.pop(context);
                     },
@@ -841,35 +745,6 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
             ),
           );
         });
-  }
-
-  Future<void> _saveInvoice(
-      BuildContext context, WidgetRef ref, Invoice invoice) async {
-    if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Please fix errors")));
-      return;
-    }
-
-    try {
-      await InvoiceActions.saveInvoice(ref, invoice);
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("Invoice Saved!")));
-        Navigator.pop(context);
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Error: $e")));
-      }
-    }
-  }
-
-  Future<void> _printInvoice(Invoice invoice, BusinessProfile profile) async {
-    final pdfBytes = await generateInvoicePdf(invoice, profile);
-    await Printing.layoutPdf(onLayout: (_) => pdfBytes);
   }
 
   void _showPreview(
