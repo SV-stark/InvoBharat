@@ -34,6 +34,8 @@ _Invoice _$InvoiceFromJson(Map<String, dynamic> json) => _Invoice(
       ifscCode: json['ifscCode'] as String? ?? '',
       branch: json['branch'] as String? ?? '',
       deliveryAddress: json['deliveryAddress'] as String?,
+      isArchived: json['isArchived'] as bool? ?? false,
+      currency: json['currency'] as String? ?? 'INR',
     );
 
 Map<String, dynamic> _$InvoiceToJson(_Invoice instance) => <String, dynamic>{
@@ -55,6 +57,8 @@ Map<String, dynamic> _$InvoiceToJson(_Invoice instance) => <String, dynamic>{
       'ifscCode': instance.ifscCode,
       'branch': instance.branch,
       'deliveryAddress': instance.deliveryAddress,
+      'isArchived': instance.isArchived,
+      'currency': instance.currency,
     };
 
 _Supplier _$SupplierFromJson(Map<String, dynamic> json) => _Supplier(

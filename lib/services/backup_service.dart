@@ -12,6 +12,15 @@ import '../providers/invoice_repository_provider.dart';
 import 'package:archive/archive.dart';
 import '../data/file_invoice_repository.dart';
 import 'csv_export_service.dart';
+import '../models/invoice.dart'; // Added missing import
+
+class ImportResult {
+  final int successCount;
+  final int skippedCount;
+  final String? skippedCsv;
+
+  ImportResult(this.successCount, this.skippedCount, this.skippedCsv);
+}
 
 class BackupService {
   Future<String> exportData(WidgetRef ref) async {
@@ -95,7 +104,7 @@ class BackupService {
     }
   }
 
-  Future<String> importData(WidgetRef ref) async {
+  Future<ImportResult> importData(WidgetRef ref) async {
     try {
       // 1. Pick File
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -112,27 +121,34 @@ class BackupService {
         final invoices = CsvExportService().parseInvoiceCsv(content);
 
         if (invoices.isEmpty) {
-          return "No invoices found in CSV.";
+          return ImportResult(0, 0, null);
         }
 
-        // 3. Restore to Current Profile
+        // 3. Check for duplicates
         final repository = ref.read(invoiceRepositoryProvider);
-        int restoreCount = 0;
+        final existingInvoices = await repository.getAllInvoices();
+        final existingNos = existingInvoices.map((i) => i.invoiceNo).toSet();
 
-        // Clear existing? No, user might want to merge.
-        // But duplicates? Invoice ID is generated new in parse logic to avoid collision with existing IDs if they are UUIDs.
-        // Wait, parseInvoiceCsv generates NEW IDs 'restored_...'.
-        // So we are safe from overwriting, but we might duplicates Invoice Nos.
-        // The Repository might allow duplicate Invoice Nos (it's often just a string field).
+        int restoreCount = 0;
+        List<Invoice> skipped = [];
 
         for (final invoice in invoices) {
-          await repository.saveInvoice(invoice);
-          restoreCount++;
+          if (existingNos.contains(invoice.invoiceNo)) {
+            skipped.add(invoice);
+          } else {
+            await repository.saveInvoice(invoice);
+            restoreCount++;
+          }
         }
 
-        return "Successfully restored $restoreCount invoices.";
+        String? skippedCsv;
+        if (skipped.isNotEmpty) {
+          skippedCsv = CsvExportService().generateInvoiceCsv(skipped);
+        }
+
+        return ImportResult(restoreCount, skipped.length, skippedCsv);
       } else {
-        return "Import cancelled";
+        throw Exception("Import cancelled");
       }
     } catch (e) {
       debugPrint("Import Error: $e");

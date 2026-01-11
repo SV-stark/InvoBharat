@@ -54,25 +54,42 @@ String numberToWords(double number) {
   // 1,00,000 (One Lakh)
 
   // Handling up to Crores for typical invoice needs
-  int n = number.toInt();
+  int integerPart = number.truncate();
+  int decimalPart = ((number - integerPart) * 100).round();
+
   String result = "";
 
-  if (n >= 10000000) {
-    result += "${convertLessThanOneThousand(n ~/ 10000000)} Crore ";
-    n %= 10000000;
+  void convertPart(int n) {
+    if (n >= 10000000) {
+      result += "${convertLessThanOneThousand(n ~/ 10000000)} Crore ";
+      n %= 10000000;
+    }
+
+    if (n >= 100000) {
+      result += "${convertLessThanOneThousand(n ~/ 100000)} Lakh ";
+      n %= 100000;
+    }
+
+    if (n >= 1000) {
+      result += "${convertLessThanOneThousand(n ~/ 1000)} Thousand ";
+      n %= 1000;
+    }
+
+    result += convertLessThanOneThousand(n);
   }
 
-  if (n >= 100000) {
-    result += "${convertLessThanOneThousand(n ~/ 100000)} Lakh ";
-    n %= 100000;
-  }
+  convertPart(integerPart);
 
-  if (n >= 1000) {
-    result += "${convertLessThanOneThousand(n ~/ 1000)} Thousand ";
-    n %= 1000;
-  }
+  if (result.isEmpty) result = "Zero";
 
-  result += convertLessThanOneThousand(n);
+  if (decimalPart > 0) {
+    result += " and "; // Separator
+    // Reset for decimal, but reuse logic?
+    // convertLessThanOneThousand is scoped, but `result` is shared.
+    // We need to append to result manually or reuse function carefully.
+    // Actually `convertLessThanOneThousand` returns string, so we can use it directly.
+    result += "${convertLessThanOneThousand(decimalPart)} Paise";
+  }
 
   return result.trim().replaceAll(RegExp(r'\s+'), ' ');
 }

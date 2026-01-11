@@ -32,6 +32,8 @@ mixin _$Invoice {
   String get ifscCode;
   String get branch;
   String? get deliveryAddress;
+  bool get isArchived; // Phase 4
+  String get currency;
 
   /// Create a copy of Invoice
   /// with the given fields replaced by the non-null parameter values.
@@ -77,35 +79,42 @@ mixin _$Invoice {
                 other.ifscCode == ifscCode) &&
             (identical(other.branch, branch) || other.branch == branch) &&
             (identical(other.deliveryAddress, deliveryAddress) ||
-                other.deliveryAddress == deliveryAddress));
+                other.deliveryAddress == deliveryAddress) &&
+            (identical(other.isArchived, isArchived) ||
+                other.isArchived == isArchived) &&
+            (identical(other.currency, currency) ||
+                other.currency == currency));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      style,
-      supplier,
-      receiver,
-      invoiceNo,
-      invoiceDate,
-      dueDate,
-      placeOfSupply,
-      reverseCharge,
-      paymentTerms,
-      const DeepCollectionEquality().hash(items),
-      const DeepCollectionEquality().hash(payments),
-      comments,
-      bankName,
-      accountNo,
-      ifscCode,
-      branch,
-      deliveryAddress);
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        id,
+        style,
+        supplier,
+        receiver,
+        invoiceNo,
+        invoiceDate,
+        dueDate,
+        placeOfSupply,
+        reverseCharge,
+        paymentTerms,
+        const DeepCollectionEquality().hash(items),
+        const DeepCollectionEquality().hash(payments),
+        comments,
+        bankName,
+        accountNo,
+        ifscCode,
+        branch,
+        deliveryAddress,
+        isArchived,
+        currency
+      ]);
 
   @override
   String toString() {
-    return 'Invoice(id: $id, style: $style, supplier: $supplier, receiver: $receiver, invoiceNo: $invoiceNo, invoiceDate: $invoiceDate, dueDate: $dueDate, placeOfSupply: $placeOfSupply, reverseCharge: $reverseCharge, paymentTerms: $paymentTerms, items: $items, payments: $payments, comments: $comments, bankName: $bankName, accountNo: $accountNo, ifscCode: $ifscCode, branch: $branch, deliveryAddress: $deliveryAddress)';
+    return 'Invoice(id: $id, style: $style, supplier: $supplier, receiver: $receiver, invoiceNo: $invoiceNo, invoiceDate: $invoiceDate, dueDate: $dueDate, placeOfSupply: $placeOfSupply, reverseCharge: $reverseCharge, paymentTerms: $paymentTerms, items: $items, payments: $payments, comments: $comments, bankName: $bankName, accountNo: $accountNo, ifscCode: $ifscCode, branch: $branch, deliveryAddress: $deliveryAddress, isArchived: $isArchived, currency: $currency)';
   }
 }
 
@@ -132,7 +141,9 @@ abstract mixin class $InvoiceCopyWith<$Res> {
       String accountNo,
       String ifscCode,
       String branch,
-      String? deliveryAddress});
+      String? deliveryAddress,
+      bool isArchived,
+      String currency});
 
   $SupplierCopyWith<$Res> get supplier;
   $ReceiverCopyWith<$Res> get receiver;
@@ -168,6 +179,8 @@ class _$InvoiceCopyWithImpl<$Res> implements $InvoiceCopyWith<$Res> {
     Object? ifscCode = null,
     Object? branch = null,
     Object? deliveryAddress = freezed,
+    Object? isArchived = null,
+    Object? currency = null,
   }) {
     return _then(_self.copyWith(
       id: freezed == id
@@ -242,6 +255,14 @@ class _$InvoiceCopyWithImpl<$Res> implements $InvoiceCopyWith<$Res> {
           ? _self.deliveryAddress
           : deliveryAddress // ignore: cast_nullable_to_non_nullable
               as String?,
+      isArchived: null == isArchived
+          ? _self.isArchived
+          : isArchived // ignore: cast_nullable_to_non_nullable
+              as bool,
+      currency: null == currency
+          ? _self.currency
+          : currency // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 
@@ -377,7 +398,9 @@ extension InvoicePatterns on Invoice {
             String accountNo,
             String ifscCode,
             String branch,
-            String? deliveryAddress)?
+            String? deliveryAddress,
+            bool isArchived,
+            String currency)?
         $default, {
     required TResult orElse(),
   }) {
@@ -402,7 +425,9 @@ extension InvoicePatterns on Invoice {
             _that.accountNo,
             _that.ifscCode,
             _that.branch,
-            _that.deliveryAddress);
+            _that.deliveryAddress,
+            _that.isArchived,
+            _that.currency);
       case _:
         return orElse();
     }
@@ -441,7 +466,9 @@ extension InvoicePatterns on Invoice {
             String accountNo,
             String ifscCode,
             String branch,
-            String? deliveryAddress)
+            String? deliveryAddress,
+            bool isArchived,
+            String currency)
         $default,
   ) {
     final _that = this;
@@ -465,7 +492,9 @@ extension InvoicePatterns on Invoice {
             _that.accountNo,
             _that.ifscCode,
             _that.branch,
-            _that.deliveryAddress);
+            _that.deliveryAddress,
+            _that.isArchived,
+            _that.currency);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -503,7 +532,9 @@ extension InvoicePatterns on Invoice {
             String accountNo,
             String ifscCode,
             String branch,
-            String? deliveryAddress)?
+            String? deliveryAddress,
+            bool isArchived,
+            String currency)?
         $default,
   ) {
     final _that = this;
@@ -527,7 +558,9 @@ extension InvoicePatterns on Invoice {
             _that.accountNo,
             _that.ifscCode,
             _that.branch,
-            _that.deliveryAddress);
+            _that.deliveryAddress,
+            _that.isArchived,
+            _that.currency);
       case _:
         return null;
     }
@@ -555,7 +588,9 @@ class _Invoice extends Invoice {
       this.accountNo = '',
       this.ifscCode = '',
       this.branch = '',
-      this.deliveryAddress})
+      this.deliveryAddress,
+      this.isArchived = false,
+      this.currency = 'INR'})
       : _items = items,
         _payments = payments,
         super._();
@@ -622,6 +657,13 @@ class _Invoice extends Invoice {
   final String branch;
   @override
   final String? deliveryAddress;
+  @override
+  @JsonKey()
+  final bool isArchived;
+// Phase 4
+  @override
+  @JsonKey()
+  final String currency;
 
   /// Create a copy of Invoice
   /// with the given fields replaced by the non-null parameter values.
@@ -672,35 +714,42 @@ class _Invoice extends Invoice {
                 other.ifscCode == ifscCode) &&
             (identical(other.branch, branch) || other.branch == branch) &&
             (identical(other.deliveryAddress, deliveryAddress) ||
-                other.deliveryAddress == deliveryAddress));
+                other.deliveryAddress == deliveryAddress) &&
+            (identical(other.isArchived, isArchived) ||
+                other.isArchived == isArchived) &&
+            (identical(other.currency, currency) ||
+                other.currency == currency));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      style,
-      supplier,
-      receiver,
-      invoiceNo,
-      invoiceDate,
-      dueDate,
-      placeOfSupply,
-      reverseCharge,
-      paymentTerms,
-      const DeepCollectionEquality().hash(_items),
-      const DeepCollectionEquality().hash(_payments),
-      comments,
-      bankName,
-      accountNo,
-      ifscCode,
-      branch,
-      deliveryAddress);
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        id,
+        style,
+        supplier,
+        receiver,
+        invoiceNo,
+        invoiceDate,
+        dueDate,
+        placeOfSupply,
+        reverseCharge,
+        paymentTerms,
+        const DeepCollectionEquality().hash(_items),
+        const DeepCollectionEquality().hash(_payments),
+        comments,
+        bankName,
+        accountNo,
+        ifscCode,
+        branch,
+        deliveryAddress,
+        isArchived,
+        currency
+      ]);
 
   @override
   String toString() {
-    return 'Invoice(id: $id, style: $style, supplier: $supplier, receiver: $receiver, invoiceNo: $invoiceNo, invoiceDate: $invoiceDate, dueDate: $dueDate, placeOfSupply: $placeOfSupply, reverseCharge: $reverseCharge, paymentTerms: $paymentTerms, items: $items, payments: $payments, comments: $comments, bankName: $bankName, accountNo: $accountNo, ifscCode: $ifscCode, branch: $branch, deliveryAddress: $deliveryAddress)';
+    return 'Invoice(id: $id, style: $style, supplier: $supplier, receiver: $receiver, invoiceNo: $invoiceNo, invoiceDate: $invoiceDate, dueDate: $dueDate, placeOfSupply: $placeOfSupply, reverseCharge: $reverseCharge, paymentTerms: $paymentTerms, items: $items, payments: $payments, comments: $comments, bankName: $bankName, accountNo: $accountNo, ifscCode: $ifscCode, branch: $branch, deliveryAddress: $deliveryAddress, isArchived: $isArchived, currency: $currency)';
   }
 }
 
@@ -728,7 +777,9 @@ abstract mixin class _$InvoiceCopyWith<$Res> implements $InvoiceCopyWith<$Res> {
       String accountNo,
       String ifscCode,
       String branch,
-      String? deliveryAddress});
+      String? deliveryAddress,
+      bool isArchived,
+      String currency});
 
   @override
   $SupplierCopyWith<$Res> get supplier;
@@ -766,6 +817,8 @@ class __$InvoiceCopyWithImpl<$Res> implements _$InvoiceCopyWith<$Res> {
     Object? ifscCode = null,
     Object? branch = null,
     Object? deliveryAddress = freezed,
+    Object? isArchived = null,
+    Object? currency = null,
   }) {
     return _then(_Invoice(
       id: freezed == id
@@ -840,6 +893,14 @@ class __$InvoiceCopyWithImpl<$Res> implements _$InvoiceCopyWith<$Res> {
           ? _self.deliveryAddress
           : deliveryAddress // ignore: cast_nullable_to_non_nullable
               as String?,
+      isArchived: null == isArchived
+          ? _self.isArchived
+          : isArchived // ignore: cast_nullable_to_non_nullable
+              as bool,
+      currency: null == currency
+          ? _self.currency
+          : currency // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 

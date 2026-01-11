@@ -16,8 +16,9 @@ class ModernTemplate implements InvoiceTemplate {
   String get name => 'Modern';
 
   @override
-  Future<Uint8List> generate(Invoice invoice, BusinessProfile profile,
-      pw.Font font, pw.Font fontBold) async {
+  Future<Uint8List> generate(
+      Invoice invoice, BusinessProfile profile, pw.Font font, pw.Font fontBold,
+      {String? title}) async {
     final pdf = pw.Document(
         theme: pw.ThemeData.withFont(
       base: font,
@@ -31,15 +32,12 @@ class ModernTemplate implements InvoiceTemplate {
         color: PdfColors.white, fontSize: 22, fontWeight: pw.FontWeight.bold);
 
     // Determine Supply Type
-    String supplyType = "Tax Invoice"; // Default
-    if (invoice.receiver.gstin.isEmpty) {
+    String supplyType = title ?? "Tax Invoice"; // Default
+    if (title == null && invoice.receiver.gstin.isEmpty) {
       // B2C
       supplyType = "Retail Invoice";
       if (invoice.grandTotal >= 50000 && invoice.isInterState) {
-        // B2C Large - Strictly speaking mostly relevant for GSTR-1, but good to show on invoice
-        // supplyType = "Tax Invoice"; // B2C Large is still a tax invoice technically?
-        // Rule 46 says "Tax Invoice" generally.
-        // But "Bill of Supply" if no tax? We assume tax invoice for now.
+        // B2C Large
       }
     }
     // Check if Export/SEZ (Logic would be in Invoice model usually, e.g. "Supply Type" field)
@@ -312,7 +310,17 @@ class ModernTemplate implements InvoiceTemplate {
                                   style: pw.TextStyle(
                                       fontWeight: pw.FontWeight.bold,
                                       fontSize: 9)),
-                              pw.SizedBox(height: 30),
+                              if (profile.signaturePath != null &&
+                                  File(profile.signaturePath!).existsSync())
+                                pw.Container(
+                                    height: 40,
+                                    child: pw.Image(
+                                        pw.MemoryImage(
+                                            File(profile.signaturePath!)
+                                                .readAsBytesSync()),
+                                        fit: pw.BoxFit.contain))
+                              else
+                                pw.SizedBox(height: 40),
                               pw.Text("Authorized Signatory",
                                   style: const pw.TextStyle(fontSize: 8)),
                             ])

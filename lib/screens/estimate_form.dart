@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
+import 'package:printing/printing.dart'; // Added for printing
+import '../utils/pdf_generator.dart'; // For generator
 
 import '../models/estimate.dart';
 import '../models/invoice.dart'; // For Supplier/Receiver/InvoiceItem reuse
 import '../providers/business_profile_provider.dart';
 import '../providers/estimate_provider.dart';
 import '../providers/invoice_repository_provider.dart'; // For converting to invoice
+import '../providers/client_provider.dart';
+import '../models/client.dart';
 // WARNING: item_list_editor might not exist or needs verification.
 // Glancing at file list: screens/invoice_form.dart exists. Components likely inside it or widgets folder.
 // I will implement a simplified embedded form logic here similar to invoice_form.dart if I don't see reusable widgets.
@@ -131,6 +135,55 @@ class _EstimateFormState extends ConsumerState<EstimateForm> {
     if (mounted) Navigator.pop(context);
   }
 
+  void _printEstimate() async {
+    if (_existingEstimate == null) return;
+    final profile = ref.read(businessProfileProvider);
+
+    // Create transient Invoice object for printing
+    final estimateInvoice = Invoice(
+      id: _existingEstimate!.id,
+      style: 'Modern', // Or load preference?
+      supplier: _existingEstimate!.supplier,
+      receiver: _existingEstimate!.receiver,
+      invoiceNo: _existingEstimate!.estimateNo,
+      invoiceDate: _existingEstimate!.date,
+      placeOfSupply: _existingEstimate!.receiver.state,
+      items: _existingEstimate!.items,
+      comments: _existingEstimate!.notes,
+      bankName: profile.bankName,
+      accountNo: profile.accountNumber,
+      ifscCode: profile.ifscCode,
+      branch: profile.branchName,
+    );
+
+    await Printing.layoutPdf(
+        onLayout: (format) =>
+            generateInvoicePdf(estimateInvoice, profile, title: "ESTIMATE"));
+  }
+
+  void _confirmConvertToInvoice() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Convert to Invoice?"),
+        content: const Text(
+            "This will create a new Invoice from this Estimate. Continue?"),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Cancel")),
+          FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Convert")),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      _convertToInvoice();
+    }
+  }
+
   void _convertToInvoice() async {
     if (_existingEstimate == null) return;
 
@@ -181,10 +234,16 @@ class _EstimateFormState extends ConsumerState<EstimateForm> {
         title:
             Text(widget.estimateId == null ? "New Estimate" : "Edit Estimate"),
         actions: [
+          if (_existingEstimate != null)
+            IconButton(
+              icon: const Icon(Icons.print),
+              onPressed: _printEstimate,
+              tooltip: "Print Estimate",
+            ),
           if (_existingEstimate != null &&
               _existingEstimate!.status != 'Converted')
             TextButton.icon(
-              onPressed: _convertToInvoice,
+              onPressed: _confirmConvertToInvoice,
               icon: const Icon(Icons.transform, color: Colors.white),
               label: const Text("Convert to Invoice",
                   style: TextStyle(color: Colors.white)),
@@ -215,9 +274,20 @@ class _EstimateFormState extends ConsumerState<EstimateForm> {
                 ],
               ),
               const SizedBox(height: 16),
-              // Receiver
-              const Text("Client Details",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("Client Details",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  TextButton.icon(
+                    onPressed: () => _showClientSelector(
+                        context, ref.read(clientListProvider)),
+                    icon: const Icon(Icons.list),
+                    label: const Text("Select Client"),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
               _buildTextField("Client Name", _receiverNameController),
               _buildTextField("Address", _receiverAddressController),
@@ -330,6 +400,58 @@ class _EstimateFormState extends ConsumerState<EstimateForm> {
     if (newItem != null) {
       setState(() => _items[index] = newItem);
     }
+  }
+
+  void _showClientSelector(BuildContext context, List<Client> clients) {
+    showModalBottomSheet(
+        context: context,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        builder: (context) {
+          return Container(
+            padding: const EdgeInsets.all(16),
+            height: 400,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Select Client",
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: clients.isEmpty
+                      ? const Center(child: Text("No clients found."))
+                      : ListView.builder(
+                          itemCount: clients.length,
+                          itemBuilder: (context, index) {
+                            final client = clients[index];
+                            final initial = client.name.isNotEmpty
+                                ? client.name[0].toUpperCase()
+                                : "?";
+                            return ListTile(
+                              leading: CircleAvatar(child: Text(initial)),
+                              title: Text(client.name),
+                              subtitle: Text(client.gstin.isNotEmpty
+                                  ? "GST: ${client.gstin}"
+                                  : client.address),
+                              onTap: () {
+                                setState(() {
+                                  _receiverNameController.text = client.name;
+                                  _receiverGstinController.text = client.gstin;
+                                  _receiverStateController.text = client.state;
+                                  _receiverAddressController.text =
+                                      client.address;
+                                });
+                                Navigator.pop(context);
+                              },
+                            );
+                          },
+                        ),
+                )
+              ],
+            ),
+          );
+        });
   }
 
   void _removeItem(int index) {

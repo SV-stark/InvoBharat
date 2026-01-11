@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart'; // Added for file picker
 import '../providers/business_profile_provider.dart';
 import '../providers/theme_provider.dart';
 import '../services/backup_service.dart';
 import '../widgets/profile_switcher_sheet.dart';
 import '../widgets/about_tab.dart';
+import 'item_templates_screen.dart'; // NEW import
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -254,7 +256,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildTextField("UPI ID (VPA)", _upiIdController),
             _buildTextField("UPI Name", _upiNameController),
             const SizedBox(height: 24),
-            _buildSectionHeader("Branding"),
+            _buildSectionHeader("Branding"), // KEEP
+            ListTile(
+              leading: const Icon(Icons.copy_all),
+              title: const Text("Item Templates"),
+              subtitle: const Text("Manage frequently used items"),
+              onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const ItemTemplatesScreen())),
+            ),
+            const Divider(), // Added Divider
+            // ... existing ...
             Row(
               children: [
                 Expanded(
@@ -458,14 +471,58 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onPressed: () async {
                 // Import logic
                 try {
-                  final msg = await BackupService().importData(ref);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text(msg)));
-                    // Reload data
-                    _loadProfileData();
-                    setState(() {});
+                  final result = await BackupService().importData(ref);
+                  if (!mounted) return;
+
+                  if (result.skippedCount > 0) {
+                    // Show Dialog with Skipped Report option
+                    showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                              title: const Text("Import Complete with Skips"),
+                              content: Text(
+                                  "Imported: ${result.successCount}\nSkipped: ${result.skippedCount} (Duplicates)"),
+                              actions: [
+                                TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text("Close")),
+                                FilledButton.icon(
+                                  icon: const Icon(Icons.download),
+                                  label: const Text("Download Report"),
+                                  onPressed: () async {
+                                    final csv = result.skippedCsv;
+                                    if (csv != null) {
+                                      String? outputFile =
+                                          await FilePicker.platform.saveFile(
+                                        dialogTitle: 'Save Skipped Report',
+                                        fileName: 'skipped_invoices.csv',
+                                        allowedExtensions: ['csv'],
+                                        type: FileType.custom,
+                                      );
+                                      if (outputFile != null) {
+                                        if (!outputFile
+                                            .toLowerCase()
+                                            .endsWith('.csv')) {
+                                          outputFile = '$outputFile.csv';
+                                        }
+                                        await File(outputFile)
+                                            .writeAsString(csv);
+                                      }
+                                    }
+                                    if (context.mounted) Navigator.pop(context);
+                                  },
+                                )
+                              ],
+                            ));
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                            "Successfully imported ${result.successCount} invoices.")));
                   }
+
+                  // Reload data
+                  _loadProfileData();
+                  setState(() {});
                 } catch (e) {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -474,7 +531,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 }
               },
               icon: const Icon(Icons.upload),
-              label: const Text("Restore Data (JSON)"),
+              label: const Text("Restore Data (JSON/CSV)"),
             ),
           ),
           const SizedBox(height: 32),

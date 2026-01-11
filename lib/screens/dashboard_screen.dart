@@ -17,12 +17,74 @@ import 'package:file_picker/file_picker.dart';
 import '../services/gstr_service.dart';
 import '../services/dashboard_actions.dart';
 import 'material_clients_screen.dart';
+import 'invoices_list_screen.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  String _selectedFilter = "This Month";
+  DateTimeRange? _dateRange;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateDateRange("This Month");
+  }
+
+  void _updateDateRange(String filter) async {
+    final now = DateTime.now();
+    DateTime start, end;
+
+    switch (filter) {
+      case "This Month":
+        start = DateTime(now.year, now.month, 1);
+        end = DateTime(now.year, now.month + 1, 0); // Last day of month
+        setState(() {
+          _selectedFilter = filter;
+          _dateRange = DateTimeRange(start: start, end: end);
+        });
+        break;
+      case "Last Month":
+        start = DateTime(now.year, now.month - 1, 1);
+        end = DateTime(now.year, now.month, 0);
+        setState(() {
+          _selectedFilter = filter;
+          _dateRange = DateTimeRange(start: start, end: end);
+        });
+        break;
+      case "This Quarter":
+        int quarter = (now.month - 1) ~/ 3 + 1;
+        start = DateTime(now.year, (quarter - 1) * 3 + 1, 1);
+        end = DateTime(now.year, quarter * 3 + 1, 0);
+        setState(() {
+          _selectedFilter = filter;
+          _dateRange = DateTimeRange(start: start, end: end);
+        });
+        break;
+      case "Custom":
+        final picked = await showDateRangePicker(
+          context: context,
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+          initialDateRange: _dateRange,
+        );
+        if (picked != null) {
+          setState(() {
+            _selectedFilter = "Custom";
+            _dateRange = picked;
+          });
+        }
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final profile = ref.watch(businessProfileProvider);
     final invoiceListAsync = ref.watch(invoiceListProvider);
 
@@ -63,28 +125,67 @@ class DashboardScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome Section ...
-            Text(
-              "Welcome back,",
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: Colors.grey),
-            ),
-            Text(
-              profile.companyName,
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Welcome back,",
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge
+                          ?.copyWith(color: Colors.grey),
+                    ),
+                    Text(
+                      profile.companyName,
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                PopupMenuButton<String>(
+                  initialValue: _selectedFilter,
+                  onSelected: _updateDateRange,
+                  child: Chip(
+                    label: Text(_selectedFilter),
+                    avatar: const Icon(Icons.calendar_today, size: 16),
+                  ),
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                        value: "This Month", child: Text("This Month")),
+                    const PopupMenuItem(
+                        value: "Last Month", child: Text("Last Month")),
+                    const PopupMenuItem(
+                        value: "This Quarter", child: Text("This Quarter")),
+                    const PopupMenuItem(
+                        value: "Custom", child: Text("Custom Range...")),
+                  ],
+                ),
+              ],
             ),
             const SizedBox(height: 24),
-
             invoiceListAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (err, stack) => Text("Error: $err"),
                 data: (invoices) {
-                  final stats = DashboardActions.calculateStats(invoices);
+                  // Filter Invoices
+                  final filteredInvoices = _dateRange == null
+                      ? invoices
+                      : invoices.where((i) {
+                          // Normalize dates to ignore time?
+                          // InvoiceDate usually has time? Assuming just compare
+                          return i.invoiceDate.isAfter(_dateRange!.start
+                                  .subtract(const Duration(seconds: 1))) &&
+                              i.invoiceDate.isBefore(
+                                  _dateRange!.end.add(const Duration(days: 1)));
+                        }).toList();
+
+                  final stats =
+                      DashboardActions.calculateStats(filteredInvoices);
                   final totalRevenue = stats['revenue'] as double;
                   final totalCGST = stats['cgst'] as double;
                   final totalSGST = stats['sgst'] as double;
@@ -99,7 +200,7 @@ class DashboardScreen extends ConsumerWidget {
                         Expanded(
                             child: _buildStatCard(
                                 context,
-                                "Total Revenue",
+                                "Revenue ($_selectedFilter)",
                                 currency.format(totalRevenue),
                                 Icons.currency_rupee,
                                 Colors.green)),
@@ -107,8 +208,8 @@ class DashboardScreen extends ConsumerWidget {
                         Expanded(
                             child: _buildStatCard(
                                 context,
-                                "Invoices Generated",
-                                "${invoices.length}",
+                                "Invoices",
+                                "${filteredInvoices.length}",
                                 Icons.description,
                                 Colors.blue)),
                       ],
@@ -124,7 +225,7 @@ class DashboardScreen extends ConsumerWidget {
                                 totalSGST, totalIGST, profile.currencySymbol),
                             child: _buildStatCard(
                                 context,
-                                "Total GST",
+                                "GST Output ($_selectedFilter)",
                                 currency
                                     .format(totalCGST + totalSGST + totalIGST),
                                 Icons.percent,
@@ -204,13 +305,12 @@ class DashboardScreen extends ConsumerWidget {
                           Theme.of(context).colorScheme.tertiaryContainer,
                           () async {
                             try {
-                              final filteredInvoices =
-                                  invoices; // Export all for now or filter? Dashboard usually shows recent. Let's export all visible.
+                              // Use filtered Invoices
                               if (filteredInvoices.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                        content:
-                                            Text("No invoices to export")));
+                                        content: Text(
+                                            "No invoices in selected period")));
                                 return;
                               }
 
@@ -220,7 +320,8 @@ class DashboardScreen extends ConsumerWidget {
                               String? outputFile =
                                   await FilePicker.platform.saveFile(
                                 dialogTitle: 'Save GSTR-1 CSV',
-                                fileName: 'GSTR1_All_Time.csv',
+                                fileName:
+                                    'GSTR1_${_selectedFilter.replaceAll(" ", "_")}.csv',
                                 allowedExtensions: ['csv'],
                                 type: FileType.custom,
                               );
@@ -248,11 +349,23 @@ class DashboardScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 32),
-                    Text("Recent Invoices",
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleLarge
-                            ?.copyWith(fontWeight: FontWeight.bold)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Recent Invoices",
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold)),
+                        TextButton(
+                          onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const InvoicesListScreen())),
+                          child: const Text("View All"),
+                        )
+                      ],
+                    ),
                     const SizedBox(height: 8),
                     if (invoices.isEmpty)
                       const Card(

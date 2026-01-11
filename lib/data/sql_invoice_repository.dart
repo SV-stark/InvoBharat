@@ -172,6 +172,15 @@ class SqlInvoiceRepository implements InvoiceRepository {
   }
 
   @override
+  Future<void> deleteInvoice(String id) async {
+    await (database.delete(database.invoiceItems)
+          ..where((t) => t.invoiceId.equals(id)))
+        .go();
+    await (database.delete(database.invoices)..where((t) => t.id.equals(id)))
+        .go();
+  }
+
+  @override
   Future<void> deleteAll() async {
     await database.delete(database.invoiceItems).go();
     await database.delete(database.invoices).go();

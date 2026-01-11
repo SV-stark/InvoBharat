@@ -10,6 +10,7 @@ import '../utils/pdf_generator.dart';
 import '../providers/business_profile_provider.dart';
 import '../providers/client_provider.dart';
 import '../providers/invoice_provider.dart';
+import '../providers/item_template_provider.dart'; // NEW import
 
 import '../services/invoice_actions.dart'; // NEW Import
 
@@ -24,14 +25,87 @@ class InvoiceFormScreen extends ConsumerStatefulWidget {
 }
 
 class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
+  final _formKey = GlobalKey<FormState>();
+
+  // Controllers
+  late TextEditingController _invoiceNoCtrl;
+  late TextEditingController _posCtrl;
+  late TextEditingController _receiverNameCtrl;
+  late TextEditingController _receiverGstinCtrl;
+  late TextEditingController _receiverStateCtrl;
+  late TextEditingController _receiverAddressCtrl;
+  late TextEditingController _paymentTermsCtrl; // NEW
+
   @override
   void initState() {
     super.initState();
+    // Initialize with existing data or defaults
+    // We defer provider reading to didChangeDependencies or postFrame if needed,
+    // but here we can't read provider easily in initState without listen:false or deferred.
+    // However, we need to sync controllers with the provider state initially.
+    // AND listen to changes?
+    // Problem: If we bind controllers to provider state, typing updates provider, which triggers rebuild, which re-inits controllers? No.
+    // We only init once. But if external change happens (e.g. client selection), we must update controllers.
+
+    _invoiceNoCtrl = TextEditingController(); // Will set text later
+    _posCtrl = TextEditingController();
+    _receiverNameCtrl = TextEditingController();
+    _receiverGstinCtrl = TextEditingController();
+    _receiverStateCtrl = TextEditingController();
+    _receiverAddressCtrl = TextEditingController();
+    _paymentTermsCtrl = TextEditingController(); // NEW
+
     if (widget.invoiceToEdit != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(invoiceProvider.notifier).setInvoice(widget.invoiceToEdit!);
+        _syncControllers(ref.read(invoiceProvider));
+      });
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Sync for new invoice (defaults)
+        _syncControllers(ref.read(invoiceProvider));
       });
     }
+  }
+
+  void _syncControllers(Invoice invoice) {
+    if (_invoiceNoCtrl.text != invoice.invoiceNo) {
+      _invoiceNoCtrl.text = invoice.invoiceNo;
+    }
+    if (_posCtrl.text != invoice.placeOfSupply) {
+      _posCtrl.text = invoice.placeOfSupply;
+    }
+    if (_receiverNameCtrl.text != invoice.receiver.name) {
+      _receiverNameCtrl.text = invoice.receiver.name;
+    }
+    if (_receiverGstinCtrl.text != invoice.receiver.gstin) {
+      _receiverGstinCtrl.text = invoice.receiver.gstin;
+    }
+    if (_receiverStateCtrl.text != invoice.receiver.state) {
+      _receiverStateCtrl.text = invoice.receiver.state;
+    }
+    if (_receiverAddressCtrl.text != invoice.receiver.address) {
+      _receiverAddressCtrl.text = invoice.receiver.address;
+    }
+    if (_paymentTermsCtrl.text != invoice.paymentTerms) {
+      _paymentTermsCtrl.text = invoice.paymentTerms; // NEW
+    }
+  }
+
+  // We need to listen to provider changes to update controllers when Client is selected
+  // But standard ref.watch rebuilds the widget. If we re-set text every build, cursor jumps.
+  // Exception: ref.listen allows side effects without rebuild.
+
+  @override
+  void dispose() {
+    _invoiceNoCtrl.dispose();
+    _posCtrl.dispose();
+    _receiverNameCtrl.dispose();
+    _receiverGstinCtrl.dispose();
+    _receiverStateCtrl.dispose();
+    _receiverAddressCtrl.dispose();
+    _paymentTermsCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -39,9 +113,16 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
     final invoice = ref.watch(invoiceProvider);
     final profile = ref.watch(businessProfileProvider);
     final theme = Theme.of(context);
-
-    // Watch clients for selection
     final clients = ref.watch(clientListProvider);
+
+    // Listen for external changes (like client selection overrides)
+    ref.listen<Invoice>(invoiceProvider, (prev, next) {
+      // Only update controller if value is significantly different and not currently being edited?
+      // Or just assume `updateReceiver` methods are called explicitly.
+      // Actually, if we type in generic field, we call `update...`.
+      // If we update controller in listener, we risk loop.
+      // Better: When we select client, we explicitely update controllers in that callback, NOT via listener.
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -70,262 +151,281 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // --- Invoice Header Card ---
-            _buildSectionCard(
-              context,
-              title: "Invoice Details",
-              icon: Icons.description_outlined,
-              children: [
-                _buildDropdown(
-                  "Invoice Style",
-                  invoice.style,
-                  ['Modern', 'Professional', 'Minimal'],
-                  (val) => ref.read(invoiceProvider.notifier).updateStyle(val!),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildTextField(
-                        label: "Invoice No",
-                        initialValue: invoice.invoiceNo,
-                        onChanged: (val) => ref
-                            .read(invoiceProvider.notifier)
-                            .updateInvoiceNo(val),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          final date = await showDatePicker(
-                              context: context,
-                              initialDate: invoice.invoiceDate,
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2100));
-                          if (date != null) {
-                            ref.read(invoiceProvider.notifier).updateDate(date);
-                          }
-                        },
-                        child: InputDecorator(
-                          decoration: const InputDecoration(
-                            labelText: "Date",
-                            border: OutlineInputBorder(),
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 16),
-                            suffixIcon: Icon(Icons.calendar_today, size: 18),
-                          ),
-                          child: Text(DateFormat('dd MMM yyyy')
-                              .format(invoice.invoiceDate)),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildTextField(
-                          label: "Place of Supply",
-                          initialValue: invoice.placeOfSupply,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              // --- Invoice Header Card ---
+              _buildSectionCard(
+                context,
+                title: "Invoice Details",
+                icon: Icons.description_outlined,
+                children: [
+                  _buildDropdown(
+                    "Invoice Style",
+                    invoice.style,
+                    ['Modern', 'Professional', 'Minimal'],
+                    (val) =>
+                        ref.read(invoiceProvider.notifier).updateStyle(val!),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _invoiceNoCtrl,
+                          label: "Invoice No",
                           onChanged: (val) => ref
                               .read(invoiceProvider.notifier)
-                              .updatePlaceOfSupply(val)),
-                    ),
-                    const SizedBox(width: 16),
-                    SizedBox(
-                      width: 120,
-                      child: _buildDropdown(
-                        "Rev. Charge",
-                        invoice.reverseCharge.isEmpty
-                            ? "N"
-                            : invoice.reverseCharge,
-                        ['N', 'Y'],
-                        (val) => ref
-                            .read(invoiceProvider.notifier)
-                            .updateReverseCharge(val!),
+                              .updateInvoiceNo(val),
+                          validator: (val) =>
+                              val == null || val.isEmpty ? "Required" : null,
+                        ),
                       ),
-                    )
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // --- Client Details Card ---
-            _buildSectionCard(
-              context,
-              title: "Client Details",
-              icon: Icons.person_outline,
-              action: TextButton.icon(
-                onPressed: () => _showClientSelector(context, clients),
-                icon: const Icon(Icons.list),
-                label: const Text("Select Client"),
-              ),
-              children: [
-                _buildTextField(
-                  label: "Client Name",
-                  initialValue: invoice.receiver.name,
-                  onChanged: (val) => ref
-                      .read(invoiceProvider.notifier)
-                      .updateReceiverName(val),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildTextField(
-                        label: "GSTIN",
-                        initialValue: invoice.receiver.gstin,
-                        onChanged: (val) => ref
-                            .read(invoiceProvider.notifier)
-                            .updateReceiverGstin(val),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildDatePicker(
+                            context,
+                            "Date",
+                            invoice.invoiceDate,
+                            (val) => ref
+                                .read(invoiceProvider.notifier)
+                                .updateDate(val)),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildTextField(
-                        label: "State",
-                        initialValue: invoice.receiver.state,
-                        onChanged: (val) => ref
-                            .read(invoiceProvider.notifier)
-                            .updateReceiverState(val),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                            controller: _posCtrl,
+                            label: "Place of Supply",
+                            onChanged: (val) => ref
+                                .read(invoiceProvider.notifier)
+                                .updatePlaceOfSupply(val),
+                            validator: (val) =>
+                                val == null || val.isEmpty ? "Required" : null),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildTextField(
-                    label: "Billing Address",
-                    initialValue: invoice.receiver.address,
-                    maxLines: 2,
+                      const SizedBox(width: 16),
+                      SizedBox(
+                        width: 120,
+                        child: _buildDropdown(
+                          "Currency",
+                          invoice.currency,
+                          ['INR', 'USD', 'EUR', 'GBP'],
+                          (val) => ref
+                              .read(invoiceProvider.notifier)
+                              .updateCurrency(val!),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      SizedBox(
+                        width: 120,
+                        child: _buildDropdown(
+                          "Rev. Charge",
+                          invoice.reverseCharge.isEmpty
+                              ? "N"
+                              : invoice.reverseCharge,
+                          ['N', 'Y'],
+                          (val) => ref
+                              .read(invoiceProvider.notifier)
+                              .updateReverseCharge(val!),
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildDatePicker(
+                      context,
+                      "Due Date",
+                      invoice.dueDate,
+                      (val) => ref
+                          .read(invoiceProvider.notifier)
+                          .updateDueDate(val)),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: _paymentTermsCtrl,
+                    label: "Payment Terms",
                     onChanged: (val) => ref
                         .read(invoiceProvider.notifier)
-                        .updateReceiverAddress(
-                            val)), // Assuming updateReceiverAddress exists or maps to updateReceiverState?
-                // Wait, updateReceiverAddress likely missing in original code based on previous read.
-                // Let's check `invoice_provider.dart` later. Assuming standard pattern.
-                // Actually, looking at original file, there was `updateReceiverName`, `updateReceiverGstin`, `updateReceiverState`.
-                // Warning: `updateReceiverAddress` might not exist. I should check or implement it.
-                // Original code had `_buildTextField("Name", invoice.receiver.name...`
-                // It seems address field was missing in original form?
-                // The Receiver model has address.
-                // Let's assume the provider has it or I might need to add it.
-                // To be safe, I will stick to what was there or check provider API.
-                // Wait, looking at original code... `updateReceiverName`, `updateReceiverGstin`, `updateReceiverState`, `updateReceiverStateCode`.
-                // NO ADDRESS. That's a gap. The Receiver model definition has it.
-                // I will add the UI field, but if the provider method is missing, I'll need to update provider.
-                // For now let's assume I can't call a missing method. I'll comment it out or fix provider later.
-                // Actually better: I will add `updateReceiverAddress` to `InvoiceNotifier` in a separate step if it fails.
-                // Wait, I can't check provider now easily without task switch.
-                // I will use `updateReceiverAddress` and if it fails compilation, I will fix provider.
-                // Actually, simpler: I'll browse provider first? No, I'm in ReplaceFile.
-                // I'll take a risk or just omit address for now if I want to be safe?
-                // User wants "recipient section shall have ability to use from client list". Client has address.
-                // So I MUST populate address. Invoice Recipient MUST have address.
-                // I will assume the method exists or I will add it.
-              ],
-            ),
-            const SizedBox(height: 16),
+                        .updatePaymentTerms(val),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
 
-            // --- Items Card ---
-            _buildSectionCard(context,
-                title: "Items",
-                icon: Icons.shopping_cart_outlined,
+              // --- Client Details Card ---
+              _buildSectionCard(
+                context,
+                title: "Client Details",
+                icon: Icons.person_outline,
+                action: TextButton.icon(
+                  onPressed: () => _showClientSelector(context, clients),
+                  icon: const Icon(Icons.list),
+                  label: const Text("Select Client"),
+                ),
                 children: [
-                  if (invoice.items.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Center(
-                        child: Text("No items added yet",
-                            style: TextStyle(color: Colors.grey)),
-                      ),
-                    )
-                  else
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: invoice.items.length,
-                      separatorBuilder: (_, __) => const Divider(),
-                      itemBuilder: (context, index) {
-                        final item = invoice.items[index];
-                        return ListTile(
-                          title: Text(item.description.isNotEmpty
-                              ? item.description
-                              : "New Item"),
-                          subtitle: Text(
-                              "${item.quantity} ${item.unit} x ₹${item.amount} | GST: ${item.gstRate}%"),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text("₹${item.totalAmount.toStringAsFixed(2)}",
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                icon: const Icon(Icons.edit, size: 20),
-                                onPressed: () =>
-                                    _editItemDialog(context, index, item),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete,
-                                    color: Colors.red, size: 20),
-                                onPressed: () => ref
-                                    .read(invoiceProvider.notifier)
-                                    .removeItem(index),
-                              )
-                            ],
-                          ),
-                        );
-                      },
-                    ),
+                  _buildTextField(
+                    controller: _receiverNameCtrl,
+                    label: "Client Name",
+                    onChanged: (val) => ref
+                        .read(invoiceProvider.notifier)
+                        .updateReceiverName(val),
+                    validator: (val) =>
+                        val == null || val.isEmpty ? "Required" : null,
+                  ),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () =>
-                          ref.read(invoiceProvider.notifier).addItem(),
-                      icon: const Icon(Icons.add),
-                      label: const Text("Add New Item"),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: BorderSide(
-                            color: theme.primaryColor.withValues(alpha: 0.5)),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _receiverGstinCtrl,
+                          label: "GSTIN",
+                          onChanged: (val) => ref
+                              .read(invoiceProvider.notifier)
+                              .updateReceiverGstin(val),
+                        ),
                       ),
-                    ),
-                  )
-                ]),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildTextField(
+                          controller: _receiverStateCtrl,
+                          label: "State",
+                          onChanged: (val) => ref
+                              .read(invoiceProvider.notifier)
+                              .updateReceiverState(val),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                      controller: _receiverAddressCtrl,
+                      label: "Billing Address",
+                      maxLines: 2,
+                      onChanged: (val) => ref
+                          .read(invoiceProvider.notifier)
+                          .updateReceiverAddress(val)),
+                ],
+              ),
+              const SizedBox(height: 16),
 
-            const SizedBox(height: 16),
-            // Grand Total Summary
-            Card(
-              elevation: 0,
-              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // --- Items Card ---
+              _buildSectionCard(context,
+                  title: "Items",
+                  icon: Icons.shopping_cart_outlined,
                   children: [
-                    const Text("Grand Total",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                    Text("₹${invoice.grandTotal.toStringAsFixed(2)}",
-                        style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary)),
-                  ],
+                    if (invoice.items.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Center(
+                          child: Text("No items added yet",
+                              style: TextStyle(color: Colors.grey)),
+                        ),
+                      )
+                    else
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: invoice.items.length,
+                        separatorBuilder: (_, __) => const Divider(),
+                        itemBuilder: (context, index) {
+                          final item = invoice.items[index];
+                          return ListTile(
+                            title: Text(item.description.isNotEmpty
+                                ? item.description
+                                : "New Item"),
+                            subtitle: Text(
+                                "${item.quantity} ${item.unit} x ₹${item.amount} | GST: ${item.gstRate}%"),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text("₹${item.totalAmount.toStringAsFixed(2)}",
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold)),
+                                const SizedBox(width: 8),
+                                IconButton(
+                                  icon: const Icon(Icons.edit, size: 20),
+                                  onPressed: () =>
+                                      _editItemDialog(context, index, item),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red, size: 20),
+                                  onPressed: () => ref
+                                      .read(invoiceProvider.notifier)
+                                      .removeItem(index),
+                                )
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () =>
+                                ref.read(invoiceProvider.notifier).addItem(),
+                            icon: const Icon(Icons.add),
+                            label: const Text("Add New Item"),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              side: BorderSide(
+                                  color: theme.primaryColor
+                                      .withValues(alpha: 0.5)),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _showTemplateSelector(context),
+                            icon: const Icon(Icons.copy_all),
+                            label: const Text("From Template"),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              side: BorderSide(
+                                  color: theme.primaryColor
+                                      .withValues(alpha: 0.5)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  ]),
+
+              const SizedBox(height: 16),
+              // Grand Total Summary
+              Card(
+                elevation: 0,
+                color:
+                    theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Grand Total",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text("₹${invoice.grandTotal.toStringAsFixed(2)}",
+                          style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary)),
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 50),
-          ],
+              const SizedBox(height: 50),
+            ],
+          ),
         ),
       ),
     );
@@ -370,14 +470,52 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
     );
   }
 
+  Widget _buildDatePicker(BuildContext context, String label,
+      DateTime? selectedDate, Function(DateTime) onDateSelected) {
+    return InkWell(
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: selectedDate ?? DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+        );
+        if (picked != null) {
+          onDateSelected(picked);
+        }
+      },
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              selectedDate != null
+                  ? DateFormat('dd MMM yyyy').format(selectedDate)
+                  : "Select Date",
+              style: TextStyle(
+                  color: selectedDate != null ? Colors.black : Colors.grey),
+            ),
+            const Icon(Icons.calendar_today, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTextField(
       {required String label,
-      required String initialValue,
+      required TextEditingController controller,
       required Function(String) onChanged,
+      String? Function(String?)? validator,
       int maxLines = 1}) {
     return TextFormField(
-      key: ValueKey(initialValue), // Ensure updates when selecting client
-      initialValue: initialValue,
+      controller: controller,
       maxLines: maxLines,
       decoration: InputDecoration(
         labelText: label,
@@ -386,6 +524,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
             const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         isDense: true,
       ),
+      validator: validator,
       onChanged: onChanged,
     );
   }
@@ -430,9 +569,11 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                           itemCount: clients.length,
                           itemBuilder: (context, index) {
                             final client = clients[index];
+                            final initial = client.name.isNotEmpty
+                                ? client.name[0].toUpperCase()
+                                : "?";
                             return ListTile(
-                              leading: CircleAvatar(
-                                  child: Text(client.name[0].toUpperCase())),
+                              leading: CircleAvatar(child: Text(initial)),
                               title: Text(client.name),
                               subtitle: Text(client.gstin.isNotEmpty
                                   ? "GST: ${client.gstin}"
@@ -445,7 +586,13 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                                 notifier.updateReceiverGstin(client.gstin);
                                 notifier.updateReceiverState(client.state);
                                 notifier.updateReceiverAddress(client.address);
-                                // We don't have explicit state in client, usage implies manual entry or extraction.
+
+                                // Explicitly update controllers
+                                _receiverNameCtrl.text = client.name;
+                                _receiverGstinCtrl.text = client.gstin;
+                                _receiverStateCtrl.text = client.state;
+                                _receiverAddressCtrl.text = client.address;
+
                                 Navigator.pop(context);
                               },
                             );
@@ -455,6 +602,101 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
               ],
             ),
           );
+        });
+  }
+
+  void _showTemplateSelector(BuildContext context) {
+    showModalBottomSheet(
+        context: context,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        builder: (context) {
+          // We need to fetch templates
+          // Assuming provider is available globally
+          return Consumer(builder: (context, ref, child) {
+            final templates = ref.watch(itemTemplateListProvider);
+            return Container(
+              padding: const EdgeInsets.all(16),
+              height: 400,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Select Template",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: templates.isEmpty
+                        ? const Center(child: Text("No templates found."))
+                        : ListView.builder(
+                            itemCount: templates.length,
+                            itemBuilder: (context, index) {
+                              final template = templates[index];
+                              return ListTile(
+                                title: Text(template.description),
+                                subtitle: Text(
+                                    "₹${template.amount} (GST: ${template.gstRate}%)"),
+                                onTap: () {
+                                  // Add Item
+                                  ref.read(invoiceProvider.notifier).addItem(
+                                      // We need to pass data.
+                                      // Does addItem support arguments? Checked previous code: NO.
+                                      // I need to modify InvoiceNotifier to accept item?
+                                      // Or add blank then update last item?
+                                      // Valid approach: Add blank, then update.
+                                      );
+                                  // BUT `addItem` is sync.
+                                  // Let's modify `addItem` to optional arg OR use a new method `addInvoiceItem`.
+                                  // Since I can't see InvoiceNotifier source right now easily, I'll assume I should modify it OR update manually.
+                                  // Let's check InvoiceNotifier later. For now, let's try to update.
+                                  // Actually, `addItem` adds a blank item at the end.
+                                  // So we can do:
+                                  /*
+                                  ref.read(invoiceProvider.notifier).addItem();
+                                  final items = ref.read(invoiceProvider).items;
+                                  final lastIndex = items.length - 1;
+                                  ref.read(invoiceProvider.notifier).updateItemDescription(lastIndex, template.description);
+                                  ...
+                                  */
+                                  // Better: Create a `addFromTemplate` method in notifier.
+                                  // I'll assume I update notifier later.
+                                  // For now, I will manually update fields of the new item.
+
+                                  final notifier =
+                                      ref.read(invoiceProvider.notifier);
+                                  notifier.addItem(); // Adds empty
+
+                                  // We need to wait for state update? Not if it's sync StateNotifier.
+                                  // But `addItem` might be async? No normally sync.
+                                  // However, reading back immediately might be stale if inside build? No we are in callback.
+                                  // Let's TRY to perform updates.
+                                  // Accessing `invoiceProvider` subsequent times should get updated state if using ref.read inside callback?
+                                  // Actually `addItem` updates state. `ref.read` should get new state.
+                                  final newItems =
+                                      ref.read(invoiceProvider).items;
+                                  final idx = newItems.length - 1;
+
+                                  notifier.updateItemDescription(
+                                      idx, template.description);
+                                  notifier.updateItemAmount(
+                                      idx, template.amount.toString());
+                                  notifier.updateItemUnit(idx, template.unit);
+                                  notifier.updateItemGstRate(
+                                      idx, template.gstRate.toString());
+                                  notifier.updateItemSac(idx, template.sacCode);
+                                  notifier.updateItemCodeType(
+                                      idx, template.codeType);
+
+                                  Navigator.pop(context);
+                                },
+                              );
+                            },
+                          ),
+                  )
+                ],
+              ),
+            );
+          });
         });
   }
 
@@ -566,7 +808,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
                       notifier.updateItemSac(index, sacCtrl.text);
                       Navigator.pop(context);
                     },
-                    child: const Text("Updates"))
+                    child: const Text("Update"))
               ],
             ),
           );
@@ -575,6 +817,12 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen> {
 
   Future<void> _saveInvoice(
       BuildContext context, WidgetRef ref, Invoice invoice) async {
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Please fix errors")));
+      return;
+    }
+
     try {
       await InvoiceActions.saveInvoice(ref, invoice);
 

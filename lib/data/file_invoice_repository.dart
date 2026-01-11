@@ -122,6 +122,15 @@ class FileInvoiceRepository implements InvoiceRepository {
   }
 
   @override
+  Future<void> deleteInvoice(String id) async {
+    final path = await _localPath;
+    final file = File('$path/inv_$id.json');
+    if (await file.exists()) {
+      await file.delete();
+    }
+  }
+
+  @override
   Future<void> deleteAll() async {
     final path = await _localPath;
     final dir = Directory(path);
