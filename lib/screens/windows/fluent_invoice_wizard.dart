@@ -1095,6 +1095,8 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard> {
     final exists = await repository.checkInvoiceExists(_invoiceNo,
         excludeId: widget.invoiceToEdit?.id);
 
+    if (!mounted) return;
+
     if (exists) {
       displayInfoBar(context, builder: (context, close) {
         return InfoBar(

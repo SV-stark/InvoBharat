@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../providers/recurring_provider.dart';
+import 'fluent_recurring_form.dart';
 
 class FluentRecurringScreen extends ConsumerWidget {
   const FluentRecurringScreen({super.key});
@@ -22,6 +23,16 @@ class FluentRecurringScreen extends ConsumerWidget {
               label: const Text('Run Checks'),
               onPressed: () {
                 ref.read(recurringListProvider.notifier).runChecks();
+              },
+            ),
+            CommandBarButton(
+              icon: const Icon(FluentIcons.add),
+              label: const Text('New Recurring'),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    FluentPageRoute(
+                        builder: (context) => const FluentRecurringForm()));
               },
             ),
           ],
