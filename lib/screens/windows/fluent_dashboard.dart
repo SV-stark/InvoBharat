@@ -17,6 +17,7 @@ import '../../models/invoice.dart';
 import '../../models/payment_transaction.dart';
 import 'package:uuid/uuid.dart';
 
+import 'invoice_quick_actions.dart'; // New
 import '../../services/dashboard_actions.dart'; // Re-added
 import '../../services/gstr_import_service.dart';
 import '../../models/recurring_profile.dart'; // New
@@ -331,32 +332,11 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                                   ],
                                 ),
                                 const SizedBox(width: 12),
-                                DropDownButton(
-                                  title: const Icon(FluentIcons.more),
-                                  items: [
-                                    MenuFlyoutItem(
-                                      text: const Text('Mark Paid'),
-                                      leading: Icon(FluentIcons.money,
-                                          color: Colors.green),
-                                      onPressed: inv.balanceDue <= 0
-                                          ? null
-                                          : () => _markAsPaid(context, inv),
-                                    ),
-                                    MenuFlyoutItem(
-                                      text: const Text('Make Recurring'),
-                                      leading: Icon(FluentIcons.repeat_all),
-                                      onPressed: () =>
-                                          _setupRecurring(context, inv),
-                                    ),
-                                    const MenuFlyoutSeparator(),
-                                    MenuFlyoutItem(
-                                      text: const Text('Delete'),
-                                      leading: Icon(FluentIcons.delete,
-                                          color: Colors.red),
-                                      onPressed: () =>
-                                          _deleteInvoice(context, inv),
-                                    ),
-                                  ],
+                                InvoiceQuickActions(
+                                  invoice: inv,
+                                  onDelete: _deleteInvoice,
+                                  onMarkPaid: _markAsPaid,
+                                  onRecurring: _setupRecurring,
                                 ),
                               ],
                             ),
