@@ -686,7 +686,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
         InfoLabel(
           label: "Backup & Restore",
           child: const Text(
-              "Export your data to a JSON file or restore from a previous backup. Note: Logos are not included in the backup file."),
+              "Export your data to a CSV file or restore from a previous backup. Note: Logos and images are not included in the backup file."),
         ),
         const SizedBox(height: 15),
         Row(

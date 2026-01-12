@@ -1,5 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 
 import '../../models/invoice.dart';
 import '../../utils/constants.dart';
@@ -93,170 +94,179 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
 
   @override
   Widget build(BuildContext context) {
-    return ScaffoldPage.scrollable(
-      header: PageHeader(
-        title:
-            Text(widget.estimateId == null ? "New Estimate" : "Edit Estimate"),
-        leading: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: IconButton(
-            icon: const Icon(FluentIcons.back),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
-        commandBar: CommandBar(
-          primaryItems: [
-            if (existingEstimate != null &&
-                existingEstimate!.status != 'Converted')
-              CommandBarButton(
-                icon: const Icon(FluentIcons.switch_widget),
-                label: const Text("Convert to Invoice"),
-                onPressed: _convertToInvoiceUI,
-              ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.save),
-              label: const Text("Save"),
-              onPressed: _saveEstimateUI,
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.escape): () {
+          Navigator.maybePop(context);
+        },
+      },
+      child: ScaffoldPage.scrollable(
+        header: PageHeader(
+          title: Text(
+              widget.estimateId == null ? "New Estimate" : "Edit Estimate"),
+          leading: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: IconButton(
+              icon: const Icon(FluentIcons.back),
+              onPressed: () => Navigator.pop(context),
             ),
-          ],
-        ),
-      ),
-      children: [
-        Expander(
-          header: const Text("Details",
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          initiallyExpanded: true,
-          content: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: AppTextInput(
-                      label: "Estimate No",
-                      controller: estimateNoCtrl,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: InfoLabel(
-                      label: "Date",
-                      child: DatePicker(
-                        selected: date,
-                        onChanged: (d) => setState(() => date = d),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-              const SizedBox(height: 10),
-              AppTextInput(
-                label: "Client Name",
-                controller: receiverNameCtrl,
-              ),
-              const SizedBox(height: 10),
-              AppTextInput(
-                label: "Address",
-                controller: receiverAddressCtrl,
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: AppTextInput(
-                      label: "GSTIN",
-                      controller: receiverGstinCtrl,
-                      validator: Validators.gstin,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: InfoLabel(
-                      label: "State",
-                      child: AutoSuggestBox<String>(
-                        controller: receiverStateCtrl,
-                        items: IndianStates.states
-                            .map((e) =>
-                                AutoSuggestBoxItem<String>(value: e, label: e))
-                            .toList(),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
           ),
-        ),
-        const SizedBox(height: 10),
-        Expander(
-          header: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text("Items",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              Button(
-                onPressed: _addItem,
-                child: const Text("+ Add"),
-              )
-            ],
-          ),
-          initiallyExpanded: true,
-          content: Column(
-            children: [
-              if (items.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text("No items added"),
+          commandBar: CommandBar(
+            primaryItems: [
+              if (existingEstimate != null &&
+                  existingEstimate!.status != 'Converted')
+                CommandBarButton(
+                  icon: const Icon(FluentIcons.switch_widget),
+                  label: const Text("Convert to Invoice"),
+                  onPressed: _convertToInvoiceUI,
                 ),
-              ...items.asMap().entries.map((entry) {
-                final index = entry.key;
-                final item = entry.value;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Card(
-                    child: ListTile(
-                      title: Text(item.description.isEmpty
-                          ? "Item ${index + 1}"
-                          : item.description),
-                      subtitle: Text(
-                          "${item.quantity} x ${item.amount} = ${item.netAmount}"),
-                      trailing: IconButton(
-                        icon: Icon(FluentIcons.delete, color: Colors.red),
-                        onPressed: () => _removeItem(index),
-                      ),
-                      onPressed: () => _editItem(index),
-                    ),
-                  ),
-                );
-              }),
-              const Divider(),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+              CommandBarButton(
+                icon: const Icon(FluentIcons.save),
+                label: const Text("Save"),
+                onPressed: _saveEstimateUI,
+              ),
+            ],
+          ),
+        ),
+        children: [
+          Expander(
+            header: const Text("Details",
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            initiallyExpanded: true,
+            content: Column(
+              children: [
+                Row(
                   children: [
-                    Text(
-                        "Total: ₹${items.fold(0.0, (sum, i) => sum + i.totalAmount).toStringAsFixed(2)}",
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    Expanded(
+                      child: AppTextInput(
+                        label: "Estimate No",
+                        controller: estimateNoCtrl,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: InfoLabel(
+                        label: "Date",
+                        child: DatePicker(
+                          selected: date,
+                          onChanged: (d) => setState(() => date = d),
+                        ),
+                      ),
+                    )
                   ],
                 ),
-              )
-            ],
+                const SizedBox(height: 10),
+                AppTextInput(
+                  label: "Client Name",
+                  controller: receiverNameCtrl,
+                ),
+                const SizedBox(height: 10),
+                AppTextInput(
+                  label: "Address",
+                  controller: receiverAddressCtrl,
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppTextInput(
+                        label: "GSTIN",
+                        controller: receiverGstinCtrl,
+                        validator: Validators.gstin,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: InfoLabel(
+                        label: "State",
+                        child: AutoSuggestBox<String>(
+                          controller: receiverStateCtrl,
+                          items: IndianStates.states
+                              .map((e) => AutoSuggestBoxItem<String>(
+                                  value: e, label: e))
+                              .toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 10),
-        Expander(
-          header: const Text("Additional Info",
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          content: Column(
-            children: [
-              AppTextInput(label: "Notes", controller: notesCtrl, maxLines: 3),
-              const SizedBox(height: 10),
-              AppTextInput(label: "Terms", controller: termsCtrl, maxLines: 3),
-            ],
+          const SizedBox(height: 10),
+          Expander(
+            header: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Items",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Button(
+                  onPressed: _addItem,
+                  child: const Text("+ Add"),
+                )
+              ],
+            ),
+            initiallyExpanded: true,
+            content: Column(
+              children: [
+                if (items.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text("No items added"),
+                  ),
+                ...items.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final item = entry.value;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Card(
+                      child: ListTile(
+                        title: Text(item.description.isEmpty
+                            ? "Item ${index + 1}"
+                            : item.description),
+                        subtitle: Text(
+                            "${item.quantity} x ${item.amount} = ${item.netAmount}"),
+                        trailing: IconButton(
+                          icon: Icon(FluentIcons.delete, color: Colors.red),
+                          onPressed: () => _removeItem(index),
+                        ),
+                        onPressed: () => _editItem(index),
+                      ),
+                    ),
+                  );
+                }),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                          "Total: ₹${items.fold(0.0, (sum, i) => sum + i.totalAmount).toStringAsFixed(2)}",
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
-        )
-      ],
+          const SizedBox(height: 10),
+          Expander(
+            header: const Text("Additional Info",
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            content: Column(
+              children: [
+                AppTextInput(
+                    label: "Notes", controller: notesCtrl, maxLines: 3),
+                const SizedBox(height: 10),
+                AppTextInput(
+                    label: "Terms", controller: termsCtrl, maxLines: 3),
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
 

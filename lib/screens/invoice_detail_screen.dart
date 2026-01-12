@@ -131,6 +131,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             onSelected: (val) {
               if (val == 'recurring') _setupRecurring();
               if (val == 'archive') _toggleArchive();
+              if (val == 'delete') _deleteInvoice();
             },
             itemBuilder: (context) => [
               const PopupMenuItem(
@@ -139,6 +140,10 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                   value: 'archive',
                   child: Text(
                       _invoice.isArchived ? "Unarchive" : "Archive Invoice")),
+              const PopupMenuItem(
+                  value: 'delete',
+                  child: Text("Delete Invoice",
+                      style: TextStyle(color: Colors.red))),
             ],
           ),
         ],
@@ -210,10 +215,18 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                     style: theme.textTheme.titleMedium
                         ?.copyWith(fontWeight: FontWeight.bold)),
                 if (_invoice.balanceDue > 0.1)
-                  OutlinedButton.icon(
-                    onPressed: _recordPayment,
-                    icon: const Icon(Icons.add),
-                    label: const Text("Record Payment"),
+                  Row(
+                    children: [
+                      TextButton(
+                          onPressed: _markAsPaid,
+                          child: const Text("Mark Paid",
+                              style: TextStyle(color: Colors.green))),
+                      OutlinedButton.icon(
+                        onPressed: _recordPayment,
+                        icon: const Icon(Icons.add),
+                        label: const Text("Record Payment"),
+                      ),
+                    ],
                   ),
               ],
             ),
@@ -386,6 +399,56 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
           content: Text(_invoice.isArchived
               ? "Invoice Unarchived"
               : "Invoice Archived")));
+    }
+  }
+
+  void _markAsPaid() async {
+    final payment = PaymentTransaction(
+      id: const Uuid().v4(),
+      invoiceId: _invoice.id!,
+      date: DateTime.now(),
+      amount: _invoice.balanceDue,
+      paymentMode: "Cash",
+      notes: "Marked as paid",
+    );
+
+    final updated = _invoice.copyWith(
+      payments: [..._invoice.payments, payment],
+    );
+    await ref.read(invoiceRepositoryProvider).saveInvoice(updated);
+    _refreshInvoice();
+    ref.invalidate(invoiceListProvider);
+    if (mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Marked as paid")));
+    }
+  }
+
+  void _deleteInvoice() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Delete Invoice?"),
+        content: Text("Are you sure you want to delete ${_invoice.invoiceNo}?"),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text("Cancel")),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text("Delete", style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await ref.read(invoiceRepositoryProvider).deleteInvoice(_invoice.id!);
+      ref.invalidate(invoiceListProvider);
+      if (mounted) {
+        Navigator.pop(context); // Go back to list
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("Invoice deleted")));
+      }
     }
   }
 }
