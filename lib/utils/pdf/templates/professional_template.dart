@@ -255,32 +255,32 @@ class ProfessionalTemplate extends BasePdfTemplate {
                   pw.Text(profile.termsAndConditions,
                       style: const pw.TextStyle(fontSize: 8)),
                 ])),
-            pw.SizedBox(width: 20),
-            buildUpiQr(profile.upiId, profile.upiName, invoice),
-            pw.Column(children: [
-              if (profile.signaturePath != null &&
-                  File(profile.signaturePath!).existsSync())
-                pw.Container(
-                    height: 60, // increased height for stack
-                    width: 100,
-                    child: pw.Stack(alignment: pw.Alignment.center, children: [
-                      if (profile.stampPath != null &&
-                          File(profile.stampPath!).existsSync())
-                        pw.Opacity(
-                            opacity: 0.6,
-                            child: pw.Image(
-                                pw.MemoryImage(
-                                    File(profile.stampPath!).readAsBytesSync()),
-                                width: 80)),
-                      pw.Image(
-                          pw.MemoryImage(
-                              File(profile.signaturePath!).readAsBytesSync()),
-                          fit: pw.BoxFit.contain),
-                    ])),
-              pw.SizedBox(height: 5),
-              pw.Text("Authorized Signatory",
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-            ])
+            pw.Container(
+              margin: const pw.EdgeInsets.symmetric(horizontal: 10),
+              child: buildUpiQr(profile.upiId, profile.upiName, invoice),
+            ),
+            if (profile.signaturePath != null &&
+                File(profile.signaturePath!).existsSync())
+              pw.Container(
+                  height: 60, // increased height for stack
+                  width: 100,
+                  child: pw.Stack(alignment: pw.Alignment.center, children: [
+                    if (profile.stampPath != null &&
+                        File(profile.stampPath!).existsSync())
+                      pw.Opacity(
+                          opacity: 0.6,
+                          child: pw.Image(
+                              pw.MemoryImage(
+                                  File(profile.stampPath!).readAsBytesSync()),
+                              width: 80)),
+                    pw.Image(
+                        pw.MemoryImage(
+                            File(profile.signaturePath!).readAsBytesSync()),
+                        fit: pw.BoxFit.contain),
+                  ])),
+            pw.SizedBox(height: 5),
+            pw.Text("Authorized Signatory",
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
           ])
         ]);
       },

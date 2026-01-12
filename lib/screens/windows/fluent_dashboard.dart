@@ -672,6 +672,18 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     if (!mounted) return;
     final ctx = context;
 
+    if (invoice.id == null) {
+      displayInfoBar(ctx, builder: (context, close) {
+        return InfoBar(
+          title: const Text("Error"),
+          content: const Text("Cannot delete invoice with missing ID"),
+          severity: InfoBarSeverity.error,
+          onClose: close,
+        );
+      });
+      return;
+    }
+
     showDialog(
       context: ctx,
       builder: (dialogCtx) {
@@ -717,6 +729,18 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     if (!mounted) return;
     final ctx = context;
 
+    if (invoice.id == null) {
+      displayInfoBar(ctx, builder: (context, close) {
+        return InfoBar(
+          title: const Text("Error"),
+          content: const Text("Cannot update invoice with missing ID"),
+          severity: InfoBarSeverity.error,
+          onClose: close,
+        );
+      });
+      return;
+    }
+
     final payment = PaymentTransaction(
       id: const Uuid().v4(),
       invoiceId: invoice.id!,
@@ -741,7 +765,10 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     }
   }
 
-  void _setupRecurring(BuildContext context, Invoice invoice) async {
+  void _setupRecurring(BuildContext _, Invoice invoice) async {
+    if (!mounted) return;
+    final ctx = context;
+
     final activeProfileId = ref.read(activeProfileIdProvider);
     if (activeProfileId.isEmpty) return;
 
@@ -749,7 +776,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     DateTime startDate = DateTime.now().add(const Duration(days: 30));
 
     await showDialog(
-      context: context,
+      context: ctx,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setState) => ContentDialog(
           title: const Text("Setup Recurring Invoice"),
