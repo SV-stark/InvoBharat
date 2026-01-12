@@ -51,12 +51,7 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
                         ? null
                         : () {
                             Flyout.of(flyoutContext).close();
-                            // Schedule after flyout closes
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (mounted) {
-                                widget.onMarkPaid(context, widget.invoice);
-                              }
-                            });
+                            widget.onMarkPaid(context, widget.invoice);
                           },
                   ),
                   MenuFlyoutItem(
@@ -64,11 +59,7 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
                     leading: Icon(FluentIcons.repeat_all),
                     onPressed: () {
                       Flyout.of(flyoutContext).close();
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted) {
-                          widget.onRecurring(context, widget.invoice);
-                        }
-                      });
+                      widget.onRecurring(context, widget.invoice);
                     },
                   ),
                   const MenuFlyoutSeparator(),
@@ -77,11 +68,7 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
                     leading: Icon(FluentIcons.delete, color: Colors.red),
                     onPressed: () {
                       Flyout.of(flyoutContext).close();
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted) {
-                          widget.onDelete(context, widget.invoice);
-                        }
-                      });
+                      widget.onDelete(context, widget.invoice);
                     },
                   ),
                 ],

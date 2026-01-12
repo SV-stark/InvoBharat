@@ -332,11 +332,15 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                                   ],
                                 ),
                                 const SizedBox(width: 12),
-                                InvoiceQuickActions(
-                                  invoice: inv,
-                                  onDelete: _deleteInvoice,
-                                  onMarkPaid: _markAsPaid,
-                                  onRecurring: _setupRecurring,
+                                GestureDetector(
+                                  onTap:
+                                      () {}, // Absorb tap to prevent bubbling
+                                  child: InvoiceQuickActions(
+                                    invoice: inv,
+                                    onDelete: _deleteInvoice,
+                                    onMarkPaid: _markAsPaid,
+                                    onRecurring: _setupRecurring,
+                                  ),
                                 ),
                               ],
                             ),
@@ -663,10 +667,14 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     );
   }
 
-  void _deleteInvoice(BuildContext context, Invoice invoice) async {
+  void _deleteInvoice(BuildContext _, Invoice invoice) async {
+    // Use `this.context` directly to ensure proper overlay access
+    if (!mounted) return;
+    final ctx = context;
+
     showDialog(
-      context: context,
-      builder: (context) {
+      context: ctx,
+      builder: (dialogCtx) {
         return ContentDialog(
           title: const Text("Delete Invoice?"),
           content:
@@ -674,21 +682,21 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
           actions: [
             Button(
               child: const Text("Cancel"),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogCtx),
             ),
             FilledButton(
               style: ButtonStyle(
-                  backgroundColor: ButtonState.all(Colors.red),
-                  foregroundColor: ButtonState.all(Colors.white)),
+                  backgroundColor: WidgetStateProperty.all(Colors.red),
+                  foregroundColor: WidgetStateProperty.all(Colors.white)),
               child: const Text("Delete"),
               onPressed: () async {
-                Navigator.pop(context);
+                Navigator.pop(dialogCtx);
                 await ref
                     .read(invoiceRepositoryProvider)
                     .deleteInvoice(invoice.id!);
                 ref.invalidate(invoiceListProvider);
                 if (mounted) {
-                  displayInfoBar(context, builder: (context, close) {
+                  displayInfoBar(ctx, builder: (context, close) {
                     return InfoBar(
                       title: const Text("Deleted"),
                       content: Text("Invoice ${invoice.invoiceNo} deleted"),
@@ -705,7 +713,10 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     );
   }
 
-  void _markAsPaid(BuildContext context, Invoice invoice) async {
+  void _markAsPaid(BuildContext _, Invoice invoice) async {
+    if (!mounted) return;
+    final ctx = context;
+
     final payment = PaymentTransaction(
       id: const Uuid().v4(),
       invoiceId: invoice.id!,
@@ -719,7 +730,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     await ref.read(invoiceRepositoryProvider).saveInvoice(updated);
     ref.invalidate(invoiceListProvider);
     if (mounted) {
-      displayInfoBar(context, builder: (context, close) {
+      displayInfoBar(ctx, builder: (context, close) {
         return InfoBar(
           title: const Text("Success"),
           content: Text("Invoice ${invoice.invoiceNo} marked as paid"),
