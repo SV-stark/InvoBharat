@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
+import 'package:flutter/services.dart';
 
 import '../../models/invoice.dart';
 import '../../models/client.dart';
@@ -63,36 +64,50 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
   Widget build(BuildContext context) {
     final invoice = ref.watch(invoiceProvider);
 
-    return ScaffoldPage.scrollable(
-      header: PageHeader(
-        title:
-            Text(widget.invoiceToEdit == null ? 'New Invoice' : 'Edit Invoice'),
-        commandBar: CommandBar(
-          primaryItems: [
-            CommandBarButton(
-              icon: const Icon(FluentIcons.print),
-              label: const Text("Preview PDF"),
-              onPressed: () => _showPreviewDialog(invoice),
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.escape): () {
+          Navigator.maybePop(context);
+        },
+      },
+      child: ScaffoldPage.scrollable(
+        header: PageHeader(
+          leading: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: IconButton(
+              icon: const Icon(FluentIcons.back),
+              onPressed: () => Navigator.maybePop(context),
             ),
-            CommandBarButton(
-              icon: const Icon(FluentIcons.save),
-              label: const Text("Save Invoice"),
-              onPressed: () => _saveInvoice(invoice),
-            ),
-          ],
+          ),
+          title: Text(
+              widget.invoiceToEdit == null ? 'New Invoice' : 'Edit Invoice'),
+          commandBar: CommandBar(
+            primaryItems: [
+              CommandBarButton(
+                icon: const Icon(FluentIcons.print),
+                label: const Text("Preview PDF"),
+                onPressed: () => _showPreviewDialog(invoice),
+              ),
+              CommandBarButton(
+                icon: const Icon(FluentIcons.save),
+                label: const Text("Save Invoice"),
+                onPressed: () => _saveInvoice(invoice),
+              ),
+            ],
+          ),
         ),
+        children: [
+          _buildDetailsSection(),
+          const SizedBox(height: 20),
+          const Divider(),
+          const SizedBox(height: 20),
+          _buildItemsSection(),
+          const SizedBox(height: 20),
+          const Divider(),
+          const SizedBox(height: 20),
+          _buildFooterSection(),
+        ],
       ),
-      children: [
-        _buildDetailsSection(),
-        const SizedBox(height: 20),
-        const Divider(),
-        const SizedBox(height: 20),
-        _buildItemsSection(),
-        const SizedBox(height: 20),
-        const Divider(),
-        const SizedBox(height: 20),
-        _buildFooterSection(),
-      ],
     );
   }
 

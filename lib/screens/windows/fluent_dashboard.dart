@@ -19,6 +19,8 @@ import 'package:uuid/uuid.dart';
 
 import '../../services/dashboard_actions.dart'; // Re-added
 import '../../services/gstr_import_service.dart';
+import '../../models/recurring_profile.dart'; // New
+import '../../providers/recurring_provider.dart'; // New
 
 class FluentDashboard extends ConsumerStatefulWidget {
   const FluentDashboard({super.key});
@@ -314,15 +316,48 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                                     fontWeight: FontWeight.bold)),
                             subtitle: Text(
                                 "${inv.invoiceNo} • ${DateFormat('dd MMM yyyy').format(inv.invoiceDate)}"),
-                            trailing: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(currency.format(inv.grandTotal),
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14)),
-                                _buildStatusBadge(inv),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(currency.format(inv.grandTotal),
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14)),
+                                    _buildStatusBadge(inv),
+                                  ],
+                                ),
+                                const SizedBox(width: 12),
+                                DropDownButton(
+                                  title: const Icon(FluentIcons.more),
+                                  items: [
+                                    MenuFlyoutItem(
+                                      text: const Text('Mark Paid'),
+                                      leading: Icon(FluentIcons.money,
+                                          color: Colors.green),
+                                      onPressed: inv.balanceDue <= 0
+                                          ? null
+                                          : () => _markAsPaid(context, inv),
+                                    ),
+                                    MenuFlyoutItem(
+                                      text: const Text('Make Recurring'),
+                                      leading: Icon(FluentIcons.repeat_all),
+                                      onPressed: () =>
+                                          _setupRecurring(context, inv),
+                                    ),
+                                    const MenuFlyoutSeparator(),
+                                    MenuFlyoutItem(
+                                      text: const Text('Delete'),
+                                      leading: Icon(FluentIcons.delete,
+                                          color: Colors.red),
+                                      onPressed: () =>
+                                          _deleteInvoice(context, inv),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                             onPressed: () async {
@@ -645,6 +680,157 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 .format(amount),
             style: style),
       ],
+    );
+  }
+
+  void _deleteInvoice(BuildContext context, Invoice invoice) async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return ContentDialog(
+          title: const Text("Delete Invoice?"),
+          content:
+              Text("Are you sure you want to delete ${invoice.invoiceNo}?"),
+          actions: [
+            Button(
+              child: const Text("Cancel"),
+              onPressed: () => Navigator.pop(context),
+            ),
+            FilledButton(
+              style: ButtonStyle(
+                  backgroundColor: ButtonState.all(Colors.red),
+                  foregroundColor: ButtonState.all(Colors.white)),
+              child: const Text("Delete"),
+              onPressed: () async {
+                Navigator.pop(context);
+                await ref
+                    .read(invoiceRepositoryProvider)
+                    .deleteInvoice(invoice.id!);
+                ref.invalidate(invoiceListProvider);
+                if (mounted) {
+                  displayInfoBar(context, builder: (context, close) {
+                    return InfoBar(
+                      title: const Text("Deleted"),
+                      content: Text("Invoice ${invoice.invoiceNo} deleted"),
+                      severity: InfoBarSeverity.success,
+                      onClose: close,
+                    );
+                  });
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _markAsPaid(BuildContext context, Invoice invoice) async {
+    final payment = PaymentTransaction(
+      id: const Uuid().v4(),
+      invoiceId: invoice.id!,
+      date: DateTime.now(),
+      amount: invoice.balanceDue,
+      paymentMode: "Cash",
+      notes: "Quick marked as paid",
+    );
+
+    final updated = invoice.copyWith(payments: [...invoice.payments, payment]);
+    await ref.read(invoiceRepositoryProvider).saveInvoice(updated);
+    ref.invalidate(invoiceListProvider);
+    if (mounted) {
+      displayInfoBar(context, builder: (context, close) {
+        return InfoBar(
+          title: const Text("Success"),
+          content: Text("Invoice ${invoice.invoiceNo} marked as paid"),
+          severity: InfoBarSeverity.success,
+          onClose: close,
+        );
+      });
+    }
+  }
+
+  void _setupRecurring(BuildContext context, Invoice invoice) async {
+    final activeProfileId = ref.read(activeProfileIdProvider);
+    if (activeProfileId.isEmpty) return;
+
+    RecurringInterval interval = RecurringInterval.monthly;
+    DateTime startDate = DateTime.now().add(const Duration(days: 30));
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) => ContentDialog(
+          title: const Text("Setup Recurring Invoice"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              InfoLabel(
+                label: "Interval",
+                child: ComboBox<RecurringInterval>(
+                  value: interval,
+                  items: RecurringInterval.values
+                      .map((e) => ComboBoxItem(
+                          value: e, child: Text(e.name.toUpperCase())))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => interval = val);
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+              InfoLabel(
+                label: "Next Run Date",
+                child: DatePicker(
+                  selected: startDate,
+                  onChanged: (d) => setState(() => startDate = d),
+                  startDate: DateTime.now(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            Button(
+              child: const Text("Cancel"),
+              onPressed: () => Navigator.pop(dialogContext),
+            ),
+            FilledButton(
+              child: const Text("Save"),
+              onPressed: () async {
+                final base = invoice.copyWith(
+                    payments: [],
+                    id: null,
+                    invoiceNo: '',
+                    invoiceDate: DateTime.now()); // Template
+                final profile = RecurringProfile(
+                  id: const Uuid().v4(),
+                  profileId: activeProfileId,
+                  interval: interval,
+                  nextRunDate: startDate,
+                  baseInvoice: base,
+                );
+
+                await ref
+                    .read(recurringListProvider.notifier)
+                    .addProfile(profile);
+                Navigator.pop(dialogContext);
+
+                if (mounted) {
+                  displayInfoBar(context, builder: (context, close) {
+                    return InfoBar(
+                      title: const Text("Success"),
+                      content: const Text("Recurring Profile Created"),
+                      severity: InfoBarSeverity.success,
+                      onClose: close,
+                    );
+                  });
+                }
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
