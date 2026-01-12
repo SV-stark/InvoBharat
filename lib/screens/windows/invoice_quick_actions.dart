@@ -30,9 +30,6 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
 
   @override
   Widget build(BuildContext context) {
-    // Capture context for callbacks
-    final parentContext = context;
-
     return FlyoutTarget(
       controller: _controller,
       child: IconButton(
@@ -44,7 +41,7 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
             ),
             barrierDismissible: true,
             dismissOnPointerMoveAway: false,
-            builder: (context) {
+            builder: (flyoutContext) {
               return MenuFlyout(
                 items: [
                   MenuFlyoutItem(
@@ -53,16 +50,25 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
                     onPressed: widget.invoice.balanceDue <= 0
                         ? null
                         : () {
-                            Flyout.of(context).close();
-                            widget.onMarkPaid(parentContext, widget.invoice);
+                            Flyout.of(flyoutContext).close();
+                            // Schedule after flyout closes
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (mounted) {
+                                widget.onMarkPaid(context, widget.invoice);
+                              }
+                            });
                           },
                   ),
                   MenuFlyoutItem(
                     text: const Text('Make Recurring'),
                     leading: Icon(FluentIcons.repeat_all),
                     onPressed: () {
-                      Flyout.of(context).close();
-                      widget.onRecurring(parentContext, widget.invoice);
+                      Flyout.of(flyoutContext).close();
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          widget.onRecurring(context, widget.invoice);
+                        }
+                      });
                     },
                   ),
                   const MenuFlyoutSeparator(),
@@ -70,8 +76,12 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
                     text: const Text('Delete'),
                     leading: Icon(FluentIcons.delete, color: Colors.red),
                     onPressed: () {
-                      Flyout.of(context).close();
-                      widget.onDelete(parentContext, widget.invoice);
+                      Flyout.of(flyoutContext).close();
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          widget.onDelete(context, widget.invoice);
+                        }
+                      });
                     },
                   ),
                 ],
