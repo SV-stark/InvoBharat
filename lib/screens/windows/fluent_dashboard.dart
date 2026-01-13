@@ -22,6 +22,7 @@ import '../../services/dashboard_actions.dart'; // Re-added
 import '../../services/gstr_import_service.dart';
 import '../../models/recurring_profile.dart'; // New
 import '../../providers/recurring_provider.dart'; // New
+import '../../widgets/dialogs/payment_dialog.dart'; // New Payment Dialog
 
 class FluentDashboard extends ConsumerStatefulWidget {
   const FluentDashboard({super.key});
@@ -60,7 +61,10 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 "Invoices",
                 "Challans",
                 "Credit Notes",
-                "Debit Notes"
+                "Debit Notes",
+                "Fully Paid", // New Filter
+                "Partially Paid", // New Filter
+                "Overdue" // New Filter
               ].map((e) => ComboBoxItem(value: e, child: Text(e))).toList(),
               onChanged: (v) {
                 if (v != null) setState(() => _selectedType = v);
@@ -110,6 +114,12 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                   return inv.type == InvoiceType.creditNote;
                 } else if (_selectedType == "Debit Notes") {
                   return inv.type == InvoiceType.debitNote;
+                } else if (_selectedType == "Fully Paid") {
+                  return inv.paymentStatus == "Paid";
+                } else if (_selectedType == "Partially Paid") {
+                  return inv.paymentStatus == "Partial";
+                } else if (_selectedType == "Overdue") {
+                  return inv.paymentStatus == "Overdue";
                 }
                 return true;
               }).toList();
@@ -213,12 +223,19 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildStatCard(
-                        context,
-                        "Received",
-                        currency.format(paymentsReceived),
-                        FluentIcons.check_mark,
-                        Colors.green,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedType = "Fully Paid";
+                          });
+                        },
+                        child: _buildStatCard(
+                          context,
+                          "Received",
+                          currency.format(paymentsReceived),
+                          FluentIcons.check_mark,
+                          Colors.green,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -371,14 +388,19 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     // Invoice model in read_file output didn't show payment logic detail, but let's assume unpaid/default for now
     // or use due date.
 
-    final isOverdue = invoice.dueDate.isBefore(DateTime.now());
-    // final isPaid = invoice.balance <= 0; // If balance exists
+    final status = invoice.paymentStatus;
 
     // Fallback: Just display date relative
     String text = "Due on ${DateFormat('MMM dd').format(invoice.dueDate)}";
     Color color = Colors.orange;
 
-    if (isOverdue) {
+    if (status == 'Paid') {
+      text = "Paid";
+      color = Colors.green;
+    } else if (status == 'Partial') {
+      text = "Partial";
+      color = Colors.blue;
+    } else if (status == 'Overdue') {
       text = "Overdue";
       color = Colors.red;
     }
@@ -741,28 +763,39 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
       return;
     }
 
-    final payment = PaymentTransaction(
-      id: const Uuid().v4(),
-      invoiceId: invoice.id!,
-      date: DateTime.now(),
-      amount: invoice.balanceDue,
-      paymentMode: "Cash",
-      notes: "Quick marked as paid",
-    );
+    await showDialog(
+      context: ctx,
+      builder: (dialogCtx) => PaymentDialog(
+        balanceDue: invoice.balanceDue,
+        currencySymbol: ref.read(businessProfileProvider).currencySymbol,
+        onConfirm: (amount, date, mode, notes) async {
+          final payment = PaymentTransaction(
+            id: const Uuid().v4(),
+            invoiceId: invoice.id!,
+            date: date,
+            amount: amount,
+            paymentMode: mode,
+            notes: notes,
+          );
 
-    final updated = invoice.copyWith(payments: [...invoice.payments, payment]);
-    await ref.read(invoiceRepositoryProvider).saveInvoice(updated);
-    ref.invalidate(invoiceListProvider);
-    if (mounted) {
-      displayInfoBar(ctx, builder: (context, close) {
-        return InfoBar(
-          title: const Text("Success"),
-          content: Text("Invoice ${invoice.invoiceNo} marked as paid"),
-          severity: InfoBarSeverity.success,
-          onClose: close,
-        );
-      });
-    }
+          final updated =
+              invoice.copyWith(payments: [...invoice.payments, payment]);
+          await ref.read(invoiceRepositoryProvider).saveInvoice(updated);
+          ref.invalidate(invoiceListProvider);
+          if (mounted) {
+            displayInfoBar(ctx, builder: (context, close) {
+              return InfoBar(
+                title: const Text("Success"),
+                content: Text(
+                    "Recorded payment of $amount for ${invoice.invoiceNo}"),
+                severity: InfoBarSeverity.success,
+                onClose: close,
+              );
+            });
+          }
+        },
+      ),
+    );
   }
 
   void _setupRecurring(BuildContext _, Invoice invoice) async {
