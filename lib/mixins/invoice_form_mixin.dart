@@ -26,6 +26,7 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   // Let's add delivery address controller too.
   late TextEditingController deliveryAddressCtrl;
   late TextEditingController paymentTermsCtrl;
+  late TextEditingController originalInvoiceNoCtrl;
 
   void initInvoiceControllers([Invoice? invoice]) {
     invoiceNoCtrl = TextEditingController(text: invoice?.invoiceNo);
@@ -37,6 +38,8 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
         TextEditingController(text: invoice?.receiver.address);
     deliveryAddressCtrl = TextEditingController(text: invoice?.deliveryAddress);
     paymentTermsCtrl = TextEditingController(text: invoice?.paymentTerms);
+    originalInvoiceNoCtrl =
+        TextEditingController(text: invoice?.originalInvoiceNumber);
   }
 
   void disposeInvoiceControllers() {
@@ -48,6 +51,7 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     receiverAddressCtrl.dispose();
     deliveryAddressCtrl.dispose();
     paymentTermsCtrl.dispose();
+    originalInvoiceNoCtrl.dispose();
   }
 
   /// Syncs controllers with provider state.
@@ -76,6 +80,9 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     }
     if (paymentTermsCtrl.text != invoice.paymentTerms) {
       paymentTermsCtrl.text = invoice.paymentTerms;
+    }
+    if (originalInvoiceNoCtrl.text != (invoice.originalInvoiceNumber ?? '')) {
+      originalInvoiceNoCtrl.text = invoice.originalInvoiceNumber ?? '';
     }
   }
 

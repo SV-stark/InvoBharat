@@ -8,10 +8,20 @@ import 'pdf/templates/modern_template.dart';
 import 'pdf/templates/professional_template.dart';
 import 'pdf/templates/minimal_template.dart';
 
+import 'package:pdf/widgets.dart' as pw;
+
 Future<Uint8List> generateInvoicePdf(Invoice invoice, BusinessProfile profile,
     {String? title}) async {
-  final font = await PdfGoogleFonts.notoSansRegular();
-  final fontBold = await PdfGoogleFonts.notoSansBold();
+  pw.Font font;
+  pw.Font fontBold;
+  try {
+    font = await PdfGoogleFonts.notoSansRegular();
+    fontBold = await PdfGoogleFonts.notoSansBold();
+  } catch (e) {
+    // Fallback if offline or error
+    font = pw.Font.helvetica();
+    fontBold = pw.Font.helveticaBold();
+  }
 
   InvoiceTemplate template;
   switch (invoice.style) {

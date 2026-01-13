@@ -83,11 +83,6 @@ class AppDatabase extends _$AppDatabase {
   }
 }
 
-class BusinessProfileHelper {
-  // Helper to extract basic info from JSON without full model import if needed,
-  // but we can just import models/business_profile.dart if not cyclic.
-}
-
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();

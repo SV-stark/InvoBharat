@@ -6,7 +6,8 @@ part of 'invoice.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_Invoice _$InvoiceFromJson(Map<String, dynamic> json) => _Invoice(
+_$InvoiceImpl _$$InvoiceImplFromJson(Map<String, dynamic> json) =>
+    _$InvoiceImpl(
       id: json['id'] as String?,
       style: json['style'] as String? ?? 'Modern',
       supplier: Supplier.fromJson(json['supplier'] as Map<String, dynamic>),
@@ -45,7 +46,8 @@ _Invoice _$InvoiceFromJson(Map<String, dynamic> json) => _Invoice(
           : DateTime.parse(json['originalInvoiceDate'] as String),
     );
 
-Map<String, dynamic> _$InvoiceToJson(_Invoice instance) => <String, dynamic>{
+Map<String, dynamic> _$$InvoiceImplToJson(_$InvoiceImpl instance) =>
+    <String, dynamic>{
       'id': instance.id,
       'style': instance.style,
       'supplier': instance.supplier,
@@ -79,7 +81,8 @@ const _$InvoiceTypeEnumMap = {
   InvoiceType.debitNote: 'debitNote',
 };
 
-_Supplier _$SupplierFromJson(Map<String, dynamic> json) => _Supplier(
+_$SupplierImpl _$$SupplierImplFromJson(Map<String, dynamic> json) =>
+    _$SupplierImpl(
       name: json['name'] as String? ?? '',
       address: json['address'] as String? ?? '',
       gstin: json['gstin'] as String? ?? '',
@@ -89,7 +92,8 @@ _Supplier _$SupplierFromJson(Map<String, dynamic> json) => _Supplier(
       state: json['state'] as String? ?? '',
     );
 
-Map<String, dynamic> _$SupplierToJson(_Supplier instance) => <String, dynamic>{
+Map<String, dynamic> _$$SupplierImplToJson(_$SupplierImpl instance) =>
+    <String, dynamic>{
       'name': instance.name,
       'address': instance.address,
       'gstin': instance.gstin,
@@ -99,7 +103,8 @@ Map<String, dynamic> _$SupplierToJson(_Supplier instance) => <String, dynamic>{
       'state': instance.state,
     };
 
-_Receiver _$ReceiverFromJson(Map<String, dynamic> json) => _Receiver(
+_$ReceiverImpl _$$ReceiverImplFromJson(Map<String, dynamic> json) =>
+    _$ReceiverImpl(
       name: json['name'] as String? ?? '',
       address: json['address'] as String? ?? '',
       gstin: json['gstin'] as String? ?? '',
@@ -109,7 +114,8 @@ _Receiver _$ReceiverFromJson(Map<String, dynamic> json) => _Receiver(
       email: json['email'] as String? ?? '',
     );
 
-Map<String, dynamic> _$ReceiverToJson(_Receiver instance) => <String, dynamic>{
+Map<String, dynamic> _$$ReceiverImplToJson(_$ReceiverImpl instance) =>
+    <String, dynamic>{
       'name': instance.name,
       'address': instance.address,
       'gstin': instance.gstin,
@@ -119,7 +125,8 @@ Map<String, dynamic> _$ReceiverToJson(_Receiver instance) => <String, dynamic>{
       'email': instance.email,
     };
 
-_InvoiceItem _$InvoiceItemFromJson(Map<String, dynamic> json) => _InvoiceItem(
+_$InvoiceItemImpl _$$InvoiceItemImplFromJson(Map<String, dynamic> json) =>
+    _$InvoiceItemImpl(
       id: json['id'] as String?,
       description: json['description'] as String? ?? '',
       sacCode: json['sacCode'] as String? ?? '',
@@ -132,7 +139,7 @@ _InvoiceItem _$InvoiceItemFromJson(Map<String, dynamic> json) => _InvoiceItem(
       gstRate: (json['gstRate'] as num?)?.toDouble() ?? 18.0,
     );
 
-Map<String, dynamic> _$InvoiceItemToJson(_InvoiceItem instance) =>
+Map<String, dynamic> _$$InvoiceItemImplToJson(_$InvoiceItemImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'description': instance.description,

@@ -257,7 +257,8 @@ class ProfessionalTemplate extends BasePdfTemplate {
                 ])),
             pw.Container(
               margin: const pw.EdgeInsets.symmetric(horizontal: 10),
-              child: buildUpiQr(profile.upiId, profile.upiName, invoice),
+              child: buildUpiQr(profile.upiId, profile.upiName, invoice,
+                  profile.currencySymbol),
             ),
             if (profile.signaturePath != null &&
                 File(profile.signaturePath!).existsSync())

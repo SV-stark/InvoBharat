@@ -6,6 +6,8 @@ class InvoiceQuickActions extends StatefulWidget {
   final Function(BuildContext, Invoice) onDelete;
   final Function(BuildContext, Invoice) onMarkPaid;
   final Function(BuildContext, Invoice) onRecurring;
+  final Function(BuildContext, Invoice) onDuplicate; // New
+  final Function(BuildContext, Invoice) onEmail; // New
 
   const InvoiceQuickActions({
     super.key,
@@ -13,6 +15,8 @@ class InvoiceQuickActions extends StatefulWidget {
     required this.onDelete,
     required this.onMarkPaid,
     required this.onRecurring,
+    required this.onDuplicate, // New
+    required this.onEmail, // New
   });
 
   @override
@@ -60,6 +64,22 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
                     onPressed: () {
                       Flyout.of(flyoutContext).close();
                       widget.onRecurring(context, widget.invoice);
+                    },
+                  ),
+                  MenuFlyoutItem(
+                    text: const Text('Duplicate'),
+                    leading: Icon(FluentIcons.copy),
+                    onPressed: () {
+                      Flyout.of(flyoutContext).close();
+                      widget.onDuplicate(context, widget.invoice);
+                    },
+                  ),
+                  MenuFlyoutItem(
+                    text: const Text('Email'),
+                    leading: Icon(FluentIcons.mail),
+                    onPressed: () {
+                      Flyout.of(flyoutContext).close();
+                      widget.onEmail(context, widget.invoice);
                     },
                   ),
                   const MenuFlyoutSeparator(),

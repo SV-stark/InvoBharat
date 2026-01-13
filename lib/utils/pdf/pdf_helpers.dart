@@ -18,8 +18,15 @@ String getCurrencyName(String symbol) {
   }
 }
 
-pw.Widget buildUpiQr(String? upiId, String? upiName, Invoice invoice) {
+pw.Widget buildUpiQr(
+    String? upiId, String? upiName, Invoice invoice, String currencySymbol) {
   if (upiId == null || upiId.isEmpty) return pw.Container();
+  // Only show QR for INR
+  if (currencySymbol != '₹' &&
+      currencySymbol != 'Rs' &&
+      currencySymbol != 'INR') {
+    return pw.Container();
+  }
 
   final upiUrl =
       "upi://pay?pa=$upiId&pn=${Uri.encodeComponent(upiName ?? '')}&am=${invoice.grandTotal.toStringAsFixed(2)}&tn=${Uri.encodeComponent('Inv ${invoice.invoiceNo}')}&cu=INR";

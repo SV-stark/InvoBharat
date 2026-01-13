@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/client.dart';
 import '../providers/client_form_provider.dart';
 import '../widgets/adaptive_widgets.dart';
+import '../utils/validators.dart';
 
 class ClientFormDialog extends ConsumerStatefulWidget {
   final Client? client;
@@ -165,6 +166,7 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
                     child: AppTextInput(
                       label: 'Email',
                       controller: _emailController,
+                      validator: Validators.email,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -172,6 +174,7 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
                     child: AppTextInput(
                       label: 'Phone',
                       controller: _phoneController,
+                      validator: Validators.phone,
                     ),
                   ),
                 ],
