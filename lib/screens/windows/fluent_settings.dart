@@ -14,6 +14,10 @@ import '../../providers/invoice_repository_provider.dart'; // NEW
 import '../../utils/constants.dart';
 import '../../utils/validators.dart';
 import '../../services/backup_service.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:image_background_remover/image_background_remover.dart';
+import 'package:path/path.dart' as p;
+import 'dart:ui' as ui;
 
 class FluentSettings extends ConsumerStatefulWidget {
   const FluentSettings({super.key});
@@ -298,10 +302,48 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                             final XFile? image = await picker.pickImage(
                                 source: ImageSource.gallery);
                             if (image != null) {
-                              ref
-                                  .read(businessProfileNotifierProvider)
-                                  .updateProfile(profile.copyWith(
-                                      signaturePath: image.path));
+                              try {
+                                final imageBytes = await image.readAsBytes();
+                                final processedImage = await BackgroundRemover
+                                    .instance
+                                    .removeBg(imageBytes);
+                                final byteData = await processedImage
+                                    .toByteData(format: ui.ImageByteFormat.png);
+                                final processedBytes =
+                                    byteData!.buffer.asUint8List();
+
+                                final appDir =
+                                    await getApplicationDocumentsDirectory();
+                                final fileName = 'sig_${const Uuid().v4()}.png';
+                                final savedFile =
+                                    File(p.join(appDir.path, fileName));
+                                await savedFile.writeAsBytes(processedBytes);
+
+                                ref
+                                    .read(businessProfileNotifierProvider)
+                                    .updateProfile(profile.copyWith(
+                                        signaturePath: savedFile.path));
+                              } catch (e) {
+                                if (context.mounted) {
+                                  displayInfoBar(context,
+                                      builder: (context, close) {
+                                    return InfoBar(
+                                      title: const Text(
+                                          'Background Removal Failed'),
+                                      content: Text(e.toString()),
+                                      severity: InfoBarSeverity.error,
+                                      action: IconButton(
+                                        icon: const Icon(FluentIcons.clear),
+                                        onPressed: close,
+                                      ),
+                                    );
+                                  });
+                                }
+                                ref
+                                    .read(businessProfileNotifierProvider)
+                                    .updateProfile(profile.copyWith(
+                                        signaturePath: image.path));
+                              }
                             }
                           },
                         ),
@@ -361,10 +403,49 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                             final XFile? image = await picker.pickImage(
                                 source: ImageSource.gallery);
                             if (image != null) {
-                              ref
-                                  .read(businessProfileNotifierProvider)
-                                  .updateProfile(
-                                      profile.copyWith(stampPath: image.path));
+                              try {
+                                final imageBytes = await image.readAsBytes();
+                                final processedImage = await BackgroundRemover
+                                    .instance
+                                    .removeBg(imageBytes);
+                                final byteData = await processedImage
+                                    .toByteData(format: ui.ImageByteFormat.png);
+                                final processedBytes =
+                                    byteData!.buffer.asUint8List();
+
+                                final appDir =
+                                    await getApplicationDocumentsDirectory();
+                                final fileName =
+                                    'stamp_${const Uuid().v4()}.png';
+                                final savedFile =
+                                    File(p.join(appDir.path, fileName));
+                                await savedFile.writeAsBytes(processedBytes);
+
+                                ref
+                                    .read(businessProfileNotifierProvider)
+                                    .updateProfile(profile.copyWith(
+                                        stampPath: savedFile.path));
+                              } catch (e) {
+                                if (context.mounted) {
+                                  displayInfoBar(context,
+                                      builder: (context, close) {
+                                    return InfoBar(
+                                      title: const Text(
+                                          'Background Removal Failed'),
+                                      content: Text(e.toString()),
+                                      severity: InfoBarSeverity.error,
+                                      action: IconButton(
+                                        icon: const Icon(FluentIcons.clear),
+                                        onPressed: close,
+                                      ),
+                                    );
+                                  });
+                                }
+                                ref
+                                    .read(businessProfileNotifierProvider)
+                                    .updateProfile(profile.copyWith(
+                                        stampPath: image.path));
+                              }
                             }
                           },
                         ),
