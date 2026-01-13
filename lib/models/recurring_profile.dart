@@ -9,6 +9,7 @@ class RecurringProfile {
   final DateTime nextRunDate;
   final DateTime? lastRunDate;
   final bool isActive;
+  final int? dueDays; // NEW: Days until due from invoice date
   final Invoice baseInvoice; // Template data
 
   const RecurringProfile({
@@ -18,6 +19,7 @@ class RecurringProfile {
     required this.nextRunDate,
     this.lastRunDate,
     this.isActive = true,
+    this.dueDays,
     required this.baseInvoice,
   });
 
@@ -28,6 +30,7 @@ class RecurringProfile {
     DateTime? nextRunDate,
     DateTime? lastRunDate,
     bool? isActive,
+    int? dueDays,
     Invoice? baseInvoice,
   }) {
     return RecurringProfile(
@@ -37,6 +40,7 @@ class RecurringProfile {
       nextRunDate: nextRunDate ?? this.nextRunDate,
       lastRunDate: lastRunDate ?? this.lastRunDate,
       isActive: isActive ?? this.isActive,
+      dueDays: dueDays ?? this.dueDays,
       baseInvoice: baseInvoice ?? this.baseInvoice,
     );
   }
@@ -49,6 +53,7 @@ class RecurringProfile {
       'nextRunDate': nextRunDate.toIso8601String(),
       'lastRunDate': lastRunDate?.toIso8601String(),
       'isActive': isActive,
+      'dueDays': dueDays,
       'baseInvoice': baseInvoice.toJson(),
     };
   }
@@ -63,6 +68,7 @@ class RecurringProfile {
           ? DateTime.parse(json['lastRunDate'])
           : null,
       isActive: json['isActive'] ?? true,
+      dueDays: json['dueDays'],
       baseInvoice: Invoice.fromJson(json['baseInvoice']),
     );
   }

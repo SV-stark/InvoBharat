@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/business_profile_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
@@ -8,8 +9,7 @@ import '../models/payment_transaction.dart';
 import '../models/recurring_profile.dart'; // New
 import '../providers/invoice_repository_provider.dart';
 import '../providers/recurring_provider.dart'; // New
-import '../providers/business_profile_provider.dart'; // New
-import 'package:url_launcher/url_launcher.dart'; // New
+import 'package:url_launcher/url_launcher.dart';
 import 'package:printing/printing.dart';
 
 import 'windows/fluent_invoice_wizard.dart';
@@ -329,7 +329,8 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             children: [
               DropdownButtonFormField<RecurringInterval>(
                 key: ValueKey(interval),
-                initialValue: interval,
+                initialValue:
+                    interval, // Reverted to initialValue (value is deprecated)
                 decoration: const InputDecoration(labelText: "Interval"),
                 items: RecurringInterval.values
                     .map((e) => DropdownMenuItem(
@@ -396,9 +397,9 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     ref.invalidate(invoiceListProvider); // Refresh list
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(_invoice.isArchived
-              ? "Invoice Unarchived"
-              : "Invoice Archived")));
+          content: Text(updated.isArchived // Fixed: Use updated state
+              ? "Invoice Archived"
+              : "Invoice Unarchived")));
     }
   }
 
@@ -453,17 +454,17 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
   }
 }
 
-class _PaymentDialog extends StatefulWidget {
+class _PaymentDialog extends ConsumerStatefulWidget {
   final String invoiceId;
   final double balanceDue;
 
   const _PaymentDialog({required this.invoiceId, required this.balanceDue});
 
   @override
-  State<_PaymentDialog> createState() => _PaymentDialogState();
+  ConsumerState<_PaymentDialog> createState() => _PaymentDialogState();
 }
 
-class _PaymentDialogState extends State<_PaymentDialog> {
+class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
   final _amountCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
   String _mode = 'Cash';
@@ -477,6 +478,7 @@ class _PaymentDialogState extends State<_PaymentDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final currency = ref.watch(businessProfileProvider).currencySymbol; // NEW
     return AlertDialog(
       title: const Text("Record Payment"),
       content: SingleChildScrollView(
@@ -485,14 +487,14 @@ class _PaymentDialogState extends State<_PaymentDialog> {
           children: [
             TextField(
               controller: _amountCtrl,
-              decoration:
-                  const InputDecoration(labelText: "Amount", prefixText: "₹"),
+              decoration: InputDecoration(
+                  labelText: "Amount", prefixText: currency), // Fixed
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               key: ValueKey(_mode),
-              initialValue: _mode,
+              initialValue: _mode, // Reverted
               decoration: const InputDecoration(labelText: "Payment Mode"),
               items: ['Cash', 'UPI', 'Bank Transfer', 'Cheque']
                   .map((e) => DropdownMenuItem(value: e, child: Text(e)))

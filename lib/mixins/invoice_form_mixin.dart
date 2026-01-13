@@ -18,6 +18,7 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   late TextEditingController posCtrl;
   late TextEditingController receiverNameCtrl;
   late TextEditingController receiverGstinCtrl;
+  late TextEditingController receiverEmailCtrl; // NEW
   late TextEditingController receiverStateCtrl;
   late TextEditingController
       receiverAddressCtrl; // Note: In some forms this might be delivery address too?
@@ -33,6 +34,8 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     posCtrl = TextEditingController(text: invoice?.placeOfSupply);
     receiverNameCtrl = TextEditingController(text: invoice?.receiver.name);
     receiverGstinCtrl = TextEditingController(text: invoice?.receiver.gstin);
+    receiverEmailCtrl =
+        TextEditingController(text: invoice?.receiver.email); // NEW
     receiverStateCtrl = TextEditingController(text: invoice?.receiver.state);
     receiverAddressCtrl =
         TextEditingController(text: invoice?.receiver.address);
@@ -47,6 +50,7 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     posCtrl.dispose();
     receiverNameCtrl.dispose();
     receiverGstinCtrl.dispose();
+    receiverEmailCtrl.dispose(); // NEW
     receiverStateCtrl.dispose();
     receiverAddressCtrl.dispose();
     deliveryAddressCtrl.dispose();
@@ -68,6 +72,9 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     }
     if (receiverGstinCtrl.text != invoice.receiver.gstin) {
       receiverGstinCtrl.text = invoice.receiver.gstin;
+    }
+    if (receiverEmailCtrl.text != invoice.receiver.email) {
+      receiverEmailCtrl.text = invoice.receiver.email;
     }
     if (receiverStateCtrl.text != invoice.receiver.state) {
       receiverStateCtrl.text = invoice.receiver.state;
@@ -91,12 +98,14 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     final notifier = ref.read(invoiceProvider.notifier);
     notifier.updateReceiverName(client.name);
     notifier.updateReceiverGstin(client.gstin);
+    notifier.updateReceiverEmail(client.email); // NEW
     notifier.updateReceiverState(client.state);
     notifier.updateReceiverAddress(client.address);
 
     // Explicitly update controllers to match
     receiverNameCtrl.text = client.name;
     receiverGstinCtrl.text = client.gstin;
+    receiverEmailCtrl.text = client.email; // NEW
     receiverStateCtrl.text = client.state;
     receiverAddressCtrl.text = client.address;
   }

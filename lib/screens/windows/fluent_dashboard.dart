@@ -1,6 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:printing/printing.dart'; // NEW
+import '../../utils/pdf_generator.dart'; // NEW
 
 import '../../providers/business_profile_provider.dart';
 import '../../widgets/profile_switcher_sheet.dart';
@@ -15,7 +17,6 @@ import '../../providers/invoice_repository_provider.dart';
 import 'fluent_estimates_screen.dart';
 import 'fluent_recurring_screen.dart';
 import '../../models/invoice.dart';
-import 'package:url_launcher/url_launcher.dart'; // New
 import '../../models/payment_transaction.dart';
 import 'package:uuid/uuid.dart';
 
@@ -39,7 +40,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
   String _selectedPeriod = "All Time";
   String _selectedType = "All"; // NEW
   String _searchQuery = "";
-  Set<String> _selectedIds = {}; // New
+  final Set<String> _selectedIds = {}; // New
 
   @override
   Widget build(BuildContext context) {
@@ -977,11 +978,16 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
   }
 
   void _duplicateInvoice(BuildContext context, Invoice invoice) async {
+    // Calculate original term in days
+    final days = invoice.dueDate != null
+        ? invoice.dueDate!.difference(invoice.invoiceDate).inDays
+        : 0;
+
     final newInvoice = invoice.copyWith(
       id: null,
       invoiceNo: '',
       invoiceDate: DateTime.now(),
-      dueDate: DateTime.now().add(const Duration(days: 15)),
+      dueDate: days > 0 ? DateTime.now().add(Duration(days: days)) : null,
       payments: [],
       originalInvoiceNumber: null,
       items: invoice.items.map((e) => e.copyWith(id: null)).toList(),
@@ -996,50 +1002,29 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
   }
 
   void _emailInvoice(BuildContext context, Invoice invoice) async {
-    final email = invoice.receiver.email;
-    if (email.isEmpty) {
-      displayInfoBar(context,
-          builder: (context, close) => InfoBar(
-              title: const Text("No Email"),
-              content: const Text("Client does not have an email address"),
-              severity: InfoBarSeverity.warning,
-              onClose: close));
-      return;
-    }
+    try {
+      final profile = ref.read(businessProfileProvider);
+      final pdfBytes = await generateInvoicePdf(invoice, profile);
+      final filename =
+          'Invoice_${invoice.invoiceNo.replaceAll(RegExp(r'[^\w\s]+'), '_')}.pdf';
 
-    final subject =
-        "Invoice ${invoice.invoiceNo} from ${ref.read(businessProfileProvider).companyName}";
-    final body =
-        "Dear ${invoice.receiver.name},\n\nPlease find attached invoice ${invoice.invoiceNo}.\n\nTotal Amount: ${ref.read(businessProfileProvider).currencySymbol} ${invoice.grandTotal.toStringAsFixed(2)}\nDue Date: ${invoice.dueDate != null ? DateFormat('dd MMM yyyy').format(invoice.dueDate!) : 'N/A'}\n\nThank you for your business.";
-
-    final uri = Uri(
-      scheme: 'mailto',
-      path: email,
-      query: _encodeQueryParameters(<String, String>{
-        'subject': subject,
-        'body': body,
-      }),
-    );
-
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
+      await Printing.sharePdf(
+        bytes: pdfBytes,
+        filename: filename,
+        subject: "Invoice ${invoice.invoiceNo} from ${profile.companyName}",
+        body:
+            "Dear ${invoice.receiver.name},\n\nPlease find attached invoice ${invoice.invoiceNo}.\n\nTotal Amount: ${profile.currencySymbol} ${invoice.grandTotal.toStringAsFixed(2)}\nDue Date: ${invoice.dueDate != null ? DateFormat('dd MMM yyyy').format(invoice.dueDate!) : 'N/A'}\n\nThank you for your business.",
+      );
+    } catch (e) {
       if (context.mounted) {
         displayInfoBar(context,
             builder: (context, close) => InfoBar(
-                title: const Text("Error"),
-                content: const Text("Could not launch email client"),
+                title: const Text("Error Sharing"),
+                content: Text(e.toString()),
                 severity: InfoBarSeverity.error,
                 onClose: close));
       }
     }
-  }
-
-  String? _encodeQueryParameters(Map<String, String> params) {
-    return params.entries
-        .map((e) =>
-            '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
-        .join('&');
   }
 
   void _deleteSelected() async {
@@ -1055,10 +1040,10 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
             onPressed: () => Navigator.pop(context, false),
           ),
           FilledButton(
-            child: const Text("Delete"),
             style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all(Colors.red)),
             onPressed: () => Navigator.pop(context, true),
+            child: const Text("Delete"),
           ),
         ],
       ),

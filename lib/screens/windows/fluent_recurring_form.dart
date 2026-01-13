@@ -27,6 +27,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
     with InvoiceFormMixin {
   RecurringInterval _interval = RecurringInterval.monthly;
   DateTime _nextRunDate = DateTime.now();
+  final TextEditingController dueDaysCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -35,6 +36,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
     if (widget.profileToEdit != null) {
       _interval = widget.profileToEdit!.interval;
       _nextRunDate = widget.profileToEdit!.nextRunDate;
+      dueDaysCtrl.text = widget.profileToEdit!.dueDays?.toString() ?? "7";
       initInvoiceControllers(widget.profileToEdit!.baseInvoice);
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -45,6 +47,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
       });
     } else {
       // Initialize with fresh invoice for template
+      dueDaysCtrl.text = "7";
       initInvoiceControllers(null);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(invoiceProvider.notifier).reset();
@@ -55,6 +58,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
 
   @override
   void dispose() {
+    dueDaysCtrl.dispose();
     disposeInvoiceControllers();
     super.dispose();
   }
@@ -140,6 +144,15 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                     selected: _nextRunDate,
                     onChanged: (date) => setState(() => _nextRunDate = date),
                   ),
+                ),
+                const SizedBox(height: 10),
+                AppTextInput(
+                  label: "Due Days (Offset)",
+                  controller: dueDaysCtrl,
+                  placeholder: "e.g. 7",
+                  validator: Validators
+                      .doubleValue, // Re-using double validator usually fine for int, strictly should be int but dart handles parse.
+                  // Or better, let's just use doubleValue which ensures positive number.
                 ),
               ],
             ),
@@ -253,6 +266,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                                   label: "Qty",
                                   placeholder: "Qty",
                                   initialValue: item.quantity.toString(),
+                                  validator: Validators.doubleValue,
                                   onChanged: (val) => ref
                                       .read(invoiceProvider.notifier)
                                       .updateItemQuantity(index, val),
@@ -266,6 +280,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                                   initialValue: item.amount == 0
                                       ? ""
                                       : item.amount.toString(),
+                                  validator: Validators.doubleValue,
                                   onChanged: (val) => ref
                                       .read(invoiceProvider.notifier)
                                       .updateItemAmount(index, val),
@@ -277,6 +292,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                                   label: "GST %",
                                   placeholder: "GST %",
                                   initialValue: item.gstRate.toString(),
+                                  validator: Validators.doubleValue,
                                   onChanged: (val) => ref
                                       .read(invoiceProvider.notifier)
                                       .updateItemGstRate(index, val),
@@ -299,6 +315,15 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
   }
 
   void _showClientSelector(BuildContext context, List<Client> clients) {
+    if (clients.isEmpty) {
+      displayInfoBar(context,
+          builder: (ctx, close) => InfoBar(
+              title: const Text("No Clients"),
+              content: const Text("Please add a client first."),
+              severity: InfoBarSeverity.warning,
+              onClose: close));
+      return;
+    }
     showDialog(
       context: context,
       builder: (context) {
@@ -357,6 +382,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
       profileId: activeProfileId,
       interval: _interval,
       nextRunDate: _nextRunDate,
+      dueDays: int.tryParse(dueDaysCtrl.text),
       baseInvoice: invoice,
       isActive: true,
     );
