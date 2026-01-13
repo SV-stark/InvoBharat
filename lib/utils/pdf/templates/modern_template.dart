@@ -263,8 +263,8 @@ class ModernTemplate extends BasePdfTemplate {
                                     style: const pw.TextStyle(
                                         fontSize: 8, color: PdfColors.grey700)),
                                 pw.SizedBox(height: 10),
-                                buildUpiQr(
-                                    profile.upiId, profile.upiName, invoice),
+                                buildUpiQr(profile.upiId, profile.upiName,
+                                    invoice, profile.currencySymbol),
                               ])),
                       pw.SizedBox(width: 20),
                       pw.Expanded(

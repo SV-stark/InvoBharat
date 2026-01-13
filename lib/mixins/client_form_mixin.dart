@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/client.dart';
 import '../providers/client_provider.dart';
+import '../utils/validators.dart';
 
 /// Mixin to handle form logic for creating/editing Clients.
 ///
@@ -93,4 +94,7 @@ mixin ClientFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     }
     return null;
   }
+
+  String? validateEmail(String? value) => Validators.email(value);
+  String? validatePhone(String? value) => Validators.phone(value);
 }

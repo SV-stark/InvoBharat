@@ -35,6 +35,16 @@ class IndianStates {
     "Jammu and Kashmir",
     "Ladakh",
     "Lakshadweep",
-    "Puducherry"
+  ];
+}
+
+class AppConstants {
+  static const String gstRate = '18';
+  static const List<String> paymentModes = [
+    'Cash',
+    'UPI',
+    'Bank Transfer',
+    'Cheque',
+    'Other'
   ];
 }

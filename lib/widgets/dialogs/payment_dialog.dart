@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import '../../utils/constants.dart';
 
 class PaymentDialog extends StatefulWidget {
   final double balanceDue;
@@ -72,7 +73,7 @@ class _PaymentDialogState extends State<PaymentDialog> {
             label: "Payment Mode",
             child: ComboBox<String>(
               value: _selectedMode,
-              items: ["Cash", "Bank Transfer", "UPI", "Cheque", "Other"]
+              items: AppConstants.paymentModes
                   .map((e) => ComboBoxItem(value: e, child: Text(e)))
                   .toList(),
               onChanged: (v) {

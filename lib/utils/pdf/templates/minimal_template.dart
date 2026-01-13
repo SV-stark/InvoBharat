@@ -181,7 +181,8 @@ class MinimalTemplate extends BasePdfTemplate {
                           ),
                         ])),
                 pw.SizedBox(width: 10),
-                buildUpiQr(profile.upiId, profile.upiName, invoice),
+                buildUpiQr(profile.upiId, profile.upiName, invoice,
+                    profile.currencySymbol),
                 pw.Expanded(
                     flex: 5,
                     child: pw.Column(children: [
