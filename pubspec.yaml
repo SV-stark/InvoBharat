@@ -32,7 +32,7 @@ dependencies:
   url_launcher: ^6.3.2
 
   qr_flutter: ^4.1.0
-  freezed_annotation: ^2.4.1
+  freezed_annotation: ^3.1.0
   json_annotation: ^4.9.0
   image_background_remover: ^2.0.0
 
@@ -42,10 +42,10 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
   flutter_launcher_icons: ^0.14.4
-  build_runner: ^2.4.8
-  freezed: ^2.5.2
-  json_serializable: ^6.8.0
-  drift_dev: ^2.14.0
+  build_runner: ^2.10.5
+  freezed: ^3.2.3
+  json_serializable: ^6.11.2
+  drift_dev: ^2.28.3
 
 
 
