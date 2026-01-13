@@ -158,7 +158,8 @@ class RecurringService {
       id: const Uuid().v4(),
       invoiceNo: invoiceNo,
       invoiceDate: DateTime.now(),
-      dueDate: DateTime.now().add(const Duration(days: 7)), // Default due date?
+      dueDate: DateTime.now().add(Duration(
+          days: profile.dueDays ?? 7)), // Use profile setting or default 7 days
       payments: [], // Empty payments
     );
 

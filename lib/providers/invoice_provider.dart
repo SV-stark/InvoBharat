@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import '../models/invoice.dart';
 import '../utils/gst_helper.dart'; // New Import
 
@@ -31,7 +32,13 @@ class InvoiceNotifier extends Notifier<Invoice> {
           "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}",
       items: [
         // One empty item to start
-        const InvoiceItem(description: "", amount: 0, gstRate: 18),
+        const InvoiceItem(
+            id: null,
+            description: "",
+            amount: 0,
+            gstRate: 18), // We can't generate ID here because it's const
+        // We'll update it in init or make it non-const?
+        // Actually, we can just make it not const in the provider.
       ],
       // Pre-fill bank details
       bankName: profile.bankName,
@@ -64,7 +71,8 @@ class InvoiceNotifier extends Notifier<Invoice> {
       invoiceNo:
           "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}",
       items: [
-        const InvoiceItem(description: "", amount: 0, gstRate: 18),
+        InvoiceItem(
+            id: const Uuid().v4(), description: "", amount: 0, gstRate: 18),
       ],
       bankName: profile.bankName,
       accountNo: profile.accountNumber,
@@ -156,6 +164,10 @@ class InvoiceNotifier extends Notifier<Invoice> {
     state = state.copyWith(receiver: state.receiver.copyWith(stateCode: val));
   }
 
+  void updateReceiverEmail(String val) {
+    state = state.copyWith(receiver: state.receiver.copyWith(email: val));
+  }
+
   void updateItemDescription(int index, String val) {
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = newItems[index].copyWith(description: val);
@@ -217,8 +229,8 @@ class InvoiceNotifier extends Notifier<Invoice> {
   void addItem() {
     state = state.copyWith(items: [
       ...state.items,
-      // ignore: prefer_const_constructors
-      InvoiceItem(description: "", amount: 0, gstRate: 18)
+      InvoiceItem(
+          id: const Uuid().v4(), description: "", amount: 0, gstRate: 18)
     ]);
   }
 

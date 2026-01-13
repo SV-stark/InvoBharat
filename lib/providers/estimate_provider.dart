@@ -115,7 +115,8 @@ class EstimateListNotifier extends AsyncNotifier<List<Estimate>> {
   Future<void> markAsConverted(String id) async {
     final repo = ref.read(estimateRepositoryProvider);
     final estimates = await repo.getAllEstimates();
-    final estimate = estimates.firstWhere((e) => e.id == id);
+    final estimate = estimates.firstWhere((e) => e.id == id,
+        orElse: () => throw Exception('Estimate not found'));
     final updated = estimate.copyWith(status: 'Converted');
     await repo.saveEstimate(updated);
 

@@ -171,7 +171,7 @@ class FluentEstimatesScreen extends ConsumerWidget {
     final invoice = Invoice(
       supplier: estimate.supplier,
       receiver: estimate.receiver,
-      items: estimate.items,
+      items: estimate.items.map((e) => e.copyWith(id: null)).toList(),
       invoiceDate: DateTime.now(),
       dueDate: DateTime.now().add(const Duration(days: 14)),
       invoiceNo: '', // Let form/user generate

@@ -33,4 +33,21 @@ class Validators {
     }
     return null;
   }
+
+  static String? doubleValue(String? value) {
+    if (value == null || value.isEmpty) return null; // Allow empty (optional)
+    final num = double.tryParse(value);
+    if (num == null) return 'Invalid number';
+    if (num < 0) return 'Must be positive';
+    return null;
+  }
+
+  static String? pan(String? value) {
+    if (value == null || value.isEmpty) return null;
+    final panRegex = RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$');
+    if (!panRegex.hasMatch(value)) {
+      return 'Invalid PAN format';
+    }
+    return null;
+  }
 }

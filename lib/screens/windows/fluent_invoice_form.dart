@@ -305,6 +305,16 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                     ),
                     const SizedBox(height: 5),
                     AppTextInput(
+                      label: "Email",
+                      controller: receiverEmailCtrl,
+                      placeholder: "Email",
+                      validator: Validators.email,
+                      onChanged: (val) => ref
+                          .read(invoiceProvider.notifier)
+                          .updateReceiverEmail(val),
+                    ),
+                    const SizedBox(height: 5),
+                    AppTextInput(
                       label: "GSTIN",
                       controller: receiverGstinCtrl,
                       placeholder: "GSTIN",
@@ -414,6 +424,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                           label: "Qty",
                           placeholder: "Qty",
                           initialValue: item.quantity.toString(),
+                          validator: Validators.doubleValue,
                           onChanged: (val) => ref
                               .read(invoiceProvider.notifier)
                               .updateItemQuantity(index, val),
@@ -449,6 +460,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                           placeholder: "Amount",
                           initialValue:
                               item.amount == 0 ? "" : item.amount.toString(),
+                          validator: Validators.doubleValue,
                           onChanged: (val) => ref
                               .read(invoiceProvider.notifier)
                               .updateItemAmount(index, val),
@@ -460,6 +472,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                           label: "GST %",
                           placeholder: "GST %",
                           initialValue: item.gstRate.toString(),
+                          validator: Validators.doubleValue,
                           onChanged: (val) => ref
                               .read(invoiceProvider.notifier)
                               .updateItemGstRate(index, val),

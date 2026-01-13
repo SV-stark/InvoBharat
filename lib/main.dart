@@ -105,6 +105,15 @@ class InvoBharatApp extends ConsumerWidget {
       return fluent.Colors.yellow;
     }
 
-    return fluent.Colors.blue; // Fallback
+    final Map<String, Color> swatch = {
+      'normal': color,
+      'dark': color, // Ideally darken
+      'light': color, // Ideally lighten
+      'darkest': color,
+      'darker': color,
+      'lighter': color,
+      'lightest': color,
+    };
+    return fluent.AccentColor('custom', swatch);
   }
 }

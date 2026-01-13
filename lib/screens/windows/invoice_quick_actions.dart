@@ -60,7 +60,7 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
                   ),
                   MenuFlyoutItem(
                     text: const Text('Make Recurring'),
-                    leading: Icon(FluentIcons.repeat_all),
+                    leading: const Icon(FluentIcons.repeat_all),
                     onPressed: () {
                       Flyout.of(flyoutContext).close();
                       widget.onRecurring(context, widget.invoice);
@@ -68,7 +68,7 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
                   ),
                   MenuFlyoutItem(
                     text: const Text('Duplicate'),
-                    leading: Icon(FluentIcons.copy),
+                    leading: const Icon(FluentIcons.copy),
                     onPressed: () {
                       Flyout.of(flyoutContext).close();
                       widget.onDuplicate(context, widget.invoice);
@@ -76,7 +76,7 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
                   ),
                   MenuFlyoutItem(
                     text: const Text('Email'),
-                    leading: Icon(FluentIcons.mail),
+                    leading: const Icon(FluentIcons.mail),
                     onPressed: () {
                       Flyout.of(flyoutContext).close();
                       widget.onEmail(context, widget.invoice);
