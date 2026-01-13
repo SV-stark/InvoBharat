@@ -344,15 +344,37 @@ class ModernTemplate extends BasePdfTemplate {
                                   style: pw.TextStyle(
                                       fontWeight: pw.FontWeight.bold,
                                       fontSize: 9)),
-                              if (profile.signaturePath != null &&
-                                  File(profile.signaturePath!).existsSync())
+                              if ((profile.signaturePath != null &&
+                                      File(profile.signaturePath!)
+                                          .existsSync()) ||
+                                  (profile.stampPath != null &&
+                                      File(profile.stampPath!).existsSync()))
                                 pw.Container(
-                                    height: 40,
-                                    child: pw.Image(
-                                        pw.MemoryImage(
-                                            File(profile.signaturePath!)
-                                                .readAsBytesSync()),
-                                        fit: pw.BoxFit.contain))
+                                    height: 60,
+                                    width: 100,
+                                    child: pw.Stack(
+                                        alignment: pw.Alignment.center,
+                                        children: [
+                                          if (profile.stampPath != null &&
+                                              File(profile.stampPath!)
+                                                  .existsSync())
+                                            pw.Opacity(
+                                                opacity: 0.6,
+                                                child: pw.Image(
+                                                    pw.MemoryImage(
+                                                        File(profile.stampPath!)
+                                                            .readAsBytesSync()),
+                                                    width: 60)),
+                                          if (profile.signaturePath != null &&
+                                              File(profile.signaturePath!)
+                                                  .existsSync())
+                                            pw.Image(
+                                                pw.MemoryImage(
+                                                    File(profile.signaturePath!)
+                                                        .readAsBytesSync()),
+                                                height: 40,
+                                                fit: pw.BoxFit.contain),
+                                        ]))
                               else
                                 pw.SizedBox(height: 40),
                               pw.Text("Authorized Signatory",

@@ -181,8 +181,7 @@ class MinimalTemplate extends BasePdfTemplate {
                           ),
                         ])),
                 pw.SizedBox(width: 10),
-                buildUpiQr(profile.upiId, profile.upiName, invoice,
-                    profile.currencySymbol),
+                // moved upi to footer
                 pw.Expanded(
                     flex: 5,
                     child: pw.Column(children: [
@@ -221,8 +220,15 @@ class MinimalTemplate extends BasePdfTemplate {
                           style: const pw.TextStyle(
                               fontSize: 8, color: PdfColors.grey600)),
                     ]),
-                if (profile.signaturePath != null &&
-                    File(profile.signaturePath!).existsSync())
+                pw.Container(
+                  margin: const pw.EdgeInsets.symmetric(horizontal: 10),
+                  child: buildUpiQr(profile.upiId, profile.upiName, invoice,
+                      profile.currencySymbol),
+                ),
+                if ((profile.signaturePath != null &&
+                        File(profile.signaturePath!).existsSync()) ||
+                    (profile.stampPath != null &&
+                        File(profile.stampPath!).existsSync()))
                   pw.Column(children: [
                     pw.Container(
                         height: 60,
@@ -237,11 +243,13 @@ class MinimalTemplate extends BasePdfTemplate {
                                     pw.MemoryImage(File(profile.stampPath!)
                                         .readAsBytesSync()),
                                     width: 60)),
-                          pw.Image(
-                              pw.MemoryImage(File(profile.signaturePath!)
-                                  .readAsBytesSync()),
-                              height: 40,
-                              fit: pw.BoxFit.contain),
+                          if (profile.signaturePath != null &&
+                              File(profile.signaturePath!).existsSync())
+                            pw.Image(
+                                pw.MemoryImage(File(profile.signaturePath!)
+                                    .readAsBytesSync()),
+                                height: 40,
+                                fit: pw.BoxFit.contain),
                         ])),
                     pw.Text("Authorized Signatory",
                         style: const pw.TextStyle(fontSize: 8)),
