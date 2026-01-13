@@ -34,6 +34,15 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
   void initState() {
     super.initState();
     _stateController = TextEditingController();
+    _initializeBackgroundRemover();
+  }
+
+  Future<void> _initializeBackgroundRemover() async {
+    try {
+      await BackgroundRemover.instance.initializeOrt();
+    } catch (e) {
+      print('Error initializing background remover: $e');
+    }
   }
 
   @override
