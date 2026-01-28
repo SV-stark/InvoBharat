@@ -1,5 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../models/invoice.dart';
+import '../../../../models/hsn_code.dart';
+import '../../../../data/hsn_repository.dart';
 
 class InvoiceItemDialog extends StatefulWidget {
   final InvoiceItem? item;
@@ -63,9 +66,37 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
               Expanded(
                 child: InfoLabel(
                   label: "HSN/SAC Code",
-                  child: TextBox(
-                    placeholder: "e.g. 998311",
-                    controller: _sacCtrl,
+                  child: Consumer(
+                    builder: (context, ref, _) {
+                      return AutoSuggestBox<HsnCode>(
+                        controller: _sacCtrl,
+                        placeholder: "e.g. 998311",
+                        items: HsnRepository.commonCodes.map((e) {
+                          return AutoSuggestBoxItem<HsnCode>(
+                            value: e,
+                            label: "${e.code} - ${e.description}",
+                            onSelected: () {
+                              // Auto-fill details if empty or user wants?
+                              // Usually we just set the code.
+                              // If description is empty, set it?
+                              if (_descCtrl.text.isEmpty) {
+                                _descCtrl.text = e.description;
+                              }
+                              // Suggest Rate?
+                              if (gst == 0 || gst == 18) {
+                                // Only override if default
+                                setState(() {
+                                  gst = e.rate;
+                                });
+                              }
+                            },
+                          );
+                        }).toList(),
+                        onChanged: (text, reason) {
+                          // No specific action needed on text change, controller handles it
+                        },
+                      );
+                    },
                   ),
                 ),
               ),
