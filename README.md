@@ -41,6 +41,15 @@ Generates beautiful, professional PDFs in seconds. No internet required. No subs
 
 ---
 
+## ❓ Troubleshooting
+
+### Blank/Gray Screen on Startup (Windows)
+If the app shows a blank gray screen, you are likely missing the **Visual C++ Redistributable**.
+1. [Download VC++ Redistributable (x64)](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+2. Install and Restart.
+
+---
+
 ## 📥 Download & Install
 
 ### <img src="https://upload.wikimedia.org/wikipedia/commons/8/87/Windows_logo_-_2021.svg" width="20"/> Windows Users
