@@ -44,6 +44,17 @@ void main() {
                 textAlign: TextAlign.center,
                 textDirection: TextDirection.ltr,
               ),
+              const SizedBox(height: 20),
+              // Stack Trace
+              Text(
+                details.stack.toString(),
+                style: const TextStyle(
+                    color: Colors.white38,
+                    fontSize: 10,
+                    fontFamily: 'Consolas',
+                    decoration: TextDecoration.none),
+                textDirection: TextDirection.ltr,
+              ),
             ],
           ),
         ),
