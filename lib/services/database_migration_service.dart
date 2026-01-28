@@ -70,22 +70,19 @@ class DatabaseMigrationService {
     final fileRepo = FileClientRepository(profileId: profileId);
     final sqlRepo = SqlClientRepository(database);
 
-    onProgress("Reading Clients...");
-    final clients = await fileRepo.getAllClients();
+    onProgress("Starting Client Migration...");
 
     int count = 0;
-    int total = clients.length;
-
-    for (var client in clients) {
+    await for (final client in fileRepo.streamClients()) {
       final c = client.copyWith(profileId: profileId);
       await sqlRepo.saveClient(c);
       count++;
-      if (count % 10 == 0) {
-        await Future.delayed(Duration.zero);
-        onProgress("Migrating Clients ($count/$total)...");
+
+      if (count % 5 == 0) {
+        onProgress("Migrated $count clients...");
       }
     }
-    if (kDebugMode) print("Migrated ${clients.length} clients.");
+    if (kDebugMode) print("Migrated $count clients.");
   }
 
   Future<void> _migrateInvoices(
@@ -93,22 +90,18 @@ class DatabaseMigrationService {
     final fileRepo = FileInvoiceRepository(profileId: profileId);
     final sqlRepo = SqlInvoiceRepository(database);
 
-    onProgress("Reading Invoices...");
-    final invoices = await fileRepo.getAllInvoices();
+    onProgress("Starting Invoice Migration...");
 
     int count = 0;
-    int total = invoices.length;
-
-    for (var invoice in invoices) {
-      // Save using SQL logic which handles items and payments
+    await for (final invoice in fileRepo.streamInvoices()) {
       await sqlRepo.saveInvoice(invoice);
       count++;
-      if (count % 10 == 0) {
-        await Future.delayed(Duration.zero);
-        onProgress("Migrating Invoices ($count/$total)...");
+
+      if (count % 5 == 0) {
+        onProgress("Migrated $count invoices...");
       }
     }
-    if (kDebugMode) print("Migrated ${invoices.length} invoices.");
+    if (kDebugMode) print("Migrated $count invoices.");
   }
 
   Future<void> _markMigrated(SharedPreferences prefs) async {

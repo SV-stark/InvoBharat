@@ -56,35 +56,40 @@ class FileClientRepository implements ClientRepository {
 
   @override
   Future<List<Client>> getAllClients() async {
+    final List<Client> clients = [];
+    await for (final client in streamClients()) {
+      clients.add(client);
+    }
+    clients
+        .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return clients;
+  }
+
+  Stream<Client> streamClients() async* {
     try {
       final path = await _localPath;
       final dir = Directory(path);
-      List<Client> clients = [];
 
-      if (!await dir.exists()) return [];
+      if (!await dir.exists()) return;
 
+      int count = 0;
       await for (var file in dir.list(followLinks: false)) {
         if (file is File && file.path.endsWith('.json')) {
           try {
             final String contents = await file.readAsString();
-            clients.add(Client.fromJson(jsonDecode(contents)));
+            final client = Client.fromJson(jsonDecode(contents));
+            yield client;
           } catch (e) {
-            debugPrint("Error parsing client file ${file.path}: $e");
+            // skip
           }
-          // Yield occasionally
-          if (clients.length % 50 == 0) {
-            await Future.delayed(Duration.zero);
+          count++;
+          if (count % 20 == 0) {
+            await Future.delayed(const Duration(milliseconds: 1));
           }
         }
       }
-
-      // Sort by name alphabetically
-      clients
-          .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-      return clients;
     } catch (e) {
-      debugPrint("Error loading clients: $e");
-      return [];
+      debugPrint("Error streaming clients: $e");
     }
   }
 

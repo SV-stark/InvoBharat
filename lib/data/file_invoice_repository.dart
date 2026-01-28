@@ -124,35 +124,42 @@ class FileInvoiceRepository implements InvoiceRepository {
 
   @override
   Future<List<Invoice>> getAllInvoices() async {
+    // Legacy support: collect stream to list
+    final List<Invoice> invoices = [];
+    await for (final invoice in streamInvoices()) {
+      invoices.add(invoice);
+    }
+    invoices.sort((a, b) => b.invoiceDate.compareTo(a.invoiceDate));
+    return invoices;
+  }
+
+  // Stream implementation for memory-efficient migration
+  Stream<Invoice> streamInvoices() async* {
     try {
       final path = await _localPath;
       final dir = Directory(path);
-      List<Invoice> invoices = [];
 
-      if (!await dir.exists()) return [];
+      if (!await dir.exists()) return;
 
-      // Use Stream to avoid blocking
+      int count = 0;
       await for (var file in dir.list(followLinks: false)) {
         if (file is File && file.path.endsWith('.json')) {
           try {
             final String contents = await file.readAsString();
-            invoices.add(Invoice.fromJson(jsonDecode(contents)));
+            final invoice = Invoice.fromJson(jsonDecode(contents));
+            yield invoice;
           } catch (e) {
-            // debugPrint in release might be silenced, but that's fine.
+            // skip bad files
           }
-          // Yield to UI thread occasionally to prevent "Not Responding"
-          if (invoices.length % 50 == 0) {
-            await Future.delayed(Duration.zero);
+          // Yield to event loop every few items to keep UI responsive
+          count++;
+          if (count % 20 == 0) {
+            await Future.delayed(const Duration(milliseconds: 1));
           }
         }
       }
-
-      // Sort by date desc
-      invoices.sort((a, b) => b.invoiceDate.compareTo(a.invoiceDate));
-      return invoices;
     } catch (e) {
-      debugPrint("Error loading invoices: $e");
-      return [];
+      debugPrint("Error streaming invoices: $e");
     }
   }
 
