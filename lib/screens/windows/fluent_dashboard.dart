@@ -575,7 +575,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
 
       final csvData = GstrService().generateGstr1Csv(filteredInvoices);
 
-      String? outputFile = await FilePicker.platform.saveFile(
+      String? outputFile = await FilePicker.saveFile(
         dialogTitle: 'Save GSTR-1 CSV',
         fileName: 'GSTR1_${_selectedPeriod.replaceAll(" ", "_")}.csv',
         allowedExtensions: ['csv'],
@@ -608,7 +608,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
 
   Future<void> _importGstr1(BuildContext context) async {
     try {
-      final result = await FilePicker.platform.pickFiles(
+      final result = await FilePicker.pickFiles(
         dialogTitle: 'Select GSTR-1 CSV',
         allowedExtensions: ['csv'],
         type: FileType.custom,
@@ -705,7 +705,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         buffer.writeln(num);
       }
 
-      String? outputFile = await FilePicker.platform.saveFile(
+      String? outputFile = await FilePicker.saveFile(
         dialogTitle: 'Save Missing Invoices Report',
         fileName: 'Missing_Invoices_Report.csv',
         allowedExtensions: ['csv', 'txt'],
@@ -821,16 +821,15 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                     .read(invoiceRepositoryProvider)
                     .deleteInvoice(invoice.id!);
                 ref.invalidate(invoiceListProvider);
-                if (mounted) {
-                  displayInfoBar(ctx, builder: (context, close) {
-                    return InfoBar(
-                      title: const Text("Deleted"),
-                      content: Text("Invoice ${invoice.invoiceNo} deleted"),
-                      severity: InfoBarSeverity.success,
-                      onClose: close,
-                    );
-                  });
-                }
+                if (!ctx.mounted) return;
+                displayInfoBar(ctx, builder: (context, close) {
+                  return InfoBar(
+                    title: const Text("Deleted"),
+                    content: Text("Invoice ${invoice.invoiceNo} deleted"),
+                    severity: InfoBarSeverity.success,
+                    onClose: close,
+                  );
+                });
               },
             ),
           ],
@@ -874,17 +873,16 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
               invoice.copyWith(payments: [...invoice.payments, payment]);
           await ref.read(invoiceRepositoryProvider).saveInvoice(updated);
           ref.invalidate(invoiceListProvider);
-          if (mounted) {
-            displayInfoBar(ctx, builder: (context, close) {
-              return InfoBar(
-                title: const Text("Success"),
-                content: Text(
-                    "Recorded payment of $amount for ${invoice.invoiceNo}"),
-                severity: InfoBarSeverity.success,
-                onClose: close,
-              );
-            });
-          }
+          if (!ctx.mounted) return;
+          displayInfoBar(ctx, builder: (context, close) {
+            return InfoBar(
+              title: const Text("Success"),
+              content:
+                  Text("Recorded payment of $amount for ${invoice.invoiceNo}"),
+              severity: InfoBarSeverity.success,
+              onClose: close,
+            );
+          });
         },
       ),
     );
@@ -957,18 +955,16 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 await ref
                     .read(recurringListProvider.notifier)
                     .addProfile(profile);
-                Navigator.pop(dialogContext);
-
-                if (mounted) {
-                  displayInfoBar(context, builder: (context, close) {
-                    return InfoBar(
-                      title: const Text("Success"),
-                      content: const Text("Recurring Profile Created"),
-                      severity: InfoBarSeverity.success,
-                      onClose: close,
-                    );
-                  });
-                }
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
+                if (!context.mounted) return;
+                displayInfoBar(context, builder: (context, close) {
+                  return InfoBar(
+                    title: const Text("Success"),
+                    content: const Text("Recurring Profile Created"),
+                    severity: InfoBarSeverity.success,
+                    onClose: close,
+                  );
+                });
               },
             ),
           ],

@@ -41,7 +41,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
     try {
       await BackgroundRemover.instance.initializeOrt();
     } catch (e) {
-      print('Error initializing background remover: $e');
+      debugPrint('Error initializing background remover: $e');
     }
   }
 
@@ -333,21 +333,20 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                                     .updateProfile(profile.copyWith(
                                         signaturePath: savedFile.path));
                               } catch (e) {
-                                if (context.mounted) {
-                                  displayInfoBar(context,
-                                      builder: (context, close) {
-                                    return InfoBar(
-                                      title: const Text(
-                                          'Background Removal Failed'),
-                                      content: Text(e.toString()),
-                                      severity: InfoBarSeverity.error,
-                                      action: IconButton(
-                                        icon: const Icon(FluentIcons.clear),
-                                        onPressed: close,
-                                      ),
-                                    );
-                                  });
-                                }
+                                if (!mounted) return;
+                                displayInfoBar(context,
+                                    builder: (context, close) {
+                                  return InfoBar(
+                                    title:
+                                        const Text('Background Removal Failed'),
+                                    content: Text(e.toString()),
+                                    severity: InfoBarSeverity.error,
+                                    action: IconButton(
+                                      icon: const Icon(FluentIcons.clear),
+                                      onPressed: close,
+                                    ),
+                                  );
+                                });
                                 ref
                                     .read(businessProfileNotifierProvider)
                                     .updateProfile(profile.copyWith(
@@ -435,21 +434,20 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                                     .updateProfile(profile.copyWith(
                                         stampPath: savedFile.path));
                               } catch (e) {
-                                if (context.mounted) {
-                                  displayInfoBar(context,
-                                      builder: (context, close) {
-                                    return InfoBar(
-                                      title: const Text(
-                                          'Background Removal Failed'),
-                                      content: Text(e.toString()),
-                                      severity: InfoBarSeverity.error,
-                                      action: IconButton(
-                                        icon: const Icon(FluentIcons.clear),
-                                        onPressed: close,
-                                      ),
-                                    );
-                                  });
-                                }
+                                if (!mounted) return;
+                                displayInfoBar(context,
+                                    builder: (context, close) {
+                                  return InfoBar(
+                                    title:
+                                        const Text('Background Removal Failed'),
+                                    content: Text(e.toString()),
+                                    severity: InfoBarSeverity.error,
+                                    action: IconButton(
+                                      icon: const Icon(FluentIcons.clear),
+                                      onPressed: close,
+                                    ),
+                                  );
+                                });
                                 ref
                                     .read(businessProfileNotifierProvider)
                                     .updateProfile(profile.copyWith(

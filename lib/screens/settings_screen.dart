@@ -493,7 +493,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     final csv = result.skippedCsv;
                                     if (csv != null) {
                                       String? outputFile =
-                                          await FilePicker.platform.saveFile(
+                                          await FilePicker.saveFile(
                                         dialogTitle: 'Save Skipped Report',
                                         fileName: 'skipped_invoices.csv',
                                         allowedExtensions: ['csv'],

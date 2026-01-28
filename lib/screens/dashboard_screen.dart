@@ -317,8 +317,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               final csvData = GstrService()
                                   .generateGstr1Csv(filteredInvoices);
 
-                              String? outputFile =
-                                  await FilePicker.platform.saveFile(
+                              String? outputFile = await FilePicker.saveFile(
                                 dialogTitle: 'Save GSTR-1 CSV',
                                 fileName:
                                     'GSTR1_${_selectedFilter.replaceAll(" ", "_")}.csv',

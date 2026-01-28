@@ -33,7 +33,7 @@ class BackupService {
       final csvString = CsvExportService().generateInvoiceCsv(invoices);
 
       // 3. Save to file
-      String? outputFile = await FilePicker.platform.saveFile(
+      String? outputFile = await FilePicker.saveFile(
         dialogTitle: 'Save CSV Backup',
         fileName:
             'invobharat_backup_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.csv',
@@ -79,7 +79,7 @@ class BackupService {
       final zipEncoder = ZipEncoder();
       final zipData = zipEncoder.encode(archive);
 
-      String? outputFile = await FilePicker.platform.saveFile(
+      String? outputFile = await FilePicker.saveFile(
         dialogTitle: 'Save Full Backup (ZIP)',
         fileName:
             'invobharat_full_backup_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.zip',
@@ -107,7 +107,7 @@ class BackupService {
   Future<ImportResult> importData(WidgetRef ref) async {
     try {
       // 1. Pick File
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
+      FilePickerResult? result = await FilePicker.pickFiles(
         dialogTitle: 'Select CSV Backup',
         type: FileType.custom,
         allowedExtensions: ['csv'],
