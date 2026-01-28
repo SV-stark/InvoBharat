@@ -63,15 +63,17 @@ class FileClientRepository implements ClientRepository {
 
       if (!await dir.exists()) return [];
 
-      final List<FileSystemEntity> files = dir.listSync();
-
-      for (var file in files) {
+      await for (var file in dir.list(followLinks: false)) {
         if (file is File && file.path.endsWith('.json')) {
           try {
             final String contents = await file.readAsString();
             clients.add(Client.fromJson(jsonDecode(contents)));
           } catch (e) {
             debugPrint("Error parsing client file ${file.path}: $e");
+          }
+          // Yield occasionally
+          if (clients.length % 50 == 0) {
+            await Future.delayed(Duration.zero);
           }
         }
       }

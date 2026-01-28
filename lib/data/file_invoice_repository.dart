@@ -129,15 +129,20 @@ class FileInvoiceRepository implements InvoiceRepository {
       final dir = Directory(path);
       List<Invoice> invoices = [];
 
-      final List<FileSystemEntity> files = dir.listSync();
+      if (!await dir.exists()) return [];
 
-      for (var file in files) {
+      // Use Stream to avoid blocking
+      await for (var file in dir.list(followLinks: false)) {
         if (file is File && file.path.endsWith('.json')) {
-          final String contents = await file.readAsString();
           try {
+            final String contents = await file.readAsString();
             invoices.add(Invoice.fromJson(jsonDecode(contents)));
           } catch (e) {
-            debugPrint("Error parsing ${file.path}: $e");
+            // debugPrint in release might be silenced, but that's fine.
+          }
+          // Yield to UI thread occasionally to prevent "Not Responding"
+          if (invoices.length % 50 == 0) {
+            await Future.delayed(Duration.zero);
           }
         }
       }

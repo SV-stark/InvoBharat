@@ -78,9 +78,14 @@ class DatabaseMigrationService {
     final sqlRepo = SqlInvoiceRepository(database);
 
     final invoices = await fileRepo.getAllInvoices();
+    int count = 0;
     for (var invoice in invoices) {
       // Save using SQL logic which handles items and payments
       await sqlRepo.saveInvoice(invoice);
+      count++;
+      if (count % 10 == 0) {
+        await Future.delayed(Duration.zero);
+      }
     }
     if (kDebugMode) print("Migrated ${invoices.length} invoices.");
   }
