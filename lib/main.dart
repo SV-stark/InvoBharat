@@ -12,33 +12,39 @@ import 'package:invobharat/screens/windows/fluent_home.dart';
 
 void main() {
   // Ensure errors are shown even in release mode
+  // Ensure errors are shown even in release mode
   ErrorWidget.builder = (FlutterErrorDetails details) {
-    return Material(
+    return Directionality(
+      textDirection: TextDirection.ltr,
       child: Container(
         color: const Color.fromARGB(255, 122, 16, 16),
         padding: const EdgeInsets.all(20),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.error_outline, color: Colors.white, size: 48),
-                const SizedBox(height: 10),
-                const Text(
-                  "Critical Application Error",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  details.exceptionAsString(),
-                  style: const TextStyle(color: Colors.white70),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
+        alignment: Alignment.center,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Use minimal Text widget with explicit style to avoid Theme dependency
+              const Text(
+                "Critical Application Error",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    decoration: TextDecoration.none,
+                    fontWeight: FontWeight.bold),
+                textDirection: TextDirection.ltr,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                details.exceptionAsString(),
+                style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    decoration: TextDecoration.none),
+                textAlign: TextAlign.center,
+                textDirection: TextDirection.ltr,
+              ),
+            ],
           ),
         ),
       ),
