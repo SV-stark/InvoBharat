@@ -107,30 +107,39 @@ class InvoBharatApp extends ConsumerWidget {
       },
       loading: () {
         if (Platform.isWindows || Platform.isLinux) {
-          return const fluent.FluentApp(
+          return fluent.FluentApp(
             home: fluent.ScaffoldPage(
               content: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    fluent.ProgressRing(),
-                    SizedBox(height: 20),
-                    Text("Upgrading Database..."),
+                    const fluent.ProgressRing(),
+                    const SizedBox(height: 20),
+                    Consumer(builder: (context, ref, _) {
+                      final status = ref.watch(migrationStatusProvider);
+                      return Text(status,
+                          style: const TextStyle(fontWeight: FontWeight.bold));
+                    }),
                   ],
                 ),
               ),
             ),
           );
         }
-        return const MaterialApp(
+        return MaterialApp(
           home: Scaffold(
             body: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 20),
-                  Text("Upgrading Database..."),
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 20),
+                  // Watch status
+                  Consumer(builder: (context, ref, _) {
+                    final status = ref.watch(migrationStatusProvider);
+                    return Text(status,
+                        style: const TextStyle(fontWeight: FontWeight.bold));
+                  }),
                 ],
               ),
             ),

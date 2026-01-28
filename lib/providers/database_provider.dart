@@ -13,11 +13,26 @@ final migrationServiceProvider = Provider<DatabaseMigrationService>((ref) {
   return DatabaseMigrationService(db);
 });
 
+// Simple provider to track migration status
+class MigrationStatusNotifier extends Notifier<String> {
+  @override
+  String build() => "Initializing...";
+
+  void update(String status) => state = status;
+}
+
+final migrationStatusProvider =
+    NotifierProvider<MigrationStatusNotifier, String>(
+        MigrationStatusNotifier.new);
+
 final appInitializationProvider = FutureProvider<void>((ref) async {
   // Ensure database is ready
+  ref.read(migrationStatusProvider.notifier).update("Opening Database...");
   ref.watch(databaseProvider);
 
   // Run Migration
   final migrationService = ref.read(migrationServiceProvider);
-  await migrationService.performMigration();
+  await migrationService.performMigration((status) {
+    ref.read(migrationStatusProvider.notifier).update(status);
+  });
 });
