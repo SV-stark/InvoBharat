@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:uuid/uuid.dart';
 import '../database/database.dart';
 import '../models/invoice.dart' as model;
 import '../models/payment_transaction.dart';
@@ -11,29 +12,20 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
   @override
   Future<void> saveInvoice(model.Invoice invoice) async {
+    // Ensure we have a valid Invoice ID
+    String invoiceId = invoice.id ?? '';
+    if (invoiceId.isEmpty) {
+      invoiceId = const Uuid().v4();
+    }
+
     // 1. Prepare Invoice Entry
-    // We need clientId. Invoice model has 'Receiver'.
-    // We assume Receiver matched a Client?
-    // If migration happened, we might not have a client ID in the Invoice model (it just has Receiver details).
-    // Risk: Mapping Receiver to ClientID.
-    // Hack for now: If invoice.receiver has an ID (if we adding ID to Receiver?), use it.
-    // But Receiver model doesn't have ID.
-    // Solution: We need a Client for every Invoice.
-    // If existing invoice has no linked client, we might need to create one or find one.
-    // OR: Update schema to allow nullable ClientID and store snapshot.
-    // Given the constraints and the schema I already committed (Step 138: clientId references Clients), I MUST provide a clientId.
-    // For now, I'll assume we pass a dummy 'default' id if not found, or efficient lookup.
-    // Better: Fetch client by name?
-    // Let's use a placeholder logic.
+    // ...
 
     // Convert Invoice Items
     final items = invoice.items.map((item) {
       return InvoiceItemsCompanion(
-        id: Value(item.id ??
-            DateTime.now()
-                .millisecondsSinceEpoch
-                .toString()), // Generate ID if null
-        invoiceId: Value(invoice.id ?? ''),
+        id: Value(item.id ?? const Uuid().v4()), // Generate UUID if null
+        invoiceId: Value(invoiceId), // Use the ensured ID
         description: Value(item.description),
         sacCode: Value(item.sacCode),
         codeType: Value(item.codeType),
@@ -49,8 +41,8 @@ class SqlInvoiceRepository implements InvoiceRepository {
     // Convert Payments
     final payments = invoice.payments.map((p) {
       return PaymentsCompanion(
-        id: Value(p.id),
-        invoiceId: Value(invoice.id ?? ''),
+        id: Value(p.id.isEmpty ? const Uuid().v4() : p.id),
+        invoiceId: Value(invoiceId), // Use the ensured ID
         date: Value(p.date),
         amount: Value(p.amount),
         method: Value(p.paymentMode),
@@ -74,7 +66,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
       await database
           .into(database.invoices)
           .insertOnConflictUpdate(InvoicesCompanion(
-            id: Value(invoice.id ?? ''),
+            id: Value(invoiceId),
             profileId: const Value("default"),
             clientId: Value(clientId),
             invoiceNo: Value(invoice.invoiceNo),
@@ -115,7 +107,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
       // Replace Items
       await (database.delete(database.invoiceItems)
-            ..where((t) => t.invoiceId.equals(invoice.id ?? '')))
+            ..where((t) => t.invoiceId.equals(invoiceId)))
           .go();
       for (var item in items) {
         await database.into(database.invoiceItems).insert(item);
@@ -123,7 +115,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
       // Replace Payments
       await (database.delete(database.payments)
-            ..where((t) => t.invoiceId.equals(invoice.id ?? '')))
+            ..where((t) => t.invoiceId.equals(invoiceId)))
           .go();
       for (var p in payments) {
         await database.into(database.payments).insert(p);
@@ -146,7 +138,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
           // Problem: If we edit the CN, we might duplicate the payment?
           // Strategy: Use a specific ID format "CN-PAY-{CN_ID}" or check notes.
 
-          final cnPaymentId = "CN-PAY-${invoice.id ?? ''}";
+          final cnPaymentId = "CN-PAY-$invoiceId";
 
           // Check if exists
           final existingPay = await (database.select(database.payments)

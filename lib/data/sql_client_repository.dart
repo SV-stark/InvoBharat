@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:uuid/uuid.dart';
 import '../database/database.dart';
 import '../models/client.dart' as model;
 import 'client_repository.dart';
@@ -12,7 +13,7 @@ class SqlClientRepository implements ClientRepository {
   Future<void> saveClient(model.Client client) async {
     await database.into(database.clients).insertOnConflictUpdate(
           ClientsCompanion(
-            id: Value(client.id),
+            id: Value(client.id.isEmpty ? const Uuid().v4() : client.id),
             profileId: Value(client.profileId),
             name: Value(client.name),
             address: Value(client.address),
