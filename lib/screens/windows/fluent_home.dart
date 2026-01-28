@@ -10,6 +10,7 @@ import '../clients_screen.dart';
 import 'fluent_recurring_screen.dart';
 import 'fluent_estimates_screen.dart';
 import 'fluent_item_templates_screen.dart';
+import '../aging_report_screen.dart';
 
 import '../../providers/app_config_provider.dart';
 
@@ -78,6 +79,11 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                 icon: const Icon(FluentIcons.contact),
                 title: const Text('Clients'),
                 body: const ClientsScreen(),
+              ),
+              PaneItem(
+                icon: const Icon(FluentIcons.report_document),
+                title: const Text('Reports'),
+                body: const AgingReportScreen(),
               ),
               PaneItem(
                 icon: const Icon(FluentIcons.settings),

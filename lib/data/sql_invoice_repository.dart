@@ -128,6 +128,53 @@ class SqlInvoiceRepository implements InvoiceRepository {
       for (var p in payments) {
         await database.into(database.payments).insert(p);
       }
+
+      // NEW: Credit Note Linking
+      // If this is a Credit Note and points to an original invoice, automatically add a "Credit Note" payment to that invoice.
+      if (invoice.type == model.InvoiceType.creditNote &&
+          invoice.originalInvoiceNumber != null &&
+          invoice.originalInvoiceNumber!.isNotEmpty) {
+        final originalInv = await (database.select(database.invoices)
+              ..where(
+                  (t) => t.invoiceNo.equals(invoice.originalInvoiceNumber!)))
+            .getSingleOrNull();
+
+        if (originalInv != null) {
+          // Check if we already added a CN payment for this specific Credit Note ID
+          // We use the CN ID as the Payment ID or Reference?
+          // Since Payment IDs are UUIDs/Strings, let's generate one deterministically or check existence.
+          // Problem: If we edit the CN, we might duplicate the payment?
+          // Strategy: Use a specific ID format "CN-PAY-{CN_ID}" or check notes.
+
+          final cnPaymentId = "CN-PAY-${invoice.id ?? ''}";
+
+          // Check if exists
+          final existingPay = await (database.select(database.payments)
+                ..where((t) => t.id.equals(cnPaymentId)))
+              .getSingleOrNull();
+
+          if (existingPay == null) {
+            // Create Payment Linked to Orignal Invoice
+            await database.into(database.payments).insert(PaymentsCompanion(
+                  id: Value(cnPaymentId),
+                  invoiceId: Value(originalInv.id),
+                  date: Value(invoice.invoiceDate),
+                  amount: Value(invoice.grandTotal), // CN Total reduces balance
+                  method: const Value('Credit Note'),
+                  notes: Value(
+                      'Auto-generated from Credit Note ${invoice.invoiceNo}'),
+                ));
+          } else {
+            // Update Amount if changed
+            await (database.update(database.payments)
+                  ..where((t) => t.id.equals(cnPaymentId)))
+                .write(PaymentsCompanion(
+              date: Value(invoice.invoiceDate),
+              amount: Value(invoice.grandTotal),
+            ));
+          }
+        }
+      }
     });
   }
 

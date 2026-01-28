@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/client.dart';
 import '../providers/client_provider.dart';
 import '../widgets/client_form.dart';
+import 'client_ledger_screen.dart';
 
 class ClientsScreen extends ConsumerWidget {
   const ClientsScreen({super.key});
@@ -73,6 +74,18 @@ class ClientsScreen extends ConsumerWidget {
                             icon: const Icon(FluentIcons.delete),
                             onPressed: () =>
                                 _confirmDelete(context, client, ref),
+                          ),
+                          IconButton(
+                            icon: const Icon(FluentIcons.history),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                FluentPageRoute(
+                                  builder: (context) =>
+                                      ClientLedgerScreen(client: client),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),

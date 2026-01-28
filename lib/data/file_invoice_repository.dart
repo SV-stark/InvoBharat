@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import '../models/invoice.dart';
+import '../models/payment_transaction.dart';
 import 'invoice_repository.dart';
 
 class FileInvoiceRepository implements InvoiceRepository {
@@ -46,6 +47,63 @@ class FileInvoiceRepository implements InvoiceRepository {
 
     final file = File('$path/$fileName');
     await file.writeAsString(jsonEncode(invoice.toJson()));
+
+    // NEW: Credit Note Linking
+    if (invoice.type == InvoiceType.creditNote &&
+        invoice.originalInvoiceNumber != null &&
+        invoice.originalInvoiceNumber!.isNotEmpty) {
+      await _linkCreditNoteToOriginal(invoice);
+    }
+  }
+
+  Future<void> _linkCreditNoteToOriginal(Invoice cn) async {
+    try {
+      final allInvoices = await getAllInvoices();
+      final originalInv = allInvoices.cast<Invoice?>().firstWhere(
+            (inv) => inv?.invoiceNo == cn.originalInvoiceNumber,
+            orElse: () => null,
+          );
+
+      if (originalInv != null) {
+        // Check for existing CN payment
+        final cnPaymentId = "CN-PAY-${cn.id ?? ''}";
+        final existingPaymentIndex =
+            originalInv.payments.indexWhere((p) => p.id == cnPaymentId);
+
+        List<PaymentTransaction> updatedPayments =
+            List.from(originalInv.payments);
+
+        final newPayment = PaymentTransaction(
+          id: cnPaymentId,
+          invoiceId: originalInv.id ?? '', // Should handle null id if any
+          date: cn.invoiceDate,
+          amount: cn.grandTotal,
+          paymentMode: 'Credit Note',
+          notes: 'Auto-generated from Credit Note ${cn.invoiceNo}',
+        );
+
+        if (existingPaymentIndex != -1) {
+          updatedPayments[existingPaymentIndex] = newPayment;
+        } else {
+          updatedPayments.add(newPayment);
+        }
+
+        final updatedOriginal = originalInv.copyWith(payments: updatedPayments);
+
+        // Save Original Invoice
+        // Reuse saveInvoice? No, infinite loop if not careful.
+        // Direct save.
+        final path = await _localPath;
+        // Find filename for original
+        // We know ID is in originalInv.id
+        if (originalInv.id != null) {
+          final file = File('$path/inv_${originalInv.id}.json');
+          await file.writeAsString(jsonEncode(updatedOriginal.toJson()));
+        }
+      }
+    } catch (e) {
+      debugPrint("Error linking Credit Note: $e");
+    }
   }
 
   @override
