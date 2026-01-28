@@ -9,6 +9,7 @@ import '../providers/theme_provider.dart';
 import '../services/backup_service.dart';
 import '../widgets/profile_switcher_sheet.dart';
 import '../widgets/about_tab.dart';
+import '../services/email_service.dart'; // NEW
 import 'item_templates_screen.dart'; // NEW import
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -166,6 +167,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Tab(text: "General", icon: Icon(Icons.settings)),
               Tab(text: "Profiles", icon: Icon(Icons.business)),
               Tab(text: "Backup", icon: Icon(Icons.backup)),
+              Tab(text: "Email", icon: Icon(Icons.email)), // NEW
               Tab(text: "About", icon: Icon(Icons.info_outline)),
             ],
           ),
@@ -175,6 +177,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildGeneralSettings(),
             _buildProfileSettings(),
             _buildBackupSettings(),
+            const _EmailSettingsTab(), // NEW
             const AboutTab(),
           ],
         ),
@@ -591,6 +594,164 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           border: isSelected ? Border.all(width: 3, color: Colors.grey) : null,
         ),
         child: isSelected ? const Icon(Icons.check, color: Colors.white) : null,
+      ),
+    );
+  }
+}
+
+// NEW EMAIL TAB
+class _EmailSettingsTab extends StatefulWidget {
+  const _EmailSettingsTab();
+
+  @override
+  State<_EmailSettingsTab> createState() => _EmailSettingsTabState();
+}
+
+class _EmailSettingsTabState extends State<_EmailSettingsTab> {
+  final _formKey = GlobalKey<FormState>();
+  final _hostController = TextEditingController();
+  final _portController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isSecure = true;
+  bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final settings = await EmailService.getSettings();
+    if (settings != null) {
+      if (mounted) {
+        setState(() {
+          _hostController.text = settings.smtpHost;
+          _portController.text = settings.smtpPort.toString();
+          _emailController.text = settings.email;
+          _usernameController.text = settings.username;
+          _passwordController.text = settings.password ?? '';
+          _isSecure = settings.isSecure;
+        });
+      }
+    }
+  }
+
+  Future<void> _saveSettings() async {
+    if (_formKey.currentState!.validate()) {
+      final settings = EmailSettings(
+        smtpHost: _hostController.text.trim(),
+        smtpPort: int.parse(_portController.text.trim()),
+        email: _emailController.text.trim(),
+        username: _usernameController.text.trim(),
+        password: _passwordController.text.trim(),
+        isSecure: _isSecure,
+      );
+
+      await EmailService.saveSettings(settings);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Email Settings Saved")));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("SMTP Configuration",
+                style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 8),
+            const Text(
+                "Configure your email provider to send invoices directly from the app."),
+            const SizedBox(height: 24),
+            TextFormField(
+              controller: _hostController,
+              decoration: const InputDecoration(
+                  labelText: "SMTP Host", hintText: "e.g. smtp.gmail.com"),
+              validator: (v) =>
+                  v == null || v.isEmpty ? "Host is required" : null,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _portController,
+              decoration: const InputDecoration(
+                  labelText: "SMTP Port", hintText: "e.g. 587 or 465"),
+              keyboardType: TextInputType.number,
+              validator: (v) =>
+                  v == null || v.isEmpty ? "Port is required" : null,
+            ),
+            const SizedBox(height: 16),
+            CheckboxListTile(
+              title: const Text("Use SSL/TLS (Secure)"),
+              value: _isSecure,
+              onChanged: (v) => setState(() => _isSecure = v!),
+              controlAffinity: ListTileControlAffinity.leading,
+              contentPadding: EdgeInsets.zero,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _emailController,
+              decoration: const InputDecoration(
+                  labelText: "Sender Email", hintText: "you@example.com"),
+              validator: (v) =>
+                  v == null || v.isEmpty ? "Email is required" : null,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _usernameController,
+              decoration: const InputDecoration(
+                  labelText: "Username", hintText: "Often same as email"),
+              validator: (v) =>
+                  v == null || v.isEmpty ? "Username is required" : null,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _passwordController,
+              decoration: InputDecoration(
+                labelText: "Password",
+                suffixIcon: IconButton(
+                  icon: Icon(_obscurePassword
+                      ? Icons.visibility
+                      : Icons.visibility_off),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
+                ),
+              ),
+              obscureText: _obscurePassword,
+              // Password optional (though usually required)
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _saveSettings,
+                icon: const Icon(Icons.save),
+                label: const Text("Save Configuration"),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () async {
+                  await EmailService.clearSettings();
+                  _loadSettings();
+                },
+                child: const Text("Clear Settings"),
+              ),
+            ),
+            const SizedBox(height: 64),
+          ],
+        ),
       ),
     );
   }

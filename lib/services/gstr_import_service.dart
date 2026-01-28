@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import 'dart:convert';
 import '../models/invoice.dart';
+import 'audit_service.dart';
 
 class GstrImportResult {
   final List<Invoice> invoices;
@@ -104,7 +105,7 @@ class GstrImportService {
     final parsedInvoices = invoiceMap.values.toList();
 
     // Check for missing sequence numbers
-    final missing = _detectMissingSequences(parsedInvoices);
+    final missing = AuditService.detectGaps(parsedInvoices);
 
     return GstrImportResult(
       invoices: parsedInvoices,
@@ -117,53 +118,5 @@ class GstrImportService {
     // Basic CSV split, doesn't handle quoted commas perfectly but sufficient for this specific export format
     // which replaces commas in text fields.
     return line.split(',');
-  }
-
-  List<String> _detectMissingSequences(List<Invoice> invoices) {
-    if (invoices.isEmpty) return [];
-
-    // Filter to those that look like sequences (e.g. INV-001, INV-003)
-    // Heuristic: Extract numeric part from the end.
-    final numericPartRegExp = RegExp(r'(\d+)$');
-
-    // Group by prefix (e.g. "INV-")
-    final Map<String, List<int>> prefixMap = {};
-
-    for (final inv in invoices) {
-      final match = numericPartRegExp.firstMatch(inv.invoiceNo);
-      if (match != null) {
-        final numberStr = match.group(1)!;
-        final number = int.parse(numberStr);
-        final prefix =
-            inv.invoiceNo.substring(0, inv.invoiceNo.length - numberStr.length);
-
-        prefixMap.putIfAbsent(prefix, () => []).add(number);
-      }
-    }
-
-    final missing = <String>[];
-
-    prefixMap.forEach((prefix, numbers) {
-      numbers.sort();
-      for (int i = 0; i < numbers.length - 1; i++) {
-        final current = numbers[i];
-        final next = numbers[i + 1];
-        if (next > current + 1) {
-          // Gap found
-          for (int gap = current + 1; gap < next; gap++) {
-            // Reconstruct formatted number with leading zeros if possible?
-            // heurisitic: use same length as current
-            // e.g. if current is 001 (len 3), make gap 002.
-            // If original was just 1, make gap 2.
-
-            // We can infer width from the string representation of current in the invoice list but we parsed it to int.
-            // Let's just output Prefix+Gap
-            missing.add("$prefix$gap");
-          }
-        }
-      }
-    });
-
-    return missing;
   }
 }

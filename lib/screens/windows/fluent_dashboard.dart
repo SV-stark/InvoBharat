@@ -29,6 +29,7 @@ import '../../widgets/dialogs/payment_dialog.dart'; // New Payment Dialog
 import '../../widgets/revenue_chart.dart'; // New
 import '../../widgets/aging_chart.dart'; // New
 import '../payment_history_screen.dart'; // New import
+import '../audit_report_screen.dart'; // New import
 
 class FluentDashboard extends ConsumerStatefulWidget {
   const FluentDashboard({super.key});
@@ -287,6 +288,16 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                         context,
                         FluentPageRoute(
                           builder: (_) => const PaymentHistoryScreen(),
+                        ),
+                      ),
+                    ),
+                    CommandBarButton(
+                      label: const Text('Audit'),
+                      icon: const Icon(FluentIcons.warning),
+                      onPressed: () => Navigator.push(
+                        context,
+                        FluentPageRoute(
+                          builder: (_) => const AuditReportScreen(),
                         ),
                       ),
                     ),

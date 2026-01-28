@@ -9,6 +9,7 @@ import 'recurring_invoices_screen.dart';
 
 import 'settings_screen.dart';
 import 'payment_history_screen.dart'; // NEW
+import 'audit_report_screen.dart'; // NEW
 import '../providers/business_profile_provider.dart';
 
 import '../providers/invoice_repository_provider.dart';
@@ -329,6 +330,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (_) => const MaterialClientsScreen(),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        _buildActionButton(
+                          context,
+                          "Audit",
+                          Icons.warning_amber,
+                          Colors.orange.shade100,
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const AuditReportScreen(),
                             ),
                           ),
                         ),

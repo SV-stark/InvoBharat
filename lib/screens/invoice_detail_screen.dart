@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/business_profile_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
+import 'dart:io'; // NEW
+import 'package:path_provider/path_provider.dart'; // NEW
 
 import '../models/invoice.dart';
 import '../models/payment_transaction.dart';
@@ -11,6 +13,8 @@ import '../providers/invoice_repository_provider.dart';
 import '../providers/recurring_provider.dart'; // New
 import 'package:url_launcher/url_launcher.dart';
 import 'package:printing/printing.dart';
+import '../services/email_service.dart'; // NEW
+import 'settings_screen.dart'; // For settings navigation
 
 import 'windows/fluent_invoice_wizard.dart';
 import '../utils/pdf_generator.dart';
@@ -36,9 +40,8 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
 
   void _refreshInvoice() async {
     // Reload invoice from repo to get latest state
-    final inv = await ref
-        .read(invoiceRepositoryProvider)
-        .getInvoice(_invoice.id!);
+    final inv =
+        await ref.read(invoiceRepositoryProvider).getInvoice(_invoice.id!);
     if (inv != null && mounted) {
       setState(() {
         _invoice = inv;
@@ -126,6 +129,11 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
               );
               _refreshInvoice();
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.email),
+            tooltip: "Send Email",
+            onPressed: _sendEmail,
           ),
           IconButton(
             icon: const Icon(Icons.share),
@@ -412,9 +420,9 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                       Text(
                         "Defaults to 30 days from now",
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey,
-                          fontStyle: FontStyle.italic,
-                        ),
+                              color: Colors.grey,
+                              fontStyle: FontStyle.italic,
+                            ),
                       ),
                     ],
                   ),
@@ -469,8 +477,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            updated
-                    .isArchived // Fixed: Use updated state
+            updated.isArchived // Fixed: Use updated state
                 ? "Invoice Archived"
                 : "Invoice Unarchived",
           ),
@@ -529,6 +536,79 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text("Invoice deleted")));
+      }
+    }
+  }
+
+  Future<void> _sendEmail() async {
+    // Check settings first
+    final settings = await EmailService.getSettings();
+
+    if (settings == null) {
+      if (!mounted) return;
+      final configNow = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text("Email Configuration Missing"),
+          content:
+              const Text("You need to configure SMTP settings to send emails."),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text("Cancel")),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text("Configure Now")),
+          ],
+        ),
+      );
+
+      if (configNow == true && mounted) {
+        Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()))
+            .then((_) => _sendEmail()); // Retry after return
+      }
+      return;
+    }
+
+    if (!mounted) return;
+
+    // Show sending dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final profile = ref.read(businessProfileProvider);
+      final pdfBytes = await generateInvoicePdf(_invoice, profile);
+
+      // Save temp file
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/invoice_${_invoice.invoiceNo}.pdf');
+      await file.writeAsBytes(pdfBytes);
+
+      await EmailService.sendInvoiceEmail(
+        settings: settings,
+        invoice: _invoice,
+        pdfFile: file,
+        subject: 'Invoice ${_invoice.invoiceNo} from ${profile.companyName}',
+        body: 'Please find attached invoice ${_invoice.invoiceNo}.',
+        recipientEmail:
+            _invoice.receiver.email.isNotEmpty ? _invoice.receiver.email : "",
+      );
+
+      if (mounted) {
+        Navigator.pop(context); // Close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Email Sent Successfully!")));
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Close loading
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Failed: $e")));
       }
     }
   }
