@@ -213,6 +213,6 @@ class InvoBharatApp extends ConsumerWidget {
       'lighter': color,
       'lightest': color,
     };
-    return fluent.AccentColor('custom', swatch);
+    return fluent.AccentColor('normal', swatch);
   }
 }
