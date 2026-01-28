@@ -7,7 +7,7 @@
   
   [![Windows Build](https://github.com/SV-stark/InvoBharat/actions/workflows/windows_build.yml/badge.svg)](https://github.com/SV-stark/InvoBharat/actions/workflows/windows_build.yml)
   [![Linux Build](https://github.com/SV-stark/InvoBharat/actions/workflows/linux_build.yml/badge.svg)](https://github.com/SV-stark/InvoBharat/actions/workflows/linux_build.yml)
-  ![License](https://img.shields.io/github/license/SV-stark/InvoBharat?style=flat-square)
+  ![License](https://img.shields.io/badge/License-AGPL_v3-blue.svg?style=flat-square)
   ![Version](https://img.shields.io/badge/version-1.1.0-blue?style=flat-square)
 
   _Empowering freelancers and small businesses with instant, GST-compliant invoicing._
@@ -106,7 +106,7 @@ We welcome contributions! Whether it's fixing bugs, improving documentation, or 
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the **GNU Affero General Public License v3 (AGPLv3)**. See `LICENSE` for more information.
 
 <div align="center">
   <sub>Made with ❤️ in India by <a href="https://github.com/SV-stark">SV-stark</a></sub>

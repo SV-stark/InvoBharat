@@ -55,3 +55,6 @@ invoices/
 
 # Project reports (internal use)
 BUGS_AND_FEATURES.md
+
+# User Data (Sensitive)
+profiles/
