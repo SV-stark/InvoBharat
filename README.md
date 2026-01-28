@@ -35,7 +35,7 @@ Generates beautiful, professional PDFs in seconds. No internet required. No subs
 | **📁 Client Management** | Save client details once (GSTIN, Address) and auto-fill them forever. **View Client Ledger** for transaction history. |
 | **📦 Product Library** | Manage products/services with predefined tax slabs. **HSN/SAC Lookup** with auto-fill for 100+ common codes. |
 | **📉 Aging Reports** | Visual breakdown of **Receivables** (Overdue Invoices) by aging buckets (30/60/90 days). |
-| **💾 Secure Backups** | Local backup and restore functionality to keep your data safe. |
+| **💾 Secure Backups** | Full **Database Backup (ZIP)** and restore functionality to keep your data pixel-perfect. |
 | **🇮🇳 India Ready** | **Number-to-Words** conversion (e.g., "Rupees One Thousand Only"). **GSTR-1** compatible CSV exports for easy filing. |
 | **🖨️ Professional Output** | High-resolution A4 PDFs with your brand logo. Full-screen print preview and layout customization. |
 
@@ -66,7 +66,7 @@ InvoBharat is built using **Flutter**, leveraging the power of Dart for high-per
     - [fluent_ui](https://pub.dev/packages/fluent_ui) (Windows & Linux)
     - Material Design 3 (Android)
 - **PDF Generation**: `pdf` & `printing`
-- **Data Persistence**: `shared_preferences` & JSON (Offline-first)
+- **Data Persistence**: `sqlite3` & `drift` (High Performance & ACID Compliant)
 
 ---
 

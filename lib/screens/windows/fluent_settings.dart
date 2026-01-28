@@ -783,9 +783,8 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
               child: Button(
                 onPressed: () async {
                   try {
-                    final result = await BackupService().exportData(ref);
-                    final context = this.context;
-                    if (!context.mounted) return;
+                    final result = await BackupService().exportFullBackup(ref);
+                    if (!mounted) return;
                     displayInfoBar(context, builder: (context, close) {
                       return InfoBar(
                         title: const Text('Export Result'),
@@ -797,8 +796,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                       );
                     });
                   } catch (e) {
-                    final context = this.context;
-                    if (!context.mounted) return;
+                    if (!mounted) return;
                     displayInfoBar(context, builder: (context, close) {
                       return InfoBar(
                         title: const Text('Export Failed'),
@@ -816,7 +814,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   children: [
                     Icon(FluentIcons.encryption),
                     SizedBox(width: 8),
-                    Text("Export Backup"),
+                    Text("Export Backup (ZIP)"),
                   ],
                 ),
               ),
@@ -826,14 +824,12 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
               child: Button(
                 onPressed: () async {
                   try {
-                    final result = await BackupService().importData(ref);
-                    final context = this.context;
-                    if (!context.mounted) return;
+                    final result = await BackupService().restoreFullBackup(ref);
+                    if (!mounted) return;
                     displayInfoBar(context, builder: (context, close) {
                       return InfoBar(
-                        title: const Text('Import Result'),
-                        content: Text(
-                            "Restored: ${result.successCount}, Skipped: ${result.skippedCount}"),
+                        title: const Text('Restore Result'),
+                        content: Text(result),
                         action: IconButton(
                             icon: const Icon(FluentIcons.clear),
                             onPressed: close),
@@ -841,11 +837,10 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                       );
                     });
                   } catch (e) {
-                    final context = this.context;
-                    if (!context.mounted) return;
+                    if (!mounted) return;
                     displayInfoBar(context, builder: (context, close) {
                       return InfoBar(
-                        title: const Text('Import Failed'),
+                        title: const Text('Restore Failed'),
                         content: Text(e.toString()),
                         action: IconButton(
                             icon: const Icon(FluentIcons.clear),
@@ -858,9 +853,9 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(FluentIcons.download),
+                    Icon(FluentIcons.upload),
                     SizedBox(width: 8),
-                    Text("Import Backup"),
+                    Text("Restore Backup (ZIP)"),
                   ],
                 ),
               ),

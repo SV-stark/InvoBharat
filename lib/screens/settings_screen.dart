@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart'; // Added for file picker
 import '../providers/business_profile_provider.dart';
 import '../providers/theme_provider.dart';
 import '../services/backup_service.dart';
@@ -451,7 +450,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onPressed: () async {
                 // Export logic
                 try {
-                  final msg = await BackupService().exportAllProfiles(ref);
+                  final msg = await BackupService().exportFullBackup(ref);
                   if (mounted) {
                     ScaffoldMessenger.of(context)
                         .showSnackBar(SnackBar(content: Text(msg)));
@@ -472,69 +471,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             width: 250,
             child: OutlinedButton.icon(
               onPressed: () async {
-                // Import logic
+                // Restore logic
                 try {
-                  final result = await BackupService().importData(ref);
+                  final result = await BackupService().restoreFullBackup(ref);
                   if (!mounted) return;
 
-                  if (result.skippedCount > 0) {
-                    // Show Dialog with Skipped Report option
-                    showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                              title: const Text("Import Complete with Skips"),
-                              content: Text(
-                                  "Imported: ${result.successCount}\nSkipped: ${result.skippedCount} (Duplicates)"),
-                              actions: [
-                                TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text("Close")),
-                                FilledButton.icon(
-                                  icon: const Icon(Icons.download),
-                                  label: const Text("Download Report"),
-                                  onPressed: () async {
-                                    final csv = result.skippedCsv;
-                                    if (csv != null) {
-                                      String? outputFile =
-                                          await FilePicker.saveFile(
-                                        dialogTitle: 'Save Skipped Report',
-                                        fileName: 'skipped_invoices.csv',
-                                        allowedExtensions: ['csv'],
-                                        type: FileType.custom,
-                                      );
-                                      if (outputFile != null) {
-                                        if (!outputFile
-                                            .toLowerCase()
-                                            .endsWith('.csv')) {
-                                          outputFile = '$outputFile.csv';
-                                        }
-                                        await File(outputFile)
-                                            .writeAsString(csv);
-                                      }
-                                    }
-                                    if (context.mounted) Navigator.pop(context);
-                                  },
-                                )
-                              ],
-                            ));
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(
-                            "Successfully imported ${result.successCount} invoices.")));
-                  }
-
-                  // Reload data
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(result)),
+                  );
                   _loadProfileData();
                   setState(() {});
                 } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Import Failed: $e")));
-                  }
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Restore Failed: $e")),
+                  );
                 }
               },
               icon: const Icon(Icons.upload),
-              label: const Text("Restore Data (JSON/CSV)"),
+              label: const Text("Restore Data (ZIP)"),
             ),
           ),
           const SizedBox(height: 32),

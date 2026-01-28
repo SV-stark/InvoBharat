@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:invobharat/providers/database_provider.dart'; // New
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/screens/dashboard_screen.dart';
@@ -20,51 +21,98 @@ class InvoBharatApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(businessProfileProvider);
 
-    if (Platform.isWindows || Platform.isLinux) {
-      final accentColor = _getAccentColor(profile.color);
-      // Return FluentApp for Windows and Linux
-      return fluent.FluentApp(
-        title: 'InvoBharat',
-        debugShowCheckedModeBanner: false,
-        themeMode: _getFluentThemeMode(ref.watch(themeProvider)),
-        theme: fluent.FluentThemeData(
-          brightness: Brightness.light,
-          visualDensity: fluent.VisualDensity.standard,
-          shadowColor: fluent.Colors.black,
-          accentColor: accentColor,
-        ),
-        darkTheme: fluent.FluentThemeData(
-          brightness: Brightness.dark,
-          visualDensity: fluent.VisualDensity.standard,
-          shadowColor: fluent.Colors.black,
-          accentColor: accentColor,
-        ),
-        home: const FluentHome(),
-      );
-    }
+    final appInit = ref.watch(appInitializationProvider);
 
-    // Return MaterialApp for Android/Other
-    final themeMode = ref.watch(themeProvider);
+    return appInit.when(
+      data: (_) {
+        if (Platform.isWindows || Platform.isLinux) {
+          final accentColor = _getAccentColor(profile.color);
+          // Return FluentApp for Windows and Linux
+          return fluent.FluentApp(
+            title: 'InvoBharat',
+            debugShowCheckedModeBanner: false,
+            themeMode: _getFluentThemeMode(ref.watch(themeProvider)),
+            theme: fluent.FluentThemeData(
+              brightness: Brightness.light,
+              visualDensity: fluent.VisualDensity.standard,
+              shadowColor: fluent.Colors.black,
+              accentColor: accentColor,
+            ),
+            darkTheme: fluent.FluentThemeData(
+              brightness: Brightness.dark,
+              visualDensity: fluent.VisualDensity.standard,
+              shadowColor: fluent.Colors.black,
+              accentColor: accentColor,
+            ),
+            home: const FluentHome(),
+          );
+        }
 
-    return MaterialApp(
-      title: 'InvoBharat',
-      debugShowCheckedModeBanner: false,
-      themeMode: themeMode,
-      theme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.light,
-        colorScheme: ColorScheme.fromSeed(
-            seedColor: profile.color, brightness: Brightness.light),
-        textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(
-            seedColor: profile.color, brightness: Brightness.dark),
-        textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
-      ),
-      home: const DashboardScreen(),
+        // Return MaterialApp for Android/Other
+        final themeMode = ref.watch(themeProvider);
+
+        return MaterialApp(
+          title: 'InvoBharat',
+          debugShowCheckedModeBanner: false,
+          themeMode: themeMode,
+          theme: ThemeData(
+            useMaterial3: true,
+            brightness: Brightness.light,
+            colorScheme: ColorScheme.fromSeed(
+                seedColor: profile.color, brightness: Brightness.light),
+            textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme),
+          ),
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            brightness: Brightness.dark,
+            colorScheme: ColorScheme.fromSeed(
+                seedColor: profile.color, brightness: Brightness.dark),
+            textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+          ),
+          home: const DashboardScreen(),
+        );
+      },
+      loading: () {
+        if (Platform.isWindows || Platform.isLinux) {
+          return const fluent.FluentApp(
+            home: fluent.ScaffoldPage(
+              content: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    fluent.ProgressRing(),
+                    SizedBox(height: 20),
+                    Text("Upgrading Database..."),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+        return const MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 20),
+                  Text("Upgrading Database..."),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      error: (err, stack) {
+        return fluent.FluentApp(
+          home: fluent.ScaffoldPage(
+            content: Center(
+              child: Text("Error initializing app: $err"),
+            ),
+          ),
+        );
+      },
     );
   }
 

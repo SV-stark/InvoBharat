@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import '../data/file_client_repository.dart';
+import '../data/sql_client_repository.dart';
 import '../data/client_repository.dart';
 import '../models/client.dart';
-import 'business_profile_provider.dart';
+import 'database_provider.dart';
 
 final clientRepositoryProvider = Provider<ClientRepository>((ref) {
-  final profile = ref.watch(businessProfileProvider);
-  return FileClientRepository(profileId: profile.id);
+  final db = ref.watch(databaseProvider);
+  return SqlClientRepository(db);
 });
 
 final clientListProvider =

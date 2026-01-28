@@ -1,18 +1,14 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-
-// actually we need it to pass to CsvExport? No, just Invoices.
-// But we need to Read profile list for exportAll
-import '../providers/business_profile_provider.dart';
-import '../providers/invoice_repository_provider.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive.dart';
-import '../data/file_invoice_repository.dart';
+
+import '../providers/invoice_repository_provider.dart';
+// import '../data/file_invoice_repository.dart'; // Unused
 import 'csv_export_service.dart';
-import '../models/invoice.dart'; // Added missing import
 
 class ImportResult {
   final int successCount;
@@ -58,31 +54,31 @@ class BackupService {
     }
   }
 
-  Future<String> exportAllProfiles(WidgetRef ref) async {
+  Future<String> exportFullBackup(WidgetRef ref) async {
     try {
-      final profiles = ref.read(businessProfileListProvider);
-      final archive = Archive();
+      final dbFolder = await getApplicationDocumentsDirectory();
+      final dbPath = '${dbFolder.path}/InvoBharat/db.sqlite';
+      final dbFile = File(dbPath);
 
-      for (final profile in profiles) {
-        final repo = FileInvoiceRepository(profileId: profile.id);
-        final invoices = await repo.getAllInvoices();
-
-        final csvString = CsvExportService().generateInvoiceCsv(invoices);
-
-        final filename =
-            'profile_${profile.companyName.replaceAll(RegExp(r'[^\w\s]+'), '')}_${profile.id}.csv';
-
-        final bytes = utf8.encode(csvString);
-        archive.addFile(ArchiveFile(filename, bytes.length, bytes));
+      if (!await dbFile.exists()) {
+        throw Exception("Database file not found at $dbPath");
       }
 
+      // Read DB bytes
+      final dbBytes = await dbFile.readAsBytes();
+
+      // Create Archive
+      final archive = Archive();
+      archive.addFile(ArchiveFile('db.sqlite', dbBytes.length, dbBytes));
+
+      // Encode to Zip
       final zipEncoder = ZipEncoder();
       final zipData = zipEncoder.encode(archive);
 
       String? outputFile = await FilePicker.saveFile(
         dialogTitle: 'Save Full Backup (ZIP)',
         fileName:
-            'invobharat_full_backup_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.zip',
+            'invobharat_backup_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.zip',
         allowedExtensions: ['zip'],
         type: FileType.custom,
       );
@@ -104,55 +100,55 @@ class BackupService {
     }
   }
 
-  Future<ImportResult> importData(WidgetRef ref) async {
+  Future<String> restoreFullBackup(WidgetRef ref) async {
     try {
       // 1. Pick File
       FilePickerResult? result = await FilePicker.pickFiles(
-        dialogTitle: 'Select CSV Backup',
+        dialogTitle: 'Select Full Backup (ZIP)',
         type: FileType.custom,
-        allowedExtensions: ['csv'],
+        allowedExtensions: ['zip'],
       );
 
       if (result != null && result.files.single.path != null) {
-        final file = File(result.files.single.path!);
-        final content = await file.readAsString();
+        final zipFile = File(result.files.single.path!);
+        final bytes = await zipFile.readAsBytes();
 
-        // 2. Parse CSV
-        final invoices = CsvExportService().parseInvoiceCsv(content);
+        final archive = ZipDecoder().decodeBytes(bytes);
 
-        if (invoices.isEmpty) {
-          return ImportResult(0, 0, null);
+        // Find db.sqlite
+        final dbEntry = archive.findFile('db.sqlite');
+
+        if (dbEntry == null) {
+          throw Exception("Invalid Backup: 'db.sqlite' not found inside zip.");
         }
 
-        // 3. Check for duplicates
-        final repository = ref.read(invoiceRepositoryProvider);
-        final existingInvoices = await repository.getAllInvoices();
-        final existingNos = existingInvoices.map((i) => i.invoiceNo).toSet();
+        // 2. Prepare Paths
+        final dbFolder = await getApplicationDocumentsDirectory();
+        final dbPath = '${dbFolder.path}/InvoBharat/db.sqlite';
+        final dbDestFile = File(dbPath);
 
-        int restoreCount = 0;
-        List<Invoice> skipped = [];
-
-        for (final invoice in invoices) {
-          if (existingNos.contains(invoice.invoiceNo)) {
-            skipped.add(invoice);
-          } else {
-            await repository.saveInvoice(invoice);
-            restoreCount++;
-          }
+        // 3. Backup Current (Safety)
+        if (await dbDestFile.exists()) {
+          await dbDestFile.copy('$dbPath.bak');
+        } else {
+          // Create dir if needed? Database class does it but safe to check
+          await Directory('${dbFolder.path}/InvoBharat')
+              .create(recursive: true);
         }
 
-        String? skippedCsv;
-        if (skipped.isNotEmpty) {
-          skippedCsv = CsvExportService().generateInvoiceCsv(skipped);
+        // 4. Overwrite
+        if (dbEntry.isFile) {
+          final data = dbEntry.content as List<int>;
+          await dbDestFile.writeAsBytes(data, flush: true);
         }
 
-        return ImportResult(restoreCount, skipped.length, skippedCsv);
+        return "Restore Successful. Please RESTART the app to load new data.";
       } else {
-        throw Exception("Import cancelled");
+        return "Restore cancelled";
       }
     } catch (e) {
-      debugPrint("Import Error: $e");
-      throw Exception("Failed to import data: $e");
+      debugPrint("Restore Error: $e");
+      throw Exception("Failed to restore backup: $e");
     }
   }
 }
