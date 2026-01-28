@@ -162,16 +162,15 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
               await ref.read(clientRepositoryProvider).saveClient(newClient);
               ref.invalidate(clientListProvider);
 
-              if (mounted) {
-                widget.onClientAdded(newClient);
-                Navigator.pop(ctx);
-                displayInfoBar(ctx,
-                    builder: (c, close) => InfoBar(
-                        title: const Text("Success"),
-                        content: const Text("Client added successfully"),
-                        severity: InfoBarSeverity.success,
-                        onClose: close));
-              }
+              if (!ctx.mounted) return;
+              widget.onClientAdded(newClient);
+              Navigator.pop(ctx);
+              displayInfoBar(ctx,
+                  builder: (c, close) => InfoBar(
+                      title: const Text("Success"),
+                      content: const Text("Client added successfully"),
+                      severity: InfoBarSeverity.success,
+                      onClose: close));
             }),
       ],
     );

@@ -57,7 +57,7 @@ class RevenueChart extends StatelessWidget {
                           final date =
                               DateFormat("yyyy-MM").parse(displayKeys[index]);
                           return SideTitleWidget(
-                            axisSide: meta.axisSide,
+                            meta: meta,
                             child: Text(DateFormat("MMM").format(date),
                                 style: const TextStyle(fontSize: 10)),
                           );
