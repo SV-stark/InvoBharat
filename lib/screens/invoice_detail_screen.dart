@@ -36,8 +36,9 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
 
   void _refreshInvoice() async {
     // Reload invoice from repo to get latest state
-    final inv =
-        await ref.read(invoiceRepositoryProvider).getInvoice(_invoice.id!);
+    final inv = await ref
+        .read(invoiceRepositoryProvider)
+        .getInvoice(_invoice.id!);
     if (inv != null && mounted) {
       setState(() {
         _invoice = inv;
@@ -49,7 +50,9 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     final payment = await showDialog<PaymentTransaction>(
       context: context,
       builder: (ctx) => _PaymentDialog(
-          invoiceId: _invoice.id!, balanceDue: _invoice.balanceDue),
+        invoiceId: _invoice.id!,
+        balanceDue: _invoice.balanceDue,
+      ),
     );
 
     if (payment != null) {
@@ -59,8 +62,9 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       await ref.read(invoiceRepositoryProvider).saveInvoice(updatedInvoice);
       _refreshInvoice();
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("Payment Recorded")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Payment Recorded")));
       }
     }
   }
@@ -68,14 +72,16 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final currency =
-        NumberFormat.simpleCurrency(name: _invoice.currency, decimalDigits: 2);
+    final currency = NumberFormat.simpleCurrency(
+      name: _invoice.currency,
+      decimalDigits: 2,
+    );
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_invoice.invoiceNo.isEmpty
-            ? "Invoice Details"
-            : _invoice.invoiceNo),
+        title: Text(
+          _invoice.invoiceNo.isEmpty ? "Invoice Details" : _invoice.invoiceNo,
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.email),
@@ -84,7 +90,8 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
               final email = _invoice.receiver.email;
               if (email.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Client has no email")));
+                  const SnackBar(content: Text("Client has no email")),
+                );
                 return;
               }
 
@@ -99,8 +106,11 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                 await launchUrl(emailLaunchUri);
               } else {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text("Could not launch email client")));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Could not launch email client"),
+                    ),
+                  );
                 }
               }
             },
@@ -111,8 +121,8 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (_) =>
-                        FluentInvoiceWizard(invoiceToEdit: _invoice)),
+                  builder: (_) => FluentInvoiceWizard(invoiceToEdit: _invoice),
+                ),
               );
               _refreshInvoice();
             },
@@ -124,7 +134,9 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
               final profile = ref.read(businessProfileProvider);
               final bytes = await generateInvoicePdf(_invoice, profile);
               await Printing.sharePdf(
-                  bytes: bytes, filename: 'invoice_${_invoice.invoiceNo}.pdf');
+                bytes: bytes,
+                filename: 'invoice_${_invoice.invoiceNo}.pdf',
+              );
             },
           ),
           PopupMenuButton<String>(
@@ -135,15 +147,22 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             },
             itemBuilder: (context) => [
               const PopupMenuItem(
-                  value: 'recurring', child: Text("Make Recurring")),
+                value: 'recurring',
+                child: Text("Make Recurring"),
+              ),
               PopupMenuItem(
-                  value: 'archive',
-                  child: Text(
-                      _invoice.isArchived ? "Unarchive" : "Archive Invoice")),
+                value: 'archive',
+                child: Text(
+                  _invoice.isArchived ? "Unarchive" : "Archive Invoice",
+                ),
+              ),
               const PopupMenuItem(
-                  value: 'delete',
-                  child: Text("Delete Invoice",
-                      style: TextStyle(color: Colors.red))),
+                value: 'delete',
+                child: Text(
+                  "Delete Invoice",
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
             ],
           ),
         ],
@@ -161,9 +180,12 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text("Total Amount", style: theme.textTheme.bodyMedium),
-                    Text(currency.format(_invoice.grandTotal),
-                        style: theme.textTheme.headlineMedium
-                            ?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(
+                      currency.format(_invoice.grandTotal),
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
                 _buildStatusBadge(_invoice.paymentStatus),
@@ -172,9 +194,10 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             const SizedBox(height: 24),
 
             // Client Info
-            Text("Billed To",
-                style:
-                    theme.textTheme.titleMedium?.copyWith(color: Colors.grey)),
+            Text(
+              "Billed To",
+              style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey),
+            ),
             const SizedBox(height: 4),
             Text(_invoice.receiver.name, style: theme.textTheme.titleLarge),
             Text(_invoice.receiver.address),
@@ -184,9 +207,12 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             const SizedBox(height: 24),
 
             // Items
-            Text("Items",
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              "Items",
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 8),
             Card(
               child: ListView.separated(
@@ -211,16 +237,22 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Payments",
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  "Payments",
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 if (_invoice.balanceDue > 0.1)
                   Row(
                     children: [
                       TextButton(
-                          onPressed: _markAsPaid,
-                          child: const Text("Mark Paid",
-                              style: TextStyle(color: Colors.green))),
+                        onPressed: _markAsPaid,
+                        child: const Text(
+                          "Mark Paid",
+                          style: TextStyle(color: Colors.green),
+                        ),
+                      ),
                       OutlinedButton.icon(
                         onPressed: _recordPayment,
                         icon: const Icon(Icons.add),
@@ -234,7 +266,8 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             _invoice.payments.isEmpty
                 ? const Padding(
                     padding: EdgeInsets.all(16),
-                    child: Center(child: Text("No payments recorded yet")))
+                    child: Center(child: Text("No payments recorded yet")),
+                  )
                 : Card(
                     child: ListView.separated(
                       shrinkWrap: true,
@@ -244,11 +277,14 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                       itemBuilder: (context, index) {
                         final p = _invoice.payments[index];
                         return ListTile(
-                          leading:
-                              const Icon(Icons.payment, color: Colors.green),
+                          leading: const Icon(
+                            Icons.payment,
+                            color: Colors.green,
+                          ),
                           title: Text(currency.format(p.amount)),
                           subtitle: Text(
-                              "${DateFormat('dd MMM yyyy').format(p.date)} • ${p.paymentMode}"),
+                            "${DateFormat('dd MMM yyyy').format(p.date)} • ${p.paymentMode}",
+                          ),
                         );
                       },
                     ),
@@ -267,14 +303,21 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("Balance Due",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.red)),
-                    Text(currency.format(_invoice.balanceDue),
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                            fontSize: 18)),
+                    const Text(
+                      "Balance Due",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
+                    Text(
+                      currency.format(_invoice.balanceDue),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                        fontSize: 18,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -307,8 +350,10 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: color),
       ),
-      child: Text(status,
-          style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+      child: Text(
+        status,
+        style: TextStyle(color: color, fontWeight: FontWeight.bold),
+      ),
     );
   }
 
@@ -333,8 +378,12 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                     interval, // Reverted to initialValue (value is deprecated)
                 decoration: const InputDecoration(labelText: "Interval"),
                 items: RecurringInterval.values
-                    .map((e) => DropdownMenuItem(
-                        value: e, child: Text(e.name.toUpperCase())))
+                    .map(
+                      (e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(e.name.toUpperCase()),
+                      ),
+                    )
                     .toList(),
                 onChanged: (val) => setState(() => interval = val!),
               ),
@@ -344,25 +393,44 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                 child: InkWell(
                   onTap: () async {
                     final d = await showDatePicker(
-                        context: context,
-                        initialDate: startDate,
-                        firstDate: DateTime.now(),
-                        lastDate:
-                            DateTime.now().add(const Duration(days: 365 * 2)));
+                      context: context,
+                      initialDate: startDate,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime.now().add(
+                        const Duration(days: 365 * 2),
+                      ),
+                    );
                     if (d != null) setState(() => startDate = d);
                   },
-                  child: Text(DateFormat('dd MMM yyyy').format(startDate)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        DateFormat('dd MMM yyyy').format(startDate),
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      Text(
+                        "Defaults to 30 days from now",
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text("Cancel")),
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text("Cancel"),
+            ),
             ElevatedButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text("Save")),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text("Save"),
+            ),
           ],
         ),
       ),
@@ -370,10 +438,11 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
 
     if (result == true) {
       final base = _invoice.copyWith(
-          payments: [],
-          id: null,
-          invoiceNo: '',
-          invoiceDate: DateTime.now()); // Template
+        payments: [],
+        id: null,
+        invoiceNo: '',
+        invoiceDate: DateTime.now(),
+      ); // Template
       final profile = RecurringProfile(
         id: const Uuid().v4(),
         profileId: activeProfileId,
@@ -385,7 +454,8 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       await ref.read(recurringListProvider.notifier).addProfile(profile);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Recurring Profile Created")));
+          const SnackBar(content: Text("Recurring Profile Created")),
+        );
       }
     }
   }
@@ -396,10 +466,16 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     _refreshInvoice();
     ref.invalidate(invoiceListProvider); // Refresh list
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(updated.isArchived // Fixed: Use updated state
-              ? "Invoice Archived"
-              : "Invoice Unarchived")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            updated
+                    .isArchived // Fixed: Use updated state
+                ? "Invoice Archived"
+                : "Invoice Unarchived",
+          ),
+        ),
+      );
     }
   }
 
@@ -420,8 +496,9 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     _refreshInvoice();
     ref.invalidate(invoiceListProvider);
     if (mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Marked as paid")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Marked as paid")));
     }
   }
 
@@ -433,11 +510,13 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
         content: Text("Are you sure you want to delete ${_invoice.invoiceNo}?"),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text("Cancel")),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Cancel"),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text("Delete", style: TextStyle(color: Colors.red))),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+          ),
         ],
       ),
     );
@@ -447,8 +526,9 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       ref.invalidate(invoiceListProvider);
       if (mounted) {
         Navigator.pop(context); // Go back to list
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("Invoice deleted")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Invoice deleted")));
       }
     }
   }
@@ -488,7 +568,9 @@ class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
             TextField(
               controller: _amountCtrl,
               decoration: InputDecoration(
-                  labelText: "Amount", prefixText: currency), // Fixed
+                labelText: "Amount",
+                prefixText: currency,
+              ), // Fixed
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 16),
@@ -496,9 +578,12 @@ class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
               key: ValueKey(_mode),
               initialValue: _mode, // Reverted
               decoration: const InputDecoration(labelText: "Payment Mode"),
-              items: ['Cash', 'UPI', 'Bank Transfer', 'Cheque']
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                  .toList(),
+              items: [
+                'Cash',
+                'UPI',
+                'Bank Transfer',
+                'Cheque',
+              ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
               onChanged: (val) => setState(() => _mode = val!),
             ),
             const SizedBox(height: 16),
@@ -507,10 +592,11 @@ class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
               child: InkWell(
                 onTap: () async {
                   final d = await showDatePicker(
-                      context: context,
-                      initialDate: _date,
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime.now());
+                    context: context,
+                    initialDate: _date,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime.now(),
+                  );
                   if (d != null) setState(() => _date = d);
                 },
                 child: Text(DateFormat('dd/MM/yyyy').format(_date)),
@@ -518,32 +604,34 @@ class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
             ),
             const SizedBox(height: 16),
             TextField(
-                controller: _notesCtrl,
-                decoration:
-                    const InputDecoration(labelText: "Notes (Optional)")),
+              controller: _notesCtrl,
+              decoration: const InputDecoration(labelText: "Notes (Optional)"),
+            ),
           ],
         ),
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel")),
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Cancel"),
+        ),
         ElevatedButton(
-            onPressed: () {
-              final amt = double.tryParse(_amountCtrl.text);
-              if (amt == null || amt <= 0) return;
+          onPressed: () {
+            final amt = double.tryParse(_amountCtrl.text);
+            if (amt == null || amt <= 0) return;
 
-              final payment = PaymentTransaction(
-                id: const Uuid().v4(),
-                invoiceId: widget.invoiceId,
-                date: _date,
-                amount: amt,
-                paymentMode: _mode,
-                notes: _notesCtrl.text,
-              );
-              Navigator.pop(context, payment);
-            },
-            child: const Text("Save")),
+            final payment = PaymentTransaction(
+              id: const Uuid().v4(),
+              invoiceId: widget.invoiceId,
+              date: _date,
+              amount: amt,
+              paymentMode: _mode,
+              notes: _notesCtrl.text,
+            );
+            Navigator.pop(context, payment);
+          },
+          child: const Text("Save"),
+        ),
       ],
     );
   }

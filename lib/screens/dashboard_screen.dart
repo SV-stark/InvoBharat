@@ -5,10 +5,10 @@ import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'invoice_form.dart';
 import 'invoice_detail_screen.dart';
-import 'estimates_screen.dart';
 import 'recurring_invoices_screen.dart';
 
 import 'settings_screen.dart';
+import 'payment_history_screen.dart'; // NEW
 import '../providers/business_profile_provider.dart';
 
 import '../providers/invoice_repository_provider.dart';
@@ -110,8 +110,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const SettingsScreen())),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
           ),
         ],
       ),
@@ -133,10 +135,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   children: [
                     Text(
                       "Welcome back,",
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.copyWith(color: Colors.grey),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyLarge?.copyWith(color: Colors.grey),
                     ),
                     Text(
                       profile.companyName,
@@ -156,62 +157,101 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   ),
                   itemBuilder: (context) => [
                     const PopupMenuItem(
-                        value: "This Month", child: Text("This Month")),
+                      value: "This Month",
+                      child: Text("This Month"),
+                    ),
                     const PopupMenuItem(
-                        value: "Last Month", child: Text("Last Month")),
+                      value: "Last Month",
+                      child: Text("Last Month"),
+                    ),
                     const PopupMenuItem(
-                        value: "This Quarter", child: Text("This Quarter")),
+                      value: "This Quarter",
+                      child: Text("This Quarter"),
+                    ),
                     const PopupMenuItem(
-                        value: "Custom", child: Text("Custom Range...")),
+                      value: "Custom",
+                      child: Text("Custom Range..."),
+                    ),
                   ],
                 ),
               ],
             ),
             const SizedBox(height: 24),
             invoiceListAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => Text("Error: $err"),
-                data: (invoices) {
-                  // Filter Invoices
-                  final filteredInvoices = _dateRange == null
-                      ? invoices
-                      : invoices.where((i) {
-                          // Normalize dates to ignore time?
-                          // InvoiceDate usually has time? Assuming just compare
-                          return i.invoiceDate.isAfter(_dateRange!.start
-                                  .subtract(const Duration(seconds: 1))) &&
-                              i.invoiceDate.isBefore(
-                                  _dateRange!.end.add(const Duration(days: 1)));
-                        }).toList();
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) => Text("Error: $err"),
+              data: (invoices) {
+                // Filter Invoices
+                final filteredInvoices = _dateRange == null
+                    ? invoices
+                    : invoices.where((i) {
+                        // Normalize dates to ignore time?
+                        // InvoiceDate usually has time? Assuming just compare
+                        return i.invoiceDate.isAfter(
+                              _dateRange!.start.subtract(
+                                const Duration(seconds: 1),
+                              ),
+                            ) &&
+                            i.invoiceDate.isBefore(
+                              _dateRange!.end.add(const Duration(days: 1)),
+                            );
+                      }).toList();
 
-                  final stats =
-                      DashboardActions.calculateStats(filteredInvoices);
-                  final totalRevenue = stats['revenue'] as double;
-                  final totalCGST = stats['cgst'] as double;
-                  final totalSGST = stats['sgst'] as double;
-                  final totalIGST = stats['igst'] as double;
-                  final currency = NumberFormat.simpleCurrency(
-                      locale: 'en_IN', decimalDigits: 0);
+                final stats = DashboardActions.calculateStats(filteredInvoices);
+                final totalRevenue = stats['revenue'] as double;
+                final totalCGST = stats['cgst'] as double;
+                final totalSGST = stats['sgst'] as double;
+                final totalIGST = stats['igst'] as double;
+                final currency = NumberFormat.simpleCurrency(
+                  locale: 'en_IN',
+                  decimalDigits: 0,
+                );
 
-                  return Column(children: [
+                return Column(
+                  children: [
                     // Stats Cards
                     Row(
                       children: [
                         Expanded(
-                            child: _buildStatCard(
+                          child: GestureDetector(
+                            onTap: () {
+                              // Navigate to List
+                              Navigator.push(
                                 context,
-                                "Revenue ($_selectedFilter)",
-                                currency.format(totalRevenue),
-                                Icons.currency_rupee,
-                                Colors.green)),
+                                MaterialPageRoute(
+                                  builder: (_) => const InvoicesListScreen(),
+                                ),
+                              );
+                            },
+                            child: _buildStatCard(
+                              context,
+                              "Revenue ($_selectedFilter)",
+                              currency.format(totalRevenue),
+                              Icons.currency_rupee,
+                              Colors.green,
+                            ),
+                          ),
+                        ),
                         const SizedBox(width: 16),
                         Expanded(
-                            child: _buildStatCard(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
                                 context,
-                                "Invoices",
-                                "${filteredInvoices.length}",
-                                Icons.description,
-                                Colors.blue)),
+                                MaterialPageRoute(
+                                  builder: (_) => const InvoicesListScreen(),
+                                ),
+                              );
+                            },
+                            child: _buildStatCard(
+                              context,
+                              "Invoices",
+                              "${filteredInvoices.length}",
+                              Icons.description,
+                              Colors.blue,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 32),
@@ -221,15 +261,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       children: [
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => _showGstBreakdown(context, totalCGST,
-                                totalSGST, totalIGST, profile.currencySymbol),
+                            onTap: () => _showGstBreakdown(
+                              context,
+                              totalCGST,
+                              totalSGST,
+                              totalIGST,
+                              profile.currencySymbol,
+                            ),
                             child: _buildStatCard(
-                                context,
-                                "GST Output ($_selectedFilter)",
-                                currency
-                                    .format(totalCGST + totalSGST + totalIGST),
-                                Icons.percent,
-                                Colors.purple),
+                              context,
+                              "GST Output ($_selectedFilter)",
+                              currency.format(
+                                totalCGST + totalSGST + totalIGST,
+                              ),
+                              Icons.percent,
+                              Colors.purple,
+                            ),
                           ),
                         ),
                       ],
@@ -237,11 +284,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     const SizedBox(height: 32),
 
                     // Quick Actions
-                    Text("Quick Actions",
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleLarge
-                            ?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(
+                      "Quick Actions",
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
                     const SizedBox(height: 16),
 
                     Row(
@@ -252,11 +300,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           Icons.add,
                           Theme.of(context).colorScheme.primaryContainer,
                           () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) =>
-                                          const InvoiceFormScreen()))
-                              .then((_) => ref.refresh(invoiceListProvider)),
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const InvoiceFormScreen(),
+                            ),
+                          ).then((_) => ref.refresh(invoiceListProvider)),
+                        ),
+                        const SizedBox(width: 16),
+                        _buildActionButton(
+                          context,
+                          "Payments",
+                          Icons.payment,
+                          Colors.green.shade100, // Distinct color
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const PaymentHistoryScreen(),
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 16),
                         _buildActionButton(
@@ -265,21 +326,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           Icons.contacts,
                           Colors.blue.shade100,
                           () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) =>
-                                      const MaterialClientsScreen())),
-                        ),
-                        const SizedBox(width: 16),
-                        _buildActionButton(
-                          context,
-                          "Estimates",
-                          Icons.request_quote,
-                          Colors.orange.shade100,
-                          () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const EstimatesScreen())),
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const MaterialClientsScreen(),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -292,10 +343,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           Icons.autorenew,
                           Colors.purple.shade100,
                           () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) =>
-                                      const RecurringInvoicesScreen())),
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const RecurringInvoicesScreen(),
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 16),
                         _buildActionButton(
@@ -308,14 +360,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               // Use filtered Invoices
                               if (filteredInvoices.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text(
-                                            "No invoices in selected period")));
+                                  const SnackBar(
+                                    content: Text(
+                                      "No invoices in selected period",
+                                    ),
+                                  ),
+                                );
                                 return;
                               }
 
-                              final csvData = GstrService()
-                                  .generateGstr1Csv(filteredInvoices);
+                              final csvData = GstrService().generateGstr1Csv(
+                                filteredInvoices,
+                              );
 
                               String? outputFile = await FilePicker.saveFile(
                                 dialogTitle: 'Save GSTR-1 CSV',
@@ -326,22 +382,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               );
 
                               if (outputFile != null) {
-                                if (!outputFile
-                                    .toLowerCase()
-                                    .endsWith('.csv')) {
+                                if (!outputFile.toLowerCase().endsWith(
+                                      '.csv',
+                                    )) {
                                   outputFile = '$outputFile.csv';
                                 }
                                 await File(outputFile).writeAsString(csvData);
                                 if (!context.mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content:
-                                            Text("Exported to $outputFile")));
+                                  SnackBar(
+                                    content: Text("Exported to $outputFile"),
+                                  ),
+                                );
                               }
                             } catch (e) {
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(e.toString())));
+                                SnackBar(content: Text(e.toString())),
+                              );
                             }
                           },
                         ),
@@ -351,58 +409,79 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Recent Invoices",
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(fontWeight: FontWeight.bold)),
+                        Text(
+                          "Recent Invoices",
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
                         TextButton(
                           onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const InvoicesListScreen())),
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const InvoicesListScreen(),
+                            ),
+                          ),
                           child: const Text("View All"),
-                        )
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     if (invoices.isEmpty)
                       const Card(
-                          child: ListTile(
-                              leading: CircleAvatar(child: Icon(Icons.history)),
-                              title: Text("No invoices yet")))
+                        child: ListTile(
+                          leading: CircleAvatar(child: Icon(Icons.history)),
+                          title: Text("No invoices yet"),
+                        ),
+                      )
                     else
-                      ...invoices.take(5).map((inv) => Card(
+                      ...invoices.take(5).map(
+                            (inv) => Card(
                               child: ListTile(
-                            onTap: () async {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      InvoiceDetailScreen(invoice: inv),
+                                onTap: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          InvoiceDetailScreen(invoice: inv),
+                                    ),
+                                  );
+                                  ref.invalidate(invoiceListProvider);
+                                },
+                                leading: const CircleAvatar(
+                                  child: Icon(Icons.description),
                                 ),
-                              );
-                              ref.invalidate(invoiceListProvider);
-                            },
-                            leading: const CircleAvatar(
-                                child: Icon(Icons.description)),
-                            title: Text(inv.receiver.name),
-                            subtitle: Text(
-                                "${inv.invoiceNo} • ${DateFormat('dd MMM').format(inv.invoiceDate)}"),
-                            trailing: Text(currency.format(inv.grandTotal),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
-                          )))
-                  ]);
-                })
+                                title: Text(inv.receiver.name),
+                                subtitle: Text(
+                                  "${inv.invoiceNo} • ${DateFormat('dd MMM').format(inv.invoiceDate)}",
+                                ),
+                                trailing: Text(
+                                  currency.format(inv.grandTotal),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                  ],
+                );
+              },
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatCard(BuildContext context, String title, String value,
-      IconData icon, Color color) {
+  Widget _buildStatCard(
+    BuildContext context,
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -412,25 +491,32 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           children: [
             Icon(icon, color: color, size: 28),
             const SizedBox(height: 12),
-            Text(title,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: Colors.grey[600])),
+            Text(
+              title,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+            ),
             const SizedBox(height: 4),
-            Text(value,
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              value,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildActionButton(BuildContext context, String label, IconData icon,
-      Color bgColor, VoidCallback onTap) {
+  Widget _buildActionButton(
+    BuildContext context,
+    String label,
+    IconData icon,
+    Color bgColor,
+    VoidCallback onTap,
+  ) {
     return Expanded(
       child: InkWell(
         onTap: onTap,
@@ -444,14 +530,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon,
-                  size: 32,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+              Icon(
+                icon,
+                size: 32,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               const SizedBox(height: 8),
-              Text(label,
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ],
           ),
         ),
@@ -463,8 +554,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     showProfileSwitcherSheet(context, ref);
   }
 
-  void _showGstBreakdown(BuildContext context, double cgst, double sgst,
-      double igst, String currencySymbol) {
+  void _showGstBreakdown(
+    BuildContext context,
+    double cgst,
+    double sgst,
+    double igst,
+    String currencySymbol,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -478,30 +574,42 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             const SizedBox(height: 8),
             _buildGstRow("IGST", igst, currencySymbol),
             const Divider(height: 24),
-            _buildGstRow("Total", cgst + sgst + igst, currencySymbol,
-                isBold: true),
+            _buildGstRow(
+              "Total",
+              cgst + sgst + igst,
+              currencySymbol,
+              isBold: true,
+            ),
           ],
         ),
         actions: [
           TextButton(
-              child: const Text("Close"),
-              onPressed: () => Navigator.pop(context)),
+            child: const Text("Close"),
+            onPressed: () => Navigator.pop(context),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildGstRow(String label, double amount, String symbol,
-      {bool isBold = false}) {
+  Widget _buildGstRow(
+    String label,
+    double amount,
+    String symbol, {
+    bool isBold = false,
+  }) {
     final style = isBold ? const TextStyle(fontWeight: FontWeight.bold) : null;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: style),
         Text(
-            NumberFormat.currency(symbol: symbol, decimalDigits: 2)
-                .format(amount),
-            style: style),
+          NumberFormat.currency(
+            symbol: symbol,
+            decimalDigits: 2,
+          ).format(amount),
+          style: style,
+        ),
       ],
     );
   }

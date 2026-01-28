@@ -28,6 +28,7 @@ import '../../providers/recurring_provider.dart'; // New
 import '../../widgets/dialogs/payment_dialog.dart'; // New Payment Dialog
 import '../../widgets/revenue_chart.dart'; // New
 import '../../widgets/aging_chart.dart'; // New
+import '../payment_history_screen.dart'; // New import
 
 class FluentDashboard extends ConsumerStatefulWidget {
   const FluentDashboard({super.key});
@@ -60,9 +61,11 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
             ),
             const SizedBox(width: 8),
             IconButton(
-              icon: Icon(theme.brightness == Brightness.dark
-                  ? FluentIcons.sunny
-                  : FluentIcons.clear_night),
+              icon: Icon(
+                theme.brightness == Brightness.dark
+                    ? FluentIcons.sunny
+                    : FluentIcons.clear_night,
+              ),
               onPressed: () {
                 final current = ref.read(themeProvider);
                 final next = current == ThemeMode.dark
@@ -96,7 +99,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 "Debit Notes",
                 "Fully Paid", // New Filter
                 "Partially Paid", // New Filter
-                "Overdue" // New Filter
+                "Overdue", // New Filter
               ].map((e) => ComboBoxItem(value: e, child: Text(e))).toList(),
               onChanged: (v) {
                 if (v != null) setState(() => _selectedType = v);
@@ -112,7 +115,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 "Q1 (Apr-Jun)",
                 "Q2 (Jul-Sep)",
                 "Q3 (Oct-Dec)",
-                "Q4 (Jan-Mar)"
+                "Q4 (Jan-Mar)",
               ].map((e) => ComboBoxItem(value: e, child: Text(e))).toList(),
               onChanged: (v) {
                 if (v != null) setState(() => _selectedPeriod = v);
@@ -132,10 +135,13 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         // Recurring Notification
         // Recurring Notification
         if (ref.watch(recurringListProvider).when(
-              data: (data) => data.any((p) =>
-                  p.isActive &&
-                  p.nextRunDate
-                      .isBefore(DateTime.now().add(const Duration(days: 1)))),
+              data: (data) => data.any(
+                (p) =>
+                    p.isActive &&
+                    p.nextRunDate.isBefore(
+                      DateTime.now().add(const Duration(days: 1)),
+                    ),
+              ),
               loading: () => false,
               error: (_, __) => false,
             ))
@@ -144,14 +150,17 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
             child: InfoBar(
               title: const Text("Recurring Invoices Due"),
               content: const Text(
-                  "You have recurring invoices scheduled to run soon."),
+                "You have recurring invoices scheduled to run soon.",
+              ),
               severity: InfoBarSeverity.info,
               action: Button(
                 child: const Text("View"),
                 onPressed: () => Navigator.push(
-                    context,
-                    FluentPageRoute(
-                        builder: (_) => const FluentRecurringScreen())),
+                  context,
+                  FluentPageRoute(
+                    builder: (_) => const FluentRecurringScreen(),
+                  ),
+                ),
               ),
             ),
           ),
@@ -160,8 +169,10 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
           loading: () => const Center(child: ProgressRing()),
           error: (err, stack) => Text("Error: $err"),
           data: (allInvoices) {
-            var filteredInvoices =
-                DashboardActions.filterInvoices(allInvoices, _selectedPeriod);
+            var filteredInvoices = DashboardActions.filterInvoices(
+              allInvoices,
+              _selectedPeriod,
+            );
 
             // Type Filter
             if (_selectedType != "All") {
@@ -188,13 +199,15 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
             // Search filter
             if (_searchQuery.isNotEmpty) {
               filteredInvoices = filteredInvoices
-                  .where((inv) =>
-                      inv.receiver.name
-                          .toLowerCase()
-                          .contains(_searchQuery.toLowerCase()) ||
-                      inv.invoiceNo
-                          .toLowerCase()
-                          .contains(_searchQuery.toLowerCase()))
+                  .where(
+                    (inv) =>
+                        inv.receiver.name.toLowerCase().contains(
+                              _searchQuery.toLowerCase(),
+                            ) ||
+                        inv.invoiceNo.toLowerCase().contains(
+                              _searchQuery.toLowerCase(),
+                            ),
+                  )
                   .toList();
             }
 
@@ -204,13 +217,19 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
             final totalSGST = stats['sgst'] as double;
             final totalIGST = stats['igst'] as double;
 
-            final paymentsReceived =
-                filteredInvoices.fold(0.0, (sum, inv) => sum + inv.totalPaid);
-            final paymentsDue =
-                filteredInvoices.fold(0.0, (sum, inv) => sum + inv.balanceDue);
+            final paymentsReceived = filteredInvoices.fold(
+              0.0,
+              (sum, inv) => sum + inv.totalPaid,
+            );
+            final paymentsDue = filteredInvoices.fold(
+              0.0,
+              (sum, inv) => sum + inv.balanceDue,
+            );
 
             final currency = NumberFormat.currency(
-                symbol: profile.currencySymbol, decimalDigits: 2);
+              symbol: profile.currencySymbol,
+              decimalDigits: 2,
+            );
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -225,7 +244,8 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                         await Navigator.push(
                           context,
                           FluentPageRoute(
-                              builder: (_) => const FluentInvoiceWizard()),
+                            builder: (_) => const FluentInvoiceWizard(),
+                          ),
                         );
                         ref.invalidate(invoiceListProvider);
                       },
@@ -246,9 +266,11 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                       label: const Text('Estimates'),
                       icon: const Icon(FluentIcons.document_set),
                       onPressed: () => Navigator.push(
-                          context,
-                          FluentPageRoute(
-                              builder: (_) => const FluentEstimatesScreen())),
+                        context,
+                        FluentPageRoute(
+                          builder: (_) => const FluentEstimatesScreen(),
+                        ),
+                      ),
                     ),
                     CommandBarButton(
                       label: const Text('Recurring'),
@@ -257,6 +279,16 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                           context,
                           FluentPageRoute(
                               builder: (_) => const FluentRecurringScreen())),
+                    ),
+                    CommandBarButton(
+                      label: const Text('Payments'),
+                      icon: const Icon(FluentIcons.money),
+                      onPressed: () => Navigator.push(
+                        context,
+                        FluentPageRoute(
+                          builder: (_) => const PaymentHistoryScreen(),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -267,12 +299,20 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildHeroStatCard(
-                        context,
-                        "Total Revenue",
-                        currency.format(totalRevenue),
-                        FluentIcons.money,
-                        theme.accentColor,
+                      child: GestureDetector(
+                        onTap: () {
+                          // Filter to All Invoices
+                          setState(() {
+                            _selectedType = "All";
+                          });
+                        },
+                        child: _buildHeroStatCard(
+                          context,
+                          "Total Revenue",
+                          currency.format(totalRevenue),
+                          FluentIcons.money,
+                          theme.accentColor,
+                        ),
                       ),
                     ),
                   ],
@@ -317,24 +357,31 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                   children: [
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => _showGstBreakdown(context, totalCGST,
-                            totalSGST, totalIGST, profile.currencySymbol),
+                        onTap: () => _showGstBreakdown(
+                          context,
+                          totalCGST,
+                          totalSGST,
+                          totalIGST,
+                          profile.currencySymbol,
+                        ),
                         child: _buildStatCard(
-                            context,
-                            "GST Liability",
-                            currency.format(totalCGST + totalSGST + totalIGST),
-                            FluentIcons.bank,
-                            Colors.purple),
+                          context,
+                          "GST Liability",
+                          currency.format(totalCGST + totalSGST + totalIGST),
+                          FluentIcons.bank,
+                          Colors.purple,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: _buildStatCard(
-                          context,
-                          "Total Invoices",
-                          "${filteredInvoices.length}",
-                          FluentIcons.page_list,
-                          Colors.teal),
+                        context,
+                        "Total Invoices",
+                        "${filteredInvoices.length}",
+                        FluentIcons.page_list,
+                        Colors.teal,
+                      ),
                     ),
                   ],
                 ),
@@ -345,21 +392,25 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                   child: Card(
                     child: RevenueChart(
                       monthlyData: DashboardActions.calculateRevenueTrend(
-                          filteredInvoices),
+                        filteredInvoices,
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
 
-                Text("Invoice Aging Analysis",
-                    style: theme.typography.subtitle),
+                Text(
+                  "Invoice Aging Analysis",
+                  style: theme.typography.subtitle,
+                ),
                 const SizedBox(height: 10),
                 SizedBox(
                   height: 250,
                   child: Card(
                     child: AgingChart(
                       agingData: DashboardActions.calculateAging(
-                          allInvoices), // Use allInvoices or filtered? Aging usually on all outstanding.
+                        allInvoices,
+                      ), // Use allInvoices or filtered? Aging usually on all outstanding.
                     ),
                   ),
                 ),
@@ -376,8 +427,9 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                       child: TextBox(
                         placeholder: "Search invoices...",
                         prefix: const Padding(
-                            padding: EdgeInsets.only(left: 8),
-                            child: Icon(FluentIcons.search)),
+                          padding: EdgeInsets.only(left: 8),
+                          child: Icon(FluentIcons.search),
+                        ),
                         onChanged: (v) => setState(() => _searchQuery = v),
                       ),
                     ),
@@ -392,79 +444,94 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(FluentIcons.error_badge,
-                            size: 40, color: Colors.grey),
+                        Icon(
+                          FluentIcons.error_badge,
+                          size: 40,
+                          color: Colors.grey,
+                        ),
                         SizedBox(height: 10),
-                        Text("No invoices found",
-                            style: TextStyle(color: Colors.grey)),
+                        Text(
+                          "No invoices found",
+                          style: TextStyle(color: Colors.grey),
+                        ),
                       ],
                     ),
                   )
                 else
-                  ...filteredInvoices.take(50).map((inv) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: Card(
-                          child: ListTile(
-                            leading: Checkbox(
-                              checked: inv.id != null &&
-                                  _selectedIds.contains(inv.id!),
-                              onChanged: (v) {
-                                if (inv.id == null) return;
-                                setState(() {
-                                  if (v == true) {
-                                    _selectedIds.add(inv.id!);
-                                  } else {
-                                    _selectedIds.remove(inv.id!);
-                                  }
-                                });
+                  ...filteredInvoices.take(50).map(
+                        (inv) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Card(
+                            child: ListTile(
+                              leading: Checkbox(
+                                checked: inv.id != null &&
+                                    _selectedIds.contains(inv.id!),
+                                onChanged: (v) {
+                                  if (inv.id == null) return;
+                                  setState(() {
+                                    if (v == true) {
+                                      _selectedIds.add(inv.id!);
+                                    } else {
+                                      _selectedIds.remove(inv.id!);
+                                    }
+                                  });
+                                },
+                              ),
+                              title: Text(
+                                inv.receiver.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Text(
+                                "${inv.invoiceNo} • ${DateFormat('dd MMM yyyy').format(inv.invoiceDate)}",
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        currency.format(inv.grandTotal),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      _buildStatusBadge(inv),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 12),
+                                  GestureDetector(
+                                    onTap:
+                                        () {}, // Absorb tap to prevent bubbling
+                                    child: InvoiceQuickActions(
+                                      invoice: inv,
+                                      onDelete: _deleteInvoice,
+                                      onMarkPaid: _markAsPaid,
+                                      onRecurring: _setupRecurring,
+                                      onDuplicate: _duplicateInvoice, // New
+                                      onEmail: _emailInvoice, // New
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              onPressed: () async {
+                                await Navigator.push(
+                                  context,
+                                  FluentPageRoute(
+                                    builder: (_) =>
+                                        FluentInvoiceWizard(invoiceToEdit: inv),
+                                  ),
+                                );
+                                ref.invalidate(invoiceListProvider);
                               },
                             ),
-                            title: Text(inv.receiver.name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
-                            subtitle: Text(
-                                "${inv.invoiceNo} • ${DateFormat('dd MMM yyyy').format(inv.invoiceDate)}"),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(currency.format(inv.grandTotal),
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14)),
-                                    _buildStatusBadge(inv),
-                                  ],
-                                ),
-                                const SizedBox(width: 12),
-                                GestureDetector(
-                                  onTap:
-                                      () {}, // Absorb tap to prevent bubbling
-                                  child: InvoiceQuickActions(
-                                    invoice: inv,
-                                    onDelete: _deleteInvoice,
-                                    onMarkPaid: _markAsPaid,
-                                    onRecurring: _setupRecurring,
-                                    onDuplicate: _duplicateInvoice, // New
-                                    onEmail: _emailInvoice, // New
-                                  ),
-                                ),
-                              ],
-                            ),
-                            onPressed: () async {
-                              await Navigator.push(
-                                context,
-                                FluentPageRoute(
-                                    builder: (_) => FluentInvoiceWizard(
-                                        invoiceToEdit: inv)),
-                              );
-                              ref.invalidate(invoiceListProvider);
-                            },
                           ),
                         ),
-                      )),
+                      ),
               ],
             );
           },
@@ -508,8 +575,13 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     );
   }
 
-  Widget _buildHeroStatCard(BuildContext context, String title, String value,
-      IconData icon, Color color) {
+  Widget _buildHeroStatCard(
+    BuildContext context,
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       padding: const EdgeInsets.all(16),
       backgroundColor: color, // Solid color for hero
@@ -524,21 +596,31 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
             ],
           ),
           const SizedBox(height: 16),
-          Text(value,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(title,
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.8))),
+          Text(
+            title,
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.8)),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatCard(BuildContext context, String title, String value,
-      IconData icon, Color color) {
+  Widget _buildStatCard(
+    BuildContext context,
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -546,11 +628,14 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         children: [
           Icon(icon, size: 24, color: color),
           const SizedBox(height: 12),
-          Text(value,
-              style: TextStyle(
-                  color: FluentTheme.of(context).typography.bodyLarge?.color,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            style: TextStyle(
+              color: FluentTheme.of(context).typography.bodyLarge?.color,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 4),
           Text(title, style: const TextStyle(color: Colors.grey, fontSize: 12)),
         ],
@@ -559,17 +644,23 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
   }
 
   Future<void> _exportGstr1(
-      BuildContext context, List<Invoice> allInvoices) async {
+    BuildContext context,
+    List<Invoice> allInvoices,
+  ) async {
     try {
-      final filteredInvoices =
-          DashboardActions.filterInvoices(allInvoices, _selectedPeriod);
+      final filteredInvoices = DashboardActions.filterInvoices(
+        allInvoices,
+        _selectedPeriod,
+      );
       if (filteredInvoices.isEmpty) {
-        displayInfoBar(context,
-            builder: (context, close) => InfoBar(
-                title: const Text("No Invoices"),
-                content:
-                    const Text("No invoices to export for selected period"),
-                onClose: close));
+        displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            title: const Text("No Invoices"),
+            content: const Text("No invoices to export for selected period"),
+            onClose: close,
+          ),
+        );
         return;
       }
 
@@ -588,21 +679,27 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         }
         await File(outputFile).writeAsString(csvData);
         if (!context.mounted) return;
-        displayInfoBar(context,
-            builder: (context, close) => InfoBar(
-                title: const Text("Success"),
-                content: Text("Exported to $outputFile"),
-                severity: InfoBarSeverity.success,
-                onClose: close));
+        displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            title: const Text("Success"),
+            content: Text("Exported to $outputFile"),
+            severity: InfoBarSeverity.success,
+            onClose: close,
+          ),
+        );
       }
     } catch (e) {
       if (!context.mounted) return;
-      displayInfoBar(context,
-          builder: (context, close) => InfoBar(
-              title: const Text("Error"),
-              content: Text(e.toString()),
-              severity: InfoBarSeverity.error,
-              onClose: close));
+      displayInfoBar(
+        context,
+        builder: (context, close) => InfoBar(
+          title: const Text("Error"),
+          content: Text(e.toString()),
+          severity: InfoBarSeverity.error,
+          onClose: close,
+        ),
+      );
     }
   }
 
@@ -653,48 +750,63 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 Text("Found ${importResult.invoices.length} invoices."),
                 const SizedBox(height: 10),
                 if (importResult.missingInvoiceNumbers.isNotEmpty) ...[
-                  Text("Missing Invoice Numbers (Gap in sequence):",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, color: Colors.red)),
+                  Text(
+                    "Missing Invoice Numbers (Gap in sequence):",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                    ),
+                  ),
                   Container(
                     margin: const EdgeInsets.only(top: 8),
                     padding: const EdgeInsets.all(8),
                     color: Colors.grey.withValues(alpha: 0.1),
                     child: SelectableText(
-                        importResult.missingInvoiceNumbers.join(", ")),
+                      importResult.missingInvoiceNumbers.join(", "),
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Button(
                     child: const Text("Export Missing Report"),
                     onPressed: () => _exportMissingReport(
-                        context, importResult.missingInvoiceNumbers),
+                      context,
+                      importResult.missingInvoiceNumbers,
+                    ),
                   ),
                 ] else
-                  Text("No sequence gaps found.",
-                      style: TextStyle(color: Colors.green)),
+                  Text(
+                    "No sequence gaps found.",
+                    style: TextStyle(color: Colors.green),
+                  ),
               ],
             ),
             actions: [
               Button(
-                  child: const Text("OK"),
-                  onPressed: () => Navigator.pop(context)),
+                child: const Text("OK"),
+                onPressed: () => Navigator.pop(context),
+              ),
             ],
           ),
         );
       }
     } catch (e) {
       if (!context.mounted) return;
-      displayInfoBar(context,
-          builder: (context, close) => InfoBar(
-              title: const Text("Import Error"),
-              content: Text(e.toString()),
-              severity: InfoBarSeverity.error,
-              onClose: close));
+      displayInfoBar(
+        context,
+        builder: (context, close) => InfoBar(
+          title: const Text("Import Error"),
+          content: Text(e.toString()),
+          severity: InfoBarSeverity.error,
+          onClose: close,
+        ),
+      );
     }
   }
 
   Future<void> _exportMissingReport(
-      BuildContext context, List<String> missingNumbers) async {
+    BuildContext context,
+    List<String> missingNumbers,
+  ) async {
     try {
       final buffer = StringBuffer();
       buffer.writeln("Missing Invoice Numbers Report");
@@ -715,26 +827,37 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
       if (outputFile != null) {
         await File(outputFile).writeAsString(buffer.toString());
         if (!context.mounted) return;
-        displayInfoBar(context,
-            builder: (context, close) => InfoBar(
-                title: const Text("Success"),
-                content: Text("Report saved to $outputFile"),
-                severity: InfoBarSeverity.success,
-                onClose: close));
+        displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            title: const Text("Success"),
+            content: Text("Report saved to $outputFile"),
+            severity: InfoBarSeverity.success,
+            onClose: close,
+          ),
+        );
       }
     } catch (e) {
       if (!context.mounted) return;
-      displayInfoBar(context,
-          builder: (context, close) => InfoBar(
-              title: const Text("Error"),
-              content: Text(e.toString()),
-              severity: InfoBarSeverity.error,
-              onClose: close));
+      displayInfoBar(
+        context,
+        builder: (context, close) => InfoBar(
+          title: const Text("Error"),
+          content: Text(e.toString()),
+          severity: InfoBarSeverity.error,
+          onClose: close,
+        ),
+      );
     }
   }
 
-  void _showGstBreakdown(BuildContext context, double cgst, double sgst,
-      double igst, String currencySymbol) {
+  void _showGstBreakdown(
+    BuildContext context,
+    double cgst,
+    double sgst,
+    double igst,
+    String currencySymbol,
+  ) {
     showDialog(
       context: context,
       builder: (context) => ContentDialog(
@@ -751,21 +874,30 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 16),
-            _buildGstRow("Total", cgst + sgst + igst, currencySymbol,
-                isBold: true),
+            _buildGstRow(
+              "Total",
+              cgst + sgst + igst,
+              currencySymbol,
+              isBold: true,
+            ),
           ],
         ),
         actions: [
           Button(
-              child: const Text("Close"),
-              onPressed: () => Navigator.pop(context)),
+            child: const Text("Close"),
+            onPressed: () => Navigator.pop(context),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildGstRow(String label, double amount, String symbol,
-      {bool isBold = false}) {
+  Widget _buildGstRow(
+    String label,
+    double amount,
+    String symbol, {
+    bool isBold = false,
+  }) {
     final style = isBold
         ? const TextStyle(fontWeight: FontWeight.bold)
         : const TextStyle();
@@ -774,9 +906,12 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
       children: [
         Text(label, style: style),
         Text(
-            NumberFormat.currency(symbol: symbol, decimalDigits: 2)
-                .format(amount),
-            style: style),
+          NumberFormat.currency(
+            symbol: symbol,
+            decimalDigits: 2,
+          ).format(amount),
+          style: style,
+        ),
       ],
     );
   }
@@ -787,14 +922,17 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     final ctx = context;
 
     if (invoice.id == null) {
-      displayInfoBar(ctx, builder: (context, close) {
-        return InfoBar(
-          title: const Text("Error"),
-          content: const Text("Cannot delete invoice with missing ID"),
-          severity: InfoBarSeverity.error,
-          onClose: close,
-        );
-      });
+      displayInfoBar(
+        ctx,
+        builder: (context, close) {
+          return InfoBar(
+            title: const Text("Error"),
+            content: const Text("Cannot delete invoice with missing ID"),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          );
+        },
+      );
       return;
     }
 
@@ -803,8 +941,9 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
       builder: (dialogCtx) {
         return ContentDialog(
           title: const Text("Delete Invoice?"),
-          content:
-              Text("Are you sure you want to delete ${invoice.invoiceNo}?"),
+          content: Text(
+            "Are you sure you want to delete ${invoice.invoiceNo}?",
+          ),
           actions: [
             Button(
               child: const Text("Cancel"),
@@ -812,8 +951,9 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
             ),
             FilledButton(
               style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(Colors.red),
-                  foregroundColor: WidgetStateProperty.all(Colors.white)),
+                backgroundColor: WidgetStateProperty.all(Colors.red),
+                foregroundColor: WidgetStateProperty.all(Colors.white),
+              ),
               child: const Text("Delete"),
               onPressed: () async {
                 Navigator.pop(dialogCtx);
@@ -822,14 +962,17 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                     .deleteInvoice(invoice.id!);
                 ref.invalidate(invoiceListProvider);
                 if (!ctx.mounted) return;
-                displayInfoBar(ctx, builder: (context, close) {
-                  return InfoBar(
-                    title: const Text("Deleted"),
-                    content: Text("Invoice ${invoice.invoiceNo} deleted"),
-                    severity: InfoBarSeverity.success,
-                    onClose: close,
-                  );
-                });
+                displayInfoBar(
+                  ctx,
+                  builder: (context, close) {
+                    return InfoBar(
+                      title: const Text("Deleted"),
+                      content: Text("Invoice ${invoice.invoiceNo} deleted"),
+                      severity: InfoBarSeverity.success,
+                      onClose: close,
+                    );
+                  },
+                );
               },
             ),
           ],
@@ -843,14 +986,17 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     final ctx = context;
 
     if (invoice.id == null) {
-      displayInfoBar(ctx, builder: (context, close) {
-        return InfoBar(
-          title: const Text("Error"),
-          content: const Text("Cannot update invoice with missing ID"),
-          severity: InfoBarSeverity.error,
-          onClose: close,
-        );
-      });
+      displayInfoBar(
+        ctx,
+        builder: (context, close) {
+          return InfoBar(
+            title: const Text("Error"),
+            content: const Text("Cannot update invoice with missing ID"),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          );
+        },
+      );
       return;
     }
 
@@ -869,20 +1015,25 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
             notes: notes,
           );
 
-          final updated =
-              invoice.copyWith(payments: [...invoice.payments, payment]);
+          final updated = invoice.copyWith(
+            payments: [...invoice.payments, payment],
+          );
           await ref.read(invoiceRepositoryProvider).saveInvoice(updated);
           ref.invalidate(invoiceListProvider);
           if (!ctx.mounted) return;
-          displayInfoBar(ctx, builder: (context, close) {
-            return InfoBar(
-              title: const Text("Success"),
-              content:
-                  Text("Recorded payment of $amount for ${invoice.invoiceNo}"),
-              severity: InfoBarSeverity.success,
-              onClose: close,
-            );
-          });
+          displayInfoBar(
+            ctx,
+            builder: (context, close) {
+              return InfoBar(
+                title: const Text("Success"),
+                content: Text(
+                  "Recorded payment of $amount for ${invoice.invoiceNo}",
+                ),
+                severity: InfoBarSeverity.success,
+                onClose: close,
+              );
+            },
+          );
         },
       ),
     );
@@ -912,8 +1063,12 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 child: ComboBox<RecurringInterval>(
                   value: interval,
                   items: RecurringInterval.values
-                      .map((e) => ComboBoxItem(
-                          value: e, child: Text(e.name.toUpperCase())))
+                      .map(
+                        (e) => ComboBoxItem(
+                          value: e,
+                          child: Text(e.name.toUpperCase()),
+                        ),
+                      )
                       .toList(),
                   onChanged: (val) {
                     if (val != null) setState(() => interval = val);
@@ -940,10 +1095,11 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
               child: const Text("Save"),
               onPressed: () async {
                 final base = invoice.copyWith(
-                    payments: [],
-                    id: null,
-                    invoiceNo: '',
-                    invoiceDate: DateTime.now()); // Template
+                  payments: [],
+                  id: null,
+                  invoiceNo: '',
+                  invoiceDate: DateTime.now(),
+                ); // Template
                 final profile = RecurringProfile(
                   id: const Uuid().v4(),
                   profileId: activeProfileId,
@@ -957,14 +1113,17 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                     .addProfile(profile);
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
                 if (!context.mounted) return;
-                displayInfoBar(context, builder: (context, close) {
-                  return InfoBar(
-                    title: const Text("Success"),
-                    content: const Text("Recurring Profile Created"),
-                    severity: InfoBarSeverity.success,
-                    onClose: close,
-                  );
-                });
+                displayInfoBar(
+                  context,
+                  builder: (context, close) {
+                    return InfoBar(
+                      title: const Text("Success"),
+                      content: const Text("Recurring Profile Created"),
+                      severity: InfoBarSeverity.success,
+                      onClose: close,
+                    );
+                  },
+                );
               },
             ),
           ],
@@ -992,7 +1151,8 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     await Navigator.push(
       context,
       FluentPageRoute(
-          builder: (_) => FluentInvoiceWizard(invoiceToEdit: newInvoice)),
+        builder: (_) => FluentInvoiceWizard(invoiceToEdit: newInvoice),
+      ),
     );
     ref.invalidate(invoiceListProvider);
   }
@@ -1013,12 +1173,15 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
       );
     } catch (e) {
       if (context.mounted) {
-        displayInfoBar(context,
-            builder: (context, close) => InfoBar(
-                title: const Text("Error Sharing"),
-                content: Text(e.toString()),
-                severity: InfoBarSeverity.error,
-                onClose: close));
+        displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            title: const Text("Error Sharing"),
+            content: Text(e.toString()),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          ),
+        );
       }
     }
   }
@@ -1029,7 +1192,8 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
       builder: (context) => ContentDialog(
         title: const Text("Confirm Delete"),
         content: Text(
-            "Are you sure you want to delete ${_selectedIds.length} invoices?"),
+          "Are you sure you want to delete ${_selectedIds.length} invoices?",
+        ),
         actions: [
           Button(
             child: const Text("Cancel"),
@@ -1037,7 +1201,8 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
           ),
           FilledButton(
             style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(Colors.red)),
+              backgroundColor: WidgetStateProperty.all(Colors.red),
+            ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text("Delete"),
           ),
