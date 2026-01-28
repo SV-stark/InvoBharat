@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/profile_switcher_sheet.dart';
+import '../widgets/error_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -180,7 +181,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             const SizedBox(height: 24),
             invoiceListAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Text("Error: $err"),
+              error: (err, stack) => ErrorView(
+                message: err.toString(),
+                onRetry: () => ref.refresh(invoiceListProvider),
+              ),
               data: (invoices) {
                 // Filter Invoices
                 final filteredInvoices = _dateRange == null

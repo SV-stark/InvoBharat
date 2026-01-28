@@ -6,7 +6,7 @@ part 'estimate.freezed.dart';
 part 'estimate.g.dart';
 
 @freezed
-class Estimate with _$Estimate {
+abstract class Estimate with _$Estimate {
   const Estimate._();
 
   const factory Estimate({

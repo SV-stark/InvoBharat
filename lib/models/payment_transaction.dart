@@ -4,7 +4,7 @@ part 'payment_transaction.freezed.dart';
 part 'payment_transaction.g.dart';
 
 @freezed
-class PaymentTransaction with _$PaymentTransaction {
+abstract class PaymentTransaction with _$PaymentTransaction {
   const factory PaymentTransaction({
     required String id,
     required String invoiceId,

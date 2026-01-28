@@ -6,8 +6,8 @@ part of 'item_template.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$ItemTemplateImpl _$$ItemTemplateImplFromJson(Map<String, dynamic> json) =>
-    _$ItemTemplateImpl(
+_ItemTemplate _$ItemTemplateFromJson(Map<String, dynamic> json) =>
+    _ItemTemplate(
       id: json['id'] as String,
       description: json['description'] as String,
       unit: json['unit'] as String,
@@ -18,7 +18,7 @@ _$ItemTemplateImpl _$$ItemTemplateImplFromJson(Map<String, dynamic> json) =>
       quantity: (json['quantity'] as num?)?.toDouble() ?? 1.0,
     );
 
-Map<String, dynamic> _$$ItemTemplateImplToJson(_$ItemTemplateImpl instance) =>
+Map<String, dynamic> _$ItemTemplateToJson(_ItemTemplate instance) =>
     <String, dynamic>{
       'id': instance.id,
       'description': instance.description,

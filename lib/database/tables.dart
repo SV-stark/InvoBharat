@@ -73,12 +73,21 @@ class Invoices extends Table {
   TextColumn get ifscCode => text()();
   TextColumn get branch => text()();
 
-  // Snapshot of Supplier Details (Fix for GSTR-1 Import & History)
+  // Supplier Snapshot (Fix for GSTR-1 Import & History)
   TextColumn get supplierName => text().nullable()();
   TextColumn get supplierAddress => text().nullable()();
   TextColumn get supplierGstin => text().nullable()();
   TextColumn get supplierEmail => text().nullable()();
   TextColumn get supplierPhone => text().nullable()();
+
+  // Receiver Snapshot (New V4)
+  TextColumn get receiverName => text().nullable()();
+  TextColumn get receiverAddress => text().nullable()();
+  TextColumn get receiverGstin => text().nullable()();
+  TextColumn get receiverPan => text().nullable()();
+  TextColumn get receiverState => text().nullable()();
+  TextColumn get receiverStateCode => text().nullable()();
+  TextColumn get receiverEmail => text().nullable()();
 
   // Credit/Debit Note Fields
   TextColumn get originalInvoiceNumber => text().nullable()();

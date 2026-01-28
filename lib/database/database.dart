@@ -16,7 +16,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -24,6 +24,7 @@ class AppDatabase extends _$AppDatabase {
       await m.createAll();
     }, onUpgrade: (Migrator m, int from, int to) async {
       if (from < 2) {
+        // ... (existing v2 migration)
         // Add new supplier columns
         await m.addColumn(invoices, invoices.supplierName);
         await m.addColumn(invoices, invoices.supplierAddress);
@@ -50,8 +51,6 @@ class AppDatabase extends _$AppDatabase {
 
             if (activeProfile != null) {
               // Run Update
-              // We use raw update because using 'invoices' table object might be partly updated in Drift context
-              // But `customStatement` is safer.
               final name = activeProfile['companyName'] ?? '';
               final addr = activeProfile['address'] ?? '';
               final gst = activeProfile['gstin'] ?? '';
@@ -73,6 +72,39 @@ class AppDatabase extends _$AppDatabase {
       if (from < 3) {
         await m.addColumn(invoices, invoices.originalInvoiceNumber);
         await m.addColumn(invoices, invoices.originalInvoiceDate);
+      }
+      if (from < 4) {
+        // Add Receiver Snapshot Columns
+        await m.addColumn(invoices, invoices.receiverName);
+        await m.addColumn(invoices, invoices.receiverAddress);
+        await m.addColumn(invoices, invoices.receiverGstin);
+        await m.addColumn(invoices, invoices.receiverPan);
+        await m.addColumn(invoices, invoices.receiverState);
+        await m.addColumn(invoices, invoices.receiverStateCode);
+        await m.addColumn(invoices, invoices.receiverEmail);
+
+        // Backfill Receiver Details from Linked Client
+        // Since we are using SQLite, we can use a subquery update or a join update if supported.
+        // Standard SQLite:
+        // UPDATE invoices SET receiver_name = (SELECT name FROM clients WHERE clients.id = invoices.client_id)
+
+        try {
+          await m.database.customStatement('''
+            UPDATE invoices SET 
+              receiver_name = (SELECT name FROM clients WHERE clients.id = invoices.client_id),
+              receiver_address = (SELECT address FROM clients WHERE clients.id = invoices.client_id),
+              receiver_gstin = (SELECT gstin FROM clients WHERE clients.id = invoices.client_id),
+              receiver_pan = (SELECT pan FROM clients WHERE clients.id = invoices.client_id),
+              receiver_state = (SELECT state FROM clients WHERE clients.id = invoices.client_id),
+              receiver_state_code = (SELECT state_code FROM clients WHERE clients.id = invoices.client_id),
+              receiver_email = (SELECT email FROM clients WHERE clients.id = invoices.client_id)
+            WHERE client_id IS NOT NULL AND receiver_name IS NULL
+           ''');
+        } catch (e) {
+          if (kDebugMode) {
+            print("Migration V4 Backfill Error: $e");
+          }
+        }
       }
     }, beforeOpen: (details) async {
       // We can do data migration here too if needed

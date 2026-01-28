@@ -1665,6 +1665,48 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
   late final GeneratedColumn<String> supplierPhone = GeneratedColumn<String>(
       'supplier_phone', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _receiverNameMeta =
+      const VerificationMeta('receiverName');
+  @override
+  late final GeneratedColumn<String> receiverName = GeneratedColumn<String>(
+      'receiver_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _receiverAddressMeta =
+      const VerificationMeta('receiverAddress');
+  @override
+  late final GeneratedColumn<String> receiverAddress = GeneratedColumn<String>(
+      'receiver_address', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _receiverGstinMeta =
+      const VerificationMeta('receiverGstin');
+  @override
+  late final GeneratedColumn<String> receiverGstin = GeneratedColumn<String>(
+      'receiver_gstin', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _receiverPanMeta =
+      const VerificationMeta('receiverPan');
+  @override
+  late final GeneratedColumn<String> receiverPan = GeneratedColumn<String>(
+      'receiver_pan', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _receiverStateMeta =
+      const VerificationMeta('receiverState');
+  @override
+  late final GeneratedColumn<String> receiverState = GeneratedColumn<String>(
+      'receiver_state', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _receiverStateCodeMeta =
+      const VerificationMeta('receiverStateCode');
+  @override
+  late final GeneratedColumn<String> receiverStateCode =
+      GeneratedColumn<String>('receiver_state_code', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _receiverEmailMeta =
+      const VerificationMeta('receiverEmail');
+  @override
+  late final GeneratedColumn<String> receiverEmail = GeneratedColumn<String>(
+      'receiver_email', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _originalInvoiceNumberMeta =
       const VerificationMeta('originalInvoiceNumber');
   @override
@@ -1700,6 +1742,13 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
         supplierGstin,
         supplierEmail,
         supplierPhone,
+        receiverName,
+        receiverAddress,
+        receiverGstin,
+        receiverPan,
+        receiverState,
+        receiverStateCode,
+        receiverEmail,
         originalInvoiceNumber,
         originalInvoiceDate
       ];
@@ -1838,6 +1887,48 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
           supplierPhone.isAcceptableOrUnknown(
               data['supplier_phone']!, _supplierPhoneMeta));
     }
+    if (data.containsKey('receiver_name')) {
+      context.handle(
+          _receiverNameMeta,
+          receiverName.isAcceptableOrUnknown(
+              data['receiver_name']!, _receiverNameMeta));
+    }
+    if (data.containsKey('receiver_address')) {
+      context.handle(
+          _receiverAddressMeta,
+          receiverAddress.isAcceptableOrUnknown(
+              data['receiver_address']!, _receiverAddressMeta));
+    }
+    if (data.containsKey('receiver_gstin')) {
+      context.handle(
+          _receiverGstinMeta,
+          receiverGstin.isAcceptableOrUnknown(
+              data['receiver_gstin']!, _receiverGstinMeta));
+    }
+    if (data.containsKey('receiver_pan')) {
+      context.handle(
+          _receiverPanMeta,
+          receiverPan.isAcceptableOrUnknown(
+              data['receiver_pan']!, _receiverPanMeta));
+    }
+    if (data.containsKey('receiver_state')) {
+      context.handle(
+          _receiverStateMeta,
+          receiverState.isAcceptableOrUnknown(
+              data['receiver_state']!, _receiverStateMeta));
+    }
+    if (data.containsKey('receiver_state_code')) {
+      context.handle(
+          _receiverStateCodeMeta,
+          receiverStateCode.isAcceptableOrUnknown(
+              data['receiver_state_code']!, _receiverStateCodeMeta));
+    }
+    if (data.containsKey('receiver_email')) {
+      context.handle(
+          _receiverEmailMeta,
+          receiverEmail.isAcceptableOrUnknown(
+              data['receiver_email']!, _receiverEmailMeta));
+    }
     if (data.containsKey('original_invoice_number')) {
       context.handle(
           _originalInvoiceNumberMeta,
@@ -1901,6 +1992,20 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
           .read(DriftSqlType.string, data['${effectivePrefix}supplier_email']),
       supplierPhone: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}supplier_phone']),
+      receiverName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}receiver_name']),
+      receiverAddress: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}receiver_address']),
+      receiverGstin: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}receiver_gstin']),
+      receiverPan: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}receiver_pan']),
+      receiverState: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}receiver_state']),
+      receiverStateCode: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}receiver_state_code']),
+      receiverEmail: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}receiver_email']),
       originalInvoiceNumber: attachedDatabase.typeMapping.read(
           DriftSqlType.string,
           data['${effectivePrefix}original_invoice_number']),
@@ -1938,6 +2043,13 @@ class Invoice extends DataClass implements Insertable<Invoice> {
   final String? supplierGstin;
   final String? supplierEmail;
   final String? supplierPhone;
+  final String? receiverName;
+  final String? receiverAddress;
+  final String? receiverGstin;
+  final String? receiverPan;
+  final String? receiverState;
+  final String? receiverStateCode;
+  final String? receiverEmail;
   final String? originalInvoiceNumber;
   final DateTime? originalInvoiceDate;
   const Invoice(
@@ -1962,6 +2074,13 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       this.supplierGstin,
       this.supplierEmail,
       this.supplierPhone,
+      this.receiverName,
+      this.receiverAddress,
+      this.receiverGstin,
+      this.receiverPan,
+      this.receiverState,
+      this.receiverStateCode,
+      this.receiverEmail,
       this.originalInvoiceNumber,
       this.originalInvoiceDate});
   @override
@@ -1999,6 +2118,27 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     }
     if (!nullToAbsent || supplierPhone != null) {
       map['supplier_phone'] = Variable<String>(supplierPhone);
+    }
+    if (!nullToAbsent || receiverName != null) {
+      map['receiver_name'] = Variable<String>(receiverName);
+    }
+    if (!nullToAbsent || receiverAddress != null) {
+      map['receiver_address'] = Variable<String>(receiverAddress);
+    }
+    if (!nullToAbsent || receiverGstin != null) {
+      map['receiver_gstin'] = Variable<String>(receiverGstin);
+    }
+    if (!nullToAbsent || receiverPan != null) {
+      map['receiver_pan'] = Variable<String>(receiverPan);
+    }
+    if (!nullToAbsent || receiverState != null) {
+      map['receiver_state'] = Variable<String>(receiverState);
+    }
+    if (!nullToAbsent || receiverStateCode != null) {
+      map['receiver_state_code'] = Variable<String>(receiverStateCode);
+    }
+    if (!nullToAbsent || receiverEmail != null) {
+      map['receiver_email'] = Variable<String>(receiverEmail);
     }
     if (!nullToAbsent || originalInvoiceNumber != null) {
       map['original_invoice_number'] = Variable<String>(originalInvoiceNumber);
@@ -2044,6 +2184,27 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       supplierPhone: supplierPhone == null && nullToAbsent
           ? const Value.absent()
           : Value(supplierPhone),
+      receiverName: receiverName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiverName),
+      receiverAddress: receiverAddress == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiverAddress),
+      receiverGstin: receiverGstin == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiverGstin),
+      receiverPan: receiverPan == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiverPan),
+      receiverState: receiverState == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiverState),
+      receiverStateCode: receiverStateCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiverStateCode),
+      receiverEmail: receiverEmail == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiverEmail),
       originalInvoiceNumber: originalInvoiceNumber == null && nullToAbsent
           ? const Value.absent()
           : Value(originalInvoiceNumber),
@@ -2078,6 +2239,14 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       supplierGstin: serializer.fromJson<String?>(json['supplierGstin']),
       supplierEmail: serializer.fromJson<String?>(json['supplierEmail']),
       supplierPhone: serializer.fromJson<String?>(json['supplierPhone']),
+      receiverName: serializer.fromJson<String?>(json['receiverName']),
+      receiverAddress: serializer.fromJson<String?>(json['receiverAddress']),
+      receiverGstin: serializer.fromJson<String?>(json['receiverGstin']),
+      receiverPan: serializer.fromJson<String?>(json['receiverPan']),
+      receiverState: serializer.fromJson<String?>(json['receiverState']),
+      receiverStateCode:
+          serializer.fromJson<String?>(json['receiverStateCode']),
+      receiverEmail: serializer.fromJson<String?>(json['receiverEmail']),
       originalInvoiceNumber:
           serializer.fromJson<String?>(json['originalInvoiceNumber']),
       originalInvoiceDate:
@@ -2109,6 +2278,13 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       'supplierGstin': serializer.toJson<String?>(supplierGstin),
       'supplierEmail': serializer.toJson<String?>(supplierEmail),
       'supplierPhone': serializer.toJson<String?>(supplierPhone),
+      'receiverName': serializer.toJson<String?>(receiverName),
+      'receiverAddress': serializer.toJson<String?>(receiverAddress),
+      'receiverGstin': serializer.toJson<String?>(receiverGstin),
+      'receiverPan': serializer.toJson<String?>(receiverPan),
+      'receiverState': serializer.toJson<String?>(receiverState),
+      'receiverStateCode': serializer.toJson<String?>(receiverStateCode),
+      'receiverEmail': serializer.toJson<String?>(receiverEmail),
       'originalInvoiceNumber':
           serializer.toJson<String?>(originalInvoiceNumber),
       'originalInvoiceDate': serializer.toJson<DateTime?>(originalInvoiceDate),
@@ -2137,6 +2313,13 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           Value<String?> supplierGstin = const Value.absent(),
           Value<String?> supplierEmail = const Value.absent(),
           Value<String?> supplierPhone = const Value.absent(),
+          Value<String?> receiverName = const Value.absent(),
+          Value<String?> receiverAddress = const Value.absent(),
+          Value<String?> receiverGstin = const Value.absent(),
+          Value<String?> receiverPan = const Value.absent(),
+          Value<String?> receiverState = const Value.absent(),
+          Value<String?> receiverStateCode = const Value.absent(),
+          Value<String?> receiverEmail = const Value.absent(),
           Value<String?> originalInvoiceNumber = const Value.absent(),
           Value<DateTime?> originalInvoiceDate = const Value.absent()}) =>
       Invoice(
@@ -2167,6 +2350,21 @@ class Invoice extends DataClass implements Insertable<Invoice> {
             supplierEmail.present ? supplierEmail.value : this.supplierEmail,
         supplierPhone:
             supplierPhone.present ? supplierPhone.value : this.supplierPhone,
+        receiverName:
+            receiverName.present ? receiverName.value : this.receiverName,
+        receiverAddress: receiverAddress.present
+            ? receiverAddress.value
+            : this.receiverAddress,
+        receiverGstin:
+            receiverGstin.present ? receiverGstin.value : this.receiverGstin,
+        receiverPan: receiverPan.present ? receiverPan.value : this.receiverPan,
+        receiverState:
+            receiverState.present ? receiverState.value : this.receiverState,
+        receiverStateCode: receiverStateCode.present
+            ? receiverStateCode.value
+            : this.receiverStateCode,
+        receiverEmail:
+            receiverEmail.present ? receiverEmail.value : this.receiverEmail,
         originalInvoiceNumber: originalInvoiceNumber.present
             ? originalInvoiceNumber.value
             : this.originalInvoiceNumber,
@@ -2214,6 +2412,26 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       supplierPhone: data.supplierPhone.present
           ? data.supplierPhone.value
           : this.supplierPhone,
+      receiverName: data.receiverName.present
+          ? data.receiverName.value
+          : this.receiverName,
+      receiverAddress: data.receiverAddress.present
+          ? data.receiverAddress.value
+          : this.receiverAddress,
+      receiverGstin: data.receiverGstin.present
+          ? data.receiverGstin.value
+          : this.receiverGstin,
+      receiverPan:
+          data.receiverPan.present ? data.receiverPan.value : this.receiverPan,
+      receiverState: data.receiverState.present
+          ? data.receiverState.value
+          : this.receiverState,
+      receiverStateCode: data.receiverStateCode.present
+          ? data.receiverStateCode.value
+          : this.receiverStateCode,
+      receiverEmail: data.receiverEmail.present
+          ? data.receiverEmail.value
+          : this.receiverEmail,
       originalInvoiceNumber: data.originalInvoiceNumber.present
           ? data.originalInvoiceNumber.value
           : this.originalInvoiceNumber,
@@ -2247,6 +2465,13 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           ..write('supplierGstin: $supplierGstin, ')
           ..write('supplierEmail: $supplierEmail, ')
           ..write('supplierPhone: $supplierPhone, ')
+          ..write('receiverName: $receiverName, ')
+          ..write('receiverAddress: $receiverAddress, ')
+          ..write('receiverGstin: $receiverGstin, ')
+          ..write('receiverPan: $receiverPan, ')
+          ..write('receiverState: $receiverState, ')
+          ..write('receiverStateCode: $receiverStateCode, ')
+          ..write('receiverEmail: $receiverEmail, ')
           ..write('originalInvoiceNumber: $originalInvoiceNumber, ')
           ..write('originalInvoiceDate: $originalInvoiceDate')
           ..write(')'))
@@ -2276,6 +2501,13 @@ class Invoice extends DataClass implements Insertable<Invoice> {
         supplierGstin,
         supplierEmail,
         supplierPhone,
+        receiverName,
+        receiverAddress,
+        receiverGstin,
+        receiverPan,
+        receiverState,
+        receiverStateCode,
+        receiverEmail,
         originalInvoiceNumber,
         originalInvoiceDate
       ]);
@@ -2304,6 +2536,13 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           other.supplierGstin == this.supplierGstin &&
           other.supplierEmail == this.supplierEmail &&
           other.supplierPhone == this.supplierPhone &&
+          other.receiverName == this.receiverName &&
+          other.receiverAddress == this.receiverAddress &&
+          other.receiverGstin == this.receiverGstin &&
+          other.receiverPan == this.receiverPan &&
+          other.receiverState == this.receiverState &&
+          other.receiverStateCode == this.receiverStateCode &&
+          other.receiverEmail == this.receiverEmail &&
           other.originalInvoiceNumber == this.originalInvoiceNumber &&
           other.originalInvoiceDate == this.originalInvoiceDate);
 }
@@ -2330,6 +2569,13 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
   final Value<String?> supplierGstin;
   final Value<String?> supplierEmail;
   final Value<String?> supplierPhone;
+  final Value<String?> receiverName;
+  final Value<String?> receiverAddress;
+  final Value<String?> receiverGstin;
+  final Value<String?> receiverPan;
+  final Value<String?> receiverState;
+  final Value<String?> receiverStateCode;
+  final Value<String?> receiverEmail;
   final Value<String?> originalInvoiceNumber;
   final Value<DateTime?> originalInvoiceDate;
   final Value<int> rowid;
@@ -2355,6 +2601,13 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     this.supplierGstin = const Value.absent(),
     this.supplierEmail = const Value.absent(),
     this.supplierPhone = const Value.absent(),
+    this.receiverName = const Value.absent(),
+    this.receiverAddress = const Value.absent(),
+    this.receiverGstin = const Value.absent(),
+    this.receiverPan = const Value.absent(),
+    this.receiverState = const Value.absent(),
+    this.receiverStateCode = const Value.absent(),
+    this.receiverEmail = const Value.absent(),
     this.originalInvoiceNumber = const Value.absent(),
     this.originalInvoiceDate = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2381,6 +2634,13 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     this.supplierGstin = const Value.absent(),
     this.supplierEmail = const Value.absent(),
     this.supplierPhone = const Value.absent(),
+    this.receiverName = const Value.absent(),
+    this.receiverAddress = const Value.absent(),
+    this.receiverGstin = const Value.absent(),
+    this.receiverPan = const Value.absent(),
+    this.receiverState = const Value.absent(),
+    this.receiverStateCode = const Value.absent(),
+    this.receiverEmail = const Value.absent(),
     this.originalInvoiceNumber = const Value.absent(),
     this.originalInvoiceDate = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2418,6 +2678,13 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     Expression<String>? supplierGstin,
     Expression<String>? supplierEmail,
     Expression<String>? supplierPhone,
+    Expression<String>? receiverName,
+    Expression<String>? receiverAddress,
+    Expression<String>? receiverGstin,
+    Expression<String>? receiverPan,
+    Expression<String>? receiverState,
+    Expression<String>? receiverStateCode,
+    Expression<String>? receiverEmail,
     Expression<String>? originalInvoiceNumber,
     Expression<DateTime>? originalInvoiceDate,
     Expression<int>? rowid,
@@ -2444,6 +2711,13 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
       if (supplierGstin != null) 'supplier_gstin': supplierGstin,
       if (supplierEmail != null) 'supplier_email': supplierEmail,
       if (supplierPhone != null) 'supplier_phone': supplierPhone,
+      if (receiverName != null) 'receiver_name': receiverName,
+      if (receiverAddress != null) 'receiver_address': receiverAddress,
+      if (receiverGstin != null) 'receiver_gstin': receiverGstin,
+      if (receiverPan != null) 'receiver_pan': receiverPan,
+      if (receiverState != null) 'receiver_state': receiverState,
+      if (receiverStateCode != null) 'receiver_state_code': receiverStateCode,
+      if (receiverEmail != null) 'receiver_email': receiverEmail,
       if (originalInvoiceNumber != null)
         'original_invoice_number': originalInvoiceNumber,
       if (originalInvoiceDate != null)
@@ -2474,6 +2748,13 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
       Value<String?>? supplierGstin,
       Value<String?>? supplierEmail,
       Value<String?>? supplierPhone,
+      Value<String?>? receiverName,
+      Value<String?>? receiverAddress,
+      Value<String?>? receiverGstin,
+      Value<String?>? receiverPan,
+      Value<String?>? receiverState,
+      Value<String?>? receiverStateCode,
+      Value<String?>? receiverEmail,
       Value<String?>? originalInvoiceNumber,
       Value<DateTime?>? originalInvoiceDate,
       Value<int>? rowid}) {
@@ -2499,6 +2780,13 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
       supplierGstin: supplierGstin ?? this.supplierGstin,
       supplierEmail: supplierEmail ?? this.supplierEmail,
       supplierPhone: supplierPhone ?? this.supplierPhone,
+      receiverName: receiverName ?? this.receiverName,
+      receiverAddress: receiverAddress ?? this.receiverAddress,
+      receiverGstin: receiverGstin ?? this.receiverGstin,
+      receiverPan: receiverPan ?? this.receiverPan,
+      receiverState: receiverState ?? this.receiverState,
+      receiverStateCode: receiverStateCode ?? this.receiverStateCode,
+      receiverEmail: receiverEmail ?? this.receiverEmail,
       originalInvoiceNumber:
           originalInvoiceNumber ?? this.originalInvoiceNumber,
       originalInvoiceDate: originalInvoiceDate ?? this.originalInvoiceDate,
@@ -2572,6 +2860,27 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     if (supplierPhone.present) {
       map['supplier_phone'] = Variable<String>(supplierPhone.value);
     }
+    if (receiverName.present) {
+      map['receiver_name'] = Variable<String>(receiverName.value);
+    }
+    if (receiverAddress.present) {
+      map['receiver_address'] = Variable<String>(receiverAddress.value);
+    }
+    if (receiverGstin.present) {
+      map['receiver_gstin'] = Variable<String>(receiverGstin.value);
+    }
+    if (receiverPan.present) {
+      map['receiver_pan'] = Variable<String>(receiverPan.value);
+    }
+    if (receiverState.present) {
+      map['receiver_state'] = Variable<String>(receiverState.value);
+    }
+    if (receiverStateCode.present) {
+      map['receiver_state_code'] = Variable<String>(receiverStateCode.value);
+    }
+    if (receiverEmail.present) {
+      map['receiver_email'] = Variable<String>(receiverEmail.value);
+    }
     if (originalInvoiceNumber.present) {
       map['original_invoice_number'] =
           Variable<String>(originalInvoiceNumber.value);
@@ -2610,6 +2919,13 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
           ..write('supplierGstin: $supplierGstin, ')
           ..write('supplierEmail: $supplierEmail, ')
           ..write('supplierPhone: $supplierPhone, ')
+          ..write('receiverName: $receiverName, ')
+          ..write('receiverAddress: $receiverAddress, ')
+          ..write('receiverGstin: $receiverGstin, ')
+          ..write('receiverPan: $receiverPan, ')
+          ..write('receiverState: $receiverState, ')
+          ..write('receiverStateCode: $receiverStateCode, ')
+          ..write('receiverEmail: $receiverEmail, ')
           ..write('originalInvoiceNumber: $originalInvoiceNumber, ')
           ..write('originalInvoiceDate: $originalInvoiceDate, ')
           ..write('rowid: $rowid')
@@ -4558,6 +4874,13 @@ typedef $$InvoicesTableCreateCompanionBuilder = InvoicesCompanion Function({
   Value<String?> supplierGstin,
   Value<String?> supplierEmail,
   Value<String?> supplierPhone,
+  Value<String?> receiverName,
+  Value<String?> receiverAddress,
+  Value<String?> receiverGstin,
+  Value<String?> receiverPan,
+  Value<String?> receiverState,
+  Value<String?> receiverStateCode,
+  Value<String?> receiverEmail,
   Value<String?> originalInvoiceNumber,
   Value<DateTime?> originalInvoiceDate,
   Value<int> rowid,
@@ -4584,6 +4907,13 @@ typedef $$InvoicesTableUpdateCompanionBuilder = InvoicesCompanion Function({
   Value<String?> supplierGstin,
   Value<String?> supplierEmail,
   Value<String?> supplierPhone,
+  Value<String?> receiverName,
+  Value<String?> receiverAddress,
+  Value<String?> receiverGstin,
+  Value<String?> receiverPan,
+  Value<String?> receiverState,
+  Value<String?> receiverStateCode,
+  Value<String?> receiverEmail,
   Value<String?> originalInvoiceNumber,
   Value<DateTime?> originalInvoiceDate,
   Value<int> rowid,
@@ -4720,6 +5050,29 @@ class $$InvoicesTableFilterComposer
 
   ColumnFilters<String> get supplierPhone => $composableBuilder(
       column: $table.supplierPhone, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get receiverName => $composableBuilder(
+      column: $table.receiverName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get receiverAddress => $composableBuilder(
+      column: $table.receiverAddress,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get receiverGstin => $composableBuilder(
+      column: $table.receiverGstin, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get receiverPan => $composableBuilder(
+      column: $table.receiverPan, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get receiverState => $composableBuilder(
+      column: $table.receiverState, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get receiverStateCode => $composableBuilder(
+      column: $table.receiverStateCode,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get receiverEmail => $composableBuilder(
+      column: $table.receiverEmail, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get originalInvoiceNumber => $composableBuilder(
       column: $table.originalInvoiceNumber,
@@ -4886,6 +5239,33 @@ class $$InvoicesTableOrderingComposer
       column: $table.supplierPhone,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get receiverName => $composableBuilder(
+      column: $table.receiverName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get receiverAddress => $composableBuilder(
+      column: $table.receiverAddress,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get receiverGstin => $composableBuilder(
+      column: $table.receiverGstin,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get receiverPan => $composableBuilder(
+      column: $table.receiverPan, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get receiverState => $composableBuilder(
+      column: $table.receiverState,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get receiverStateCode => $composableBuilder(
+      column: $table.receiverStateCode,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get receiverEmail => $composableBuilder(
+      column: $table.receiverEmail,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get originalInvoiceNumber => $composableBuilder(
       column: $table.originalInvoiceNumber,
       builder: (column) => ColumnOrderings(column));
@@ -5000,6 +5380,27 @@ class $$InvoicesTableAnnotationComposer
 
   GeneratedColumn<String> get supplierPhone => $composableBuilder(
       column: $table.supplierPhone, builder: (column) => column);
+
+  GeneratedColumn<String> get receiverName => $composableBuilder(
+      column: $table.receiverName, builder: (column) => column);
+
+  GeneratedColumn<String> get receiverAddress => $composableBuilder(
+      column: $table.receiverAddress, builder: (column) => column);
+
+  GeneratedColumn<String> get receiverGstin => $composableBuilder(
+      column: $table.receiverGstin, builder: (column) => column);
+
+  GeneratedColumn<String> get receiverPan => $composableBuilder(
+      column: $table.receiverPan, builder: (column) => column);
+
+  GeneratedColumn<String> get receiverState => $composableBuilder(
+      column: $table.receiverState, builder: (column) => column);
+
+  GeneratedColumn<String> get receiverStateCode => $composableBuilder(
+      column: $table.receiverStateCode, builder: (column) => column);
+
+  GeneratedColumn<String> get receiverEmail => $composableBuilder(
+      column: $table.receiverEmail, builder: (column) => column);
 
   GeneratedColumn<String> get originalInvoiceNumber => $composableBuilder(
       column: $table.originalInvoiceNumber, builder: (column) => column);
@@ -5138,6 +5539,13 @@ class $$InvoicesTableTableManager extends RootTableManager<
             Value<String?> supplierGstin = const Value.absent(),
             Value<String?> supplierEmail = const Value.absent(),
             Value<String?> supplierPhone = const Value.absent(),
+            Value<String?> receiverName = const Value.absent(),
+            Value<String?> receiverAddress = const Value.absent(),
+            Value<String?> receiverGstin = const Value.absent(),
+            Value<String?> receiverPan = const Value.absent(),
+            Value<String?> receiverState = const Value.absent(),
+            Value<String?> receiverStateCode = const Value.absent(),
+            Value<String?> receiverEmail = const Value.absent(),
             Value<String?> originalInvoiceNumber = const Value.absent(),
             Value<DateTime?> originalInvoiceDate = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -5164,6 +5572,13 @@ class $$InvoicesTableTableManager extends RootTableManager<
             supplierGstin: supplierGstin,
             supplierEmail: supplierEmail,
             supplierPhone: supplierPhone,
+            receiverName: receiverName,
+            receiverAddress: receiverAddress,
+            receiverGstin: receiverGstin,
+            receiverPan: receiverPan,
+            receiverState: receiverState,
+            receiverStateCode: receiverStateCode,
+            receiverEmail: receiverEmail,
             originalInvoiceNumber: originalInvoiceNumber,
             originalInvoiceDate: originalInvoiceDate,
             rowid: rowid,
@@ -5190,6 +5605,13 @@ class $$InvoicesTableTableManager extends RootTableManager<
             Value<String?> supplierGstin = const Value.absent(),
             Value<String?> supplierEmail = const Value.absent(),
             Value<String?> supplierPhone = const Value.absent(),
+            Value<String?> receiverName = const Value.absent(),
+            Value<String?> receiverAddress = const Value.absent(),
+            Value<String?> receiverGstin = const Value.absent(),
+            Value<String?> receiverPan = const Value.absent(),
+            Value<String?> receiverState = const Value.absent(),
+            Value<String?> receiverStateCode = const Value.absent(),
+            Value<String?> receiverEmail = const Value.absent(),
             Value<String?> originalInvoiceNumber = const Value.absent(),
             Value<DateTime?> originalInvoiceDate = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -5216,6 +5638,13 @@ class $$InvoicesTableTableManager extends RootTableManager<
             supplierGstin: supplierGstin,
             supplierEmail: supplierEmail,
             supplierPhone: supplierPhone,
+            receiverName: receiverName,
+            receiverAddress: receiverAddress,
+            receiverGstin: receiverGstin,
+            receiverPan: receiverPan,
+            receiverState: receiverState,
+            receiverStateCode: receiverStateCode,
+            receiverEmail: receiverEmail,
             originalInvoiceNumber: originalInvoiceNumber,
             originalInvoiceDate: originalInvoiceDate,
             rowid: rowid,

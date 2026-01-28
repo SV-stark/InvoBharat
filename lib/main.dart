@@ -80,31 +80,23 @@ class InvoBharatApp extends ConsumerWidget {
   }
 
   fluent.AccentColor _getAccentColor(Color color) {
-    if (color.toARGB32() == fluent.Colors.teal.toARGB32()) {
-      return fluent.Colors.teal;
-    }
-    if (color.toARGB32() == fluent.Colors.blue.toARGB32()) {
-      return fluent.Colors.blue;
-    }
-    if (color.toARGB32() == fluent.Colors.red.toARGB32()) {
-      return fluent.Colors.red;
-    }
-    if (color.toARGB32() == fluent.Colors.orange.toARGB32()) {
-      return fluent.Colors.orange;
-    }
-    if (color.toARGB32() == fluent.Colors.green.toARGB32()) {
-      return fluent.Colors.green;
-    }
-    if (color.toARGB32() == fluent.Colors.purple.toARGB32()) {
-      return fluent.Colors.purple;
-    }
-    if (color.toARGB32() == fluent.Colors.magenta.toARGB32()) {
-      return fluent.Colors.magenta;
-    }
-    if (color.toARGB32() == fluent.Colors.yellow.toARGB32()) {
-      return fluent.Colors.yellow;
+    // Map standard colors to Fluent AccentColors
+    final colorMap = {
+      fluent.Colors.teal.toARGB32(): fluent.Colors.teal,
+      fluent.Colors.blue.toARGB32(): fluent.Colors.blue,
+      fluent.Colors.red.toARGB32(): fluent.Colors.red,
+      fluent.Colors.orange.toARGB32(): fluent.Colors.orange,
+      fluent.Colors.green.toARGB32(): fluent.Colors.green,
+      fluent.Colors.purple.toARGB32(): fluent.Colors.purple,
+      fluent.Colors.magenta.toARGB32(): fluent.Colors.magenta,
+      fluent.Colors.yellow.toARGB32(): fluent.Colors.yellow,
+    };
+
+    if (colorMap.containsKey(color.toARGB32())) {
+      return colorMap[color.toARGB32()]!;
     }
 
+    // Custom Color Swatch Generation
     final Map<String, Color> swatch = {
       'normal': color,
       'dark': color, // Ideally darken

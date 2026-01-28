@@ -99,6 +99,15 @@ class SqlInvoiceRepository implements InvoiceRepository {
             supplierEmail: Value(invoice.supplier.email),
             supplierPhone: Value(invoice.supplier.phone),
 
+            // Receiver Snapshot (New V4)
+            receiverName: Value(invoice.receiver.name),
+            receiverAddress: Value(invoice.receiver.address),
+            receiverGstin: Value(invoice.receiver.gstin),
+            receiverPan: Value(invoice.receiver.pan),
+            receiverState: Value(invoice.receiver.state),
+            receiverStateCode: Value(invoice.receiver.stateCode),
+            receiverEmail: Value(invoice.receiver.email),
+
             // Credit/Debit Note
             originalInvoiceNumber: Value(invoice.originalInvoiceNumber),
             originalInvoiceDate: Value(invoice.originalInvoiceDate),
@@ -193,16 +202,28 @@ class SqlInvoiceRepository implements InvoiceRepository {
               ))
           .toList(),
 
-      receiver: clientRow != null
+      receiver: (invoiceRow.receiverName != null &&
+              invoiceRow.receiverName!.isNotEmpty)
           ? model.Receiver(
-              name: clientRow.name,
-              address: clientRow.address,
-              gstin: clientRow.gstin,
-              state: clientRow.state,
-              stateCode: clientRow.stateCode,
-              email: clientRow.email,
+              name: invoiceRow.receiverName!,
+              address: invoiceRow.receiverAddress ?? "",
+              gstin: invoiceRow.receiverGstin ?? "",
+              pan: invoiceRow.receiverPan ?? "",
+              state: invoiceRow.receiverState ?? "",
+              stateCode: invoiceRow.receiverStateCode ?? "",
+              email: invoiceRow.receiverEmail ?? "",
             )
-          : const model.Receiver(name: "Unknown"),
+          : (clientRow != null
+              ? model.Receiver(
+                  name: clientRow.name,
+                  address: clientRow.address,
+                  gstin: clientRow.gstin,
+                  pan: clientRow.pan,
+                  state: clientRow.state,
+                  stateCode: clientRow.stateCode,
+                  email: clientRow.email, // Client row has email
+                )
+              : const model.Receiver(name: "Unknown")),
 
       // Map Supplier from Snapshot or Fallback
       supplier: (invoiceRow.supplierName != null &&
