@@ -75,7 +75,7 @@ Want to contribute or build from source?
 
 ### Prerequisites
 - [Flutter SDK](https://docs.flutter.dev/get-started/install) (3.0.0+)
-- **Linux**: `clang`, `cmake`, `ninja-build`, `pkg-config`, `libgtk-3-dev`, `liblzma-dev`
+- **Linux**: `clang`, `cmake`, `ninja-build`, `pkg-config`, `libgtk-3-dev`, `liblzma-dev`, `libsecret-1-dev`, `libjsoncpp-dev`
 - **Windows**: Visual Studio 2022 (C++ Desktop Development workload)
 
 ### Steps
