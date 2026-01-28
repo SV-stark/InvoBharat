@@ -27,13 +27,14 @@ Generates beautiful, professional PDFs in seconds. No internet required. No subs
 
 | Feature | Description |
 | :--- | :--- |
-| **📊 Smart Dashboard** | Real-time analytics for **Revenue**, **Invoices**, and **Tax Liability** (CGST/SGST/IGST). Filter by financial quarter or custom dates. |
+| **📊 Smart Dashboard** | Real-time analytics for **Revenue**, **Invoices**, and **Tax Liability** (CGST/SGST/IGST). Filter by financial quarter or month. |
 | **🧾 Instant Invoicing** | Auto-calculation of taxes and totals. Smart detection of **Inter-state vs Intra-state** supply based on GSTIN. |
 | **📋 Estimates & Quotes** | Create professional estimates and convert them to invoices with one click. |
 | **🔄 Recurring Invoices** | Set up profiles for auto-generating invoices for repeat clients. |
 | **🎨 Native Experience** | **Desktop**: Fluent UI experience. **Android**: Dynamic Material You theming. Dark mode support on all platforms. |
-| **📁 Client Management** | Save client details once (GSTIN, Address) and auto-fill them forever. |
-| **📝 Inventory System** | Manage products/services with predefined **HSN/SAC codes** and tax slabs (0%, 5%, 12%, 18%, 28%). |
+| **📁 Client Management** | Save client details once (GSTIN, Address) and auto-fill them forever. **View Client Ledger** for transaction history. |
+| **📦 Product Library** | Manage products/services with predefined tax slabs. **HSN/SAC Lookup** with auto-fill for 100+ common codes. |
+| **📉 Aging Reports** | Visual breakdown of **Receivables** (Overdue Invoices) by aging buckets (30/60/90 days). |
 | **💾 Secure Backups** | Local backup and restore functionality to keep your data safe. |
 | **🇮🇳 India Ready** | **Number-to-Words** conversion (e.g., "Rupees One Thousand Only"). **GSTR-1** compatible CSV exports for easy filing. |
 | **🖨️ Professional Output** | High-resolution A4 PDFs with your brand logo. Full-screen print preview and layout customization. |
