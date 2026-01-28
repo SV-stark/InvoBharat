@@ -561,7 +561,10 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     final status = invoice.paymentStatus;
 
     // Fallback: Just display date relative
-    String text = "Due on ${DateFormat('MMM dd').format(invoice.dueDate)}";
+    String text = "No Due Date";
+    if (invoice.dueDate != null) {
+      text = "Due on ${DateFormat('MMM dd').format(invoice.dueDate!)}";
+    }
     Color color = Colors.orange;
 
     if (status == 'Paid') {
