@@ -114,6 +114,28 @@ class GstrImportService {
     );
   }
 
+  /// Generates a CSV template string with headers and a sample row.
+  String getTemplateCsv() {
+    return [
+      _headers.join(','),
+      "27ABCDE1234F1Z5,Test Trading Co,INV-001,${DateFormat('dd-MM-yyyy').format(DateTime.now())},1180,18,1000,0,Maharashtra,N,998877"
+    ].join('\n');
+  }
+
+  static const _headers = [
+    "GSTIN",
+    "Trade Name",
+    "Invoice No",
+    "Date",
+    "Value",
+    "GST%",
+    "Taxable",
+    "CESS",
+    "Place",
+    "RCM",
+    "HSN"
+  ];
+
   List<String> _parseCsvLine(String line) {
     // Basic CSV split, doesn't handle quoted commas perfectly but sufficient for this specific export format
     // which replaces commas in text fields.

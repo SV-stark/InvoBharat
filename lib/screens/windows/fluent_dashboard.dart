@@ -264,6 +264,11 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                       icon: const Icon(FluentIcons.upload),
                       onPressed: () => _importGstr1(context),
                     ),
+                    CommandBarButton(
+                      label: const Text('Template'),
+                      icon: const Icon(FluentIcons.page_list),
+                      onPressed: () => _downloadImportTemplate(context),
+                    ),
                   ],
                   secondaryItems: [
                     CommandBarButton(
@@ -813,6 +818,46 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         builder: (context, close) => InfoBar(
           title: const Text("Import Error"),
           content: Text(e.toString()),
+          severity: InfoBarSeverity.error,
+          onClose: close,
+        ),
+      );
+    }
+  }
+
+  Future<void> _downloadImportTemplate(BuildContext context) async {
+    try {
+      final csvData = GstrImportService().getTemplateCsv();
+      String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save Import Template',
+        fileName: 'GSTR1_Import_Template.csv',
+        allowedExtensions: ['csv'],
+        type: FileType.custom,
+      );
+
+      if (outputFile != null) {
+        if (!outputFile.toLowerCase().endsWith('.csv')) {
+          outputFile = '$outputFile.csv';
+        }
+        await File(outputFile).writeAsString(csvData);
+        if (!context.mounted) return;
+        displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            title: const Text("Success"),
+            content: Text("Template saved to $outputFile"),
+            severity: InfoBarSeverity.success,
+            onClose: close,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      displayInfoBar(
+        context,
+        builder: (context, close) => InfoBar(
+          title: const Text("Error"),
+          content: Text("Failed to save template: $e"),
           severity: InfoBarSeverity.error,
           onClose: close,
         ),
