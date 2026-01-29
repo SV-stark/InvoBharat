@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:invobharat/models/invoice.dart';
 
@@ -30,7 +31,7 @@ void main() {
         unit: 'Kg',
         amount: 50,
       );
-      final json = item.toJson();
+      final json = jsonDecode(jsonEncode(item.toJson()));
       expect(json['quantity'], 2.5);
       expect(json['unit'], 'Kg');
 
@@ -48,7 +49,7 @@ void main() {
       );
       expect(invoice.deliveryAddress, "123 Warehouse St");
 
-      final json = invoice.toJson();
+      final json = jsonDecode(jsonEncode(invoice.toJson()));
       expect(json['deliveryAddress'], "123 Warehouse St");
 
       final deserialized = Invoice.fromJson(json);
@@ -63,7 +64,7 @@ void main() {
       expect(receiver.state, "Maharashtra");
       expect(receiver.stateCode, "27");
 
-      final json = receiver.toJson();
+      final json = jsonDecode(jsonEncode(receiver.toJson()));
       expect(json['state'], "Maharashtra");
       expect(json['stateCode'], "27");
 

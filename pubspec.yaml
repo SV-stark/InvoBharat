@@ -19,12 +19,12 @@ dependencies:
   image_picker: ^1.2.1
   uuid: ^4.5.2
   fluent_ui: ^4.12.0
-  file_picker: ^10.3.9
+  file_picker: ^10.3.10
   fl_chart: ^1.1.1
 
   # Database
   drift: ^2.14.0
-  sqlite3: ^2.3.0
+  sqlite3: ^2.9.4
   sqlite3_flutter_libs: ^0.5.18
   path: ^1.9.0
   csv: ^6.0.0
@@ -37,7 +37,9 @@ dependencies:
   json_annotation: ^4.9.0
   image_background_remover: ^2.0.0
   mailer: ^6.0.0
-  flutter_secure_storage: ^9.0.0
+  flutter_secure_storage: ^9.2.4
+  http: ^1.2.0
+  package_info_plus: ^8.3.1
 
 dev_dependencies:
   flutter_test:

@@ -391,7 +391,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 filteredInvoices,
                               );
 
-                              String? outputFile = await FilePicker.saveFile(
+                              String? outputFile =
+                                  await FilePicker.platform.saveFile(
                                 dialogTitle: 'Save GSTR-1 CSV',
                                 fileName:
                                     'GSTR1_${_selectedFilter.replaceAll(" ", "_")}.csv',

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../services/update_service.dart';
 
 class AboutTab extends StatelessWidget {
   const AboutTab({super.key});
@@ -10,6 +11,69 @@ class AboutTab extends StatelessWidget {
     if (!await launchUrl(url)) {
       throw Exception('Could not launch $url');
     }
+  }
+
+  Future<void> _checkForUpdates(BuildContext context) async {
+    // Show loading
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Checking for updates...')),
+    );
+
+    final updates = await UpdateService.checkForUpdates();
+    if (!context.mounted) return;
+
+    if (updates['stable'] == null && updates['beta'] == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No updates found or check failed.')),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Updates Available'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (updates['stable'] != null) ...[
+              const Text('Stable Release:',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              ListTile(
+                title: Text(updates['stable']!.tagName),
+                subtitle: Text('Published: ${updates['stable']!.publishedAt}'),
+                trailing: IconButton(
+                  icon: const Icon(Icons.open_in_new),
+                  onPressed: () =>
+                      launchUrl(Uri.parse(updates['stable']!.htmlUrl)),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+            if (updates['beta'] != null) ...[
+              const Text('Beta / Nightly:',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              ListTile(
+                title: Text(updates['beta']!.tagName),
+                subtitle: Text('Published: ${updates['beta']!.publishedAt}'),
+                trailing: IconButton(
+                  icon: const Icon(Icons.open_in_new),
+                  onPressed: () =>
+                      launchUrl(Uri.parse(updates['beta']!.htmlUrl)),
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -62,6 +126,12 @@ class AboutTab extends StatelessWidget {
             onPressed: _launchUrl,
             icon: const Icon(Icons.code),
             label: const Text('View on GitHub'),
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: () => _checkForUpdates(context),
+            icon: const Icon(Icons.update),
+            label: const Text('Check for Updates'),
           ),
         ],
       ),

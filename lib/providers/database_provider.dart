@@ -27,7 +27,10 @@ final migrationStatusProvider =
 
 final appInitializationProvider = FutureProvider<void>((ref) async {
   // Ensure database is ready
-  ref.read(migrationStatusProvider.notifier).update("Opening Database...");
+  Future.microtask(() {
+    ref.read(migrationStatusProvider.notifier).update("Opening Database...");
+  });
+
   ref.watch(databaseProvider);
 
   // Run Migration

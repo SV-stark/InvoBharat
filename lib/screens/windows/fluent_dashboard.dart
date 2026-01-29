@@ -53,77 +53,80 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     return ScaffoldPage.scrollable(
       header: PageHeader(
         title: const Text('Dashboard'),
-        commandBar: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(FluentIcons.contact),
-              onPressed: () => showProfileSwitcherSheet(context, ref),
-            ),
-            const SizedBox(width: 8),
-            IconButton(
-              icon: Icon(
-                theme.brightness == Brightness.dark
-                    ? FluentIcons.sunny
-                    : FluentIcons.clear_night,
+        commandBar: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(FluentIcons.contact),
+                onPressed: () => showProfileSwitcherSheet(context, ref),
               ),
-              onPressed: () {
-                final current = ref.read(themeProvider);
-                final next = current == ThemeMode.dark
-                    ? ThemeMode.light
-                    : ThemeMode.dark;
-                ref.read(themeProvider.notifier).setTheme(next);
-              },
-            ),
-            const SizedBox(width: 8),
-            if (_selectedIds.isNotEmpty)
-              Button(
-                onPressed: _deleteSelected,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(FluentIcons.delete),
-                    const SizedBox(width: 8),
-                    Text("Delete (${_selectedIds.length})"),
-                  ],
+              const SizedBox(width: 8),
+              IconButton(
+                icon: Icon(
+                  theme.brightness == Brightness.dark
+                      ? FluentIcons.sunny
+                      : FluentIcons.clear_night,
                 ),
+                onPressed: () {
+                  final current = ref.read(themeProvider);
+                  final next = current == ThemeMode.dark
+                      ? ThemeMode.light
+                      : ThemeMode.dark;
+                  ref.read(themeProvider.notifier).setTheme(next);
+                },
               ),
-            if (_selectedIds.isNotEmpty) const SizedBox(width: 8),
-            // Type Filter
-            ComboBox<String>(
-              value: _selectedType,
-              items: [
-                "All",
-                "Invoices",
-                "Challans",
-                "Credit Notes",
-                "Debit Notes",
-                "Fully Paid", // New Filter
-                "Partially Paid", // New Filter
-                "Overdue", // New Filter
-              ].map((e) => ComboBoxItem(value: e, child: Text(e))).toList(),
-              onChanged: (v) {
-                if (v != null) setState(() => _selectedType = v);
-              },
-            ),
-            const SizedBox(width: 8),
-            ComboBox<String>(
-              value: _selectedPeriod,
-              items: [
-                "All Time",
-                "This Month",
-                "Last Month",
-                "Q1 (Apr-Jun)",
-                "Q2 (Jul-Sep)",
-                "Q3 (Oct-Dec)",
-                "Q4 (Jan-Mar)",
-              ].map((e) => ComboBoxItem(value: e, child: Text(e))).toList(),
-              onChanged: (v) {
-                if (v != null) setState(() => _selectedPeriod = v);
-              },
-              placeholder: const Text("Select Period"),
-            ),
-          ],
+              const SizedBox(width: 8),
+              if (_selectedIds.isNotEmpty)
+                Button(
+                  onPressed: _deleteSelected,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(FluentIcons.delete),
+                      const SizedBox(width: 8),
+                      Text("Delete (${_selectedIds.length})"),
+                    ],
+                  ),
+                ),
+              if (_selectedIds.isNotEmpty) const SizedBox(width: 8),
+              // Type Filter
+              ComboBox<String>(
+                value: _selectedType,
+                items: [
+                  "All",
+                  "Invoices",
+                  "Challans",
+                  "Credit Notes",
+                  "Debit Notes",
+                  "Fully Paid", // New Filter
+                  "Partially Paid", // New Filter
+                  "Overdue", // New Filter
+                ].map((e) => ComboBoxItem(value: e, child: Text(e))).toList(),
+                onChanged: (v) {
+                  if (v != null) setState(() => _selectedType = v);
+                },
+              ),
+              const SizedBox(width: 8),
+              ComboBox<String>(
+                value: _selectedPeriod,
+                items: [
+                  "All Time",
+                  "This Month",
+                  "Last Month",
+                  "Q1 (Apr-Jun)",
+                  "Q2 (Jul-Sep)",
+                  "Q3 (Oct-Dec)",
+                  "Q4 (Jan-Mar)",
+                ].map((e) => ComboBoxItem(value: e, child: Text(e))).toList(),
+                onChanged: (v) {
+                  if (v != null) setState(() => _selectedPeriod = v);
+                },
+                placeholder: const Text("Select Period"),
+              ),
+            ],
+          ),
         ),
       ),
       children: [
@@ -680,7 +683,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
 
       final csvData = GstrService().generateGstr1Csv(filteredInvoices);
 
-      String? outputFile = await FilePicker.saveFile(
+      String? outputFile = await FilePicker.platform.saveFile(
         dialogTitle: 'Save GSTR-1 CSV',
         fileName: 'GSTR1_${_selectedPeriod.replaceAll(" ", "_")}.csv',
         allowedExtensions: ['csv'],
@@ -719,7 +722,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
 
   Future<void> _importGstr1(BuildContext context) async {
     try {
-      final result = await FilePicker.pickFiles(
+      final result = await FilePicker.platform.pickFiles(
         dialogTitle: 'Select GSTR-1 CSV',
         allowedExtensions: ['csv'],
         type: FileType.custom,
@@ -831,7 +834,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         buffer.writeln(num);
       }
 
-      String? outputFile = await FilePicker.saveFile(
+      String? outputFile = await FilePicker.platform.saveFile(
         dialogTitle: 'Save Missing Invoices Report',
         fileName: 'Missing_Invoices_Report.csv',
         allowedExtensions: ['csv', 'txt'],

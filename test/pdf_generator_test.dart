@@ -6,6 +6,8 @@ import 'package:invobharat/utils/pdf_generator.dart';
 // implicitly used
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test('generateInvoicePdf generates valid PDF for all templates', () async {
     // Basic setup
     final profile = BusinessProfile.defaults();
