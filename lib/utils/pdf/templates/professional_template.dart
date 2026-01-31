@@ -7,12 +7,7 @@ import '../../../models/invoice.dart';
 import '../../../models/business_profile.dart';
 import '../../number_to_words.dart';
 import '../pdf_helpers.dart';
-
-// ... imports
-
 import 'base_template.dart';
-
-// ... imports
 
 class ProfessionalTemplate extends BasePdfTemplate {
   @override
@@ -28,7 +23,6 @@ class ProfessionalTemplate extends BasePdfTemplate {
       bold: fontBold,
     ));
 
-    // Define styles
     final titleStyle = pw.TextStyle(
         fontSize: 24, fontWeight: pw.FontWeight.bold, color: PdfColors.blue900);
     final headerLabelStyle =
@@ -39,11 +33,18 @@ class ProfessionalTemplate extends BasePdfTemplate {
         fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.white);
     final itemsStyle = const pw.TextStyle(fontSize: 8);
 
-    // Determines Supply Type
     String supplyType = title ?? "Tax Invoice";
     if (title == null && invoice.receiver.gstin.isEmpty) {
       supplyType = "Retail Invoice";
     }
+
+    final logoPath = profile.logoPath;
+    final hasLogo = logoPath != null && File(logoPath).existsSync();
+    final signaturePath = profile.signaturePath;
+    final hasSignature =
+        signaturePath != null && File(signaturePath).existsSync();
+    final stampPath = profile.stampPath;
+    final hasStamp = stampPath != null && File(stampPath).existsSync();
 
     pdf.addPage(pw.Page(
       pageFormat: PdfPageFormat.a4,
@@ -51,7 +52,6 @@ class ProfessionalTemplate extends BasePdfTemplate {
       build: (context) {
         return pw
             .Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-          // --- HEADER SECTION ---
           pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -59,13 +59,12 @@ class ProfessionalTemplate extends BasePdfTemplate {
                 pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      if (profile.logoPath != null &&
-                          File(profile.logoPath!).existsSync())
+                      if (hasLogo)
                         pw.Container(
                             height: 60,
                             margin: const pw.EdgeInsets.only(bottom: 10),
                             child: pw.Image(pw.MemoryImage(
-                                File(profile.logoPath!).readAsBytesSync())))
+                                File(logoPath).readAsBytesSync())))
                       else
                         pw.Text(profile.companyName, style: titleStyle),
                       pw.SizedBox(height: 5),
@@ -103,8 +102,6 @@ class ProfessionalTemplate extends BasePdfTemplate {
           pw.SizedBox(height: 20),
           pw.Divider(color: PdfColors.grey300),
           pw.SizedBox(height: 20),
-
-          // --- BILL TO ---
           pw.Container(
             width: double.infinity,
             padding: const pw.EdgeInsets.all(10),
@@ -155,8 +152,6 @@ class ProfessionalTemplate extends BasePdfTemplate {
             ]),
           ),
           pw.SizedBox(height: 20),
-
-          // --- ITEMS TABLE ---
           buildItemsTable(invoice,
               headerStyle: tableHeaderStyle,
               cellStyle: itemsStyle,
@@ -170,10 +165,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
               },
               cellPadding:
                   const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 5)),
-
           pw.SizedBox(height: 20),
-
-          // --- TOTALS ---
           pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -233,10 +225,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                               isBold: true),
                         ])))
               ]),
-
           pw.Spacer(),
-
-          // --- FOOTER ---
           pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
             pw.Expanded(
                 child: pw.Column(
@@ -260,28 +249,23 @@ class ProfessionalTemplate extends BasePdfTemplate {
               child: buildUpiQr(profile.upiId, profile.upiName, invoice,
                   profile.currencySymbol),
             ),
-            if ((profile.signaturePath != null &&
-                    File(profile.signaturePath!).existsSync()) ||
-                (profile.stampPath != null &&
-                    File(profile.stampPath!).existsSync()))
+            if (hasSignature || hasStamp)
               pw.Column(mainAxisSize: pw.MainAxisSize.min, children: [
                 pw.Container(
-                    height: 60, // increased height for stack
+                    height: 60,
                     width: 100,
                     child: pw.Stack(alignment: pw.Alignment.center, children: [
-                      if (profile.stampPath != null &&
-                          File(profile.stampPath!).existsSync())
+                      if (hasStamp)
                         pw.Opacity(
                             opacity: 0.6,
                             child: pw.Image(
                                 pw.MemoryImage(
-                                    File(profile.stampPath!).readAsBytesSync()),
+                                    File(stampPath).readAsBytesSync()),
                                 width: 80)),
-                      if (profile.signaturePath != null &&
-                          File(profile.signaturePath!).existsSync())
+                      if (hasSignature)
                         pw.Image(
                             pw.MemoryImage(
-                                File(profile.signaturePath!).readAsBytesSync()),
+                                File(signaturePath).readAsBytesSync()),
                             fit: pw.BoxFit.contain),
                     ])),
                 pw.SizedBox(height: 5),

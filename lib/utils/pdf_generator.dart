@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:pdf/widgets.dart' as pw; // Restore this
 import 'package:printing/printing.dart';
 
 import '../models/invoice.dart';
@@ -7,8 +8,6 @@ import 'invoice_template.dart';
 import 'pdf/templates/modern_template.dart';
 import 'pdf/templates/professional_template.dart';
 import 'pdf/templates/minimal_template.dart';
-
-import 'package:pdf/widgets.dart' as pw;
 
 Future<Uint8List> generateInvoicePdf(Invoice invoice, BusinessProfile profile,
     {String? title}) async {

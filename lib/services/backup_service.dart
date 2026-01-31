@@ -142,7 +142,13 @@ class BackupService {
           await dbDestFile.writeAsBytes(data, flush: true);
         }
 
-        return "Restore Successful. Please RESTART the app to load new data.";
+        // Trigger programmatic restart for Windows
+        Future.delayed(const Duration(seconds: 2), () {
+          Process.run(Platform.resolvedExecutable, []);
+          exit(0);
+        });
+
+        return "Restore Successful. App will RESTART in 2 seconds.";
       } else {
         return "Restore cancelled";
       }

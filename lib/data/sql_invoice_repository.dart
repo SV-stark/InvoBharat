@@ -52,16 +52,33 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
     // Transaction
     await database.transaction(() async {
-      // Upsert Invoice
-      // We need to resolve Client ID.
-      // Lookup client by Name?
+      // 1. Resolve Client ID and handle snapshots
       final client = await (database.select(database.clients)
             ..where((t) => t.name.equals(invoice.receiver.name)))
           .getSingleOrNull();
+
       String clientId = client?.id ?? 'temp_default';
 
-      // If 'temp_default' doesn't exist, this will fail FK.
-      // We should probably ensure a 'Walk-in' client exists.
+      // 2. Atomic Sequence Increment
+      String finalInvoiceNo = invoice.invoiceNo;
+      if (invoice.id == null || invoice.id!.isEmpty) {
+        // Only increment for NEW invoices if it matches the pattern
+        final profile = await (database.select(database.businessProfiles)
+              ..where((t) => t.id.equals('default')))
+            .getSingle();
+
+        final expectedNo =
+            "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}";
+
+        if (finalInvoiceNo == expectedNo) {
+          // Increment in DB
+          await (database.update(database.businessProfiles)
+                ..where((t) => t.id.equals('default')))
+              .write(BusinessProfilesCompanion(
+            invoiceSequence: Value(profile.invoiceSequence + 1),
+          ));
+        }
+      }
 
       await database
           .into(database.invoices)
@@ -69,7 +86,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
             id: Value(invoiceId),
             profileId: const Value("default"),
             clientId: Value(clientId),
-            invoiceNo: Value(invoice.invoiceNo),
+            invoiceNo: Value(finalInvoiceNo),
             invoiceDate: Value(invoice.invoiceDate),
             type: Value(invoice.type.name),
             dueDate: Value(invoice.dueDate),
@@ -81,7 +98,6 @@ class SqlInvoiceRepository implements InvoiceRepository {
             bankName: Value(invoice.bankName),
             accountNo: Value(invoice.accountNo),
             ifscCode: Value(invoice.ifscCode),
-
             branch: Value(invoice.branch),
 
             // Supplier Snapshot
@@ -284,16 +300,84 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
   @override
   Future<List<model.Invoice>> getAllInvoices() async {
-    // Inefficient N+1 query for items/clients?
-    // Proper way: Join or stream with generic join.
-    // For now, iterate keys.
+    // 1. Fetch all invoices
     final invoiceRows = await database.select(database.invoices).get();
-    List<model.Invoice> result = [];
-    for (var row in invoiceRows) {
-      final inv = await getInvoice(row.id);
-      if (inv != null) result.add(inv);
-    }
-    return result;
+    if (invoiceRows.isEmpty) return [];
+
+    // 2. Fetch all items and payments in bulk to avoid N+1
+    final allItems = await database.select(database.invoiceItems).get();
+    final allPayments = await database.select(database.payments).get();
+
+    // 3. Map everything efficiently
+    return invoiceRows.map((row) {
+      final items = allItems
+          .where((item) => item.invoiceId == row.id)
+          .map((itemRow) => model.InvoiceItem(
+                id: itemRow.id,
+                description: itemRow.description,
+                sacCode: itemRow.sacCode,
+                codeType: itemRow.codeType,
+                year: itemRow.year,
+                amount: itemRow.amount,
+                discount: itemRow.discount,
+                quantity: itemRow.quantity,
+                unit: itemRow.unit,
+                gstRate: itemRow.gstRate,
+              ))
+          .toList();
+
+      final payments = allPayments
+          .where((p) => p.invoiceId == row.id)
+          .map((pRow) => PaymentTransaction(
+                id: pRow.id,
+                invoiceId: pRow.invoiceId,
+                date: pRow.date,
+                amount: pRow.amount,
+                paymentMode: pRow.method,
+                notes: pRow.notes,
+              ))
+          .toList();
+
+      return model.Invoice(
+        id: row.id,
+        invoiceNo: row.invoiceNo,
+        invoiceDate: row.invoiceDate,
+        type: model.InvoiceType.values.firstWhere(
+          (e) => e.name == row.type,
+          orElse: () => model.InvoiceType.invoice,
+        ),
+        dueDate: row.dueDate,
+        placeOfSupply: row.placeOfSupply,
+        style: row.style,
+        reverseCharge: row.reverseCharge,
+        paymentTerms: row.paymentTerms,
+        comments: row.comments,
+        bankName: row.bankName,
+        accountNo: row.accountNo,
+        ifscCode: row.ifscCode,
+        branch: row.branch,
+        items: items,
+        payments: payments,
+        supplier: model.Supplier(
+          name: row.supplierName ?? "",
+          address: row.supplierAddress ?? "",
+          gstin: row.supplierGstin ?? "",
+          email: row.supplierEmail ?? "",
+          phone: row.supplierPhone ?? "",
+        ),
+        receiver: model.Receiver(
+          name: row.receiverName ?? "",
+          address: row.receiverAddress ?? "",
+          gstin: row.receiverGstin ?? "",
+          pan: row.receiverPan ?? "",
+          state: row.receiverState ?? "",
+          stateCode: row.receiverStateCode ?? "",
+          email: row.receiverEmail ?? "",
+        ),
+        originalInvoiceNumber: row.originalInvoiceNumber,
+        originalInvoiceDate: row.originalInvoiceDate,
+      );
+    }).toList();
   }
 
   @override

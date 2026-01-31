@@ -40,6 +40,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // UPI
   late TextEditingController _upiIdController;
   late TextEditingController _upiNameController;
+  late TextEditingController _panController;
 
   @override
   void initState() {
@@ -68,6 +69,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _branchNameController = TextEditingController(text: profile.branchName);
     _upiIdController = TextEditingController(text: profile.upiId ?? '');
     _upiNameController = TextEditingController(text: profile.upiName ?? '');
+    _panController = TextEditingController(text: profile.pan);
   }
 
   // Method to reload controllers when profile switches (if we stayed on screen,
@@ -94,6 +96,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _branchNameController.dispose();
     _upiIdController.dispose();
     _upiNameController.dispose();
+    _panController.dispose();
     super.dispose();
   }
 
@@ -118,6 +121,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         branchName: _branchNameController.text,
         upiId: _upiIdController.text,
         upiName: _upiNameController.text,
+        pan: _panController.text,
       );
       ref.read(businessProfileNotifierProvider).updateProfile(newProfile);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -257,6 +261,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildSectionHeader("UPI Details"),
             _buildTextField("UPI ID (VPA)", _upiIdController),
             _buildTextField("UPI Name", _upiNameController),
+            _buildTextField("Business PAN", _panController),
             const SizedBox(height: 24),
             _buildSectionHeader("Branding"), // KEEP
             ListTile(
@@ -598,7 +603,7 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
     if (_formKey.currentState!.validate()) {
       final settings = EmailSettings(
         smtpHost: _hostController.text.trim(),
-        smtpPort: int.parse(_portController.text.trim()),
+        smtpPort: int.tryParse(_portController.text.trim()) ?? 587,
         email: _emailController.text.trim(),
         username: _usernameController.text.trim(),
         password: _passwordController.text.trim(),

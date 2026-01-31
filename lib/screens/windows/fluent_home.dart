@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,8 +13,6 @@ import 'fluent_estimates_screen.dart';
 import 'fluent_item_templates_screen.dart';
 import '../aging_report_screen.dart';
 
-import '../../providers/app_config_provider.dart';
-
 class FluentHome extends ConsumerStatefulWidget {
   const FluentHome({super.key});
 
@@ -26,11 +25,17 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
 
   @override
   Widget build(BuildContext context) {
-    final appConfig = ref.watch(appConfigProvider);
     return CallbackShortcuts(
         bindings: {
           const SingleActivator(LogicalKeyboardKey.escape): () {
-            Navigator.maybePop(context);
+            // Only pop if there isn't an active modal or unexpected focus
+            // Better to use Navigator.maybePop which respects routing.
+            // But we want to ensure it doesn't close if a dropdown/overlay is open?
+            // Fluent UI's FlyingWidget or similar usually handles Esc.
+            // We can check if we can pop.
+            if (Navigator.canPop(context)) {
+              Navigator.maybePop(context);
+            }
           },
         },
         child: NavigationView(
@@ -47,7 +52,9 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
           pane: NavigationPane(
             selected: topIndex,
             onChanged: (index) => setState(() => topIndex = index),
-            displayMode: appConfig.paneDisplayMode,
+            displayMode: MediaQuery.of(context).size.width > 1000
+                ? PaneDisplayMode.auto
+                : PaneDisplayMode.compact,
             items: [
               PaneItem(
                 icon: const Icon(FluentIcons.home),
@@ -171,6 +178,12 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                           const SizedBox(height: 8),
                           // Links placeholders
                           const Text("Visit GitHub Repository"),
+                          const SizedBox(height: 10),
+                          HyperlinkButton(
+                            child: const Text("github.com/SV-stark/InvoBharat"),
+                            onPressed: () => launchUrl(Uri.parse(
+                                "https://github.com/SV-stark/InvoBharat")),
+                          ),
                         ],
                       ),
                       actions: [

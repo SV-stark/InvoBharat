@@ -23,6 +23,7 @@ class BusinessProfiles extends Table {
   TextColumn get branchName => text()();
   TextColumn get upiId => text().nullable()();
   TextColumn get upiName => text().nullable()();
+  TextColumn get pan => text()();
 
   @override
   Set<Column> get primaryKey => {id};

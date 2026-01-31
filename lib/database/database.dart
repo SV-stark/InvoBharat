@@ -16,7 +16,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -105,6 +105,12 @@ class AppDatabase extends _$AppDatabase {
             print("Migration V4 Backfill Error: $e");
           }
         }
+      }
+      if (from < 5) {
+        // Accessing the 'pan' column dynamically to avoid compilation errors
+        // until the code is regenerated.
+        final panColumn = (businessProfiles as dynamic).pan as GeneratedColumn;
+        await m.addColumn(businessProfiles, panColumn);
       }
     }, beforeOpen: (details) async {
       // We can do data migration here too if needed
