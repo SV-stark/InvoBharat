@@ -135,6 +135,11 @@ class $BusinessProfilesTable extends BusinessProfiles
   late final GeneratedColumn<String> upiName = GeneratedColumn<String>(
       'upi_name', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _panMeta = const VerificationMeta('pan');
+  @override
+  late final GeneratedColumn<String> pan = GeneratedColumn<String>(
+      'pan', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -158,7 +163,8 @@ class $BusinessProfilesTable extends BusinessProfiles
         ifscCode,
         branchName,
         upiId,
-        upiName
+        upiName,
+        pan
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -311,6 +317,12 @@ class $BusinessProfilesTable extends BusinessProfiles
       context.handle(_upiNameMeta,
           upiName.isAcceptableOrUnknown(data['upi_name']!, _upiNameMeta));
     }
+    if (data.containsKey('pan')) {
+      context.handle(
+          _panMeta, pan.isAcceptableOrUnknown(data['pan']!, _panMeta));
+    } else if (isInserting) {
+      context.missing(_panMeta);
+    }
     return context;
   }
 
@@ -364,6 +376,8 @@ class $BusinessProfilesTable extends BusinessProfiles
           .read(DriftSqlType.string, data['${effectivePrefix}upi_id']),
       upiName: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}upi_name']),
+      pan: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}pan'])!,
     );
   }
 
@@ -396,6 +410,7 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
   final String branchName;
   final String? upiId;
   final String? upiName;
+  final String pan;
   const BusinessProfile(
       {required this.id,
       required this.companyName,
@@ -418,7 +433,8 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
       required this.ifscCode,
       required this.branchName,
       this.upiId,
-      this.upiName});
+      this.upiName,
+      required this.pan});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -454,6 +470,7 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
     if (!nullToAbsent || upiName != null) {
       map['upi_name'] = Variable<String>(upiName);
     }
+    map['pan'] = Variable<String>(pan);
     return map;
   }
 
@@ -490,6 +507,7 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
       upiName: upiName == null && nullToAbsent
           ? const Value.absent()
           : Value(upiName),
+      pan: Value(pan),
     );
   }
 
@@ -520,6 +538,7 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
       branchName: serializer.fromJson<String>(json['branchName']),
       upiId: serializer.fromJson<String?>(json['upiId']),
       upiName: serializer.fromJson<String?>(json['upiName']),
+      pan: serializer.fromJson<String>(json['pan']),
     );
   }
   @override
@@ -548,6 +567,7 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
       'branchName': serializer.toJson<String>(branchName),
       'upiId': serializer.toJson<String?>(upiId),
       'upiName': serializer.toJson<String?>(upiName),
+      'pan': serializer.toJson<String>(pan),
     };
   }
 
@@ -573,7 +593,8 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
           String? ifscCode,
           String? branchName,
           Value<String?> upiId = const Value.absent(),
-          Value<String?> upiName = const Value.absent()}) =>
+          Value<String?> upiName = const Value.absent(),
+          String? pan}) =>
       BusinessProfile(
         id: id ?? this.id,
         companyName: companyName ?? this.companyName,
@@ -598,6 +619,7 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
         branchName: branchName ?? this.branchName,
         upiId: upiId.present ? upiId.value : this.upiId,
         upiName: upiName.present ? upiName.value : this.upiName,
+        pan: pan ?? this.pan,
       );
   BusinessProfile copyWithCompanion(BusinessProfilesCompanion data) {
     return BusinessProfile(
@@ -640,6 +662,7 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
           data.branchName.present ? data.branchName.value : this.branchName,
       upiId: data.upiId.present ? data.upiId.value : this.upiId,
       upiName: data.upiName.present ? data.upiName.value : this.upiName,
+      pan: data.pan.present ? data.pan.value : this.pan,
     );
   }
 
@@ -667,7 +690,8 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
           ..write('ifscCode: $ifscCode, ')
           ..write('branchName: $branchName, ')
           ..write('upiId: $upiId, ')
-          ..write('upiName: $upiName')
+          ..write('upiName: $upiName, ')
+          ..write('pan: $pan')
           ..write(')'))
         .toString();
   }
@@ -695,7 +719,8 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
         ifscCode,
         branchName,
         upiId,
-        upiName
+        upiName,
+        pan
       ]);
   @override
   bool operator ==(Object other) =>
@@ -722,7 +747,8 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
           other.ifscCode == this.ifscCode &&
           other.branchName == this.branchName &&
           other.upiId == this.upiId &&
-          other.upiName == this.upiName);
+          other.upiName == this.upiName &&
+          other.pan == this.pan);
 }
 
 class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
@@ -748,6 +774,7 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
   final Value<String> branchName;
   final Value<String?> upiId;
   final Value<String?> upiName;
+  final Value<String> pan;
   final Value<int> rowid;
   const BusinessProfilesCompanion({
     this.id = const Value.absent(),
@@ -772,6 +799,7 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
     this.branchName = const Value.absent(),
     this.upiId = const Value.absent(),
     this.upiName = const Value.absent(),
+    this.pan = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   BusinessProfilesCompanion.insert({
@@ -797,6 +825,7 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
     required String branchName,
     this.upiId = const Value.absent(),
     this.upiName = const Value.absent(),
+    required String pan,
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         companyName = Value(companyName),
@@ -814,7 +843,8 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
         bankName = Value(bankName),
         accountNumber = Value(accountNumber),
         ifscCode = Value(ifscCode),
-        branchName = Value(branchName);
+        branchName = Value(branchName),
+        pan = Value(pan);
   static Insertable<BusinessProfile> custom({
     Expression<String>? id,
     Expression<String>? companyName,
@@ -838,6 +868,7 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
     Expression<String>? branchName,
     Expression<String>? upiId,
     Expression<String>? upiName,
+    Expression<String>? pan,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -864,6 +895,7 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
       if (branchName != null) 'branch_name': branchName,
       if (upiId != null) 'upi_id': upiId,
       if (upiName != null) 'upi_name': upiName,
+      if (pan != null) 'pan': pan,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -891,6 +923,7 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
       Value<String>? branchName,
       Value<String?>? upiId,
       Value<String?>? upiName,
+      Value<String>? pan,
       Value<int>? rowid}) {
     return BusinessProfilesCompanion(
       id: id ?? this.id,
@@ -915,6 +948,7 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
       branchName: branchName ?? this.branchName,
       upiId: upiId ?? this.upiId,
       upiName: upiName ?? this.upiName,
+      pan: pan ?? this.pan,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -988,6 +1022,9 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
     if (upiName.present) {
       map['upi_name'] = Variable<String>(upiName.value);
     }
+    if (pan.present) {
+      map['pan'] = Variable<String>(pan.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1019,6 +1056,7 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
           ..write('branchName: $branchName, ')
           ..write('upiId: $upiId, ')
           ..write('upiName: $upiName, ')
+          ..write('pan: $pan, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3865,6 +3903,7 @@ typedef $$BusinessProfilesTableCreateCompanionBuilder
   required String branchName,
   Value<String?> upiId,
   Value<String?> upiName,
+  required String pan,
   Value<int> rowid,
 });
 typedef $$BusinessProfilesTableUpdateCompanionBuilder
@@ -3891,6 +3930,7 @@ typedef $$BusinessProfilesTableUpdateCompanionBuilder
   Value<String> branchName,
   Value<String?> upiId,
   Value<String?> upiName,
+  Value<String> pan,
   Value<int> rowid,
 });
 
@@ -4007,6 +4047,9 @@ class $$BusinessProfilesTableFilterComposer
 
   ColumnFilters<String> get upiName => $composableBuilder(
       column: $table.upiName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get pan => $composableBuilder(
+      column: $table.pan, builder: (column) => ColumnFilters(column));
 
   Expression<bool> clientsRefs(
       Expression<bool> Function($$ClientsTableFilterComposer f) f) {
@@ -4132,6 +4175,9 @@ class $$BusinessProfilesTableOrderingComposer
 
   ColumnOrderings<String> get upiName => $composableBuilder(
       column: $table.upiName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get pan => $composableBuilder(
+      column: $table.pan, builder: (column) => ColumnOrderings(column));
 }
 
 class $$BusinessProfilesTableAnnotationComposer
@@ -4208,6 +4254,9 @@ class $$BusinessProfilesTableAnnotationComposer
 
   GeneratedColumn<String> get upiName =>
       $composableBuilder(column: $table.upiName, builder: (column) => column);
+
+  GeneratedColumn<String> get pan =>
+      $composableBuilder(column: $table.pan, builder: (column) => column);
 
   Expression<T> clientsRefs<T extends Object>(
       Expression<T> Function($$ClientsTableAnnotationComposer a) f) {
@@ -4298,6 +4347,7 @@ class $$BusinessProfilesTableTableManager extends RootTableManager<
             Value<String> branchName = const Value.absent(),
             Value<String?> upiId = const Value.absent(),
             Value<String?> upiName = const Value.absent(),
+            Value<String> pan = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               BusinessProfilesCompanion(
@@ -4323,6 +4373,7 @@ class $$BusinessProfilesTableTableManager extends RootTableManager<
             branchName: branchName,
             upiId: upiId,
             upiName: upiName,
+            pan: pan,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -4348,6 +4399,7 @@ class $$BusinessProfilesTableTableManager extends RootTableManager<
             required String branchName,
             Value<String?> upiId = const Value.absent(),
             Value<String?> upiName = const Value.absent(),
+            required String pan,
             Value<int> rowid = const Value.absent(),
           }) =>
               BusinessProfilesCompanion.insert(
@@ -4373,6 +4425,7 @@ class $$BusinessProfilesTableTableManager extends RootTableManager<
             branchName: branchName,
             upiId: upiId,
             upiName: upiName,
+            pan: pan,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
