@@ -8,6 +8,9 @@ import 'invoice_template.dart';
 import 'pdf/templates/modern_template.dart';
 import 'pdf/templates/professional_template.dart';
 import 'pdf/templates/minimal_template.dart';
+import 'pdf/templates/classic_template.dart';
+import 'pdf/templates/corporate_template.dart';
+import 'pdf/templates/creative_template.dart';
 
 Future<Uint8List> generateInvoicePdf(Invoice invoice, BusinessProfile profile,
     {String? title}) async {
@@ -29,6 +32,15 @@ Future<Uint8List> generateInvoicePdf(Invoice invoice, BusinessProfile profile,
       break;
     case 'Minimal':
       template = MinimalTemplate();
+      break;
+    case 'Classic':
+      template = ClassicTemplate();
+      break;
+    case 'Corporate':
+      template = CorporateTemplate();
+      break;
+    case 'Creative':
+      template = CreativeTemplate();
       break;
     case 'Modern':
     default:

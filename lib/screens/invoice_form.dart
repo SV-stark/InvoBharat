@@ -7,6 +7,7 @@ import '../models/invoice.dart';
 import '../models/business_profile.dart';
 import '../models/client.dart';
 import '../utils/pdf_generator.dart';
+import '../utils/gst_utils.dart';
 import '../providers/business_profile_provider.dart';
 import '../providers/client_provider.dart';
 import '../providers/invoice_provider.dart';
@@ -39,9 +40,29 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
         syncInvoiceControllers(ref.read(invoiceProvider));
       });
     } else {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Set smart defaults for new invoice
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await _setSmartDefaults();
         syncInvoiceControllers(ref.read(invoiceProvider));
       });
+    }
+  }
+
+  Future<void> _setSmartDefaults() async {
+    final notifier = ref.read(invoiceProvider.notifier);
+    
+    // Generate next invoice number
+    final nextInvoiceNo = await generateNextInvoiceNumber();
+    notifier.updateInvoiceNo(nextInvoiceNo);
+    
+    // Set default payment terms
+    notifier.updatePaymentTerms('Net 30');
+    
+    // Calculate and set due date
+    final invoiceDate = DateTime.now();
+    final dueDate = calculateDueDate(invoiceDate, 'Net 30');
+    if (dueDate != null) {
+      notifier.updateDueDate(dueDate);
     }
   }
 
@@ -216,15 +237,10 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
                   ),
                   const SizedBox(height: 16),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: AppTextInput(
-                          controller: receiverGstinCtrl,
-                          label: "GSTIN",
-                          onChanged: (val) => ref
-                              .read(invoiceProvider.notifier)
-                              .updateReceiverGstin(val),
-                        ),
+                        child: _buildGstinField(),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -271,34 +287,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
                         separatorBuilder: (_, __) => const Divider(),
                         itemBuilder: (context, index) {
                           final item = invoice.items[index];
-                          return ListTile(
-                            title: Text(item.description.isNotEmpty
-                                ? item.description
-                                : "New Item"),
-                            subtitle: Text(
-                                "${item.quantity} ${item.unit} x ₹${item.amount} | GST: ${item.gstRate}%"),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text("₹${item.totalAmount.toStringAsFixed(2)}",
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold)),
-                                const SizedBox(width: 8),
-                                IconButton(
-                                  icon: const Icon(Icons.edit, size: 20),
-                                  onPressed: () =>
-                                      _editItemDialog(context, index, item),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red, size: 20),
-                                  onPressed: () => ref
-                                      .read(invoiceProvider.notifier)
-                                      .removeItem(index),
-                                )
-                              ],
-                            ),
-                          );
+                          return _buildInlineItemEditor(context, index, item);
                         },
                       ),
                     const SizedBox(height: 16),
@@ -519,45 +508,150 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
   void _showClientSelector(BuildContext context, List<Client> clients) {
     showModalBottomSheet(
         context: context,
+        isScrollControlled: true,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
         builder: (context) {
-          return Container(
-            padding: const EdgeInsets.all(16),
-            height: 400,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("Select Client",
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: clients.isEmpty
-                      ? const Center(child: Text("No clients found."))
-                      : ListView.builder(
-                          itemCount: clients.length,
-                          itemBuilder: (context, index) {
-                            final client = clients[index];
-                            final initial = client.name.isNotEmpty
-                                ? client.name[0].toUpperCase()
-                                : "?";
-                            return ListTile(
-                              leading: CircleAvatar(child: Text(initial)),
-                              title: Text(client.name),
-                              subtitle: Text(client.gstin.isNotEmpty
-                                  ? "GST: ${client.gstin}"
-                                  : client.address),
-                              onTap: () {
-                                onClientSelected(client); // Uses Mixin
-                                Navigator.pop(context);
-                              },
-                            );
+          return StatefulBuilder(
+            builder: (context, setState) {
+              final searchController = TextEditingController();
+              String searchQuery = '';
+              
+              // Sort clients: recent first (alphabetically for now, can be enhanced)
+              final sortedClients = List<Client>.from(clients)
+                ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+              
+              // Filter clients based on search
+              final filteredClients = searchQuery.isEmpty
+                  ? sortedClients
+                  : sortedClients.where((c) =>
+                      c.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
+                      c.gstin.toLowerCase().contains(searchQuery.toLowerCase()) ||
+                      c.address.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+              
+              return Container(
+                padding: const EdgeInsets.all(16),
+                height: MediaQuery.of(context).size.height * 0.7,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text("Select Client",
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        TextButton.icon(
+                          onPressed: () {
+                            // Sort toggle or filter options can go here
                           },
+                          icon: const Icon(Icons.sort, size: 18),
+                          label: Text("${clients.length} total"),
                         ),
-                )
-              ],
-            ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // Search Bar
+                    TextField(
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        hintText: "Search by name, GSTIN, or address...",
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  searchController.clear();
+                                  setState(() => searchQuery = '');
+                                },
+                              )
+                            : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      onChanged: (value) => setState(() => searchQuery = value),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: filteredClients.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.search_off, size: 48, color: Colors.grey[400]),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    "No clients found",
+                                    style: TextStyle(color: Colors.grey[600]),
+                                  ),
+                                  if (searchQuery.isNotEmpty)
+                                    TextButton(
+                                      onPressed: () {
+                                        searchController.clear();
+                                        setState(() => searchQuery = '');
+                                      },
+                                      child: const Text("Clear search"),
+                                    ),
+                                ],
+                              ),
+                            )
+                          : ListView.separated(
+                              itemCount: filteredClients.length,
+                              separatorBuilder: (_, __) => const Divider(height: 1),
+                              itemBuilder: (context, index) {
+                                final client = filteredClients[index];
+                                final initial = client.name.isNotEmpty
+                                    ? client.name[0].toUpperCase()
+                                    : "?";
+                                return ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                                    child: Text(
+                                      initial,
+                                      style: TextStyle(
+                                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text(client.name),
+                                  subtitle: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      if (client.gstin.isNotEmpty)
+                                        Text(
+                                          "GST: ${client.gstin}",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      if (client.address.isNotEmpty)
+                                        Text(
+                                          client.address,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[500],
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  trailing: const Icon(Icons.chevron_right),
+                                  onTap: () {
+                                    onClientSelected(client);
+                                    Navigator.pop(context);
+                                  },
+                                );
+                              },
+                            ),
+                    )
+                  ],
+                ),
+              );
+            },
           );
         });
   }
@@ -646,6 +740,152 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
             );
           });
         });
+  }
+
+  Widget _buildInlineItemEditor(BuildContext context, int index, InvoiceItem item) {
+    final notifier = ref.read(invoiceProvider.notifier);
+    
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          elevation: 0,
+          color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Description
+                TextFormField(
+                  initialValue: item.description,
+                  decoration: const InputDecoration(
+                    labelText: "Description",
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  onChanged: (val) => notifier.updateItemDescription(index, val),
+                ),
+                const SizedBox(height: 8),
+                
+                // Quantity, Unit, Price, GST Row
+                Row(
+                  children: [
+                    // Quantity
+                    Expanded(
+                      flex: 2,
+                      child: TextFormField(
+                        initialValue: item.quantity.toString(),
+                        decoration: const InputDecoration(
+                          labelText: "Qty",
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: (val) => notifier.updateItemQuantity(index, val),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    
+                    // Unit
+                    Expanded(
+                      flex: 2,
+                      child: TextFormField(
+                        initialValue: item.unit,
+                        decoration: const InputDecoration(
+                          labelText: "Unit",
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        ),
+                        onChanged: (val) => notifier.updateItemUnit(index, val),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    
+                    // Price
+                    Expanded(
+                      flex: 3,
+                      child: TextFormField(
+                        initialValue: item.amount.toString(),
+                        decoration: const InputDecoration(
+                          labelText: "Price",
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          prefixText: "₹",
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: (val) => notifier.updateItemAmount(index, val),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    
+                    // GST
+                    Expanded(
+                      flex: 2,
+                      child: TextFormField(
+                        initialValue: item.gstRate.toString(),
+                        decoration: const InputDecoration(
+                          labelText: "GST%",
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: (val) => notifier.updateItemGstRate(index, val),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                
+                // HSN/SAC and Total Row
+                Row(
+                  children: [
+                    // HSN/SAC
+                    Expanded(
+                      flex: 2,
+                      child: TextFormField(
+                        initialValue: item.sacCode,
+                        decoration: const InputDecoration(
+                          labelText: "HSN/SAC",
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        ),
+                        onChanged: (val) => notifier.updateItemSac(index, val),
+                      ),
+                    ),
+                    const Spacer(),
+                    
+                    // Total
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        "₹${item.totalAmount.toStringAsFixed(2)}",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                    
+                    // Delete button
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                      onPressed: () => notifier.removeItem(index),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _editItemDialog(BuildContext context, int index, InvoiceItem item) {
@@ -761,6 +1001,58 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
             build: (format) => generateInvoicePdf(invoice, profile),
             useActions: false,
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGstinField() {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        final gstin = receiverGstinCtrl.text.toUpperCase();
+        final validation = GstUtils.validate(gstin);
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: receiverGstinCtrl,
+              decoration: InputDecoration(
+                labelText: "GSTIN",
+                border: const OutlineInputBorder(),
+                suffixIcon: gstin.isNotEmpty
+                    ? validation.isValid
+                        ? Icon(Icons.check_circle, color: Colors.green[600])
+                        : Icon(Icons.error, color: Colors.red[600])
+                    : null,
+                helperText: validation.stateName != null
+                    ? "${validation.stateName} • PAN: ${validation.pan}"
+                    : (gstin.isNotEmpty && !validation.isValid
+                        ? validation.errorMessage
+                        : null),
+                helperStyle: TextStyle(
+                  color: validation.isValid ? Colors.green[600] : Colors.red[600],
+                  fontSize: 12,
+                ),
+              ),
+              onChanged: (val) {
+                ref.read(invoiceProvider.notifier).updateReceiverGstin(val);
+                // Auto-update state if GSTIN is valid
+                if (validation.isValid && validation.stateName != null) {
+                  receiverStateCtrl.text = validation.stateName!;
+                  ref.read(invoiceProvider.notifier).updateReceiverState(validation.stateName!);
+                }
+                setState(() {});
+              },
+              validator: (val) {
+                if (val != null && val.isNotEmpty && !GstUtils.isValidGstin(val)) {
+                  return "Invalid GSTIN format";
+                }
+                return null;
+              },
+            ),
+          ],
         );
       },
     );

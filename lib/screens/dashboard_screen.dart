@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../widgets/profile_switcher_sheet.dart';
 import '../widgets/error_view.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/skeleton_widgets.dart';
+import '../widgets/gst_pie_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,6 +17,7 @@ import 'audit_report_screen.dart'; // NEW
 import '../providers/business_profile_provider.dart';
 
 import '../providers/invoice_repository_provider.dart';
+import '../models/invoice.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import '../services/gstr_service.dart';
@@ -180,7 +184,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
             const SizedBox(height: 24),
             invoiceListAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const SkeletonDashboard(),
               error: (err, stack) => ErrorView(
                 message: err.toString(),
                 onRetry: () => ref.refresh(invoiceListProvider),
@@ -207,6 +211,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 final totalCGST = stats['cgst'] as double;
                 final totalSGST = stats['sgst'] as double;
                 final totalIGST = stats['igst'] as double;
+                
+                // Calculate previous period stats for trends
+                final previousPeriodInvoices = _getPreviousPeriodInvoices(invoices);
+                final prevStats = DashboardActions.calculateStats(previousPeriodInvoices);
+                final prevRevenue = prevStats['revenue'] as double;
+                final prevCount = previousPeriodInvoices.length;
+                final prevCgst = prevStats['cgst'] as double;
+                final prevSgst = prevStats['sgst'] as double;
+                final prevIgst = prevStats['igst'] as double;
+                final prevGst = prevCgst + prevSgst + prevIgst;
+                
+                // Calculate trends
+                final revenueTrend = prevRevenue > 0 ? ((totalRevenue - prevRevenue) / prevRevenue) * 100 : 0.0;
+                final countTrend = prevCount > 0 ? ((filteredInvoices.length - prevCount) / prevCount) * 100 : 0.0;
+                final gstTrend = prevGst > 0 ? (((totalCGST + totalSGST + totalIGST) - prevGst) / prevGst) * 100 : 0.0;
+                
                 final currency = NumberFormat.simpleCurrency(
                   locale: 'en_IN',
                   decimalDigits: 0,
@@ -234,6 +254,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               currency.format(totalRevenue),
                               Icons.currency_rupee,
                               Colors.green,
+                              trend: revenueTrend,
                             ),
                           ),
                         ),
@@ -254,6 +275,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               "${filteredInvoices.length}",
                               Icons.description,
                               Colors.blue,
+                              trend: countTrend,
                             ),
                           ),
                         ),
@@ -281,12 +303,41 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               ),
                               Icons.percent,
                               Colors.purple,
+                              trend: gstTrend,
                             ),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 32),
+
+                    // GST Pie Chart
+                    if (totalCGST + totalSGST + totalIGST > 0)
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "GST Breakdown ($_selectedFilter)",
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                              const SizedBox(height: 16),
+                              GstPieChart(
+                                cgst: totalCGST,
+                                sgst: totalSGST,
+                                igst: totalIGST,
+                                currencySymbol: profile.currencySymbol,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (totalCGST + totalSGST + totalIGST > 0)
+                      const SizedBox(height: 32),
 
                     // Quick Actions
                     Text(
@@ -448,11 +499,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
                     const SizedBox(height: 8),
                     if (invoices.isEmpty)
-                      const Card(
-                        child: ListTile(
-                          leading: CircleAvatar(child: Icon(Icons.history)),
-                          title: Text("No invoices yet"),
-                        ),
+                      EmptyStateIllustration(
+                        title: "No invoices yet",
+                        message: "Create your first invoice to get started with InvoBharat",
+                        actionLabel: "Create Invoice",
+                        onAction: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const InvoiceFormScreen(),
+                          ),
+                        ).then((_) => ref.refresh(invoiceListProvider)),
                       )
                     else
                       ...invoices.take(5).map(
@@ -468,10 +524,23 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                   );
                                   ref.invalidate(invoiceListProvider);
                                 },
-                                leading: const CircleAvatar(
-                                  child: Icon(Icons.description),
+                                leading: CircleAvatar(
+                                  backgroundColor: _getStatusColor(inv.paymentStatus).withValues(alpha: 0.2),
+                                  child: Text(
+                                    inv.receiver.name.isNotEmpty ? inv.receiver.name[0].toUpperCase() : '?',
+                                    style: TextStyle(
+                                      color: _getStatusColor(inv.paymentStatus),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
-                                title: Text(inv.receiver.name),
+                                title: Row(
+                                  children: [
+                                    Text(inv.receiver.name),
+                                    const SizedBox(width: 8),
+                                    _buildStatusBadge(inv.paymentStatus),
+                                  ],
+                                ),
                                 subtitle: Text(
                                   "${inv.invoiceNo} • ${DateFormat('dd MMM').format(inv.invoiceDate)}",
                                 ),
@@ -499,8 +568,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     String title,
     String value,
     IconData icon,
-    Color color,
-  ) {
+    Color color, {
+    double? trend,
+    bool isTrendPercentage = true,
+  }) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -517,14 +588,54 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
             ),
             const SizedBox(height: 4),
-            Text(
-              value,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    value,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                if (trend != null)
+                  _buildTrendIndicator(trend, isTrendPercentage),
+              ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTrendIndicator(double trend, bool isPercentage) {
+    final isPositive = trend >= 0;
+    final color = isPositive ? Colors.green : Colors.red;
+    final icon = isPositive ? Icons.trending_up : Icons.trending_down;
+    final text = isPercentage
+        ? '${trend.abs().toStringAsFixed(1)}%'
+        : '${trend >= 0 ? '+' : ''}${trend.toStringAsFixed(0)}';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 14),
+          const SizedBox(width: 2),
+          Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -567,6 +678,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
       ),
     );
+  }
+
+  List<Invoice> _getPreviousPeriodInvoices(List<Invoice> allInvoices) {
+    if (_dateRange == null) return [];
+    
+    final periodDuration = _dateRange!.end.difference(_dateRange!.start);
+    final previousStart = _dateRange!.start.subtract(periodDuration);
+    final previousEnd = _dateRange!.start.subtract(const Duration(days: 1));
+    
+    return allInvoices.where((i) {
+      return i.invoiceDate.isAfter(previousStart.subtract(const Duration(seconds: 1))) &&
+          i.invoiceDate.isBefore(previousEnd.add(const Duration(days: 1)));
+    }).toList();
   }
 
   void _showProfileSwitcher(BuildContext context, WidgetRef ref) {
@@ -630,6 +754,39 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           style: style,
         ),
       ],
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'Paid':
+        return Colors.green;
+      case 'Partial':
+        return Colors.orange;
+      case 'Overdue':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Widget _buildStatusBadge(String status) {
+    final color = _getStatusColor(status);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+      ),
+      child: Text(
+        status,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 }

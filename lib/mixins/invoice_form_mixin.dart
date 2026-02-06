@@ -9,6 +9,7 @@ import '../services/invoice_actions.dart';
 import '../utils/pdf_generator.dart';
 import '../providers/invoice_provider.dart';
 import '../providers/estimate_provider.dart';
+import '../providers/invoice_repository_provider.dart';
 
 /// Mixin to handle form logic for creating/editing Invoices.
 /// Standardizes controller management and common actions.
@@ -138,5 +139,57 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   Future<void> printInvoice(Invoice invoice, BusinessProfile profile) async {
     final pdfBytes = await generateInvoicePdf(invoice, profile);
     await Printing.layoutPdf(onLayout: (_) => pdfBytes);
+  }
+
+  /// Generates the next invoice number based on existing invoices
+  Future<String> generateNextInvoiceNumber() async {
+    final invoices = await ref.read(invoiceRepositoryProvider).getAllInvoices();
+    
+    if (invoices.isEmpty) {
+      return 'INV-001';
+    }
+    
+    // Find the highest invoice number
+    int maxNumber = 0;
+    final regex = RegExp(r'INV-?(\d+)', caseSensitive: false);
+    
+    for (final invoice in invoices) {
+      final match = regex.firstMatch(invoice.invoiceNo);
+      if (match != null) {
+        final number = int.tryParse(match.group(1) ?? '0') ?? 0;
+        if (number > maxNumber) {
+          maxNumber = number;
+        }
+      }
+    }
+    
+    return 'INV-${(maxNumber + 1).toString().padLeft(3, '0')}';
+  }
+
+  /// Calculates due date based on payment terms
+  DateTime? calculateDueDate(DateTime invoiceDate, String paymentTerms) {
+    if (paymentTerms.isEmpty) {
+      return invoiceDate.add(const Duration(days: 30));
+    }
+    
+    // Parse common payment terms
+    final lowerTerms = paymentTerms.toLowerCase();
+    
+    if (lowerTerms.contains('net') || lowerTerms.contains('days')) {
+      // Extract number from terms like "Net 30", "30 days", etc.
+      final regex = RegExp(r'(\d+)');
+      final match = regex.firstMatch(paymentTerms);
+      if (match != null) {
+        final days = int.tryParse(match.group(0) ?? '30') ?? 30;
+        return invoiceDate.add(Duration(days: days));
+      }
+    }
+    
+    if (lowerTerms.contains('immediate') || lowerTerms.contains('due on receipt')) {
+      return invoiceDate;
+    }
+    
+    // Default to 30 days
+    return invoiceDate.add(const Duration(days: 30));
   }
 }
