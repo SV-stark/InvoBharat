@@ -27,7 +27,7 @@ dependencies:
   sqlite3: ^2.9.4
   sqlite3_flutter_libs: ^0.5.18
   path: ^1.9.0
-  csv: ^6.0.0
+  csv: ^7.1.0
 
   archive: ^4.0.7
   url_launcher: ^6.3.2
