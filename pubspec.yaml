@@ -48,7 +48,7 @@ dev_dependencies:
 
   flutter_launcher_icons: ^0.14.4
   build_runner: ^2.10.5
-  freezed: ^3.2.3
+  freezed: ^3.2.5
   json_serializable: ^6.8.0
   drift_dev: ^2.30.1
 
