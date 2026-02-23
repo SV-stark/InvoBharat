@@ -23,7 +23,7 @@ dependencies:
   fl_chart: ^1.1.1
 
   # Database
-  drift: ^2.14.0
+  drift: ^2.31.0
   sqlite3: ^2.9.4
   sqlite3_flutter_libs: ^0.5.18
   path: ^1.9.0
