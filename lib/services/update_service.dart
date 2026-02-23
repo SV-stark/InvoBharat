@@ -1,5 +1,4 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 class Release {
@@ -31,43 +30,43 @@ class Release {
 class UpdateService {
   static const String _repoOwner = 'SV-stark';
   static const String _repoName = 'InvoBharat';
+  
+  static final Dio _dio = Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    ),
+  );
 
-  /// Fetches the latest stable and prerelease (beta/nightly) updates.
-  /// Returns a map with keys 'stable' and 'beta' containing Release objects or null.
   static Future<Map<String, Release?>> checkForUpdates() async {
     try {
-      final url = Uri.parse(
-          'https://api.github.com/repos/$_repoOwner/$_repoName/releases');
-      final response = await http.get(url);
+      final response = await _dio.get(
+        'https://api.github.com/repos/$_repoOwner/$_repoName/releases',
+      );
 
       if (response.statusCode == 200) {
-        final List<dynamic> jsonList = json.decode(response.body);
+        final List<dynamic> jsonList = response.data;
         final releases =
             jsonList.map((json) => Release.fromJson(json)).toList();
 
         Release? stableRelease;
         Release? betaRelease;
 
-        // Determine current version to compare (optional, for now just showing available)
-        // final packageInfo = await PackageInfo.fromPlatform();
-        // final currentVersion = packageInfo.version;
-
-        // Find latest stable
         try {
           stableRelease = releases.firstWhere((r) => !r.prerelease);
         } catch (e) {
           // No stable release found
         }
 
-        // Find latest prerelease
         try {
           betaRelease = releases.firstWhere((r) => r.prerelease);
         } catch (e) {
           // No prerelease found
         }
-
-        // If stable release is newer than latest prerelease, ignore beta?
-        // Usually beta is newer. We just return both if available.
 
         return {
           'stable': stableRelease,
@@ -77,7 +76,6 @@ class UpdateService {
         throw Exception('Failed to load releases');
       }
     } catch (e) {
-      // Handle network errors etc
       debugPrint('Error checking for updates: $e');
       return {
         'stable': null,

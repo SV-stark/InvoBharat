@@ -8,6 +8,11 @@ final databaseProvider = Provider<AppDatabase>((ref) {
   return database;
 });
 
+final appSettingsServiceProvider = Provider<AppSettingsService>((ref) {
+  final db = ref.watch(databaseProvider);
+  return AppSettingsService(db);
+});
+
 final migrationServiceProvider = Provider<DatabaseMigrationService>((ref) {
   final db = ref.watch(databaseProvider);
   return DatabaseMigrationService(db);

@@ -1,33 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../database/database.dart';
+import '../providers/database_provider.dart';
 
 final themeProvider =
     NotifierProvider<ThemeNotifier, ThemeMode>(ThemeNotifier.new);
 
 class ThemeNotifier extends Notifier<ThemeMode> {
-  static const _key = 'theme_mode';
-
   @override
   ThemeMode build() {
     _loadTheme();
-    return ThemeMode.system; // Default to system
+    return ThemeMode.system;
   }
 
   Future<void> _loadTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedMode = prefs.getString(_key);
-    if (savedMode != null) {
-      state = ThemeMode.values.firstWhere(
-        (e) => e.toString() == savedMode,
-        orElse: () => ThemeMode.system,
-      );
+    try {
+      final settingsService = ref.read(appSettingsServiceProvider);
+      final savedMode = await settingsService.getSetting('theme_mode');
+      if (savedMode != null) {
+        state = ThemeMode.values.firstWhere(
+          (e) => e.toString() == savedMode,
+          orElse: () => ThemeMode.system,
+        );
+      }
+    } catch (e) {
+      // Fallback to default
     }
   }
 
   Future<void> setTheme(ThemeMode mode) async {
     state = mode;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_key, mode.toString());
+    try {
+      final settingsService = ref.read(appSettingsServiceProvider);
+      await settingsService.setSetting('theme_mode', mode.toString());
+    } catch (e) {
+      // Handle error
+    }
   }
 }

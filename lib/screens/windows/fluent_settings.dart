@@ -18,6 +18,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:image_background_remover/image_background_remover.dart';
 import 'package:path/path.dart' as p;
 import 'dart:ui' as ui;
+import '../../utils/image_isolate_helper.dart';
 
 class FluentSettings extends ConsumerStatefulWidget {
   const FluentSettings({super.key});
@@ -313,13 +314,13 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                             if (image != null) {
                               try {
                                 final imageBytes = await image.readAsBytes();
-                                final processedImage = await BackgroundRemover
-                                    .instance
-                                    .removeBg(imageBytes);
-                                final byteData = await processedImage
-                                    .toByteData(format: ui.ImageByteFormat.png);
-                                final processedBytes =
-                                    byteData!.buffer.asUint8List();
+                                final result = await processImageBackgroundInIsolate(imageBytes);
+                                
+                                if (result.error != null) {
+                                  throw Exception(result.error);
+                                }
+
+                                final processedBytes = result.bytes;
 
                                 final appDir =
                                     await getApplicationDocumentsDirectory();
@@ -413,13 +414,13 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                             if (image != null) {
                               try {
                                 final imageBytes = await image.readAsBytes();
-                                final processedImage = await BackgroundRemover
-                                    .instance
-                                    .removeBg(imageBytes);
-                                final byteData = await processedImage
-                                    .toByteData(format: ui.ImageByteFormat.png);
-                                final processedBytes =
-                                    byteData!.buffer.asUint8List();
+                                final result = await processImageBackgroundInIsolate(imageBytes);
+                                
+                                if (result.error != null) {
+                                  throw Exception(result.error);
+                                }
+
+                                final processedBytes = result.bytes;
 
                                 final appDir =
                                     await getApplicationDocumentsDirectory();

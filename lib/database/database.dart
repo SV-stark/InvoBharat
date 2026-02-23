@@ -11,12 +11,12 @@ import 'tables.dart';
 part 'database.g.dart';
 
 @DriftDatabase(
-    tables: [BusinessProfiles, Clients, Invoices, InvoiceItems, Payments])
+    tables: [BusinessProfiles, Clients, Invoices, InvoiceItems, Payments, AppSettings])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -109,6 +109,11 @@ class AppDatabase extends _$AppDatabase {
       if (from < 5) {
         await m.addColumn(businessProfiles, businessProfiles.pan);
       }
+      if (from < 6) {
+        await m.createTable(appSettings);
+        final settingsService = AppSettingsService(this);
+        await settingsService.migrateFromSharedPrefs();
+      }
     }, beforeOpen: (details) async {
       // We can do data migration here too if needed
       if (details.wasCreated) {
@@ -128,4 +133,76 @@ LazyDatabase _openConnection() {
       db.execute('PRAGMA foreign_keys=ON');
     });
   });
+}
+
+class AppSettingsService {
+  final AppDatabase _db;
+  
+  AppSettingsService(this._db);
+  
+  Future<void> migrateFromSharedPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      final themeMode = prefs.getString('theme_mode');
+      if (themeMode != null) {
+        await _db.customStatement(
+          'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
+          ['theme_mode', themeMode],
+        );
+      }
+      
+      final paneIndex = prefs.getInt('pane_display_mode');
+      if (paneIndex != null) {
+        await _db.customStatement(
+          'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
+          ['pane_display_mode', paneIndex.toString()],
+        );
+      }
+
+      final smtpHost = prefs.getString('smtp_host');
+      if (smtpHost != null) {
+        await _db.customStatement(
+          'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
+          ['smtp_host', smtpHost],
+        );
+        await _db.customStatement(
+          'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
+          ['smtp_port', (prefs.getInt('smtp_port') ?? 587).toString()],
+        );
+        await _db.customStatement(
+          'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
+          ['smtp_email', prefs.getString('smtp_email') ?? ''],
+        );
+        await _db.customStatement(
+          'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
+          ['smtp_username', prefs.getString('smtp_username') ?? ''],
+        );
+        await _db.customStatement(
+          'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
+          ['smtp_is_secure', (prefs.getBool('smtp_is_secure') ?? true).toString()],
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Settings Migration Error: $e");
+      }
+    }
+  }
+
+  Future<String?> getSetting(String key) async {
+    final results = await _db.customSelect(
+      'SELECT value FROM app_settings WHERE key = ?',
+      variables: [Variable.withString(key)],
+    ).get();
+    if (results.isEmpty) return null;
+    return results.first.read<String>('value');
+  }
+
+  Future<void> setSetting(String key, String value) async {
+    await _db.customStatement(
+      'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
+      [key, value],
+    );
+  }
 }
