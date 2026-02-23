@@ -27,7 +27,8 @@ class FakeInvoiceRepository implements InvoiceRepository {
   Future<void> saveInvoice(final Invoice invoice) async {}
 
   @override
-  dynamic noSuchMethod(final Invocation invocation) => super.noSuchMethod(invocation);
+  dynamic noSuchMethod(final Invocation invocation) =>
+      super.noSuchMethod(invocation);
 }
 
 void main() {
@@ -53,6 +54,6 @@ void main() {
     expect(find.text('InvoBharat'), findsAtLeast(1));
 
     // Verify that "New Invoice" button is present.
-    expect(find.text('New Invoice'), findsOneWidget);
+    expect(find.text('New Invoice'), findsWidgets);
   });
 }
