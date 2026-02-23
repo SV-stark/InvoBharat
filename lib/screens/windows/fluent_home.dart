@@ -50,32 +50,35 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
             automaticallyImplyLeading: false,
             actions: Row(
               mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                CommandBar(
-                  primaryItems: [
-                    CommandBarButton(
-                      icon: const Icon(FluentIcons.add),
-                      label: const Text('New Invoice'),
-                      onPressed: () {
-                        setState(() => topIndex = 1);
-                      },
-                    ),
-                    CommandBarButton(
-                      icon: const Icon(FluentIcons.contact),
-                      label: const Text('New Client'),
-                      onPressed: () {
-                        setState(() => topIndex = 5);
-                      },
-                    ),
-                    const CommandBarSeparator(),
-                    CommandBarButton(
-                      icon: const Icon(FluentIcons.refresh),
-                      label: const Text('Refresh'),
-                      onPressed: () {
-                        // Refresh current view
-                      },
-                    ),
-                  ],
+                Flexible(
+                  child: CommandBar(
+                    primaryItems: [
+                      CommandBarButton(
+                        icon: const Icon(FluentIcons.add),
+                        label: const Text('New Invoice'),
+                        onPressed: () {
+                          setState(() => topIndex = 1);
+                        },
+                      ),
+                      CommandBarButton(
+                        icon: const Icon(FluentIcons.contact),
+                        label: const Text('New Client'),
+                        onPressed: () {
+                          setState(() => topIndex = 5);
+                        },
+                      ),
+                      const CommandBarSeparator(),
+                      CommandBarButton(
+                        icon: const Icon(FluentIcons.refresh),
+                        label: const Text('Refresh'),
+                        onPressed: () {
+                          // Refresh current view
+                        },
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(width: 12),
               ],

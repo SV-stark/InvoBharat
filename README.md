@@ -98,7 +98,10 @@ cd InvoBharat
 # 2. Install dependencies
 flutter pub get
 
-# 3. Run the app
+# 3. Generate required code (freezed, drift, json_serializable)
+dart run build_runner build -d
+
+# 4. Run the app
 flutter run -d windows # or linux
 ```
 
