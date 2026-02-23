@@ -1,9 +1,9 @@
-import '../models/invoice.dart';
+import 'package:invobharat/models/invoice.dart';
 
 class AuditService {
   /// Detects missing sequence numbers in a list of invoices.
   /// Returns a map of Prefix -> List of missing numbers as formatted strings.
-  static List<String> detectGaps(List<Invoice> invoices) {
+  static List<String> detectGaps(final List<Invoice> invoices) {
     if (invoices.isEmpty) return [];
 
     // Filter to those that look like sequences (e.g. INV-001, INV-003)
@@ -26,7 +26,7 @@ class AuditService {
 
     final missing = <String>[];
 
-    prefixMap.forEach((prefix, numbers) {
+    prefixMap.forEach((final prefix, final numbers) {
       numbers.sort();
       // Remove duplicates
       final uniqueNumbers = numbers.toSet().toList()..sort();

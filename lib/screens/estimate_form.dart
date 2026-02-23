@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../models/client.dart';
-import '../models/invoice.dart';
-import '../providers/client_provider.dart';
-import '../mixins/estimate_form_mixin.dart';
-import '../widgets/adaptive_widgets.dart';
+import 'package:invobharat/models/client.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/providers/client_provider.dart';
+import 'package:invobharat/mixins/estimate_form_mixin.dart';
+import 'package:invobharat/widgets/adaptive_widgets.dart';
 
 class EstimateForm extends ConsumerStatefulWidget {
   final String? estimateId;
@@ -81,7 +81,7 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title:
@@ -123,14 +123,14 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
                     child: AppTextInput(
                       label: "Estimate No",
                       controller: estimateNoCtrl,
-                      validator: (val) =>
+                      validator: (final val) =>
                           val == null || val.isEmpty ? 'Required' : null,
                     ),
                   )),
                   const SizedBox(width: 16),
                   Expanded(
                       child: _buildDatePicker(
-                          "Date", date, (d) => setState(() => date = d))),
+                          "Date", date, (final d) => setState(() => date = d))),
                 ],
               ),
               const SizedBox(height: 16),
@@ -154,7 +154,7 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
                 child: AppTextInput(
                   label: "Client Name",
                   controller: receiverNameCtrl,
-                  validator: (val) =>
+                  validator: (final val) =>
                       val == null || val.isEmpty ? 'Required' : null,
                 ),
               ),
@@ -163,7 +163,7 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
                 child: AppTextInput(
                   label: "Address",
                   controller: receiverAddressCtrl,
-                  validator: (val) =>
+                  validator: (final val) =>
                       val == null || val.isEmpty ? 'Required' : null,
                 ),
               ),
@@ -175,7 +175,7 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
                     child: AppTextInput(
                       label: "GSTIN",
                       controller: receiverGstinCtrl,
-                      validator: (val) =>
+                      validator: (final val) =>
                           val == null || val.isEmpty ? 'Required' : null,
                     ),
                   )),
@@ -186,7 +186,7 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
                     child: AppTextInput(
                       label: "State",
                       controller: receiverStateCtrl,
-                      validator: (val) =>
+                      validator: (final val) =>
                           val == null || val.isEmpty ? 'Required' : null,
                     ),
                   )),
@@ -205,7 +205,7 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
                       onPressed: _addItem, icon: const Icon(Icons.add_circle)),
                 ],
               ),
-              ...items.asMap().entries.map((entry) {
+              ...items.asMap().entries.map((final entry) {
                 final index = entry.key;
                 final item = entry.value;
                 return Card(
@@ -234,7 +234,7 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
                   label: "Notes",
                   controller: notesCtrl,
                   maxLines: 2,
-                  validator: (val) =>
+                  validator: (final val) =>
                       val == null || val.isEmpty ? 'Required' : null,
                 ),
               ),
@@ -244,7 +244,7 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
                   label: "Terms",
                   controller: termsCtrl,
                   maxLines: 2,
-                  validator: (val) =>
+                  validator: (final val) =>
                       val == null || val.isEmpty ? 'Required' : null,
                 ),
               ),
@@ -256,7 +256,7 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
   }
 
   Widget _buildDatePicker(
-      String label, DateTime date, Function(DateTime) onSelect) {
+      final String label, final DateTime date, final Function(DateTime) onSelect) {
     return InkWell(
       onTap: () async {
         final picked = await showDatePicker(
@@ -277,29 +277,29 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
   void _addItem() async {
     final newItem = await showDialog<InvoiceItem>(
       context: context,
-      builder: (ctx) => const _ItemEditDialog(),
+      builder: (final ctx) => const _ItemEditDialog(),
     );
     if (newItem != null) {
       setState(() => items.add(newItem));
     }
   }
 
-  void _editItem(int index) async {
+  void _editItem(final int index) async {
     final newItem = await showDialog<InvoiceItem>(
       context: context,
-      builder: (ctx) => _ItemEditDialog(item: items[index]),
+      builder: (final ctx) => _ItemEditDialog(item: items[index]),
     );
     if (newItem != null) {
       setState(() => items[index] = newItem);
     }
   }
 
-  void _showClientSelector(BuildContext context, List<Client> clients) {
+  void _showClientSelector(final BuildContext context, final List<Client> clients) {
     showModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-        builder: (context) {
+        builder: (final context) {
           return Container(
             padding: const EdgeInsets.all(16),
             height: 400,
@@ -315,7 +315,7 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
                       ? const Center(child: Text("No clients found."))
                       : ListView.builder(
                           itemCount: clients.length,
-                          itemBuilder: (context, index) {
+                          itemBuilder: (final context, final index) {
                             final client = clients[index];
                             final initial = client.name.isNotEmpty
                                 ? client.name[0].toUpperCase()
@@ -340,12 +340,12 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
         });
   }
 
-  void _removeItem(int index) {
+  void _removeItem(final int index) {
     setState(() => items.removeAt(index));
   }
 
   Widget _buildSummary() {
-    double total = items.fold(0, (sum, item) => sum + item.totalAmount);
+    final double total = items.fold(0, (final sum, final item) => sum + item.totalAmount);
     return Align(
         alignment: Alignment.centerRight,
         child: Text("Total: ₹${total.toStringAsFixed(2)}",
@@ -381,7 +381,7 @@ class _ItemEditDialogState extends State<_ItemEditDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return AlertDialog(
       title: const Text("Edit Item"),
       content: Column(

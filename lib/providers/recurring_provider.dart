@@ -5,9 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
-import '../models/recurring_profile.dart';
-import 'business_profile_provider.dart';
-import 'invoice_repository_provider.dart';
+import 'package:invobharat/models/recurring_profile.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
 
 class RecurringRepository {
   Future<String> get _localPath async {
@@ -20,13 +20,13 @@ class RecurringRepository {
     return path;
   }
 
-  Future<void> saveProfile(RecurringProfile profile) async {
+  Future<void> saveProfile(final RecurringProfile profile) async {
     final path = await _localPath;
     final file = File('$path/rec_${profile.id}.json');
     await file.writeAsString(jsonEncode(profile.toJson()));
   }
 
-  Future<void> deleteProfile(String id) async {
+  Future<void> deleteProfile(final String id) async {
     final path = await _localPath;
     final file = File('$path/rec_$id.json');
     if (await file.exists()) {
@@ -43,11 +43,11 @@ class RecurringRepository {
   }
 
   Future<List<RecurringProfile>> getAllProfiles(
-      String businessProfileId) async {
+      final String businessProfileId) async {
     try {
       final path = await _localPath;
       final dir = Directory(path);
-      List<RecurringProfile> profiles = [];
+      final List<RecurringProfile> profiles = [];
       if (!await dir.exists()) return [];
 
       final files = dir.listSync();
@@ -71,14 +71,14 @@ class RecurringRepository {
   }
 }
 
-final recurringRepositoryProvider = Provider((ref) => RecurringRepository());
+final recurringRepositoryProvider = Provider((final ref) => RecurringRepository());
 
 class RecurringService {
   final Ref ref;
 
   RecurringService(this.ref);
 
-  Future<int> checkAndRun(String businessProfileId) async {
+  Future<int> checkAndRun(final String businessProfileId) async {
     final repo = ref.read(recurringRepositoryProvider);
     final profiles = await repo.getAllProfiles(businessProfileId);
     int generatedCount = 0;
@@ -112,14 +112,14 @@ class RecurringService {
     return generatedCount;
   }
 
-  DateTime calculateNextDate(DateTime current, RecurringInterval interval) {
+  DateTime calculateNextDate(final DateTime current, final RecurringInterval interval) {
     switch (interval) {
       case RecurringInterval.daily:
         return current.add(const Duration(days: 1));
       case RecurringInterval.weekly:
         return current.add(const Duration(days: 7));
       case RecurringInterval.monthly:
-        var next = DateTime(current.year, current.month + 1, 1);
+        final next = DateTime(current.year, current.month + 1);
         final lastDayOfMonth = DateTime(next.year, next.month + 1, 0).day;
         return DateTime(
             next.year, next.month, current.day.clamp(1, lastDayOfMonth));
@@ -128,7 +128,7 @@ class RecurringService {
     }
   }
 
-  Future<void> _generateInvoice(RecurringProfile profile) async {
+  Future<void> _generateInvoice(final RecurringProfile profile) async {
     // Get Business Profile for sequence
     // Use read, but we might be in background? We should be careful.
     // We assume this runs in foreground.
@@ -145,10 +145,10 @@ class RecurringService {
     // We need to fetch the specific business profile first to get series/sequence.
     // Since BusinessProfileProvider manages list, we can find it.
     final profiles = ref.read(businessProfileListProvider);
-    final index = profiles.indexWhere((p) => p.id == profile.profileId);
+    final index = profiles.indexWhere((final p) => p.id == profile.profileId);
     if (index == -1) return; // Profile not found
 
-    var businessProfile = profiles[index];
+    final businessProfile = profiles[index];
 
     final invoiceNo =
         "${businessProfile.invoiceSeries}${businessProfile.invoiceSequence}";
@@ -173,7 +173,7 @@ class RecurringService {
   }
 }
 
-final recurringServiceProvider = Provider((ref) => RecurringService(ref));
+final recurringServiceProvider = Provider((final ref) => RecurringService(ref));
 
 final recurringListProvider =
     AsyncNotifierProvider<RecurringListNotifier, List<RecurringProfile>>(
@@ -187,17 +187,17 @@ class RecurringListNotifier extends AsyncNotifier<List<RecurringProfile>> {
     return ref.read(recurringRepositoryProvider).getAllProfiles(activeId);
   }
 
-  Future<void> addProfile(RecurringProfile profile) async {
+  Future<void> addProfile(final RecurringProfile profile) async {
     await ref.read(recurringRepositoryProvider).saveProfile(profile);
     ref.invalidateSelf();
   }
 
-  Future<void> deleteProfile(String id) async {
+  Future<void> deleteProfile(final String id) async {
     await ref.read(recurringRepositoryProvider).deleteProfile(id);
     ref.invalidateSelf();
   }
 
-  Future<void> updateProfile(RecurringProfile profile) async {
+  Future<void> updateProfile(final RecurringProfile profile) async {
     await ref.read(recurringRepositoryProvider).saveProfile(profile);
     ref.invalidateSelf();
   }

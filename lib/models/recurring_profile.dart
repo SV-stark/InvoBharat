@@ -1,4 +1,4 @@
-import 'invoice.dart';
+import 'package:invobharat/models/invoice.dart';
 
 enum RecurringInterval { daily, weekly, monthly, yearly }
 
@@ -24,14 +24,14 @@ class RecurringProfile {
   });
 
   RecurringProfile copyWith({
-    String? id,
-    String? profileId,
-    RecurringInterval? interval,
-    DateTime? nextRunDate,
-    DateTime? lastRunDate,
-    bool? isActive,
-    int? dueDays,
-    Invoice? baseInvoice,
+    final String? id,
+    final String? profileId,
+    final RecurringInterval? interval,
+    final DateTime? nextRunDate,
+    final DateTime? lastRunDate,
+    final bool? isActive,
+    final int? dueDays,
+    final Invoice? baseInvoice,
   }) {
     return RecurringProfile(
       id: id ?? this.id,
@@ -58,7 +58,7 @@ class RecurringProfile {
     };
   }
 
-  factory RecurringProfile.fromJson(Map<String, dynamic> json) {
+  factory RecurringProfile.fromJson(final Map<String, dynamic> json) {
     return RecurringProfile(
       id: json['id'],
       profileId: json['profileId'],

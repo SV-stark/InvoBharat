@@ -1,15 +1,15 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/client.dart';
-import '../providers/client_provider.dart';
-import '../widgets/client_form.dart';
-import 'client_ledger_screen.dart';
+import 'package:invobharat/models/client.dart';
+import 'package:invobharat/providers/client_provider.dart';
+import 'package:invobharat/widgets/client_form.dart';
+import 'package:invobharat/screens/client_ledger_screen.dart';
 
 class ClientsScreen extends ConsumerWidget {
   const ClientsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final clients = ref.watch(clientListProvider);
 
     return ScaffoldPage(
@@ -32,7 +32,7 @@ class ClientsScreen extends ConsumerWidget {
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: clients.length,
-              itemBuilder: (context, index) {
+              itemBuilder: (final context, final index) {
                 final client = clients[index];
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
@@ -81,7 +81,7 @@ class ClientsScreen extends ConsumerWidget {
                               Navigator.push(
                                 context,
                                 FluentPageRoute(
-                                  builder: (context) =>
+                                  builder: (final context) =>
                                       ClientLedgerScreen(client: client),
                                 ),
                               );
@@ -97,7 +97,7 @@ class ClientsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
+  Widget _buildEmptyState(final BuildContext context, final WidgetRef ref) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -116,18 +116,18 @@ class ClientsScreen extends ConsumerWidget {
   }
 
   void _showClientDialog(
-      BuildContext context, Client? client, WidgetRef ref) async {
+      final BuildContext context, final Client? client, final WidgetRef ref) async {
     await showDialog(
       context: context,
-      builder: (context) => ClientFormDialog(client: client),
+      builder: (final context) => ClientFormDialog(client: client),
     );
   }
 
   void _confirmDelete(
-      BuildContext context, Client client, WidgetRef ref) async {
+      final BuildContext context, final Client client, final WidgetRef ref) async {
     final result = await showDialog<String>(
       context: context,
-      builder: (context) => ContentDialog(
+      builder: (final context) => ContentDialog(
         title: const Text('Delete Client?'),
         content: Text('Are you sure you want to delete ${client.name}?'),
         actions: [

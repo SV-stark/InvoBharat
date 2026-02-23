@@ -3,9 +3,9 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
-import '../../../models/invoice.dart';
-import '../../../models/business_profile.dart';
-import 'base_template.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/models/business_profile.dart';
+import 'package:invobharat/utils/pdf/templates/base_template.dart';
 
 class ClassicTemplate extends BasePdfTemplate {
   @override
@@ -13,8 +13,8 @@ class ClassicTemplate extends BasePdfTemplate {
 
   @override
   Future<Uint8List> generate(
-      Invoice invoice, BusinessProfile profile, pw.Font font, pw.Font fontBold,
-      {String? title}) async {
+      final Invoice invoice, final BusinessProfile profile, final pw.Font font, final pw.Font fontBold,
+      {final String? title}) async {
     // Try to load a serif font for the classic look
     pw.Font serifFont;
     pw.Font serifBold;
@@ -44,7 +44,7 @@ class ClassicTemplate extends BasePdfTemplate {
       pw.Page(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(40),
-        build: (context) {
+        build: (final context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [

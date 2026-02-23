@@ -42,7 +42,7 @@ class GstUtils {
     '99': 'Centre Jurisdiction',
   };
 
-  static String? getStateName(String gstin) {
+  static String? getStateName(final String gstin) {
     if (gstin.length < 2) return null;
     final code = gstin.substring(0, 2);
     return stateMap[code];

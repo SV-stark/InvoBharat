@@ -3,9 +3,9 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
-import '../../../models/invoice.dart';
-import '../../../models/business_profile.dart';
-import 'base_template.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/models/business_profile.dart';
+import 'package:invobharat/utils/pdf/templates/base_template.dart';
 
 class CorporateTemplate extends BasePdfTemplate {
   @override
@@ -13,8 +13,8 @@ class CorporateTemplate extends BasePdfTemplate {
 
   @override
   Future<Uint8List> generate(
-      Invoice invoice, BusinessProfile profile, pw.Font font, pw.Font fontBold,
-      {String? title}) async {
+      final Invoice invoice, final BusinessProfile profile, final pw.Font font, final pw.Font fontBold,
+      {final String? title}) async {
     final pdf = pw.Document(
       theme: pw.ThemeData.withFont(
         base: font,
@@ -37,7 +37,7 @@ class CorporateTemplate extends BasePdfTemplate {
       pw.Page(
         pageFormat: PdfPageFormat.a4,
         margin: pw.EdgeInsets.zero, // Full bleed for header
-        build: (context) {
+        build: (final context) {
           return pw.Column(
             children: [
               // Header Bar
@@ -58,8 +58,7 @@ class CorporateTemplate extends BasePdfTemplate {
                             margin: const pw.EdgeInsets.only(bottom: 10),
                             child: pw.Image(
                                 pw.MemoryImage(
-                                    File(logoPath).readAsBytesSync()),
-                                fit: pw.BoxFit.contain),
+                                    File(logoPath).readAsBytesSync())),
                           )
                         else
                           pw.Text(
@@ -107,7 +106,7 @@ class CorporateTemplate extends BasePdfTemplate {
                                       pw.CrossAxisAlignment.start,
                                   children: [
                                 pw.Text("FROM",
-                                    style: pw.TextStyle(
+                                    style: const pw.TextStyle(
                                         color: PdfColors.grey600, fontSize: 9)),
                                 pw.SizedBox(height: 5),
                                 pw.Text(profile.companyName,
@@ -128,7 +127,7 @@ class CorporateTemplate extends BasePdfTemplate {
                                       pw.CrossAxisAlignment.start,
                                   children: [
                                 pw.Text("BILL TO",
-                                    style: pw.TextStyle(
+                                    style: const pw.TextStyle(
                                         color: PdfColors.grey600, fontSize: 9)),
                                 pw.SizedBox(height: 5),
                                 pw.Text(invoice.receiver.name,
@@ -150,10 +149,10 @@ class CorporateTemplate extends BasePdfTemplate {
                     buildItemsTable(
                       invoice,
                       headerDecoration:
-                          pw.BoxDecoration(color: PdfColors.grey200),
+                          const pw.BoxDecoration(color: PdfColors.grey200),
                       headerStyle: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold, fontSize: 9),
-                      border: pw.TableBorder(
+                      border: const pw.TableBorder(
                         bottom: pw.BorderSide(color: PdfColors.grey300),
                         horizontalInside:
                             pw.BorderSide(color: PdfColors.grey100),
@@ -195,9 +194,9 @@ class CorporateTemplate extends BasePdfTemplate {
                             flex: 4,
                             child: pw.Container(
                                 padding: const pw.EdgeInsets.all(10),
-                                decoration: pw.BoxDecoration(
+                                decoration: const pw.BoxDecoration(
                                     color: PdfColors.grey100,
-                                    borderRadius: const pw.BorderRadius.all(
+                                    borderRadius: pw.BorderRadius.all(
                                         pw.Radius.circular(4))),
                                 child: pw.Column(children: [
                                   buildSummaryRow(

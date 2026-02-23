@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
   testWidgets('DashboardScreen displays App Logo and InvoBharat text',
-      (WidgetTester tester) async {
+      (final WidgetTester tester) async {
     // Provide a mock or container for Riverpod
     await tester.pumpWidget(
       const ProviderScope(

@@ -3,22 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:io';
-import '../../models/business_profile.dart';
-import '../../providers/business_profile_provider.dart';
-import '../../providers/theme_provider.dart';
-import '../../providers/app_config_provider.dart';
-import '../../providers/client_provider.dart'; // NEW
-import '../../providers/estimate_provider.dart'; // NEW
-import '../../providers/recurring_provider.dart'; // NEW
-import '../../providers/invoice_repository_provider.dart'; // NEW
-import '../../utils/constants.dart';
-import '../../utils/validators.dart';
-import '../../services/backup_service.dart';
+import 'package:invobharat/models/business_profile.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/theme_provider.dart';
+import 'package:invobharat/providers/app_config_provider.dart';
+import 'package:invobharat/providers/client_provider.dart'; // NEW
+import 'package:invobharat/providers/estimate_provider.dart'; // NEW
+import 'package:invobharat/providers/recurring_provider.dart'; // NEW
+import 'package:invobharat/providers/invoice_repository_provider.dart'; // NEW
+import 'package:invobharat/utils/constants.dart';
+import 'package:invobharat/utils/validators.dart';
+import 'package:invobharat/services/backup_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_background_remover/image_background_remover.dart';
 import 'package:path/path.dart' as p;
-import 'dart:ui' as ui;
-import '../../utils/image_isolate_helper.dart';
+import 'package:invobharat/utils/image_isolate_helper.dart';
 
 class FluentSettings extends ConsumerStatefulWidget {
   const FluentSettings({super.key});
@@ -62,7 +61,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final profile = ref.watch(businessProfileProvider);
     if (_stateController.text.isEmpty && profile.state.isNotEmpty) {
       _stateController.text = profile.state;
@@ -79,7 +78,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: _tabs.length,
-              itemBuilder: (context, index) {
+              itemBuilder: (final context, final index) {
                 final tab = _tabs[index];
                 final isSelected = _selectedIndex == index;
                 final theme = FluentTheme.of(context);
@@ -165,7 +164,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
         ToggleSwitch(
           checked: themeMode == ThemeMode.dark,
           content: Text(themeMode == ThemeMode.dark ? "Dark" : "Light"),
-          onChanged: (v) {
+          onChanged: (final v) {
             ref
                 .read(themeProvider.notifier)
                 .setTheme(v ? ThemeMode.dark : ThemeMode.light);
@@ -187,7 +186,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 value: PaneDisplayMode.minimal,
                 child: Text("Minimal (Hamburger)")),
           ],
-          onChanged: (mode) {
+          onChanged: (final mode) {
             if (mode != null) {
               ref.read(appConfigProvider.notifier).setPaneDisplayMode(mode);
             }
@@ -200,7 +199,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
         Wrap(
           spacing: 10,
           runSpacing: 10,
-          children: accentColors.map((color) {
+          children: accentColors.map((final color) {
             final isSelected = profile.colorValue == color.toARGB32();
             return IconButton(
               style: ButtonStyle(
@@ -336,7 +335,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                               } catch (e) {
                                 if (!mounted) return;
                                 displayInfoBar(context,
-                                    builder: (context, close) {
+                                    builder: (final context, final close) {
                                   return InfoBar(
                                     title:
                                         const Text('Background Removal Failed'),
@@ -437,7 +436,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                               } catch (e) {
                                 if (!mounted) return;
                                 displayInfoBar(context,
-                                    builder: (context, close) {
+                                    builder: (final context, final close) {
                                   return InfoBar(
                                     title:
                                         const Text('Background Removal Failed'),
@@ -482,7 +481,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           label: "Company Name",
           child: TextFormBox(
             initialValue: profile.companyName,
-            onChanged: (v) => ref
+            onChanged: (final v) => ref
                 .read(businessProfileNotifierProvider)
                 .updateProfile(profile.copyWith(companyName: v)),
           ),
@@ -497,7 +496,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   initialValue: profile.gstin,
                   validator: Validators.gstin,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
-                  onChanged: (v) => ref
+                  onChanged: (final v) => ref
                       .read(businessProfileNotifierProvider)
                       .updateProfile(profile.copyWith(gstin: v)),
                 ),
@@ -509,7 +508,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 label: "Phone",
                 child: TextFormBox(
                   initialValue: profile.phone,
-                  onChanged: (v) => ref
+                  onChanged: (final v) => ref
                       .read(businessProfileNotifierProvider)
                       .updateProfile(profile.copyWith(phone: v)),
                 ),
@@ -522,7 +521,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           label: "Email",
           child: TextFormBox(
             initialValue: profile.email,
-            onChanged: (v) => ref
+            onChanged: (final v) => ref
                 .read(businessProfileNotifierProvider)
                 .updateProfile(profile.copyWith(email: v)),
           ),
@@ -533,7 +532,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           child: TextFormBox(
             initialValue: profile.address,
             maxLines: 3,
-            onChanged: (v) => ref
+            onChanged: (final v) => ref
                 .read(businessProfileNotifierProvider)
                 .updateProfile(profile.copyWith(address: v)),
           ),
@@ -544,14 +543,14 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           child: AutoSuggestBox<String>(
             controller: _stateController,
             items: IndianStates.states
-                .map((e) => AutoSuggestBoxItem<String>(value: e, label: e))
+                .map((final e) => AutoSuggestBoxItem<String>(value: e, label: e))
                 .toList(),
-            onSelected: (item) {
+            onSelected: (final item) {
               ref
                   .read(businessProfileNotifierProvider)
                   .updateProfile(profile.copyWith(state: item.value!));
             },
-            onChanged: (text, reason) {
+            onChanged: (final text, final reason) {
               if (reason == TextChangedReason.userInput) {
                 ref
                     .read(businessProfileNotifierProvider)
@@ -577,7 +576,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 label: "Invoice Series Prefix",
                 child: TextFormBox(
                   initialValue: profile.invoiceSeries,
-                  onChanged: (v) => ref
+                  onChanged: (final v) => ref
                       .read(businessProfileNotifierProvider)
                       .updateProfile(profile.copyWith(invoiceSeries: v)),
                 ),
@@ -589,7 +588,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 label: "Current Sequence No",
                 child: NumberBox(
                   value: profile.invoiceSequence,
-                  onChanged: (v) {
+                  onChanged: (final v) {
                     if (v != null) {
                       ref
                           .read(businessProfileNotifierProvider)
@@ -607,9 +606,9 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           child: ComboBox<String>(
             value: profile.currencySymbol,
             items: ['₹', '\$', '€', '£', '¥']
-                .map((e) => ComboBoxItem(value: e, child: Text(e)))
+                .map((final e) => ComboBoxItem(value: e, child: Text(e)))
                 .toList(),
-            onChanged: (val) {
+            onChanged: (final val) {
               if (val != null) {
                 ref
                     .read(businessProfileNotifierProvider)
@@ -624,7 +623,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           child: TextFormBox(
             initialValue: profile.termsAndConditions,
             maxLines: 3,
-            onChanged: (v) => ref
+            onChanged: (final v) => ref
                 .read(businessProfileNotifierProvider)
                 .updateProfile(profile.copyWith(termsAndConditions: v)),
           ),
@@ -641,7 +640,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           label: "Bank Name",
           child: TextFormBox(
             initialValue: profile.bankName,
-            onChanged: (v) => ref
+            onChanged: (final v) => ref
                 .read(businessProfileNotifierProvider)
                 .updateProfile(profile.copyWith(bankName: v)),
           ),
@@ -654,7 +653,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 label: "Account Number",
                 child: TextFormBox(
                   initialValue: profile.accountNumber,
-                  onChanged: (v) => ref
+                  onChanged: (final v) => ref
                       .read(businessProfileNotifierProvider)
                       .updateProfile(profile.copyWith(accountNumber: v)),
                 ),
@@ -666,7 +665,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 label: "IFSC Code",
                 child: TextFormBox(
                   initialValue: profile.ifscCode,
-                  onChanged: (v) => ref
+                  onChanged: (final v) => ref
                       .read(businessProfileNotifierProvider)
                       .updateProfile(profile.copyWith(ifscCode: v)),
                 ),
@@ -679,7 +678,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           label: "Branch Name",
           child: TextFormBox(
             initialValue: profile.branchName,
-            onChanged: (v) => ref
+            onChanged: (final v) => ref
                 .read(businessProfileNotifierProvider)
                 .updateProfile(profile.copyWith(branchName: v)),
           ),
@@ -693,7 +692,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 child: TextFormBox(
                   initialValue: profile.upiId,
                   placeholder: "e.g. name@bank",
-                  onChanged: (v) => ref
+                  onChanged: (final v) => ref
                       .read(businessProfileNotifierProvider)
                       .updateProfile(profile.copyWith(upiId: v)),
                 ),
@@ -706,7 +705,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 child: TextFormBox(
                   initialValue: profile.upiName,
                   placeholder: "e.g. Business Name",
-                  onChanged: (v) => ref
+                  onChanged: (final v) => ref
                       .read(businessProfileNotifierProvider)
                       .updateProfile(profile.copyWith(upiName: v)),
                 ),
@@ -786,7 +785,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   try {
                     final result = await BackupService().exportFullBackup(ref);
                     if (!mounted) return;
-                    displayInfoBar(context, builder: (context, close) {
+                    displayInfoBar(context, builder: (final context, final close) {
                       return InfoBar(
                         title: const Text('Export Result'),
                         content: Text(result),
@@ -798,7 +797,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                     });
                   } catch (e) {
                     if (!mounted) return;
-                    displayInfoBar(context, builder: (context, close) {
+                    displayInfoBar(context, builder: (final context, final close) {
                       return InfoBar(
                         title: const Text('Export Failed'),
                         content: Text(e.toString()),
@@ -827,7 +826,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   try {
                     final result = await BackupService().restoreFullBackup(ref);
                     if (!mounted) return;
-                    displayInfoBar(context, builder: (context, close) {
+                    displayInfoBar(context, builder: (final context, final close) {
                       return InfoBar(
                         title: const Text('Restore Result'),
                         content: Text(result),
@@ -839,7 +838,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                     });
                   } catch (e) {
                     if (!mounted) return;
-                    displayInfoBar(context, builder: (context, close) {
+                    displayInfoBar(context, builder: (final context, final close) {
                       return InfoBar(
                         title: const Text('Restore Failed'),
                         content: Text(e.toString()),
@@ -881,7 +880,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 onPressed: () {
                   showDialog(
                       context: context,
-                      builder: (dialogContext) {
+                      builder: (final dialogContext) {
                         return ContentDialog(
                           title: const Text("Reset Everything?"),
                           content: const Text(
@@ -919,7 +918,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                                     final context = this.context;
                                     if (!context.mounted) return;
                                     displayInfoBar(context,
-                                        builder: (c, close) => InfoBar(
+                                        builder: (final c, final close) => InfoBar(
                                             severity: InfoBarSeverity.success,
                                             title: const Text("Reset Complete"),
                                             content: const Text(
@@ -929,7 +928,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                                     final context = this.context;
                                     if (!context.mounted) return;
                                     displayInfoBar(context,
-                                        builder: (c, close) => InfoBar(
+                                        builder: (final c, final close) => InfoBar(
                                             severity: InfoBarSeverity.error,
                                             title: const Text("Error"),
                                             content: Text(
@@ -949,13 +948,13 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
     );
   }
 
-  Widget _buildProfilesSection(BuildContext context, WidgetRef ref) {
+  Widget _buildProfilesSection(final BuildContext context, final WidgetRef ref) {
     final profiles = ref.watch(businessProfileListProvider);
     final activeId = ref.watch(activeProfileIdProvider);
 
     return Column(
       children: [
-        ...profiles.map((p) {
+        ...profiles.map((final p) {
           final isActive = p.id == activeId;
           return Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
@@ -996,7 +995,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                         icon: const Icon(FluentIcons.delete),
                         onPressed: () async {
                           if (isActive) {
-                            displayInfoBar(context, builder: (context, close) {
+                            displayInfoBar(context, builder: (final context, final close) {
                               return InfoBar(
                                 title: const Text("Cannot Delete"),
                                 content: const Text(
@@ -1009,7 +1008,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                           }
                           showDialog(
                               context: context,
-                              builder: (context) {
+                              builder: (final context) {
                                 return ContentDialog(
                                   title: const Text("Delete Profile?"),
                                   content: Text(
@@ -1046,7 +1045,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             final TextEditingController nameCtrl = TextEditingController();
             showDialog(
                 context: context,
-                builder: (context) {
+                builder: (final context) {
                   return ContentDialog(
                     title: const Text("New Business Profile"),
                     content: TextBox(
@@ -1081,10 +1080,9 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
     );
   }
 
-  Widget _buildDataCard<T>(BuildContext context, String title,
-      AsyncValue<List<T>> asyncValue, IconData icon) {
+  Widget _buildDataCard<T>(final BuildContext context, final String title,
+      final AsyncValue<List<T>> asyncValue, final IconData icon) {
     return Card(
-      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1095,10 +1093,10 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           ]),
           const SizedBox(height: 8),
           asyncValue.when(
-            data: (data) => Text("${data.length} Items",
+            data: (final data) => Text("${data.length} Items",
                 style: FluentTheme.of(context).typography.bodyLarge),
             loading: () => const ProgressRing(strokeWidth: 2),
-            error: (e, s) => Text("Error", style: TextStyle(color: Colors.red)),
+            error: (final e, final s) => Text("Error", style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -1106,9 +1104,8 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
   }
 
   Widget _buildClientDataCard(
-      BuildContext context, String title, List<dynamic> data, IconData icon) {
+      final BuildContext context, final String title, final List<dynamic> data, final IconData icon) {
     return Card(
-      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

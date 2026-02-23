@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart';
 import 'dart:convert';
-import '../models/invoice.dart';
-import 'audit_service.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/services/audit_service.dart';
 
 class GstrImportResult {
   final List<Invoice> invoices;
@@ -18,7 +18,7 @@ class GstrImportResult {
 class GstrImportService {
   /// Parses CSV content and returns a result with invoices and missing numbers.
   /// Expects CSV format: GSTIN,Trade Name,Invoice No,Date,Value,GST%,Taxable,CESS,Place,RCM,HSN
-  GstrImportResult parseGstr1Csv(String csvContent) {
+  GstrImportResult parseGstr1Csv(final String csvContent) {
     final lines = const LineSplitter().convert(csvContent);
     if (lines.isEmpty) {
       return GstrImportResult(
@@ -68,7 +68,6 @@ class GstrImportService {
       // Create Item
       final item = InvoiceItem(
         description: hsnDesc.isEmpty ? "Imported Item" : hsnDesc,
-        quantity: 1, // Default to 1 as CSV doesn't have qty
         amount: taxableValue, // Unit price = taxable value since qty is 1
         gstRate: gstRate,
       );
@@ -136,7 +135,7 @@ class GstrImportService {
     "HSN"
   ];
 
-  List<String> _parseCsvLine(String line) {
+  List<String> _parseCsvLine(final String line) {
     // Basic CSV split, doesn't handle quoted commas perfectly but sufficient for this specific export format
     // which replaces commas in text fields.
     return line.split(',');

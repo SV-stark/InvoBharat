@@ -1,12 +1,12 @@
 class Validators {
-  static String? required(String? value, {String message = 'Required'}) {
+  static String? required(final String? value, {final String message = 'Required'}) {
     if (value == null || value.trim().isEmpty) {
       return message;
     }
     return null;
   }
 
-  static String? email(String? value) {
+  static String? email(final String? value) {
     if (value == null || value.isEmpty) return null;
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!emailRegex.hasMatch(value)) {
@@ -15,7 +15,7 @@ class Validators {
     return null;
   }
 
-  static String? phone(String? value) {
+  static String? phone(final String? value) {
     if (value == null || value.isEmpty) return null;
     if (value.length < 10) {
       return 'Phone number too short';
@@ -23,7 +23,7 @@ class Validators {
     return null;
   }
 
-  static String? gstin(String? value) {
+  static String? gstin(final String? value) {
     if (value == null || value.isEmpty) return null;
     // Basic GSTIN regex: 2 digits, 5 chars, 4 digits, 1 char, 1 char, Z, 1 char
     final gstinRegex =
@@ -34,7 +34,7 @@ class Validators {
     return null;
   }
 
-  static String? doubleValue(String? value) {
+  static String? doubleValue(final String? value) {
     if (value == null || value.isEmpty) return null; // Allow empty (optional)
     final num = double.tryParse(value);
     if (num == null) return 'Invalid number';
@@ -42,7 +42,7 @@ class Validators {
     return null;
   }
 
-  static String? pan(String? value) {
+  static String? pan(final String? value) {
     if (value == null || value.isEmpty) return null;
     final panRegex = RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$');
     if (!panRegex.hasMatch(value)) {

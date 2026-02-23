@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/invoice.dart';
-import '../providers/business_profile_provider.dart';
-import '../providers/invoice_repository_provider.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
 
 class InvoiceActions {
   // Generates a unique ID
@@ -10,7 +10,7 @@ class InvoiceActions {
 
   /// Saves an invoice, handling profile sync and sequence updates.
   /// Returns the saved Invoice object.
-  static Future<Invoice> saveInvoice(WidgetRef ref, Invoice invoice) async {
+  static Future<Invoice> saveInvoice(final WidgetRef ref, final Invoice invoice) async {
     Invoice toSave = invoice;
     final profile = ref.read(businessProfileProvider);
 

@@ -18,13 +18,13 @@ void main() {
     });
 
     test('Daily interval adds 1 day', () {
-      final date = DateTime(2023, 1, 1);
+      final date = DateTime(2023);
       final next = service.calculateNextDate(date, RecurringInterval.daily);
       expect(next, DateTime(2023, 1, 2));
     });
 
     test('Weekly interval adds 7 days', () {
-      final date = DateTime(2023, 1, 1);
+      final date = DateTime(2023);
       final next = service.calculateNextDate(date, RecurringInterval.weekly);
       expect(next, DateTime(2023, 1, 8));
     });

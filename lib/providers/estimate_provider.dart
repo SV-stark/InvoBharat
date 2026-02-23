@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
-import '../models/estimate.dart';
-import '../providers/business_profile_provider.dart';
+import 'package:invobharat/models/estimate.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
 
 // --- Repository ---
 
@@ -23,13 +23,13 @@ class EstimateRepository {
     return path;
   }
 
-  Future<void> saveEstimate(Estimate estimate) async {
+  Future<void> saveEstimate(final Estimate estimate) async {
     final path = await _localPath;
     final file = File('$path/${estimate.id}.json');
     await file.writeAsString(jsonEncode(estimate.toJson()));
   }
 
-  Future<void> deleteEstimate(String id) async {
+  Future<void> deleteEstimate(final String id) async {
     final path = await _localPath;
     final file = File('$path/$id.json');
     if (await file.exists()) {
@@ -52,7 +52,7 @@ class EstimateRepository {
       if (!await dir.exists()) return [];
 
       final files = dir.listSync();
-      List<Estimate> estimates = [];
+      final List<Estimate> estimates = [];
 
       for (var file in files) {
         if (file is File && file.path.endsWith('.json')) {
@@ -66,7 +66,7 @@ class EstimateRepository {
         }
       }
       // Sort by date descending
-      estimates.sort((a, b) => b.date.compareTo(a.date));
+      estimates.sort((final a, final b) => b.date.compareTo(a.date));
       return estimates;
     } catch (e) {
       debugPrint("Error fetching estimates: $e");
@@ -77,7 +77,7 @@ class EstimateRepository {
 
 // --- Providers ---
 
-final estimateRepositoryProvider = Provider<EstimateRepository>((ref) {
+final estimateRepositoryProvider = Provider<EstimateRepository>((final ref) {
   final activeId = ref.watch(activeProfileIdProvider);
   return EstimateRepository(profileId: activeId);
 });
@@ -97,7 +97,7 @@ class EstimateListNotifier extends AsyncNotifier<List<Estimate>> {
     return await repo.getAllEstimates();
   }
 
-  Future<void> saveEstimate(Estimate estimate) async {
+  Future<void> saveEstimate(final Estimate estimate) async {
     final repo = ref.read(estimateRepositoryProvider);
     await repo.saveEstimate(estimate);
     // Reload
@@ -105,17 +105,17 @@ class EstimateListNotifier extends AsyncNotifier<List<Estimate>> {
     state = await AsyncValue.guard(() => _loadEstimates());
   }
 
-  Future<void> deleteEstimate(String id) async {
+  Future<void> deleteEstimate(final String id) async {
     final repo = ref.read(estimateRepositoryProvider);
     await repo.deleteEstimate(id);
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() => _loadEstimates());
   }
 
-  Future<void> markAsConverted(String id) async {
+  Future<void> markAsConverted(final String id) async {
     final repo = ref.read(estimateRepositoryProvider);
     final estimates = await repo.getAllEstimates();
-    final estimate = estimates.firstWhere((e) => e.id == id,
+    final estimate = estimates.firstWhere((final e) => e.id == id,
         orElse: () => throw Exception('Estimate not found'));
     final updated = estimate.copyWith(status: 'Converted');
     await repo.saveEstimate(updated);

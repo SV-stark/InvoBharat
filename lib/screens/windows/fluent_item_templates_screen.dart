@@ -1,14 +1,14 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import '../../models/item_template.dart';
-import '../../providers/item_template_provider.dart';
+import 'package:invobharat/models/item_template.dart';
+import 'package:invobharat/providers/item_template_provider.dart';
 
 class FluentItemTemplatesScreen extends ConsumerWidget {
   const FluentItemTemplatesScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final templates = ref.watch(itemTemplateListProvider);
     final theme = FluentTheme.of(context);
 
@@ -47,7 +47,7 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: templates.length,
-              itemBuilder: (context, index) {
+              itemBuilder: (final context, final index) {
                 final template = templates[index];
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
@@ -82,10 +82,10 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
   }
 
   void _deleteTemplate(
-      BuildContext context, WidgetRef ref, String id, String name) async {
+      final BuildContext context, final WidgetRef ref, final String id, final String name) async {
     showDialog(
       context: context,
-      builder: (context) => ContentDialog(
+      builder: (final context) => ContentDialog(
         title: const Text("Delete Template"),
         content: Text("Are you sure you want to delete '$name'?"),
         actions: [
@@ -109,7 +109,7 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
   }
 
   void _showEditDialog(
-      BuildContext context, WidgetRef ref, ItemTemplate? template) {
+      final BuildContext context, final WidgetRef ref, final ItemTemplate? template) {
     // Controllers
     final descCtrl = TextEditingController(text: template?.description ?? '');
     final amountCtrl =
@@ -125,8 +125,8 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => ContentDialog(
+      builder: (final context) => StatefulBuilder(
+        builder: (final context, final setState) => ContentDialog(
           title: Text(template == null ? "New Template" : "Edit Template"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -201,9 +201,9 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
                       child: ComboBox<String>(
                         value: codeType,
                         items: ['SAC', 'HSN']
-                            .map((e) => ComboBoxItem(value: e, child: Text(e)))
+                            .map((final e) => ComboBoxItem(value: e, child: Text(e)))
                             .toList(),
-                        onChanged: (val) {
+                        onChanged: (final val) {
                           if (val != null) {
                             setState(() => codeType = val);
                           }

@@ -6,19 +6,19 @@ part 'client.g.dart';
 @freezed
 abstract class Client with _$Client {
   const factory Client({
-    required String id,
-    required String name,
-    @Default('default') String profileId,
-    @Default('') String gstin,
-    @Default('') String address,
-    @Default('') String email,
-    @Default('') String phone,
-    @Default('') String primaryContact,
-    @Default('') String notes,
-    @Default('') String state,
-    @Default('') String pan,
-    @Default('') String stateCode,
+    required final String id,
+    required final String name,
+    @Default('default') final String profileId,
+    @Default('') final String gstin,
+    @Default('') final String address,
+    @Default('') final String email,
+    @Default('') final String phone,
+    @Default('') final String primaryContact,
+    @Default('') final String notes,
+    @Default('') final String state,
+    @Default('') final String pan,
+    @Default('') final String stateCode,
   }) = _Client;
 
-  factory Client.fromJson(Map<String, dynamic> json) => _$ClientFromJson(json);
+  factory Client.fromJson(final Map<String, dynamic> json) => _$ClientFromJson(json);
 }

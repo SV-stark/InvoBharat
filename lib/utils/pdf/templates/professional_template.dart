@@ -3,11 +3,11 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
-import '../../../models/invoice.dart';
-import '../../../models/business_profile.dart';
-import '../../number_to_words.dart';
-import '../pdf_helpers.dart';
-import 'base_template.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/models/business_profile.dart';
+import 'package:invobharat/utils/number_to_words.dart';
+import 'package:invobharat/utils/pdf/pdf_helpers.dart';
+import 'package:invobharat/utils/pdf/templates/base_template.dart';
 
 class ProfessionalTemplate extends BasePdfTemplate {
   @override
@@ -15,8 +15,8 @@ class ProfessionalTemplate extends BasePdfTemplate {
 
   @override
   Future<Uint8List> generate(
-      Invoice invoice, BusinessProfile profile, pw.Font font, pw.Font fontBold,
-      {String? title}) async {
+      final Invoice invoice, final BusinessProfile profile, final pw.Font font, final pw.Font fontBold,
+      {final String? title}) async {
     final pdf = pw.Document(
         theme: pw.ThemeData.withFont(
       base: font,
@@ -49,7 +49,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
     pdf.addPage(pw.Page(
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.all(30),
-      build: (context) {
+      build: (final context) {
         return pw
             .Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
           pw.Row(
@@ -159,7 +159,6 @@ class ProfessionalTemplate extends BasePdfTemplate {
                   const pw.BoxDecoration(color: PdfColors.blue900),
               oddRowDecoration:
                   const pw.BoxDecoration(color: PdfColors.grey100),
-              border: null,
               columnWidths: {
                 1: const pw.FlexColumnWidth(3),
               },
@@ -265,8 +264,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                       if (hasSignature)
                         pw.Image(
                             pw.MemoryImage(
-                                File(signaturePath).readAsBytesSync()),
-                            fit: pw.BoxFit.contain),
+                                File(signaturePath).readAsBytesSync())),
                     ])),
                 pw.SizedBox(height: 5),
                 pw.Text("Authorized Signatory",

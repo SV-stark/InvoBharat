@@ -2,8 +2,8 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../models/client.dart';
-import '../providers/ledger_provider.dart';
+import 'package:invobharat/models/client.dart';
+import 'package:invobharat/providers/ledger_provider.dart';
 
 class ClientLedgerScreen extends ConsumerStatefulWidget {
   final Client client;
@@ -16,7 +16,7 @@ class ClientLedgerScreen extends ConsumerStatefulWidget {
 
 class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final ledgerAsync = ref.watch(clientLedgerProvider(widget.client.name));
 
     return ScaffoldPage(
@@ -24,15 +24,15 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
         title: Text('Ledger: ${widget.client.name}'),
       ),
       content: ledgerAsync.when(
-        data: (entries) {
+        data: (final entries) {
           if (entries.isEmpty) {
             return const Center(
                 child: Text("No transactions found for this client."));
           }
 
           // Compute Totals
-          final totalDebit = entries.fold(0.0, (sum, e) => sum + e.debit);
-          final totalCredit = entries.fold(0.0, (sum, e) => sum + e.credit);
+          final totalDebit = entries.fold(0.0, (final sum, final e) => sum + e.debit);
+          final totalCredit = entries.fold(0.0, (final sum, final e) => sum + e.credit);
           final closingBalance = entries.last.balance;
 
           return Padding(
@@ -65,7 +65,7 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
                           material.DataColumn(label: Text('Credit (-)')),
                           material.DataColumn(label: Text('Balance')),
                         ],
-                        rows: entries.map((e) {
+                        rows: entries.map((final e) {
                           return material.DataRow(cells: [
                             material.DataCell(
                                 Text(DateFormat('dd-MM-yyyy').format(e.date))),
@@ -95,12 +95,12 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
           );
         },
         loading: () => const Center(child: ProgressRing()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (final err, final stack) => Center(child: Text('Error: $err')),
       ),
     );
   }
 
-  Widget _buildSummaryCard(String title, double amount, Color color) {
+  Widget _buildSummaryCard(final String title, final double amount, final Color color) {
     return Expanded(
       child: Card(
         child: Padding(

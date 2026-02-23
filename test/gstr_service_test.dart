@@ -7,7 +7,7 @@ void main() {
     final invoice = Invoice(
       id: '1',
       invoiceNo: 'INV-001',
-      invoiceDate: DateTime(2025, 4, 1),
+      invoiceDate: DateTime(2025, 4),
       supplier: const Supplier(state: 'Karnataka'),
       receiver: const Receiver(
           name: 'John Doe', state: 'Karnataka', gstin: '29ABCDE1234F1Z5'),
@@ -16,7 +16,6 @@ void main() {
           description: 'Item 1',
           amount: 1000,
           quantity: 2,
-          gstRate: 18,
         ) // 2000 taxable. CGST 180, SGST 180. Total 2360.
       ],
     );

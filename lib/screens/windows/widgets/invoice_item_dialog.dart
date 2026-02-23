@@ -1,8 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../models/invoice.dart';
-import '../../../../models/hsn_code.dart';
-import '../../../../data/hsn_repository.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/models/hsn_code.dart';
+import 'package:invobharat/data/hsn_repository.dart';
 
 class InvoiceItemDialog extends StatefulWidget {
   final InvoiceItem? item;
@@ -46,7 +46,7 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return ContentDialog(
       title: Text(widget.item == null ? "Add Item" : "Edit Item"),
       content: Column(
@@ -67,11 +67,11 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
                 child: InfoLabel(
                   label: "HSN/SAC Code",
                   child: Consumer(
-                    builder: (context, ref, _) {
+                    builder: (final context, final ref, _) {
                       return AutoSuggestBox<HsnCode>(
                         controller: _sacCtrl,
                         placeholder: "e.g. 998311",
-                        items: HsnRepository.commonCodes.map((e) {
+                        items: HsnRepository.commonCodes.map((final e) {
                           return AutoSuggestBoxItem<HsnCode>(
                             value: e,
                             label: "${e.code} - ${e.description}",
@@ -92,7 +92,7 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
                             },
                           );
                         }).toList(),
-                        onChanged: (text, reason) {
+                        onChanged: (final text, final reason) {
                           // No specific action needed on text change, controller handles it
                         },
                       );
@@ -120,7 +120,7 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
                   label: "Quantity",
                   child: NumberBox<double>(
                     value: qty,
-                    onChanged: (v) => setState(() => qty = v ?? 1),
+                    onChanged: (final v) => setState(() => qty = v ?? 1),
                     min: 0.1,
                     mode: SpinButtonPlacementMode.inline,
                   ),
@@ -132,7 +132,7 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
                   label: "Price",
                   child: NumberBox<double>(
                     value: price,
-                    onChanged: (v) => setState(() => price = v ?? 0),
+                    onChanged: (final v) => setState(() => price = v ?? 0),
                     mode: SpinButtonPlacementMode.inline,
                   ),
                 ),
@@ -147,7 +147,7 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
                   label: "Discount",
                   child: NumberBox<double>(
                     value: discount,
-                    onChanged: (v) => setState(() => discount = v ?? 0),
+                    onChanged: (final v) => setState(() => discount = v ?? 0),
                     mode: SpinButtonPlacementMode.inline,
                   ),
                 ),
@@ -159,9 +159,9 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
                   child: ComboBox<double>(
                     value: gst,
                     items: [0.0, 5.0, 12.0, 18.0, 28.0]
-                        .map((r) => ComboBoxItem(value: r, child: Text("$r%")))
+                        .map((final r) => ComboBoxItem(value: r, child: Text("$r%")))
                         .toList(),
-                    onChanged: (v) => setState(() => gst = v ?? 0),
+                    onChanged: (final v) => setState(() => gst = v ?? 0),
                   ),
                 ),
               ),

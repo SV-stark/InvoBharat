@@ -3,9 +3,9 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
-import '../../../models/invoice.dart';
-import '../../../models/business_profile.dart';
-import 'base_template.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/models/business_profile.dart';
+import 'package:invobharat/utils/pdf/templates/base_template.dart';
 
 class CreativeTemplate extends BasePdfTemplate {
   @override
@@ -13,8 +13,8 @@ class CreativeTemplate extends BasePdfTemplate {
 
   @override
   Future<Uint8List> generate(
-      Invoice invoice, BusinessProfile profile, pw.Font font, pw.Font fontBold,
-      {String? title}) async {
+      final Invoice invoice, final BusinessProfile profile, final pw.Font font, final pw.Font fontBold,
+      {final String? title}) async {
     final pdf = pw.Document(
       theme: pw.ThemeData.withFont(
         base: font,
@@ -37,7 +37,7 @@ class CreativeTemplate extends BasePdfTemplate {
       pw.Page(
         pageFormat: PdfPageFormat.a4,
         margin: pw.EdgeInsets.zero,
-        build: (context) {
+        build: (final context) {
           return pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
@@ -137,7 +137,7 @@ class CreativeTemplate extends BasePdfTemplate {
 
                       // Bill To
                       pw.Text("Billed To:",
-                          style: pw.TextStyle(
+                          style: const pw.TextStyle(
                               color: PdfColors.grey600, fontSize: 10)),
                       pw.Text(invoice.receiver.name,
                           style: pw.TextStyle(
@@ -156,8 +156,7 @@ class CreativeTemplate extends BasePdfTemplate {
                         headerDecoration: const pw.BoxDecoration(
                             border: pw.Border(
                                 bottom: pw.BorderSide(
-                                    width: 1, color: PdfColors.grey400))),
-                        border: null,
+                                    color: PdfColors.grey400))),
                         headerStyle: pw.TextStyle(
                             fontWeight: pw.FontWeight.bold,
                             color: themeColor,

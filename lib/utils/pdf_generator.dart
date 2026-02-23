@@ -2,15 +2,15 @@ import 'dart:isolate';
 import 'dart:typed_data';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import '../models/invoice.dart';
-import '../models/business_profile.dart';
-import 'invoice_template.dart';
-import 'pdf/templates/modern_template.dart';
-import 'pdf/templates/professional_template.dart';
-import 'pdf/templates/minimal_template.dart';
-import 'pdf/templates/classic_template.dart';
-import 'pdf/templates/corporate_template.dart';
-import 'pdf/templates/creative_template.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/models/business_profile.dart';
+import 'package:invobharat/utils/invoice_template.dart';
+import 'package:invobharat/utils/pdf/templates/modern_template.dart';
+import 'package:invobharat/utils/pdf/templates/professional_template.dart';
+import 'package:invobharat/utils/pdf/templates/minimal_template.dart';
+import 'package:invobharat/utils/pdf/templates/classic_template.dart';
+import 'package:invobharat/utils/pdf/templates/corporate_template.dart';
+import 'package:invobharat/utils/pdf/templates/creative_template.dart';
 
 class PdfGeneratorParams {
   final Invoice invoice;
@@ -20,7 +20,7 @@ class PdfGeneratorParams {
   PdfGeneratorParams({required this.invoice, required this.profile, this.title});
 }
 
-Future<Uint8List> _generatePdfInIsolate(PdfGeneratorParams params) async {
+Future<Uint8List> _generatePdfInIsolate(final PdfGeneratorParams params) async {
   pw.Font font;
   pw.Font fontBold;
   try {
@@ -71,8 +71,8 @@ Future<Uint8List> _generatePdfInIsolate(PdfGeneratorParams params) async {
       title: effectiveTitle);
 }
 
-Future<Uint8List> generateInvoicePdf(Invoice invoice, BusinessProfile profile,
-    {String? title}) async {
+Future<Uint8List> generateInvoicePdf(final Invoice invoice, final BusinessProfile profile,
+    {final String? title}) async {
   final params = PdfGeneratorParams(
     invoice: invoice,
     profile: profile,

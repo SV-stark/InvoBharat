@@ -68,16 +68,9 @@ class BusinessProfile {
       state: "Karnataka",
       pan: "",
       colorValue: Colors.teal.toARGB32(),
-      invoiceSeries: "INV-",
-      invoiceSequence: 1,
       termsAndConditions:
           "1. All disputes are subject to local jurisdiction.\n2. Interest @ 18% p.a. will be charged on delayed payment.",
       defaultNotes: "Thank you for your business!",
-      currencySymbol: "₹",
-      bankName: "",
-      accountNumber: "",
-      ifscCode: "",
-      branchName: "",
       upiId: "",
       upiName: "",
     );
@@ -111,7 +104,7 @@ class BusinessProfile {
     };
   }
 
-  factory BusinessProfile.fromJson(Map<String, dynamic> json) {
+  factory BusinessProfile.fromJson(final Map<String, dynamic> json) {
     return BusinessProfile(
       id: json['id'] ?? 'default', // Backward compatibility
       companyName: json['companyName'] ?? '',
@@ -140,29 +133,29 @@ class BusinessProfile {
   }
 
   BusinessProfile copyWith({
-    String? id,
-    String? companyName,
-    String? address,
-    String? gstin,
-    String? email,
-    String? phone,
-    String? state,
-    String? pan,
-    int? colorValue,
-    String? logoPath,
-    String? invoiceSeries,
-    int? invoiceSequence,
-    String? signaturePath,
-    String? stampPath,
-    String? termsAndConditions,
-    String? defaultNotes,
-    String? currencySymbol,
-    String? bankName,
-    String? accountNumber,
-    String? ifscCode,
-    String? branchName,
-    String? upiId,
-    String? upiName,
+    final String? id,
+    final String? companyName,
+    final String? address,
+    final String? gstin,
+    final String? email,
+    final String? phone,
+    final String? state,
+    final String? pan,
+    final int? colorValue,
+    final String? logoPath,
+    final String? invoiceSeries,
+    final int? invoiceSequence,
+    final String? signaturePath,
+    final String? stampPath,
+    final String? termsAndConditions,
+    final String? defaultNotes,
+    final String? currencySymbol,
+    final String? bankName,
+    final String? accountNumber,
+    final String? ifscCode,
+    final String? branchName,
+    final String? upiId,
+    final String? upiName,
   }) {
     return BusinessProfile(
       id: id ?? this.id,

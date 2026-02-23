@@ -8,13 +8,13 @@ import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  testWidgets('Debug Dashboard', (WidgetTester tester) async {
+  testWidgets('Debug Dashboard', (final WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          invoiceListProvider.overrideWith((ref) => Future.value(<Invoice>[])),
+          invoiceListProvider.overrideWith((final ref) => Future.value(<Invoice>[])),
         ],
         child: const InvoBharatApp(),
       ),

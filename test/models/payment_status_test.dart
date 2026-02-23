@@ -8,7 +8,6 @@ void main() {
   group('Invoice Payment Status', () {
     final baseInvoice = Invoice(
       id: '1',
-      style: 'Modern',
       supplier: const Supplier(),
       receiver: const Receiver(),
       invoiceDate: DateTime.now(),

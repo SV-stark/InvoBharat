@@ -10,7 +10,7 @@ class AppConfig {
 
   AppConfig({this.paneDisplayMode = PaneDisplayMode.auto});
 
-  AppConfig copyWith({PaneDisplayMode? paneDisplayMode}) {
+  AppConfig copyWith({final PaneDisplayMode? paneDisplayMode}) {
     return AppConfig(
       paneDisplayMode: paneDisplayMode ?? this.paneDisplayMode,
     );
@@ -37,7 +37,7 @@ class AppConfigNotifier extends Notifier<AppConfig> {
     }
   }
 
-  Future<void> setPaneDisplayMode(PaneDisplayMode mode) async {
+  Future<void> setPaneDisplayMode(final PaneDisplayMode mode) async {
     state = state.copyWith(paneDisplayMode: mode);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_paneKey, mode.index);

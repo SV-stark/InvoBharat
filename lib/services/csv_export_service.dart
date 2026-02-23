@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import '../models/invoice.dart';
-import '../models/payment_transaction.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/models/payment_transaction.dart';
 
 class CsvExportService {
   // Ordered columns as per request + required fields for restoration
@@ -39,7 +39,7 @@ class CsvExportService {
     'Payment Total' // Simplified payment restoration
   ];
 
-  String generateInvoiceCsv(List<Invoice> invoices) {
+  String generateInvoiceCsv(final List<Invoice> invoices) {
     final buffer = StringBuffer();
 
     // Write Header
@@ -50,7 +50,7 @@ class CsvExportService {
 
       // If no items, write at least one row for the invoice header
       final itemsToWrite = invoice.items.isEmpty
-          ? [const InvoiceItem(description: 'Service', gstRate: 0, amount: 0)]
+          ? [const InvoiceItem(description: 'Service', gstRate: 0)]
           : invoice.items;
 
       for (final item in itemsToWrite) {
@@ -95,7 +95,7 @@ class CsvExportService {
   }
 
   /// Parses CSV string back into List of Invoice objects
-  List<Invoice> parseInvoiceCsv(String csvContent) {
+  List<Invoice> parseInvoiceCsv(final String csvContent) {
     final lines = const LineSplitter().convert(csvContent);
     if (lines.isEmpty) return [];
 
@@ -159,7 +159,7 @@ class CsvExportService {
         unit: unit.isEmpty ? 'Nos' : unit,
       );
 
-      DateFormat fmt = DateFormat('dd-MM-yyyy');
+      final DateFormat fmt = DateFormat('dd-MM-yyyy');
       DateTime invDate = DateTime.now();
       try {
         invDate = fmt.parse(dateStr);
@@ -194,7 +194,7 @@ class CsvExportService {
         );
 
         // Reconstruct payments (simplified as one lump sum transaction if totalPaid > 0)
-        List<PaymentTransaction> payments = [];
+        final List<PaymentTransaction> payments = [];
         if (paidTotal > 0) {
           payments.add(PaymentTransaction(
               id: 'restored_${DateTime.now().microsecondsSinceEpoch}',
@@ -230,7 +230,7 @@ class CsvExportService {
     return invoiceMap.values.toList();
   }
 
-  String _escape(String? val) {
+  String _escape(final String? val) {
     if (val == null) return '';
     if (val.contains(',') || val.contains('"') || val.contains('\n')) {
       return '"${val.replaceAll('"', '""')}"';
@@ -238,7 +238,7 @@ class CsvExportService {
     return val;
   }
 
-  List<String> _parseRow(String line) {
+  List<String> _parseRow(final String line) {
     final values = <String>[];
     final sb = StringBuffer();
     bool inQuotes = false;

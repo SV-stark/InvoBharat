@@ -5,26 +5,40 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path_provider/path_provider.dart';
-import '../models/business_profile.dart';
+import 'package:invobharat/models/business_profile.dart';
+import 'package:invobharat/data/business_profile_repository.dart';
+import 'package:invobharat/data/sql_business_profile_repository.dart';
+import 'package:invobharat/providers/database_provider.dart';
 
 // --- Providers ---
 
+final businessProfileRepositoryProvider = Provider<BusinessProfileRepository>((
+  final ref,
+) {
+  final db = ref.watch(databaseProvider);
+  return SqlBusinessProfileRepository(db);
+});
+
 final businessProfileListProvider =
     NotifierProvider<BusinessProfileListNotifier, List<BusinessProfile>>(
-        BusinessProfileListNotifier.new);
+      BusinessProfileListNotifier.new,
+    );
 
 final activeProfileIdProvider =
     NotifierProvider<ActiveProfileIdNotifier, String>(
-        ActiveProfileIdNotifier.new);
+      ActiveProfileIdNotifier.new,
+    );
 
-final businessProfileProvider = Provider<BusinessProfile>((ref) {
+final businessProfileProvider = Provider<BusinessProfile>((final ref) {
   final profiles = ref.watch(businessProfileListProvider);
   final activeId = ref.watch(activeProfileIdProvider);
 
   if (profiles.isEmpty) return BusinessProfile.defaults();
 
-  return profiles.firstWhere((p) => p.id == activeId,
-      orElse: () => profiles.first);
+  return profiles.firstWhere(
+    (final p) => p.id == activeId,
+    orElse: () => profiles.first,
+  );
 });
 
 // --- Notifiers ---
@@ -32,54 +46,67 @@ final businessProfileProvider = Provider<BusinessProfile>((ref) {
 class BusinessProfileListNotifier extends Notifier<List<BusinessProfile>> {
   @override
   List<BusinessProfile> build() {
-    _loadProfiles();
-    return [BusinessProfile.defaults()];
+    _init();
+    return []; // Start empty, async _init will populate
   }
 
-  Future<void> _loadProfiles() async {
-    final prefs = await SharedPreferences.getInstance();
+  Future<void> _init() async {
+    final repository = ref.read(businessProfileRepositoryProvider);
+    final profiles = await repository.getAllProfiles();
 
-    // Check for new multi-profile format
-    final List<String>? profilesJson =
-        prefs.getStringList('business_profiles_list');
+    if (profiles.isNotEmpty) {
+      state = profiles;
+    } else {
+      // Check for migration or first run
+      await _handleMigrationOrFirstRun();
+    }
+  }
+
+  Future<void> _handleMigrationOrFirstRun() async {
+    final prefs = await SharedPreferences.getInstance();
+    final repository = ref.read(businessProfileRepositoryProvider);
+
+    // 1. Check for legacy SharedPreferences multi-profile format
+    final List<String>? profilesJson = prefs.getStringList(
+      'business_profiles_list',
+    );
 
     if (profilesJson != null && profilesJson.isNotEmpty) {
       final profiles = profilesJson
-          .map((e) => BusinessProfile.fromJson(jsonDecode(e)))
+          .map((final e) => BusinessProfile.fromJson(jsonDecode(e)))
           .toList();
+
+      for (final profile in profiles) {
+        await repository.saveProfile(profile);
+      }
       state = profiles;
+      // Clear legacy storage
+      await prefs.remove('business_profiles_list');
     } else {
-      // Check for legacy single profile
-      // If legacy profile exists, migrate it.
+      // 2. Check for legacy single profile (even older)
       final String? legacyJson = prefs.getString('business_profile');
       if (legacyJson != null) {
-        // MIGRATION LOGIC
         final legacyProfile = BusinessProfile.fromJson(jsonDecode(legacyJson));
-
-        // Ensure it has an ID
         if (legacyProfile.id == 'default' || legacyProfile.id.isEmpty) {
           legacyProfile.id = const Uuid().v4();
         }
-
-        // Move invoices
+        // Move invoices if they were in old flat format
         await _migrateLegacyInvoices(legacyProfile.id);
 
+        await repository.saveProfile(legacyProfile);
         state = [legacyProfile];
-        await _saveProfiles();
-
-        // Clean up legacy
-        // await prefs.remove('business_profile'); // Optional: keep for safety?
+        await prefs.remove('business_profile');
       } else {
-        // First run ever
+        // 3. First run ever
         final String newId = const Uuid().v4();
         final defaultProfile = BusinessProfile.defaults().copyWith(id: newId);
+        await repository.saveProfile(defaultProfile);
         state = [defaultProfile];
-        await _saveProfiles();
       }
     }
   }
 
-  Future<void> _migrateLegacyInvoices(String newProfileId) async {
+  Future<void> _migrateLegacyInvoices(final String newProfileId) async {
     try {
       final directory = await getApplicationDocumentsDirectory();
       final oldPath = '${directory.path}/InvoBharat/invoices';
@@ -107,30 +134,26 @@ class BusinessProfileListNotifier extends Notifier<List<BusinessProfile>> {
     }
   }
 
-  Future<void> addProfile(BusinessProfile profile) async {
+  Future<void> addProfile(final BusinessProfile profile) async {
+    final repository = ref.read(businessProfileRepositoryProvider);
+    await repository.saveProfile(profile);
     state = [...state, profile];
-    await _saveProfiles();
   }
 
-  Future<void> updateProfile(BusinessProfile updatedProfile) async {
+  Future<void> updateProfile(final BusinessProfile updatedProfile) async {
+    final repository = ref.read(businessProfileRepositoryProvider);
+    await repository.saveProfile(updatedProfile);
     state = [
       for (final profile in state)
-        if (profile.id == updatedProfile.id) updatedProfile else profile
+        if (profile.id == updatedProfile.id) updatedProfile else profile,
     ];
-    await _saveProfiles();
   }
 
-  Future<void> deleteProfile(String id) async {
-    if (state.length <= 1) return; // Cannot delete last profile
-    state = state.where((p) => p.id != id).toList();
-    await _saveProfiles();
-  }
-
-  Future<void> _saveProfiles() async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String> profilesJson =
-        state.map((p) => jsonEncode(p.toJson())).toList();
-    await prefs.setStringList('business_profiles_list', profilesJson);
+  Future<void> deleteProfile(final String id) async {
+    if (state.length <= 1) return;
+    final repository = ref.read(businessProfileRepositoryProvider);
+    await repository.deleteProfile(id);
+    state = state.where((final p) => p.id != id).toList();
   }
 }
 
@@ -159,7 +182,7 @@ class ActiveProfileIdNotifier extends Notifier<String> {
     }
   }
 
-  Future<void> selectProfile(String id) async {
+  Future<void> selectProfile(final String id) async {
     state = id;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('active_profile_id', id);
@@ -178,7 +201,7 @@ class ActiveProfileIdNotifier extends Notifier<String> {
 }
 
 // Helper access for updating currently active profile
-final businessProfileNotifierProvider = Provider((ref) {
+final businessProfileNotifierProvider = Provider((final ref) {
   return BusinessProfileNotifierProxy(ref);
 });
 
@@ -186,11 +209,11 @@ class BusinessProfileNotifierProxy {
   final Ref ref;
   BusinessProfileNotifierProxy(this.ref);
 
-  Future<void> updateProfile(BusinessProfile p) async {
+  Future<void> updateProfile(final BusinessProfile p) async {
     await ref.read(businessProfileListProvider.notifier).updateProfile(p);
   }
 
-  Future<void> updateColor(int color) async {
+  Future<void> updateColor(final int color) async {
     final current = ref.read(businessProfileProvider);
     await updateProfile(current.copyWith(colorValue: color));
   }

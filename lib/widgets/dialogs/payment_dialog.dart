@@ -1,5 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import '../../utils/constants.dart';
+import 'package:invobharat/utils/constants.dart';
 
 class PaymentDialog extends StatefulWidget {
   final double balanceDue;
@@ -40,7 +40,7 @@ class _PaymentDialogState extends State<PaymentDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return ContentDialog(
       title: const Text("Record Payment"),
       content: Column(
@@ -65,7 +65,7 @@ class _PaymentDialogState extends State<PaymentDialog> {
             label: "Date",
             child: DatePicker(
               selected: _selectedDate,
-              onChanged: (v) => setState(() => _selectedDate = v),
+              onChanged: (final v) => setState(() => _selectedDate = v),
             ),
           ),
           const SizedBox(height: 10),
@@ -74,9 +74,9 @@ class _PaymentDialogState extends State<PaymentDialog> {
             child: ComboBox<String>(
               value: _selectedMode,
               items: AppConstants.paymentModes
-                  .map((e) => ComboBoxItem(value: e, child: Text(e)))
+                  .map((final e) => ComboBoxItem(value: e, child: Text(e)))
                   .toList(),
-              onChanged: (v) {
+              onChanged: (final v) {
                 if (v != null) setState(() => _selectedMode = v);
               },
             ),

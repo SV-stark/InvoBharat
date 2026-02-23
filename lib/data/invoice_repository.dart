@@ -1,11 +1,11 @@
-import '../models/invoice.dart';
+import 'package:invobharat/models/invoice.dart';
 
 abstract class InvoiceRepository {
-  Future<void> saveInvoice(Invoice invoice);
-  Future<Invoice?> getInvoice(String id);
+  Future<void> saveInvoice(final Invoice invoice);
+  Future<Invoice?> getInvoice(final String id);
   Future<List<Invoice>> getAllInvoices();
-  Future<void> deleteInvoice(String id);
+  Future<void> deleteInvoice(final String id);
   Future<void> deleteAll();
 
-  Future<bool> checkInvoiceExists(String invoiceNumber, {String? excludeId});
+  Future<bool> checkInvoiceExists(final String invoiceNumber, {final String? excludeId});
 }

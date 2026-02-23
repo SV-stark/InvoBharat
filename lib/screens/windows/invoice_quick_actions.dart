@@ -1,5 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import '../../models/invoice.dart';
+import 'package:invobharat/models/invoice.dart';
 
 class InvoiceQuickActions extends StatefulWidget {
   final Invoice invoice;
@@ -33,7 +33,7 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return FlyoutTarget(
       controller: _controller,
       child: IconButton(
@@ -43,9 +43,7 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
             autoModeConfiguration: FlyoutAutoConfiguration(
               preferredMode: FlyoutPlacementMode.bottomCenter,
             ),
-            barrierDismissible: true,
-            dismissOnPointerMoveAway: false,
-            builder: (flyoutContext) {
+            builder: (final flyoutContext) {
               return MenuFlyout(
                 items: [
                   MenuFlyoutItem(

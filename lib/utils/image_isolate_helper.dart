@@ -10,7 +10,7 @@ class ImageProcessingResult {
   ImageProcessingResult({required this.bytes, this.error});
 }
 
-Future<ImageProcessingResult> processImageBackground(Uint8List imageBytes) async {
+Future<ImageProcessingResult> processImageBackground(final Uint8List imageBytes) async {
   try {
     final processedImage = await BackgroundRemover.instance.removeBg(imageBytes);
     final byteData = await processedImage.toByteData(format: ui.ImageByteFormat.png);
@@ -21,6 +21,6 @@ Future<ImageProcessingResult> processImageBackground(Uint8List imageBytes) async
   }
 }
 
-Future<ImageProcessingResult> processImageBackgroundInIsolate(Uint8List imageBytes) async {
+Future<ImageProcessingResult> processImageBackgroundInIsolate(final Uint8List imageBytes) async {
   return await Isolate.run(() => processImageBackground(imageBytes));
 }

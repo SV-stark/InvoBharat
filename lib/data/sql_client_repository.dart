@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
-import '../database/database.dart';
-import '../models/client.dart' as model;
-import 'client_repository.dart';
+import 'package:invobharat/database/database.dart';
+import 'package:invobharat/models/client.dart' as model;
+import 'package:invobharat/data/client_repository.dart';
 
 class SqlClientRepository implements ClientRepository {
   final AppDatabase database;
@@ -10,7 +10,7 @@ class SqlClientRepository implements ClientRepository {
   SqlClientRepository(this.database);
 
   @override
-  Future<void> saveClient(model.Client client) async {
+  Future<void> saveClient(final model.Client client) async {
     await database.into(database.clients).insertOnConflictUpdate(
           ClientsCompanion(
             id: Value(client.id.isEmpty ? const Uuid().v4() : client.id),
@@ -28,9 +28,9 @@ class SqlClientRepository implements ClientRepository {
   }
 
   @override
-  Future<model.Client?> getClient(String id) async {
+  Future<model.Client?> getClient(final String id) async {
     final query = database.select(database.clients)
-      ..where((tbl) => tbl.id.equals(id));
+      ..where((final tbl) => tbl.id.equals(id));
     final row = await query.getSingleOrNull();
     if (row == null) return null;
     return _mapRowToClient(row);
@@ -43,8 +43,8 @@ class SqlClientRepository implements ClientRepository {
   }
 
   @override
-  Future<void> deleteClient(String id) async {
-    await (database.delete(database.clients)..where((tbl) => tbl.id.equals(id)))
+  Future<void> deleteClient(final String id) async {
+    await (database.delete(database.clients)..where((final tbl) => tbl.id.equals(id)))
         .go();
   }
 
@@ -53,7 +53,7 @@ class SqlClientRepository implements ClientRepository {
     await database.delete(database.clients).go();
   }
 
-  model.Client _mapRowToClient(Client row) {
+  model.Client _mapRowToClient(final Client row) {
     return model.Client(
       id: row.id,
       name: row.name,

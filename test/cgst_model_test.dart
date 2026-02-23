@@ -8,7 +8,6 @@ void main() {
       final item = const InvoiceItem(
         amount: 100, // Price per unit
         quantity: 2,
-        discount: 0,
       );
       // Net Amount = (Amount * Quantity) - Discount
       // 100 * 2 - 0 = 200

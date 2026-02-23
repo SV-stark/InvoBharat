@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/client.dart';
-import '../providers/client_form_provider.dart';
-import '../widgets/adaptive_widgets.dart';
+import 'package:invobharat/models/client.dart';
+import 'package:invobharat/providers/client_form_provider.dart';
+import 'package:invobharat/widgets/adaptive_widgets.dart';
 
 class MaterialClientFormDialog extends ConsumerStatefulWidget {
   final Client? client;
@@ -110,7 +110,7 @@ class _MaterialClientFormDialogState
     }
   }
 
-  String? _validateName(String? value) {
+  String? _validateName(final String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Client name is required';
     }
@@ -118,7 +118,7 @@ class _MaterialClientFormDialogState
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final formState = ref.watch(clientFormProvider);
 
     return AlertDialog(

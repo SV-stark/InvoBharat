@@ -16,7 +16,7 @@ class FakeInvoiceRepository implements InvoiceRepository {
   }
 
   @override
-  Future<Invoice?> getInvoice(String id) async {
+  Future<Invoice?> getInvoice(final String id) async {
     return null;
   }
 
@@ -24,14 +24,14 @@ class FakeInvoiceRepository implements InvoiceRepository {
   Future<void> deleteAll() async {}
 
   @override
-  Future<void> saveInvoice(Invoice invoice) async {}
+  Future<void> saveInvoice(final Invoice invoice) async {}
 
   @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  dynamic noSuchMethod(final Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 void main() {
-  testWidgets('Dashboard loads correctly', (WidgetTester tester) async {
+  testWidgets('Dashboard loads correctly', (final WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
 
     // Build our app and trigger a frame.

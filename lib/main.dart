@@ -13,7 +13,7 @@ import 'package:invobharat/screens/windows/fluent_home.dart';
 void main() {
   // Ensure errors are shown even in release mode
   // Ensure errors are shown even in release mode
-  ErrorWidget.builder = (FlutterErrorDetails details) {
+  ErrorWidget.builder = (final FlutterErrorDetails details) {
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Container(
@@ -68,7 +68,7 @@ class InvoBharatApp extends ConsumerWidget {
   const InvoBharatApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final profile = ref.watch(businessProfileProvider);
 
     final appInit = ref.watch(appInitializationProvider);
@@ -109,7 +109,7 @@ class InvoBharatApp extends ConsumerWidget {
             useMaterial3: true,
             brightness: Brightness.light,
             colorScheme: ColorScheme.fromSeed(
-                seedColor: profile.color, brightness: Brightness.light),
+                seedColor: profile.color),
             textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme),
           ),
           darkTheme: ThemeData(
@@ -132,7 +132,7 @@ class InvoBharatApp extends ConsumerWidget {
                   children: [
                     const fluent.ProgressRing(),
                     const SizedBox(height: 20),
-                    Consumer(builder: (context, ref, _) {
+                    Consumer(builder: (final context, final ref, _) {
                       final status = ref.watch(migrationStatusProvider);
                       return Text(status,
                           style: const TextStyle(fontWeight: FontWeight.bold));
@@ -152,7 +152,7 @@ class InvoBharatApp extends ConsumerWidget {
                   const CircularProgressIndicator(),
                   const SizedBox(height: 20),
                   // Watch status
-                  Consumer(builder: (context, ref, _) {
+                  Consumer(builder: (final context, final ref, _) {
                     final status = ref.watch(migrationStatusProvider);
                     return Text(status,
                         style: const TextStyle(fontWeight: FontWeight.bold));
@@ -163,7 +163,7 @@ class InvoBharatApp extends ConsumerWidget {
           ),
         );
       },
-      error: (err, stack) {
+      error: (final err, final stack) {
         return fluent.FluentApp(
           home: fluent.ScaffoldPage(
             content: Center(
@@ -175,7 +175,7 @@ class InvoBharatApp extends ConsumerWidget {
     );
   }
 
-  fluent.ThemeMode _getFluentThemeMode(ThemeMode mode) {
+  fluent.ThemeMode _getFluentThemeMode(final ThemeMode mode) {
     switch (mode) {
       case ThemeMode.system:
         return fluent.ThemeMode.system;
@@ -186,7 +186,7 @@ class InvoBharatApp extends ConsumerWidget {
     }
   }
 
-  fluent.AccentColor _getAccentColor(Color color) {
+  fluent.AccentColor _getAccentColor(final Color color) {
     // Map standard colors to Fluent AccentColors
     final colorMap = {
       fluent.Colors.teal.toARGB32(): fluent.Colors.teal,

@@ -1,11 +1,11 @@
-import '../models/invoice.dart';
+import 'package:invobharat/models/invoice.dart';
 import 'package:intl/intl.dart';
 import 'package:csv/csv.dart';
 
 class GstrService {
-  String generateGstr1Csv(List<Invoice> invoices) {
+  String generateGstr1Csv(final List<Invoice> invoices) {
     // Header based on user request
-    List<List<dynamic>> rows = [];
+    final List<List<dynamic>> rows = [];
 
     // Add Header
     rows.add([

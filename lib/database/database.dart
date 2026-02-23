@@ -6,7 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'tables.dart';
+import 'package:invobharat/database/tables.dart';
 
 part 'database.g.dart';
 
@@ -20,9 +20,9 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration {
-    return MigrationStrategy(onCreate: (Migrator m) async {
+    return MigrationStrategy(onCreate: (final Migrator m) async {
       await m.createAll();
-    }, onUpgrade: (Migrator m, int from, int to) async {
+    }, onUpgrade: (final Migrator m, final int from, final int to) async {
       if (from < 2) {
         // ... (existing v2 migration)
         // Add new supplier columns
@@ -114,7 +114,7 @@ class AppDatabase extends _$AppDatabase {
         final settingsService = AppSettingsService(this);
         await settingsService.migrateFromSharedPrefs();
       }
-    }, beforeOpen: (details) async {
+    }, beforeOpen: (final details) async {
       // We can do data migration here too if needed
       if (details.wasCreated) {
         // ...
@@ -127,7 +127,7 @@ LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'InvoBharat', 'db.sqlite'));
-    return NativeDatabase.createInBackground(file, setup: (db) {
+    return NativeDatabase.createInBackground(file, setup: (final db) {
       db.execute('PRAGMA journal_mode=WAL');
       db.execute('PRAGMA busy_timeout=5000');
       db.execute('PRAGMA foreign_keys=ON');
@@ -190,7 +190,7 @@ class AppSettingsService {
     }
   }
 
-  Future<String?> getSetting(String key) async {
+  Future<String?> getSetting(final String key) async {
     final results = await _db.customSelect(
       'SELECT value FROM app_settings WHERE key = ?',
       variables: [Variable.withString(key)],
@@ -199,7 +199,7 @@ class AppSettingsService {
     return results.first.read<String>('value');
   }
 
-  Future<void> setSetting(String key, String value) async {
+  Future<void> setSetting(final String key, final String value) async {
     await _db.customStatement(
       'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
       [key, value],

@@ -1,7 +1,7 @@
 class GstUtils {
   /// Validates GSTIN format
   /// Returns true if GSTIN is valid, false otherwise
-  static bool isValidGstin(String gstin) {
+  static bool isValidGstin(final String gstin) {
     if (gstin.isEmpty) return true; // Empty is allowed (optional field)
     
     // GSTIN should be 15 characters
@@ -14,19 +14,19 @@ class GstUtils {
   }
   
   /// Extracts state code from GSTIN
-  static String? getStateCode(String gstin) {
+  static String? getStateCode(final String gstin) {
     if (!isValidGstin(gstin) || gstin.length < 2) return null;
     return gstin.substring(0, 2);
   }
   
   /// Extracts PAN from GSTIN
-  static String? getPan(String gstin) {
+  static String? getPan(final String gstin) {
     if (!isValidGstin(gstin) || gstin.length < 12) return null;
     return gstin.substring(2, 12);
   }
   
   /// Gets state name from state code
-  static String getStateName(String stateCode) {
+  static String getStateName(final String stateCode) {
     final states = {
       '01': 'Jammu and Kashmir',
       '02': 'Himachal Pradesh',
@@ -71,7 +71,7 @@ class GstUtils {
   }
   
   /// Validates GSTIN and returns detailed validation result
-  static GstinValidationResult validate(String gstin) {
+  static GstinValidationResult validate(final String gstin) {
     if (gstin.isEmpty) {
       return GstinValidationResult.valid(); // Empty is considered valid
     }
@@ -112,7 +112,7 @@ class GstinValidationResult {
     this.pan,
   });
   
-  factory GstinValidationResult.valid({String? stateCode, String? stateName, String? pan}) {
+  factory GstinValidationResult.valid({final String? stateCode, final String? stateName, final String? pan}) {
     return GstinValidationResult._(
       isValid: true,
       stateCode: stateCode,
@@ -121,7 +121,7 @@ class GstinValidationResult {
     );
   }
   
-  factory GstinValidationResult.invalid(String errorMessage) {
+  factory GstinValidationResult.invalid(final String errorMessage) {
     return GstinValidationResult._(
       isValid: false,
       errorMessage: errorMessage,

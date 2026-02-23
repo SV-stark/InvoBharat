@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/hsn_repository.dart';
+import 'package:invobharat/data/hsn_repository.dart';
 
-final hsnRepositoryProvider = Provider<HsnRepository>((ref) {
+final hsnRepositoryProvider = Provider<HsnRepository>((final ref) {
   return HsnRepository();
 });

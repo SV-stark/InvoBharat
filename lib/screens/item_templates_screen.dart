@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import '../models/item_template.dart';
-import '../providers/item_template_provider.dart';
+import 'package:invobharat/models/item_template.dart';
+import 'package:invobharat/providers/item_template_provider.dart';
 
 class ItemTemplatesScreen extends ConsumerWidget {
   const ItemTemplatesScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final templates = ref.watch(itemTemplateListProvider);
 
     return Scaffold(
@@ -23,7 +23,7 @@ class ItemTemplatesScreen extends ConsumerWidget {
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: templates.length,
-              itemBuilder: (context, index) {
+              itemBuilder: (final context, final index) {
                 final template = templates[index];
                 return Card(
                   child: ListTile(
@@ -58,7 +58,7 @@ class ItemTemplatesScreen extends ConsumerWidget {
   }
 
   void _showEditDialog(
-      BuildContext context, WidgetRef ref, ItemTemplate? template) {
+      final BuildContext context, final WidgetRef ref, final ItemTemplate? template) {
     final descCtrl = TextEditingController(text: template?.description ?? '');
     final amountCtrl =
         TextEditingController(text: template?.amount.toString() ?? '0');
@@ -73,8 +73,8 @@ class ItemTemplatesScreen extends ConsumerWidget {
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
+      builder: (final context) => StatefulBuilder(
+        builder: (final context, final setState) => AlertDialog(
           title: Text(template == null ? "New Template" : "Edit Template"),
           content: SingleChildScrollView(
             child: Column(
@@ -124,7 +124,7 @@ class ItemTemplatesScreen extends ConsumerWidget {
                         DropdownMenuItem(value: 'SAC', child: Text('SAC')),
                         DropdownMenuItem(value: 'HSN', child: Text('HSN')),
                       ],
-                      onChanged: (val) => setState(() => codeType = val!),
+                      onChanged: (final val) => setState(() => codeType = val!),
                     ),
                   ],
                 ),

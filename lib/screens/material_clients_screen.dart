@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/client.dart';
-import '../providers/client_provider.dart';
-import '../widgets/material_client_form.dart';
+import 'package:invobharat/models/client.dart';
+import 'package:invobharat/providers/client_provider.dart';
+import 'package:invobharat/widgets/material_client_form.dart';
 
 class MaterialClientsScreen extends ConsumerWidget {
   const MaterialClientsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final clients = ref.watch(clientListProvider);
 
     return Scaffold(
@@ -21,7 +21,7 @@ class MaterialClientsScreen extends ConsumerWidget {
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: clients.length,
-              itemBuilder: (context, index) {
+              itemBuilder: (final context, final index) {
                 final client = clients[index];
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -61,7 +61,7 @@ class MaterialClientsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
+  Widget _buildEmptyState(final BuildContext context, final WidgetRef ref) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -81,18 +81,18 @@ class MaterialClientsScreen extends ConsumerWidget {
   }
 
   void _showClientDialog(
-      BuildContext context, Client? client, WidgetRef ref) async {
+      final BuildContext context, final Client? client, final WidgetRef ref) async {
     await showDialog(
       context: context,
-      builder: (context) => MaterialClientFormDialog(client: client),
+      builder: (final context) => MaterialClientFormDialog(client: client),
     );
   }
 
   void _confirmDelete(
-      BuildContext context, Client client, WidgetRef ref) async {
+      final BuildContext context, final Client client, final WidgetRef ref) async {
     final result = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (final context) => AlertDialog(
         title: const Text('Delete Client?'),
         content: Text('Are you sure you want to delete ${client.name}?'),
         actions: [

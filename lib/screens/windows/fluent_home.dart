@@ -3,15 +3,15 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'fluent_dashboard.dart';
+import 'package:invobharat/screens/windows/fluent_dashboard.dart';
 
-import 'fluent_invoice_wizard.dart';
-import 'fluent_settings.dart';
-import '../clients_screen.dart';
-import 'fluent_recurring_screen.dart';
-import 'fluent_estimates_screen.dart';
-import 'fluent_item_templates_screen.dart';
-import '../aging_report_screen.dart';
+import 'package:invobharat/screens/windows/fluent_invoice_wizard.dart';
+import 'package:invobharat/screens/windows/fluent_settings.dart';
+import 'package:invobharat/screens/clients_screen.dart';
+import 'package:invobharat/screens/windows/fluent_recurring_screen.dart';
+import 'package:invobharat/screens/windows/fluent_estimates_screen.dart';
+import 'package:invobharat/screens/windows/fluent_item_templates_screen.dart';
+import 'package:invobharat/screens/aging_report_screen.dart';
 
 class FluentHome extends ConsumerStatefulWidget {
   const FluentHome({super.key});
@@ -24,7 +24,7 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
   int topIndex = 0;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return CallbackShortcuts(
         bindings: {
           const SingleActivator(LogicalKeyboardKey.escape): () {
@@ -86,7 +86,7 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
           ),
           pane: NavigationPane(
             selected: topIndex,
-            onChanged: (index) => setState(() => topIndex = index),
+            onChanged: (final index) => setState(() => topIndex = index),
             displayMode: MediaQuery.of(context).size.width > 1000
                 ? PaneDisplayMode.auto
                 : PaneDisplayMode.compact,
@@ -140,7 +140,7 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                 onTap: () {
                   showDialog(
                     context: context,
-                    builder: (context) => ContentDialog(
+                    builder: (final context) => ContentDialog(
                       title: const Text("About InvoBharat"),
                       content: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -163,7 +163,7 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                                     'logo.png',
                                     width: 60,
                                     height: 60,
-                                    errorBuilder: (context, error, stackTrace) {
+                                    errorBuilder: (final context, final error, final stackTrace) {
                                       return Icon(FluentIcons.invoice,
                                           size: 40,
                                           color: FluentTheme.of(context)

@@ -1,7 +1,7 @@
 import 'package:pdf/widgets.dart' as pw;
-import '../../models/invoice.dart';
+import 'package:invobharat/models/invoice.dart';
 
-String getCurrencyName(String symbol) {
+String getCurrencyName(final String symbol) {
   switch (symbol) {
     case '₹':
       return 'Rupees';
@@ -19,7 +19,7 @@ String getCurrencyName(String symbol) {
 }
 
 pw.Widget buildUpiQr(
-    String? upiId, String? upiName, Invoice invoice, String currencySymbol) {
+    final String? upiId, final String? upiName, final Invoice invoice, final String currencySymbol) {
   if (upiId == null || upiId.isEmpty) return pw.Container();
   // Only show QR for INR
   if (currencySymbol != '₹' &&

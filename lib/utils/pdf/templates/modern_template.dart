@@ -3,10 +3,10 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
-import '../../../models/invoice.dart';
-import '../../../models/business_profile.dart';
-import '../pdf_helpers.dart';
-import 'base_template.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/models/business_profile.dart';
+import 'package:invobharat/utils/pdf/pdf_helpers.dart';
+import 'package:invobharat/utils/pdf/templates/base_template.dart';
 
 class ModernTemplate extends BasePdfTemplate {
   @override
@@ -14,8 +14,8 @@ class ModernTemplate extends BasePdfTemplate {
 
   @override
   Future<Uint8List> generate(
-      Invoice invoice, BusinessProfile profile, pw.Font font, pw.Font fontBold,
-      {String? title}) async {
+      final Invoice invoice, final BusinessProfile profile, final pw.Font font, final pw.Font fontBold,
+      {final String? title}) async {
     final pdf = pw.Document(
         theme: pw.ThemeData.withFont(
       base: font,
@@ -43,7 +43,7 @@ class ModernTemplate extends BasePdfTemplate {
       pw.Page(
         pageFormat: PdfPageFormat.a4,
         margin: pw.EdgeInsets.zero,
-        build: (context) {
+        build: (final context) {
           return pw.Column(children: [
             pw.Container(
                 color: themeColor,
@@ -62,8 +62,7 @@ class ModernTemplate extends BasePdfTemplate {
                                   margin: const pw.EdgeInsets.only(bottom: 10),
                                   child: pw.Image(
                                       pw.MemoryImage(
-                                          File(logoPath).readAsBytesSync()),
-                                      fit: pw.BoxFit.contain))
+                                          File(logoPath).readAsBytesSync())))
                             else
                               pw.Text(profile.companyName,
                                   style: pw.TextStyle(
@@ -165,7 +164,6 @@ class ModernTemplate extends BasePdfTemplate {
                           const pw.BorderRadius.all(pw.Radius.circular(4))),
                   oddRowDecoration:
                       const pw.BoxDecoration(color: PdfColors.grey100),
-                  border: null,
                   cellPadding:
                       const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                 )),
@@ -268,8 +266,7 @@ class ModernTemplate extends BasePdfTemplate {
                                         if (hasSignature)
                                           pw.Image(
                                               pw.MemoryImage(File(signaturePath)
-                                                  .readAsBytesSync()),
-                                              fit: pw.BoxFit.contain),
+                                                  .readAsBytesSync())),
                                       ]))
                             else
                               pw.SizedBox(height: 40),

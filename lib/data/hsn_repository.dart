@@ -1,4 +1,4 @@
-import '../models/hsn_code.dart';
+import 'package:invobharat/models/hsn_code.dart';
 
 class HsnRepository {
   static const List<HsnCode> commonCodes = [
@@ -6,86 +6,70 @@ class HsnRepository {
     // Professional Services
     HsnCode(
         code: '998211',
-        description: 'Legal services including advocacy',
-        rate: 18),
+        description: 'Legal services including advocacy'),
     HsnCode(
-        code: '998221', description: 'Financial auditing services', rate: 18),
+        code: '998221', description: 'Financial auditing services'),
     HsnCode(
         code: '998222',
-        description: 'Accounting, bookkeeping and auditing services',
-        rate: 18),
+        description: 'Accounting, bookkeeping and auditing services'),
     HsnCode(
         code: '998311',
-        description: 'Management consulting and management services',
-        rate: 18),
+        description: 'Management consulting and management services'),
     HsnCode(
-        code: '998312', description: 'Business consulting services', rate: 18),
+        code: '998312', description: 'Business consulting services'),
     // IT Services
     HsnCode(
         code: '998313',
         description:
-            'Information technology (IT) consulting and support services',
-        rate: 18),
+            'Information technology (IT) consulting and support services'),
     HsnCode(
         code: '998314',
         description:
-            'Information technology (IT) design and development services',
-        rate: 18),
+            'Information technology (IT) design and development services'),
     HsnCode(
         code: '998315',
-        description: 'Hosting and IT infrastructure provisioning services',
-        rate: 18),
+        description: 'Hosting and IT infrastructure provisioning services'),
     HsnCode(
         code: '998316',
-        description: 'IT infrastructure and network management services',
-        rate: 18),
+        description: 'IT infrastructure and network management services'),
     HsnCode(
         code: '998319',
-        description: 'Other information technology services n.e.c.',
-        rate: 18),
+        description: 'Other information technology services n.e.c.'),
     // Advertising & Marketing
-    HsnCode(code: '998361', description: 'Advertising services', rate: 18),
+    HsnCode(code: '998361', description: 'Advertising services'),
     HsnCode(
         code: '998362',
-        description: 'Purchase or sale of advertising space or time',
-        rate: 18),
+        description: 'Purchase or sale of advertising space or time'),
     HsnCode(
         code: '998363',
         description: 'Sale of advertising space in print media',
         rate: 5),
     HsnCode(
         code: '998364',
-        description: 'Sale of television and radio advertising time',
-        rate: 18),
+        description: 'Sale of television and radio advertising time'),
     HsnCode(
         code: '998365',
-        description: 'Sale of internet advertising space',
-        rate: 18),
+        description: 'Sale of internet advertising space'),
     HsnCode(
         code: '998366',
-        description: 'Sale of other advertising space or time',
-        rate: 18),
+        description: 'Sale of other advertising space or time'),
     HsnCode(
         code: '998399',
         description:
-            'Other professional, technical and business services n.e.c.',
-        rate: 18),
+            'Other professional, technical and business services n.e.c.'),
     // Rental & Leasing
     HsnCode(
         code: '997211',
         description:
-            'Rental or leasing services involving own or leased residential property',
-        rate: 18),
+            'Rental or leasing services involving own or leased residential property'),
     HsnCode(
         code: '997212',
         description:
-            'Rental or leasing services involving own or leased non-residential property',
-        rate: 18),
+            'Rental or leasing services involving own or leased non-residential property'),
     HsnCode(
         code: '997311',
         description:
-            'Leasing or rental services of machinery and equipment without operator',
-        rate: 18),
+            'Leasing or rental services of machinery and equipment without operator'),
     // Construction
     HsnCode(
         code: '995411',
@@ -94,85 +78,69 @@ class HsnRepository {
         rate: 12),
     HsnCode(
         code: '995412',
-        description: 'Construction services of industrial buildings',
-        rate: 18),
+        description: 'Construction services of industrial buildings'),
     HsnCode(
         code: '995413',
-        description: 'Construction services of commercial buildings',
-        rate: 18),
+        description: 'Construction services of commercial buildings'),
     HsnCode(
         code: '995414',
-        description: 'Construction services of Other Buildings',
-        rate: 18),
+        description: 'Construction services of Other Buildings'),
     HsnCode(
         code: '995415',
-        description: 'Construction services of other civil engineering works',
-        rate: 18),
-    HsnCode(code: '995416', description: 'Site preparation services', rate: 18),
+        description: 'Construction services of other civil engineering works'),
+    HsnCode(code: '995416', description: 'Site preparation services'),
     HsnCode(
         code: '995419',
         description:
-            'General construction services of other civil engineering works',
-        rate: 18),
+            'General construction services of other civil engineering works'),
     // Telecom & Info
     HsnCode(
         code: '998411',
-        description: 'Fixed-line telecommunication services',
-        rate: 18),
+        description: 'Fixed-line telecommunication services'),
     HsnCode(
         code: '998412',
-        description: 'Mobile telecommunication services',
-        rate: 18),
+        description: 'Mobile telecommunication services'),
     HsnCode(
         code: '998413',
-        description: 'Internet telecommunication services',
-        rate: 18),
+        description: 'Internet telecommunication services'),
     // Maintenance
     HsnCode(
         code: '998711',
         description:
-            'Maintenance and repair services of fabricated metal products, machinery and equipment',
-        rate: 18),
+            'Maintenance and repair services of fabricated metal products, machinery and equipment'),
     HsnCode(
         code: '998712',
         description:
-            'Maintenance and repair services of office and accounting machinery',
-        rate: 18),
+            'Maintenance and repair services of office and accounting machinery'),
     HsnCode(
         code: '998713',
         description:
-            'Maintenance and repair services of computers and peripheral equipment',
-        rate: 18),
+            'Maintenance and repair services of computers and peripheral equipment'),
     HsnCode(
         code: '998714',
         description:
-            'Maintenance and repair services of transport machinery and equipment',
-        rate: 18),
+            'Maintenance and repair services of transport machinery and equipment'),
     HsnCode(
         code: '998715',
-        description: 'Maintenance and repair services of electrical equipment',
-        rate: 18),
+        description: 'Maintenance and repair services of electrical equipment'),
     HsnCode(
         code: '998716',
         description:
-            'Maintenance and repair services of office machinery and equipment',
-        rate: 18),
+            'Maintenance and repair services of office machinery and equipment'),
     HsnCode(
         code: '998717',
         description:
-            'Maintenance and repair services of elevators and escalators',
-        rate: 18),
+            'Maintenance and repair services of elevators and escalators'),
     // Transport
     HsnCode(
         code: '996511',
         description:
             'Road transport services of goods including letters, parcels, etc.',
         rate: 12), // GTA varies
-    HsnCode(code: '996711', description: 'Cargo handling services', rate: 18),
+    HsnCode(code: '996711', description: 'Cargo handling services'),
     HsnCode(
         code: '996712',
-        description: 'Storage and warehousing services',
-        rate: 18),
+        description: 'Storage and warehousing services'),
     // Hospitality
     HsnCode(
         code: '996311',
@@ -185,15 +153,13 @@ class HsnRepository {
         rate: 5),
     HsnCode(
         code: '996331',
-        description: 'Catering services',
-        rate: 18), // Outdoor catering
+        description: 'Catering services'), // Outdoor catering
     // Job Work
     HsnCode(
         code: '998811', description: 'Services by way of printing', rate: 12),
     HsnCode(
         code: '998812',
-        description: 'Services by way of reproduction of recorded media',
-        rate: 18),
+        description: 'Services by way of reproduction of recorded media'),
     HsnCode(
         code: '998813', description: 'Tailoring services', rate: 5), // Varies
 
@@ -202,39 +168,31 @@ class HsnRepository {
     HsnCode(
         code: '847130',
         description:
-            'Portable automatic data processing machines (Laptops, Tablets)',
-        rate: 18),
+            'Portable automatic data processing machines (Laptops, Tablets)'),
     HsnCode(
         code: '847141',
-        description: 'Other automatic data processing machines (Desktops)',
-        rate: 18),
+        description: 'Other automatic data processing machines (Desktops)'),
     HsnCode(
         code: '847160',
-        description: 'Input or output units (Keyboards, Mice, Scanners)',
-        rate: 18),
+        description: 'Input or output units (Keyboards, Mice, Scanners)'),
     HsnCode(
         code: '847170',
-        description: 'Storage units (Hard Drives, SSDs, USBs)',
-        rate: 18),
+        description: 'Storage units (Hard Drives, SSDs, USBs)'),
     HsnCode(
         code: '851711',
-        description: 'Line telephone sets with cordless handsets',
-        rate: 18),
+        description: 'Line telephone sets with cordless handsets'),
     HsnCode(
         code: '851712',
         description:
-            'Telephones for cellular networks or for other wireless networks (Mobile Phones)',
-        rate: 18),
+            'Telephones for cellular networks or for other wireless networks (Mobile Phones)'),
     HsnCode(
         code: '851762',
         description:
-            'Machines for the reception, conversion and transmission or regeneration of voice, images or other data (Routers, Switches)',
-        rate: 18),
+            'Machines for the reception, conversion and transmission or regeneration of voice, images or other data (Routers, Switches)'),
     HsnCode(
         code: '852852',
         description:
-            'Monitors capable of directly connecting to and designed for use with an automatic data processing machine',
-        rate: 18),
+            'Monitors capable of directly connecting to and designed for use with an automatic data processing machine'),
     HsnCode(
         code: '852872',
         description:
@@ -243,55 +201,46 @@ class HsnRepository {
     HsnCode(
         code: '854442',
         description:
-            'Other electric conductors, fitted with connectors (Cables)',
-        rate: 18),
+            'Other electric conductors, fitted with connectors (Cables)'),
     // Electricals
     HsnCode(
         code: '850440',
-        description: 'Static converters (UPS, Inverters, Chargers)',
-        rate: 18),
+        description: 'Static converters (UPS, Inverters, Chargers)'),
     HsnCode(
-        code: '850610', description: 'Manganese dioxide batteries', rate: 18),
+        code: '850610', description: 'Manganese dioxide batteries'),
     HsnCode(
         code: '850720',
         description: 'Other lead-acid accumulators (Batteries for UPS)',
         rate: 28),
     HsnCode(
         code: '841451',
-        description: 'Table, floor, wall, window, ceiling or roof fans',
-        rate: 18),
+        description: 'Table, floor, wall, window, ceiling or roof fans'),
     HsnCode(
         code: '841510',
         description: 'Window or wall air conditioning machines',
         rate: 28),
     HsnCode(
         code: '841810',
-        description: 'Combined refrigerator-freezers',
-        rate: 18),
+        description: 'Combined refrigerator-freezers'),
     HsnCode(
         code: '851610',
         description:
-            'Electric instantaneous or storage water heaters (Geysers)',
-        rate: 18),
+            'Electric instantaneous or storage water heaters (Geysers)'),
     // Furniture
     HsnCode(
         code: '940130',
-        description: 'Swivel seats with variable height adjustment',
-        rate: 18),
+        description: 'Swivel seats with variable height adjustment'),
     HsnCode(
         code: '940310',
-        description: 'Metal furniture of a kind used in offices',
-        rate: 18),
-    HsnCode(code: '940320', description: 'Other metal furniture', rate: 18),
+        description: 'Metal furniture of a kind used in offices'),
+    HsnCode(code: '940320', description: 'Other metal furniture'),
     HsnCode(
         code: '940330',
-        description: 'Wooden furniture of a kind used in offices',
-        rate: 18),
+        description: 'Wooden furniture of a kind used in offices'),
     HsnCode(
         code: '940350',
-        description: 'Wooden furniture of a kind used in the bedroom',
-        rate: 18),
-    HsnCode(code: '940360', description: 'Other wooden furniture', rate: 18),
+        description: 'Wooden furniture of a kind used in the bedroom'),
+    HsnCode(code: '940360', description: 'Other wooden furniture'),
     // Stationery & Paper
     HsnCode(
         code: '480210',
@@ -319,13 +268,11 @@ class HsnRepository {
         rate: 12),
     HsnCode(
         code: '690721',
-        description: 'Ceramic flags and paving, hearth or wall tiles',
-        rate: 18),
+        description: 'Ceramic flags and paving, hearth or wall tiles'),
     HsnCode(
         code: '721420',
         description:
-            'Bars and rods, hot-rolled, in irregularly wound coils, of iron or non-alloy steel (TMT Bars)',
-        rate: 18),
+            'Bars and rods, hot-rolled, in irregularly wound coils, of iron or non-alloy steel (TMT Bars)'),
     // Textiles/Apparel
     HsnCode(
         code: '610510',
@@ -349,23 +296,21 @@ class HsnRepository {
         description: 'Coffee, not roasted, not decaffeinated',
         rate: 5),
     HsnCode(code: '090240', description: 'Black tea', rate: 5),
-    HsnCode(code: '190531', description: 'Sweet biscuits', rate: 18),
+    HsnCode(code: '190531', description: 'Sweet biscuits'),
     HsnCode(
         code: '210690',
-        description: 'Food preparations not elsewhere specified or included',
-        rate: 18),
+        description: 'Food preparations not elsewhere specified or included'),
     // Misc
     HsnCode(code: '901811', description: 'Electro-cardiographs', rate: 12),
     HsnCode(
         code: '300410',
         description: 'Medicaments containing penicillins',
         rate: 12), // Pharma often 12 or 5
-    HsnCode(code: '330410', description: 'Lip make-up preparations', rate: 18),
+    HsnCode(code: '330410', description: 'Lip make-up preparations'),
     HsnCode(
         code: '340111',
         description:
-            'Soap and organic surface-active products and preparations',
-        rate: 18),
+            'Soap and organic surface-active products and preparations'),
     HsnCode(
         code: '950300',
         description:
@@ -373,11 +318,11 @@ class HsnRepository {
         rate: 12),
   ];
 
-  Future<List<HsnCode>> search(String query) async {
+  Future<List<HsnCode>> search(final String query) async {
     if (query.isEmpty) return [];
     final lower = query.toLowerCase();
     return commonCodes
-        .where((e) =>
+        .where((final e) =>
             e.code.toLowerCase().startsWith(lower) ||
             e.description.toLowerCase().contains(lower))
         .toList();

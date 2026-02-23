@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/business_profile_provider.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
 
-void showProfileSwitcherSheet(BuildContext context, WidgetRef ref) {
+void showProfileSwitcherSheet(final BuildContext context, final WidgetRef ref) {
   showModalBottomSheet(
     context: context,
     shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-    builder: (context) => const ProfileSwitcherSheet(),
+    builder: (final context) => const ProfileSwitcherSheet(),
   );
 }
 
@@ -15,7 +15,7 @@ class ProfileSwitcherSheet extends ConsumerWidget {
   const ProfileSwitcherSheet({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final profiles = ref.watch(businessProfileListProvider);
     final activeId = ref.watch(activeProfileIdProvider);
 
@@ -34,7 +34,7 @@ class ProfileSwitcherSheet extends ConsumerWidget {
               child: ListView.builder(
                 shrinkWrap: true,
                 itemCount: profiles.length,
-                itemBuilder: (context, index) {
+                itemBuilder: (final context, final index) {
                   final p = profiles[index];
                   final isActive = p.id == activeId;
                   return ListTile(

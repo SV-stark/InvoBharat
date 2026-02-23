@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../providers/estimate_provider.dart';
-import 'estimate_form.dart';
+import 'package:invobharat/providers/estimate_provider.dart';
+import 'package:invobharat/screens/estimate_form.dart';
 
 class EstimatesScreen extends ConsumerWidget {
   const EstimatesScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final estimatesAsync = ref.watch(estimateListProvider);
     final theme = Theme.of(context);
 
@@ -18,7 +18,7 @@ class EstimatesScreen extends ConsumerWidget {
         title: const Text("Estimates"),
       ),
       body: estimatesAsync.when(
-        data: (estimates) {
+        data: (final estimates) {
           if (estimates.isEmpty) {
             return Center(
               child: Column(
@@ -36,7 +36,7 @@ class EstimatesScreen extends ConsumerWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const EstimateForm()),
+                            builder: (final context) => const EstimateForm()),
                       );
                     },
                     icon: const Icon(Icons.add),
@@ -50,7 +50,7 @@ class EstimatesScreen extends ConsumerWidget {
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: estimates.length,
-            itemBuilder: (context, index) {
+            itemBuilder: (final context, final index) {
               final estimate = estimates[index];
               return Card(
                 elevation: 2,
@@ -79,7 +79,7 @@ class EstimatesScreen extends ConsumerWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
+                        builder: (final context) =>
                             EstimateForm(estimateId: estimate.id),
                       ),
                     );
@@ -89,14 +89,14 @@ class EstimatesScreen extends ConsumerWidget {
             },
           );
         },
-        error: (err, stack) => Center(child: Text("Error: $err")),
+        error: (final err, final stack) => Center(child: Text("Error: $err")),
         loading: () => const Center(child: CircularProgressIndicator()),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const EstimateForm()),
+            MaterialPageRoute(builder: (final context) => const EstimateForm()),
           );
         },
         child: const Icon(Icons.add),
@@ -104,7 +104,7 @@ class EstimatesScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatusBadge(ThemeData theme, String status) {
+  Widget _buildStatusBadge(final ThemeData theme, final String status) {
     Color color;
     switch (status) {
       case 'Accepted':

@@ -20,7 +20,7 @@ class EmptyState extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final theme = Theme.of(context);
     
     return Center(
@@ -92,7 +92,7 @@ class EmptyStateIllustration extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final theme = Theme.of(context);
     
     return Center(
@@ -141,7 +141,7 @@ class EmptyStateIllustration extends StatelessWidget {
     );
   }
 
-  Widget _buildDefaultIllustration(ThemeData theme) {
+  Widget _buildDefaultIllustration(final ThemeData theme) {
     return Container(
       width: 200,
       height: 160,

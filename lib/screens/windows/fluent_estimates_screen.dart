@@ -2,17 +2,17 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../providers/estimate_provider.dart';
-import '../../models/invoice.dart';
-import '../../models/estimate.dart';
-import 'fluent_estimate_form.dart';
-import 'fluent_invoice_form.dart';
+import 'package:invobharat/providers/estimate_provider.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/models/estimate.dart';
+import 'package:invobharat/screens/windows/fluent_estimate_form.dart';
+import 'package:invobharat/screens/windows/fluent_invoice_form.dart';
 
 class FluentEstimatesScreen extends ConsumerWidget {
   const FluentEstimatesScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final estimatesAsync = ref.watch(estimateListProvider);
     final theme = FluentTheme.of(context);
 
@@ -37,7 +37,7 @@ class FluentEstimatesScreen extends ConsumerWidget {
                 Navigator.push(
                   context,
                   FluentPageRoute(
-                      builder: (context) => const FluentEstimateForm()),
+                      builder: (final context) => const FluentEstimateForm()),
                 );
               },
             ),
@@ -45,7 +45,7 @@ class FluentEstimatesScreen extends ConsumerWidget {
         ),
       ),
       content: estimatesAsync.when(
-        data: (estimates) {
+        data: (final estimates) {
           if (estimates.isEmpty) {
             return Center(
               child: Column(
@@ -63,7 +63,7 @@ class FluentEstimatesScreen extends ConsumerWidget {
                       Navigator.push(
                         context,
                         FluentPageRoute(
-                            builder: (context) => const FluentEstimateForm()),
+                            builder: (final context) => const FluentEstimateForm()),
                       );
                     },
                     child: const Text("Create Estimate"),
@@ -76,7 +76,7 @@ class FluentEstimatesScreen extends ConsumerWidget {
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: estimates.length,
-            itemBuilder: (context, index) {
+            itemBuilder: (final context, final index) {
               final estimate = estimates[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
@@ -119,7 +119,7 @@ class FluentEstimatesScreen extends ConsumerWidget {
                       Navigator.push(
                         context,
                         FluentPageRoute(
-                          builder: (context) =>
+                          builder: (final context) =>
                               FluentEstimateForm(estimateId: estimate.id),
                         ),
                       );
@@ -130,13 +130,13 @@ class FluentEstimatesScreen extends ConsumerWidget {
             },
           );
         },
-        error: (err, stack) => Center(child: Text("Error: $err")),
+        error: (final err, final stack) => Center(child: Text("Error: $err")),
         loading: () => const Center(child: ProgressRing()),
       ),
     );
   }
 
-  Widget _buildStatusBadge(FluentThemeData theme, String status) {
+  Widget _buildStatusBadge(final FluentThemeData theme, final String status) {
     Color color;
     switch (status) {
       case 'Accepted':
@@ -167,15 +167,13 @@ class FluentEstimatesScreen extends ConsumerWidget {
     );
   }
 
-  void _convertToInvoice(BuildContext context, Estimate estimate) {
+  void _convertToInvoice(final BuildContext context, final Estimate estimate) {
     final invoice = Invoice(
       supplier: estimate.supplier,
       receiver: estimate.receiver,
-      items: estimate.items.map((e) => e.copyWith(id: null)).toList(),
+      items: estimate.items.map((final e) => e.copyWith(id: null)).toList(),
       invoiceDate: DateTime.now(),
       dueDate: DateTime.now().add(const Duration(days: 14)),
-      invoiceNo: '', // Let form/user generate
-      style: 'Modern',
       // Convert Notes/Terms to comments?
       comments: estimate.notes.isNotEmpty ? estimate.notes : '',
       paymentTerms: estimate.terms.isNotEmpty ? estimate.terms : '',
@@ -184,7 +182,7 @@ class FluentEstimatesScreen extends ConsumerWidget {
     Navigator.push(
       context,
       FluentPageRoute(
-        builder: (context) => FluentInvoiceForm(
+        builder: (final context) => FluentInvoiceForm(
           invoiceToEdit: invoice,
           estimateIdToMarkConverted: estimate.id,
         ),

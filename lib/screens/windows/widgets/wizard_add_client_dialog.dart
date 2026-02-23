@@ -1,9 +1,9 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../models/client.dart';
-import '../../../../providers/client_provider.dart';
-import '../../../../utils/validators.dart';
-import '../../../../utils/constants.dart';
+import 'package:invobharat/models/client.dart';
+import 'package:invobharat/providers/client_provider.dart';
+import 'package:invobharat/utils/validators.dart';
+import 'package:invobharat/utils/constants.dart';
 
 class WizardAddClientDialog extends ConsumerStatefulWidget {
   final Function(Client) onClientAdded;
@@ -45,7 +45,7 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return ContentDialog(
       title: const Text("Add New Client"),
       content: Form(
@@ -58,7 +58,7 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
               child: TextFormBox(
                 placeholder: "Company or Person Name",
                 validator: Validators.required,
-                onChanged: (v) => name = v,
+                onChanged: (final v) => name = v,
               ),
             ),
             const SizedBox(height: 10),
@@ -66,7 +66,7 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
               label: "Address",
               child: TextFormBox(
                 placeholder: "Full Address",
-                onChanged: (v) => address = v,
+                onChanged: (final v) => address = v,
                 maxLines: 2,
               ),
             ),
@@ -80,7 +80,7 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
                       placeholder: "Optional",
                       validator: Validators.gstin,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
-                      onChanged: (v) => gstin = v,
+                      onChanged: (final v) => gstin = v,
                     ),
                   ),
                 ),
@@ -92,16 +92,16 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
                       placeholder: "e.g. Karnataka",
                       controller: _stateCtrl,
                       items: IndianStates.states
-                          .map((e) =>
+                          .map((final e) =>
                               AutoSuggestBoxItem<String>(value: e, label: e))
                           .toList(),
-                      onSelected: (item) {
+                      onSelected: (final item) {
                         setState(() {
                           state = item.value ?? "";
                           _stateCtrl.text = state;
                         });
                       },
-                      onChanged: (text, reason) {
+                      onChanged: (final text, final reason) {
                         if (reason == TextChangedReason.userInput) {
                           state = text;
                         }
@@ -119,7 +119,7 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
                     label: "Email",
                     child: TextBox(
                       placeholder: "billing@client.com",
-                      onChanged: (v) => email = v,
+                      onChanged: (final v) => email = v,
                     ),
                   ),
                 ),
@@ -129,7 +129,7 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
                     label: "Phone",
                     child: TextBox(
                       placeholder: "Mobile / Landline",
-                      onChanged: (v) => phone = v,
+                      onChanged: (final v) => phone = v,
                     ),
                   ),
                 ),
@@ -166,7 +166,7 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
               widget.onClientAdded(newClient);
               Navigator.pop(ctx);
               displayInfoBar(ctx,
-                  builder: (c, close) => InfoBar(
+                  builder: (final c, final close) => InfoBar(
                       title: const Text("Success"),
                       content: const Text("Client added successfully"),
                       severity: InfoBarSeverity.success,

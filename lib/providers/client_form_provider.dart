@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/client.dart';
-import '../providers/client_provider.dart';
+import 'package:invobharat/models/client.dart';
+import 'package:invobharat/providers/client_provider.dart';
 import 'package:uuid/uuid.dart';
 
 /// State for the Client Form
@@ -39,21 +39,21 @@ class ClientFormState {
   });
 
   ClientFormState copyWith({
-    String? id,
-    String? name,
-    String? gstin,
-    String? address,
-    String? email,
-    String? phone,
-    String? state,
-    String? primaryContact,
-    String? notes,
-    String? pan,
-    String? stateCode,
-    bool? isLoading,
-    String? errorMessage,
-    bool? isSuccess,
-    bool clearError = false,
+    final String? id,
+    final String? name,
+    final String? gstin,
+    final String? address,
+    final String? email,
+    final String? phone,
+    final String? state,
+    final String? primaryContact,
+    final String? notes,
+    final String? pan,
+    final String? stateCode,
+    final bool? isLoading,
+    final String? errorMessage,
+    final bool? isSuccess,
+    final bool clearError = false,
   }) {
     return ClientFormState(
       id: id ?? this.id,
@@ -96,7 +96,7 @@ class ClientFormNotifier extends Notifier<ClientFormState> {
   ClientFormState build() => const ClientFormState();
 
   /// Load an existing client for editing, or reset for new client
-  void loadClient(Client? client) {
+  void loadClient(final Client? client) {
     if (client == null) {
       state = const ClientFormState();
     } else {
@@ -116,17 +116,17 @@ class ClientFormNotifier extends Notifier<ClientFormState> {
     }
   }
 
-  void updateName(String value) => state = state.copyWith(name: value);
-  void updateGstin(String value) => state = state.copyWith(gstin: value);
-  void updateAddress(String value) => state = state.copyWith(address: value);
-  void updateEmail(String value) => state = state.copyWith(email: value);
-  void updatePhone(String value) => state = state.copyWith(phone: value);
-  void updateState(String value) => state = state.copyWith(state: value);
-  void updatePrimaryContact(String value) =>
+  void updateName(final String value) => state = state.copyWith(name: value);
+  void updateGstin(final String value) => state = state.copyWith(gstin: value);
+  void updateAddress(final String value) => state = state.copyWith(address: value);
+  void updateEmail(final String value) => state = state.copyWith(email: value);
+  void updatePhone(final String value) => state = state.copyWith(phone: value);
+  void updateState(final String value) => state = state.copyWith(state: value);
+  void updatePrimaryContact(final String value) =>
       state = state.copyWith(primaryContact: value);
-  void updateNotes(String value) => state = state.copyWith(notes: value);
-  void updatePan(String value) => state = state.copyWith(pan: value);
-  void updateStateCode(String value) =>
+  void updateNotes(final String value) => state = state.copyWith(notes: value);
+  void updatePan(final String value) => state = state.copyWith(pan: value);
+  void updateStateCode(final String value) =>
       state = state.copyWith(stateCode: value);
 
   /// Validate and save the client

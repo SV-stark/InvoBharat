@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../providers/invoice_repository_provider.dart';
-import '../providers/business_profile_provider.dart';
-import 'invoice_detail_screen.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/screens/invoice_detail_screen.dart';
 
 class PaymentHistoryScreen extends ConsumerWidget {
   const PaymentHistoryScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final invoiceListAsync = ref.watch(invoiceListProvider);
     final currencySymbol = ref.watch(businessProfileProvider).currencySymbol;
 
@@ -17,15 +17,15 @@ class PaymentHistoryScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text("Payment History")),
       body: invoiceListAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text("Error: $err")),
-        data: (invoices) {
+        error: (final err, final stack) => Center(child: Text("Error: $err")),
+        data: (final invoices) {
           // Flatten payments from all invoices
-          final allPayments = invoices.expand((inv) {
-            return inv.payments.map((p) => {'payment': p, 'invoice': inv});
+          final allPayments = invoices.expand((final inv) {
+            return inv.payments.map((final p) => {'payment': p, 'invoice': inv});
           }).toList();
 
           // Sort by date descending
-          allPayments.sort((a, b) {
+          allPayments.sort((final a, final b) {
             final pA = a['payment'] as dynamic;
             final pB = b['payment'] as dynamic;
             return pB.date.compareTo(pA.date);
@@ -47,8 +47,8 @@ class PaymentHistoryScreen extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: allPayments.length,
-            separatorBuilder: (_, __) => const Divider(),
-            itemBuilder: (context, index) {
+            separatorBuilder: (_, final _) => const Divider(),
+            itemBuilder: (final context, final index) {
               final entry = allPayments[index];
               final payment = entry['payment'] as dynamic;
               final invoice = entry['invoice'] as dynamic;

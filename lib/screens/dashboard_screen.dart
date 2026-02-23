@@ -1,29 +1,31 @@
 import 'package:flutter/material.dart';
-import '../widgets/profile_switcher_sheet.dart';
-import '../widgets/error_view.dart';
-import '../widgets/empty_state.dart';
-import '../widgets/skeleton_widgets.dart';
-import '../widgets/gst_pie_chart.dart';
+import 'package:invobharat/widgets/profile_switcher_sheet.dart';
+import 'package:invobharat/widgets/error_view.dart';
+import 'package:invobharat/widgets/empty_state.dart';
+import 'package:invobharat/widgets/skeleton_widgets.dart';
+import 'package:invobharat/widgets/gst_pie_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'invoice_form.dart';
-import 'invoice_detail_screen.dart';
-import 'recurring_invoices_screen.dart';
+import 'package:invobharat/screens/invoice_form.dart';
+import 'package:invobharat/screens/invoice_detail_screen.dart';
+import 'package:invobharat/screens/recurring_invoices_screen.dart';
 
-import 'settings_screen.dart';
-import 'payment_history_screen.dart'; // NEW
-import 'audit_report_screen.dart'; // NEW
-import '../providers/business_profile_provider.dart';
+import 'package:invobharat/screens/settings_screen.dart';
+import 'package:invobharat/screens/payment_history_screen.dart';
+import 'package:invobharat/screens/audit_report_screen.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
 
-import '../providers/invoice_repository_provider.dart';
-import '../models/invoice.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/models/business_profile.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
-import '../services/gstr_service.dart';
-import '../services/dashboard_actions.dart';
-import 'material_clients_screen.dart';
-import 'invoices_list_screen.dart';
+import 'package:invobharat/services/gstr_service.dart';
+import 'package:invobharat/services/dashboard_actions.dart';
+import 'package:invobharat/screens/widgets/dashboard_widgets.dart';
+import 'package:invobharat/screens/material_clients_screen.dart';
+import 'package:invobharat/screens/invoices_list_screen.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -42,21 +44,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     _updateDateRange("This Month");
   }
 
-  void _updateDateRange(String filter) async {
+  void _updateDateRange(final String filter) async {
     final now = DateTime.now();
     DateTime start, end;
 
     switch (filter) {
       case "This Month":
-        start = DateTime(now.year, now.month, 1);
-        end = DateTime(now.year, now.month + 1, 0); // Last day of month
+        start = DateTime(now.year, now.month);
+        end = DateTime(now.year, now.month + 1, 0);
         setState(() {
           _selectedFilter = filter;
           _dateRange = DateTimeRange(start: start, end: end);
         });
         break;
       case "Last Month":
-        start = DateTime(now.year, now.month - 1, 1);
+        start = DateTime(now.year, now.month - 1);
         end = DateTime(now.year, now.month, 0);
         setState(() {
           _selectedFilter = filter;
@@ -64,8 +66,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         });
         break;
       case "This Quarter":
-        int quarter = (now.month - 1) ~/ 3 + 1;
-        start = DateTime(now.year, (quarter - 1) * 3 + 1, 1);
+        final int quarter = (now.month - 1) ~/ 3 + 1;
+        start = DateTime(now.year, (quarter - 1) * 3 + 1);
         end = DateTime(now.year, quarter * 3 + 1, 0);
         setState(() {
           _selectedFilter = filter;
@@ -90,7 +92,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final profile = ref.watch(businessProfileProvider);
     final invoiceListAsync = ref.watch(invoiceListProvider);
 
@@ -133,69 +135,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Welcome back,",
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyLarge?.copyWith(color: Colors.grey),
-                    ),
-                    Text(
-                      profile.companyName,
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineMedium
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                PopupMenuButton<String>(
-                  initialValue: _selectedFilter,
-                  onSelected: _updateDateRange,
-                  child: Chip(
-                    label: Text(_selectedFilter),
-                    avatar: const Icon(Icons.calendar_today, size: 16),
-                  ),
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: "This Month",
-                      child: Text("This Month"),
-                    ),
-                    const PopupMenuItem(
-                      value: "Last Month",
-                      child: Text("Last Month"),
-                    ),
-                    const PopupMenuItem(
-                      value: "This Quarter",
-                      child: Text("This Quarter"),
-                    ),
-                    const PopupMenuItem(
-                      value: "Custom",
-                      child: Text("Custom Range..."),
-                    ),
-                  ],
-                ),
-              ],
+            _DashboardHeader(
+              profile: profile,
+              selectedFilter: _selectedFilter,
+              onFilterSelected: _updateDateRange,
             ),
             const SizedBox(height: 24),
             invoiceListAsync.when(
               loading: () => const SkeletonDashboard(),
-              error: (err, stack) => ErrorView(
+              error: (final err, final stack) => ErrorView(
                 message: err.toString(),
                 onRetry: () => ref.refresh(invoiceListProvider),
               ),
-              data: (invoices) {
-                // Filter Invoices
+              data: (final invoices) {
                 final filteredInvoices = _dateRange == null
                     ? invoices
-                    : invoices.where((i) {
-                        // Normalize dates to ignore time?
-                        // InvoiceDate usually has time? Assuming just compare
+                    : invoices.where((final i) {
                         return i.invoiceDate.isAfter(
                               _dateRange!.start.subtract(
                                 const Duration(seconds: 1),
@@ -206,353 +161,26 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             );
                       }).toList();
 
-                final stats = DashboardActions.calculateStats(filteredInvoices);
-                final totalRevenue = stats['revenue'] as double;
-                final totalCGST = stats['cgst'] as double;
-                final totalSGST = stats['sgst'] as double;
-                final totalIGST = stats['igst'] as double;
-                
-                // Calculate previous period stats for trends
-                final previousPeriodInvoices = _getPreviousPeriodInvoices(invoices);
-                final prevStats = DashboardActions.calculateStats(previousPeriodInvoices);
-                final prevRevenue = prevStats['revenue'] as double;
-                final prevCount = previousPeriodInvoices.length;
-                final prevCgst = prevStats['cgst'] as double;
-                final prevSgst = prevStats['sgst'] as double;
-                final prevIgst = prevStats['igst'] as double;
-                final prevGst = prevCgst + prevSgst + prevIgst;
-                
-                // Calculate trends
-                final revenueTrend = prevRevenue > 0 ? ((totalRevenue - prevRevenue) / prevRevenue) * 100 : 0.0;
-                final countTrend = prevCount > 0 ? ((filteredInvoices.length - prevCount) / prevCount) * 100 : 0.0;
-                final gstTrend = prevGst > 0 ? (((totalCGST + totalSGST + totalIGST) - prevGst) / prevGst) * 100 : 0.0;
-                
-                final currency = NumberFormat.simpleCurrency(
-                  locale: 'en_IN',
-                  decimalDigits: 0,
+                final previousPeriodInvoices = _getPreviousPeriodInvoices(
+                  invoices,
                 );
 
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Stats Cards
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              // Navigate to List
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const InvoicesListScreen(),
-                                ),
-                              );
-                            },
-                            child: _buildStatCard(
-                              context,
-                              "Revenue ($_selectedFilter)",
-                              currency.format(totalRevenue),
-                              Icons.currency_rupee,
-                              Colors.green,
-                              trend: revenueTrend,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const InvoicesListScreen(),
-                                ),
-                              );
-                            },
-                            child: _buildStatCard(
-                              context,
-                              "Invoices",
-                              "${filteredInvoices.length}",
-                              Icons.description,
-                              Colors.blue,
-                              trend: countTrend,
-                            ),
-                          ),
-                        ),
-                      ],
+                    _DashboardStats(
+                      invoices: filteredInvoices,
+                      previousInvoices: previousPeriodInvoices,
+                      selectedFilter: _selectedFilter,
+                      profile: profile,
                     ),
                     const SizedBox(height: 32),
-
-                    // GST Card (New)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => _showGstBreakdown(
-                              context,
-                              totalCGST,
-                              totalSGST,
-                              totalIGST,
-                              profile.currencySymbol,
-                            ),
-                            child: _buildStatCard(
-                              context,
-                              "GST Output ($_selectedFilter)",
-                              currency.format(
-                                totalCGST + totalSGST + totalIGST,
-                              ),
-                              Icons.percent,
-                              Colors.purple,
-                              trend: gstTrend,
-                            ),
-                          ),
-                        ),
-                      ],
+                    _DashboardQuickActions(
+                      invoices: filteredInvoices,
+                      selectedFilter: _selectedFilter,
                     ),
                     const SizedBox(height: 32),
-
-                    // GST Pie Chart
-                    if (totalCGST + totalSGST + totalIGST > 0)
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "GST Breakdown ($_selectedFilter)",
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                              const SizedBox(height: 16),
-                              GstPieChart(
-                                cgst: totalCGST,
-                                sgst: totalSGST,
-                                igst: totalIGST,
-                                currencySymbol: profile.currencySymbol,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    if (totalCGST + totalSGST + totalIGST > 0)
-                      const SizedBox(height: 32),
-
-                    // Quick Actions
-                    Text(
-                      "Quick Actions",
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    Row(
-                      children: [
-                        _buildActionButton(
-                          context,
-                          "New Invoice",
-                          Icons.add,
-                          Theme.of(context).colorScheme.primaryContainer,
-                          () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const InvoiceFormScreen(),
-                            ),
-                          ).then((_) => ref.refresh(invoiceListProvider)),
-                        ),
-                        const SizedBox(width: 16),
-                        _buildActionButton(
-                          context,
-                          "Payments",
-                          Icons.payment,
-                          Colors.green.shade100, // Distinct color
-                          () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const PaymentHistoryScreen(),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        _buildActionButton(
-                          context,
-                          "Clients",
-                          Icons.contacts,
-                          Colors.blue.shade100,
-                          () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const MaterialClientsScreen(),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        _buildActionButton(
-                          context,
-                          "Audit",
-                          Icons.warning_amber,
-                          Colors.orange.shade100,
-                          () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const AuditReportScreen(),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        _buildActionButton(
-                          context,
-                          "Recurring",
-                          Icons.autorenew,
-                          Colors.purple.shade100,
-                          () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const RecurringInvoicesScreen(),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        _buildActionButton(
-                          context,
-                          "Export GSTR-1",
-                          Icons.table_chart,
-                          Theme.of(context).colorScheme.tertiaryContainer,
-                          () async {
-                            try {
-                              // Use filtered Invoices
-                              if (filteredInvoices.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      "No invoices in selected period",
-                                    ),
-                                  ),
-                                );
-                                return;
-                              }
-
-                              final csvData = GstrService().generateGstr1Csv(
-                                filteredInvoices,
-                              );
-
-                              String? outputFile =
-                                  await FilePicker.platform.saveFile(
-                                dialogTitle: 'Save GSTR-1 CSV',
-                                fileName:
-                                    'GSTR1_${_selectedFilter.replaceAll(" ", "_")}.csv',
-                                allowedExtensions: ['csv'],
-                                type: FileType.custom,
-                              );
-
-                              if (outputFile != null) {
-                                if (!outputFile.toLowerCase().endsWith(
-                                      '.csv',
-                                    )) {
-                                  outputFile = '$outputFile.csv';
-                                }
-                                await File(outputFile).writeAsString(csvData);
-                                if (!context.mounted) return;
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text("Exported to $outputFile"),
-                                  ),
-                                );
-                              }
-                            } catch (e) {
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(e.toString())),
-                              );
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Recent Invoices",
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const InvoicesListScreen(),
-                            ),
-                          ),
-                          child: const Text("View All"),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (invoices.isEmpty)
-                      EmptyStateIllustration(
-                        title: "No invoices yet",
-                        message: "Create your first invoice to get started with InvoBharat",
-                        actionLabel: "Create Invoice",
-                        onAction: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const InvoiceFormScreen(),
-                          ),
-                        ).then((_) => ref.refresh(invoiceListProvider)),
-                      )
-                    else
-                      ...invoices.take(5).map(
-                            (inv) => Card(
-                              child: ListTile(
-                                onTap: () async {
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          InvoiceDetailScreen(invoice: inv),
-                                    ),
-                                  );
-                                  ref.invalidate(invoiceListProvider);
-                                },
-                                leading: CircleAvatar(
-                                  backgroundColor: _getStatusColor(inv.paymentStatus).withValues(alpha: 0.2),
-                                  child: Text(
-                                    inv.receiver.name.isNotEmpty ? inv.receiver.name[0].toUpperCase() : '?',
-                                    style: TextStyle(
-                                      color: _getStatusColor(inv.paymentStatus),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                title: Row(
-                                  children: [
-                                    Text(inv.receiver.name),
-                                    const SizedBox(width: 8),
-                                    _buildStatusBadge(inv.paymentStatus),
-                                  ],
-                                ),
-                                subtitle: Text(
-                                  "${inv.invoiceNo} • ${DateFormat('dd MMM').format(inv.invoiceDate)}",
-                                ),
-                                trailing: Text(
-                                  currency.format(inv.grandTotal),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                    _DashboardRecentActivity(invoices: invoices),
                   ],
                 );
               },
@@ -563,230 +191,433 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildStatCard(
-    BuildContext context,
-    String title,
-    String value,
-    IconData icon,
-    Color color, {
-    double? trend,
-    bool isTrendPercentage = true,
-  }) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    value,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                if (trend != null)
-                  _buildTrendIndicator(trend, isTrendPercentage),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTrendIndicator(double trend, bool isPercentage) {
-    final isPositive = trend >= 0;
-    final color = isPositive ? Colors.green : Colors.red;
-    final icon = isPositive ? Icons.trending_up : Icons.trending_down;
-    final text = isPercentage
-        ? '${trend.abs().toStringAsFixed(1)}%'
-        : '${trend >= 0 ? '+' : ''}${trend.toStringAsFixed(0)}';
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 14),
-          const SizedBox(width: 2),
-          Text(
-            text,
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton(
-    BuildContext context,
-    String label,
-    IconData icon,
-    Color bgColor,
-    VoidCallback onTap,
-  ) {
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          height: 100,
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 32,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  List<Invoice> _getPreviousPeriodInvoices(List<Invoice> allInvoices) {
+  List<Invoice> _getPreviousPeriodInvoices(final List<Invoice> allInvoices) {
     if (_dateRange == null) return [];
-    
+
     final periodDuration = _dateRange!.end.difference(_dateRange!.start);
     final previousStart = _dateRange!.start.subtract(periodDuration);
     final previousEnd = _dateRange!.start.subtract(const Duration(days: 1));
-    
-    return allInvoices.where((i) {
-      return i.invoiceDate.isAfter(previousStart.subtract(const Duration(seconds: 1))) &&
+
+    return allInvoices.where((final i) {
+      return i.invoiceDate.isAfter(
+            previousStart.subtract(const Duration(seconds: 1)),
+          ) &&
           i.invoiceDate.isBefore(previousEnd.add(const Duration(days: 1)));
     }).toList();
   }
 
-  void _showProfileSwitcher(BuildContext context, WidgetRef ref) {
+  void _showProfileSwitcher(final BuildContext context, final WidgetRef ref) {
     showProfileSwitcherSheet(context, ref);
   }
+}
 
-  void _showGstBreakdown(
-    BuildContext context,
-    double cgst,
-    double sgst,
-    double igst,
-    String currencySymbol,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("GST Breakdown"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildGstRow("CGST", cgst, currencySymbol),
-            const SizedBox(height: 8),
-            _buildGstRow("SGST", sgst, currencySymbol),
-            const SizedBox(height: 8),
-            _buildGstRow("IGST", igst, currencySymbol),
-            const Divider(height: 24),
-            _buildGstRow(
-              "Total",
-              cgst + sgst + igst,
-              currencySymbol,
-              isBold: true,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            child: const Text("Close"),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
-      ),
-    );
-  }
+class _DashboardHeader extends StatelessWidget {
+  final BusinessProfile profile;
+  final String selectedFilter;
+  final Function(String) onFilterSelected;
 
-  Widget _buildGstRow(
-    String label,
-    double amount,
-    String symbol, {
-    bool isBold = false,
-  }) {
-    final style = isBold ? const TextStyle(fontWeight: FontWeight.bold) : null;
+  const _DashboardHeader({
+    required this.profile,
+    required this.selectedFilter,
+    required this.onFilterSelected,
+  });
+
+  @override
+  Widget build(final BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: style),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Welcome back,",
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+            ),
+            Text(
+              profile.companyName,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        PopupMenuButton<String>(
+          initialValue: selectedFilter,
+          onSelected: onFilterSelected,
+          child: Chip(
+            label: Text(selectedFilter),
+            avatar: const Icon(Icons.calendar_today, size: 16),
+          ),
+          itemBuilder: (final context) => [
+            const PopupMenuItem(value: "This Month", child: Text("This Month")),
+            const PopupMenuItem(value: "Last Month", child: Text("Last Month")),
+            const PopupMenuItem(
+              value: "This Quarter",
+              child: Text("This Quarter"),
+            ),
+            const PopupMenuItem(
+              value: "Custom",
+              child: Text("Custom Range..."),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _DashboardStats extends StatelessWidget {
+  final List<Invoice> invoices;
+  final List<Invoice> previousInvoices;
+  final String selectedFilter;
+  final BusinessProfile profile;
+
+  const _DashboardStats({
+    required this.invoices,
+    required this.previousInvoices,
+    required this.selectedFilter,
+    required this.profile,
+  });
+
+  @override
+  Widget build(final BuildContext context) {
+    final stats = DashboardActions.calculateStats(invoices);
+    final totalRevenue = stats['revenue'] as double;
+    final totalCGST = stats['cgst'] as double;
+    final totalSGST = stats['sgst'] as double;
+    final totalIGST = stats['igst'] as double;
+    final totalGst = totalCGST + totalSGST + totalIGST;
+
+    final prevStats = DashboardActions.calculateStats(previousInvoices);
+    final prevRevenue = prevStats['revenue'] as double;
+    final prevGst =
+        (prevStats['cgst'] as double) +
+        (prevStats['sgst'] as double) +
+        (prevStats['igst'] as double);
+
+    final revenueTrend = prevRevenue > 0
+        ? ((totalRevenue - prevRevenue) / prevRevenue) * 100
+        : 0.0;
+    final countTrend = previousInvoices.isNotEmpty
+        ? ((invoices.length - previousInvoices.length) /
+                  previousInvoices.length) *
+              100
+        : 0.0;
+    final gstTrend = prevGst > 0 ? ((totalGst - prevGst) / prevGst) * 100 : 0.0;
+
+    final currency = NumberFormat.simpleCurrency(
+      locale: 'en_IN',
+      decimalDigits: 0,
+    );
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: DashboardStatCard(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const InvoicesListScreen()),
+                ),
+                title: "Revenue ($selectedFilter)",
+                value: currency.format(totalRevenue),
+                icon: Icons.currency_rupee,
+                color: Colors.green,
+                trend: revenueTrend,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: DashboardStatCard(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const InvoicesListScreen()),
+                ),
+                title: "Invoices",
+                value: "${invoices.length}",
+                icon: Icons.description,
+                color: Colors.blue,
+                trend: countTrend,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 32),
+        DashboardStatCard(
+          onTap: () => showDialog(
+            context: context,
+            builder: (final context) => GstBreakdownDialog(
+              cgst: totalCGST,
+              sgst: totalSGST,
+              igst: totalIGST,
+              currencySymbol: profile.currencySymbol,
+            ),
+          ),
+          title: "GST Output ($selectedFilter)",
+          value: currency.format(totalGst),
+          icon: Icons.percent,
+          color: Colors.purple,
+          trend: gstTrend,
+        ),
+        if (totalGst > 0) ...[
+          const SizedBox(height: 32),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "GST Breakdown ($selectedFilter)",
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  GstPieChart(
+                    cgst: totalCGST,
+                    sgst: totalSGST,
+                    igst: totalIGST,
+                    currencySymbol: profile.currencySymbol,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _DashboardQuickActions extends ConsumerWidget {
+  final List<Invoice> invoices;
+  final String selectedFilter;
+
+  const _DashboardQuickActions({
+    required this.invoices,
+    required this.selectedFilter,
+  });
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         Text(
-          NumberFormat.currency(
-            symbol: symbol,
-            decimalDigits: 2,
-          ).format(amount),
-          style: style,
+          "Quick Actions",
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            DashboardActionButton(
+              label: "New Invoice",
+              icon: Icons.add,
+              bgColor: theme.colorScheme.primaryContainer,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const InvoiceFormScreen()),
+              ).then((_) => ref.refresh(invoiceListProvider)),
+            ),
+            const SizedBox(width: 16),
+            DashboardActionButton(
+              label: "Payments",
+              icon: Icons.payment,
+              bgColor: Colors.green.shade100,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const PaymentHistoryScreen()),
+              ),
+            ),
+            const SizedBox(width: 16),
+            DashboardActionButton(
+              label: "Clients",
+              icon: Icons.contacts,
+              bgColor: Colors.blue.shade100,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const MaterialClientsScreen(),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            DashboardActionButton(
+              label: "Audit",
+              icon: Icons.warning_amber,
+              bgColor: Colors.orange.shade100,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AuditReportScreen()),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            DashboardActionButton(
+              label: "Recurring",
+              icon: Icons.autorenew,
+              bgColor: Colors.purple.shade100,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const RecurringInvoicesScreen(),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            DashboardActionButton(
+              label: "Export GSTR-1",
+              icon: Icons.table_chart,
+              bgColor: theme.colorScheme.tertiaryContainer,
+              onTap: () async => _exportGstr1(context, invoices),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'Paid':
-        return Colors.green;
-      case 'Partial':
-        return Colors.orange;
-      case 'Overdue':
-        return Colors.red;
-      default:
-        return Colors.grey;
+  Future<void> _exportGstr1(
+    final BuildContext context,
+    final List<Invoice> filteredInvoices,
+  ) async {
+    try {
+      if (filteredInvoices.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No invoices in selected period")),
+        );
+        return;
+      }
+
+      final csvData = GstrService().generateGstr1Csv(filteredInvoices);
+      String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save GSTR-1 CSV',
+        fileName: 'GSTR1_${selectedFilter.replaceAll(" ", "_")}.csv',
+        allowedExtensions: ['csv'],
+        type: FileType.custom,
+      );
+
+      if (outputFile != null) {
+        if (!outputFile.toLowerCase().endsWith('.csv')) {
+          outputFile = '$outputFile.csv';
+        }
+        await File(outputFile).writeAsString(csvData);
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Exported to $outputFile")));
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
+}
 
-  Widget _buildStatusBadge(String status) {
-    final color = _getStatusColor(status);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
-      ),
-      child: Text(
-        status,
-        style: TextStyle(
-          color: color,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
+class _DashboardRecentActivity extends ConsumerWidget {
+  final List<Invoice> invoices;
+
+  const _DashboardRecentActivity({required this.invoices});
+
+  @override
+  Widget build(final BuildContext context, final WidgetRef ref) {
+    final currency = NumberFormat.simpleCurrency(
+      locale: 'en_IN',
+      decimalDigits: 0,
+    );
+
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Recent Invoices",
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            TextButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const InvoicesListScreen()),
+              ),
+              child: const Text("View All"),
+            ),
+          ],
         ),
-      ),
+        const SizedBox(height: 8),
+        if (invoices.isEmpty)
+          EmptyStateIllustration(
+            title: "No invoices yet",
+            message: "Create your first invoice to get started",
+            actionLabel: "Create Invoice",
+            onAction: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const InvoiceFormScreen()),
+            ).then((_) => ref.refresh(invoiceListProvider)),
+          )
+        else
+          ...invoices
+              .take(5)
+              .map(
+                (final inv) => Card(
+                  child: ListTile(
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => InvoiceDetailScreen(invoice: inv),
+                        ),
+                      );
+                      ref.invalidate(invoiceListProvider);
+                    },
+                    leading: CircleAvatar(
+                      backgroundColor: getStatusColor(
+                        inv.paymentStatus,
+                      ).withValues(alpha: 0.2),
+                      child: Text(
+                        inv.receiver.name.isNotEmpty
+                            ? inv.receiver.name[0].toUpperCase()
+                            : '?',
+                        style: TextStyle(
+                          color: getStatusColor(inv.paymentStatus),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    title: Row(
+                      children: [
+                        Text(inv.receiver.name),
+                        const SizedBox(width: 8),
+                        DashboardStatusBadge(status: inv.paymentStatus),
+                      ],
+                    ),
+                    subtitle: Text(
+                      "${inv.invoiceNo} • ${DateFormat('dd MMM').format(inv.invoiceDate)}",
+                    ),
+                    trailing: Text(
+                      currency.format(inv.grandTotal),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ),
+      ],
     );
   }
 }

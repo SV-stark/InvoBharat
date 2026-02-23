@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../providers/invoice_repository_provider.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
 // import '../models/invoice.dart'; // Removed unused import
-import 'invoice_detail_screen.dart';
-import 'invoice_form.dart';
+import 'package:invobharat/screens/invoice_detail_screen.dart';
+import 'package:invobharat/screens/invoice_form.dart';
 
 class InvoicesListScreen extends ConsumerStatefulWidget {
   const InvoicesListScreen({super.key});
@@ -25,7 +25,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final invoiceListAsync = ref.watch(invoiceListProvider);
     final theme = Theme.of(context);
 
@@ -53,8 +53,8 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none),
                         contentPadding: const EdgeInsets.symmetric(
-                            vertical: 0, horizontal: 16)),
-                    onChanged: (val) => setState(() {}),
+                            horizontal: 16)),
+                    onChanged: (final val) => setState(() {}),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -77,9 +77,9 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
         child: const Icon(Icons.add),
       ),
       body: invoiceListAsync.when(
-        data: (invoices) {
+        data: (final invoices) {
           // Filter Logic
-          final filtered = invoices.where((inv) {
+          final filtered = invoices.where((final inv) {
             // Search
             final query = _searchCtrl.text.toLowerCase();
             final matchesSearch = query.isEmpty ||
@@ -132,15 +132,15 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: filtered.length,
-            itemBuilder: (context, index) {
+            itemBuilder: (final context, final index) {
               final invoice = filtered[index];
               return Dismissible(
                 key: Key(invoice.id!),
                 direction: DismissDirection.endToStart,
-                confirmDismiss: (direction) async {
+                confirmDismiss: (final direction) async {
                   return await showDialog(
                     context: context,
-                    builder: (ctx) => AlertDialog(
+                    builder: (final ctx) => AlertDialog(
                       title: const Text("Delete Invoice?"),
                       content: Text(
                           "Are you sure you want to delete ${invoice.invoiceNo}?"),
@@ -156,7 +156,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                     ),
                   );
                 },
-                onDismissed: (direction) async {
+                onDismissed: (final direction) async {
                   await ref
                       .read(invoiceRepositoryProvider)
                       .deleteInvoice(invoice.id!);
@@ -231,7 +231,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text("Error: $err")),
+        error: (final err, final stack) => Center(child: Text("Error: $err")),
       ),
     );
   }
@@ -239,8 +239,8 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
   void _showFilterDialog() {
     showDialog(
         context: context,
-        builder: (context) {
-          return StatefulBuilder(builder: (context, setDialogState) {
+        builder: (final context) {
+          return StatefulBuilder(builder: (final context, final setDialogState) {
             return AlertDialog(
               title: const Text("Filters"),
               content: Column(
@@ -259,7 +259,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                         DropdownMenuItem(
                             value: 'Archived', child: Text("Archived")),
                       ],
-                      onChanged: (val) {
+                      onChanged: (final val) {
                         setDialogState(() => _filter = val!);
                       }),
                   const SizedBox(height: 16),
@@ -303,7 +303,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
         });
   }
 
-  Widget _buildStatusBadge(String status) {
+  Widget _buildStatusBadge(final String status) {
     Color color = Colors.grey;
     if (status == 'Paid') color = Colors.green;
     if (status == 'Partial') color = Colors.orange;

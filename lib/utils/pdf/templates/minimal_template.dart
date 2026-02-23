@@ -3,12 +3,12 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
-import '../../../models/invoice.dart';
-import '../../../models/business_profile.dart';
-import '../../number_to_words.dart';
-import '../pdf_helpers.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/models/business_profile.dart';
+import 'package:invobharat/utils/number_to_words.dart';
+import 'package:invobharat/utils/pdf/pdf_helpers.dart';
 
-import 'base_template.dart';
+import 'package:invobharat/utils/pdf/templates/base_template.dart';
 
 // ... imports
 
@@ -18,8 +18,8 @@ class MinimalTemplate extends BasePdfTemplate {
 
   @override
   Future<Uint8List> generate(
-      Invoice invoice, BusinessProfile profile, pw.Font font, pw.Font fontBold,
-      {String? title}) async {
+      final Invoice invoice, final BusinessProfile profile, final pw.Font font, final pw.Font fontBold,
+      {final String? title}) async {
     final pdf = pw.Document(
         theme: pw.ThemeData.withFont(
       base: font,
@@ -42,7 +42,7 @@ class MinimalTemplate extends BasePdfTemplate {
     pdf.addPage(pw.Page(
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.all(32),
-      build: (context) {
+      build: (final context) {
         return pw
             .Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
           // Header
@@ -248,8 +248,7 @@ class MinimalTemplate extends BasePdfTemplate {
                             pw.Image(
                                 pw.MemoryImage(File(profile.signaturePath!)
                                     .readAsBytesSync()),
-                                height: 40,
-                                fit: pw.BoxFit.contain),
+                                height: 40),
                         ])),
                     pw.Text("Authorized Signatory",
                         style: const pw.TextStyle(fontSize: 8)),

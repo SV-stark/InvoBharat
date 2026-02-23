@@ -2,11 +2,11 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 
-import '../../models/invoice.dart';
-import '../../utils/constants.dart';
-import '../../utils/validators.dart';
-import '../../mixins/estimate_form_mixin.dart';
-import '../../widgets/adaptive_widgets.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/utils/constants.dart';
+import 'package:invobharat/utils/validators.dart';
+import 'package:invobharat/mixins/estimate_form_mixin.dart';
+import 'package:invobharat/widgets/adaptive_widgets.dart';
 
 class FluentEstimateForm extends ConsumerStatefulWidget {
   final String? estimateId;
@@ -52,7 +52,7 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        displayInfoBar(context, builder: (context, close) {
+        displayInfoBar(context, builder: (final context, final close) {
           return InfoBar(
             title: const Text("Error"),
             content: Text(e.toString()),
@@ -68,7 +68,7 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
     try {
       final invoiceNo = await convertToInvoice();
       if (mounted) {
-        displayInfoBar(context, builder: (context, close) {
+        displayInfoBar(context, builder: (final context, final close) {
           return InfoBar(
             title: const Text("Success"),
             content: Text('Converted to Invoice $invoiceNo'),
@@ -80,7 +80,7 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
       }
     } catch (e) {
       if (mounted) {
-        displayInfoBar(context, builder: (context, close) {
+        displayInfoBar(context, builder: (final context, final close) {
           return InfoBar(
             title: const Text("Error"),
             content: Text(e.toString()),
@@ -93,7 +93,7 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.escape): () {
@@ -149,7 +149,7 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                         label: "Date",
                         child: DatePicker(
                           selected: date,
-                          onChanged: (d) => setState(() => date = d),
+                          onChanged: (final d) => setState(() => date = d),
                         ),
                       ),
                     )
@@ -182,7 +182,7 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                         child: AutoSuggestBox<String>(
                           controller: receiverStateCtrl,
                           items: IndianStates.states
-                              .map((e) => AutoSuggestBoxItem<String>(
+                              .map((final e) => AutoSuggestBoxItem<String>(
                                   value: e, label: e))
                               .toList(),
                         ),
@@ -214,7 +214,7 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                     padding: EdgeInsets.all(8.0),
                     child: Text("No items added"),
                   ),
-                ...items.asMap().entries.map((entry) {
+                ...items.asMap().entries.map((final entry) {
                   final index = entry.key;
                   final item = entry.value;
                   return Padding(
@@ -242,7 +242,7 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                          "Total: ₹${items.fold(0.0, (sum, i) => sum + i.totalAmount).toStringAsFixed(2)}",
+                          "Total: ₹${items.fold(0.0, (final sum, final i) => sum + i.totalAmount).toStringAsFixed(2)}",
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold)),
                     ],
@@ -273,24 +273,24 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
   void _addItem() async {
     final newItem = await showDialog<InvoiceItem>(
       context: context,
-      builder: (context) => const _FluentItemEditDialog(),
+      builder: (final context) => const _FluentItemEditDialog(),
     );
     if (newItem != null) {
       setState(() => items.add(newItem));
     }
   }
 
-  void _editItem(int index) async {
+  void _editItem(final int index) async {
     final newItem = await showDialog<InvoiceItem>(
       context: context,
-      builder: (context) => _FluentItemEditDialog(item: items[index]),
+      builder: (final context) => _FluentItemEditDialog(item: items[index]),
     );
     if (newItem != null) {
       setState(() => items[index] = newItem);
     }
   }
 
-  void _removeItem(int index) {
+  void _removeItem(final int index) {
     setState(() => items.removeAt(index));
   }
 }
@@ -333,7 +333,7 @@ class _FluentItemEditDialogState extends State<_FluentItemEditDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return ContentDialog(
       title: const Text("Edit Item"),
       content: Column(

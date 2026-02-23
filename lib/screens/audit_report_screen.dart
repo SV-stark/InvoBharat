@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/invoice_repository_provider.dart';
-import '../services/audit_service.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:invobharat/services/audit_service.dart';
 
 class AuditReportScreen extends ConsumerWidget {
   const AuditReportScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final invoiceListAsync = ref.watch(invoiceListProvider);
 
     return Scaffold(
@@ -16,8 +16,8 @@ class AuditReportScreen extends ConsumerWidget {
       ),
       body: invoiceListAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text("Error: $err")),
-        data: (invoices) {
+        error: (final err, final stack) => Center(child: Text("Error: $err")),
+        data: (final invoices) {
           final missingSequences = AuditService.detectGaps(invoices);
 
           if (missingSequences.isEmpty) {
@@ -37,8 +37,8 @@ class AuditReportScreen extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: missingSequences.length,
-            separatorBuilder: (_, __) => const Divider(),
-            itemBuilder: (context, index) {
+            separatorBuilder: (_, final _) => const Divider(),
+            itemBuilder: (final context, final index) {
               final missing = missingSequences[index];
               return ListTile(
                 leading: const Icon(Icons.warning, color: Colors.orange),

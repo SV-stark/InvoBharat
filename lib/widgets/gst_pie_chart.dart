@@ -17,7 +17,7 @@ class GstPieChart extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final totalGst = cgst + sgst + igst;
     
     if (totalGst == 0) {
@@ -89,7 +89,7 @@ class GstPieChart extends StatelessWidget {
               centerSpaceRadius: 40,
               sections: sections,
               pieTouchData: PieTouchData(
-                touchCallback: (FlTouchEvent event, pieTouchResponse) {},
+                touchCallback: (final FlTouchEvent event, final pieTouchResponse) {},
               ),
             ),
           ),
@@ -120,7 +120,7 @@ class GstPieChart extends StatelessWidget {
     );
   }
 
-  Widget _buildLegendItem(String label, Color color, double value) {
+  Widget _buildLegendItem(final String label, final Color color, final double value) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

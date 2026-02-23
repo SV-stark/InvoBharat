@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
-import 'invoice.dart';
+import 'package:invobharat/models/invoice.dart';
 
 part 'estimate.freezed.dart';
 part 'estimate.g.dart';
@@ -10,23 +10,23 @@ abstract class Estimate with _$Estimate {
   const Estimate._();
 
   const factory Estimate({
-    required String id,
-    @Default('') String estimateNo,
-    required DateTime date,
-    DateTime? expiryDate,
-    required Supplier supplier,
-    required Receiver receiver,
-    @Default([]) List<InvoiceItem> items,
-    @Default('') String notes,
-    @Default('') String terms,
+    required final String id,
+    @Default('') final String estimateNo,
+    required final DateTime date,
+    final DateTime? expiryDate,
+    required final Supplier supplier,
+    required final Receiver receiver,
+    @Default([]) final List<InvoiceItem> items,
+    @Default('') final String notes,
+    @Default('') final String terms,
     @Default('Draft')
-    String? status, // Draft, Sent, Accepted, Rejected, Converted
+    final String? status, // Draft, Sent, Accepted, Rejected, Converted
   }) = _Estimate;
 
   factory Estimate.create({
-    required Supplier supplier,
-    required Receiver receiver,
-    DateTime? date,
+    required final Supplier supplier,
+    required final Receiver receiver,
+    final DateTime? date,
   }) {
     return Estimate(
       id: const Uuid().v4(),
@@ -37,10 +37,10 @@ abstract class Estimate with _$Estimate {
   }
 
   double get totalTaxableValue =>
-      items.fold(0, (sum, item) => sum + item.netAmount);
+      items.fold(0, (final sum, final item) => sum + item.netAmount);
   double get totalAmount =>
-      items.fold(0, (sum, item) => sum + item.totalAmount);
+      items.fold(0, (final sum, final item) => sum + item.totalAmount);
 
-  factory Estimate.fromJson(Map<String, dynamic> json) =>
+  factory Estimate.fromJson(final Map<String, dynamic> json) =>
       _$EstimateFromJson(json);
 }

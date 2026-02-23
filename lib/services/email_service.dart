@@ -5,7 +5,7 @@ import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../models/invoice.dart';
+import 'package:invobharat/models/invoice.dart';
 
 class EmailSettings {
   final String smtpHost;
@@ -35,7 +35,7 @@ class EmailService {
   static const _keySecure = 'smtp_is_secure';
 
   /// Saves SMTP settings. Password is stored securely.
-  static Future<void> saveSettings(EmailSettings settings) async {
+  static Future<void> saveSettings(final EmailSettings settings) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyHost, settings.smtpHost);
     await prefs.setInt(_keyPort, settings.smtpPort);
@@ -78,12 +78,12 @@ class EmailService {
   }
 
   static Future<void> sendInvoiceEmail({
-    required EmailSettings settings,
-    required Invoice invoice,
-    required File pdfFile,
-    required String subject,
-    required String body,
-    required String recipientEmail,
+    required final EmailSettings settings,
+    required final Invoice invoice,
+    required final File pdfFile,
+    required final String subject,
+    required final String body,
+    required final String recipientEmail,
   }) async {
     final smtpServer = SmtpServer(
       settings.smtpHost,
@@ -92,7 +92,6 @@ class EmailService {
       password: settings.password,
       ssl: settings.isSecure && settings.smtpPort == 465, // Implicit SSL
       allowInsecure: !settings.isSecure, // Explicit TLS usually startls
-      ignoreBadCertificate: false,
     );
 
     final message = Message()

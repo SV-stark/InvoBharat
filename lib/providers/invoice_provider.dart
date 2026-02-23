@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import '../models/invoice.dart';
-import '../utils/gst_helper.dart'; // New Import
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/utils/gst_helper.dart'; // New Import
 
-import '../providers/business_profile_provider.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
 
 final invoiceProvider =
     NotifierProvider<InvoiceNotifier, Invoice>(InvoiceNotifier.new);
@@ -14,13 +14,10 @@ class InvoiceNotifier extends Notifier<Invoice> {
     final profile = ref.watch(businessProfileProvider);
     // Initialize with defaults from profile
     return Invoice(
-      id: null, // New invoice
-      style: 'Modern',
       supplier: Supplier(
         name: profile.companyName,
         address: profile.address,
         gstin: profile.gstin,
-        pan: "", // Optional: Add to profile model if needed
         email: profile.email,
 
         phone: profile.phone,
@@ -33,10 +30,7 @@ class InvoiceNotifier extends Notifier<Invoice> {
       items: [
         // One empty item to start
         const InvoiceItem(
-            id: null,
-            description: "",
-            amount: 0,
-            gstRate: 18), // We can't generate ID here because it's const
+            ), // We can't generate ID here because it's const
         // We'll update it in init or make it non-const?
         // Actually, we can just make it not const in the provider.
       ],
@@ -48,20 +42,17 @@ class InvoiceNotifier extends Notifier<Invoice> {
     );
   }
 
-  void setInvoice(Invoice invoice) {
+  void setInvoice(final Invoice invoice) {
     state = invoice;
   }
 
   void reset() {
     final profile = ref.read(businessProfileProvider);
     state = Invoice(
-      id: null,
-      style: 'Modern',
       supplier: Supplier(
         name: profile.companyName,
         address: profile.address,
         gstin: profile.gstin,
-        pan: "",
         email: profile.email,
         phone: profile.phone,
         state: profile.state,
@@ -72,7 +63,7 @@ class InvoiceNotifier extends Notifier<Invoice> {
           "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}",
       items: [
         InvoiceItem(
-            id: const Uuid().v4(), description: "", amount: 0, gstRate: 18),
+            id: const Uuid().v4()),
       ],
       bankName: profile.bankName,
       accountNo: profile.accountNumber,
@@ -81,63 +72,63 @@ class InvoiceNotifier extends Notifier<Invoice> {
     );
   }
 
-  void updateDate(DateTime date) {
+  void updateDate(final DateTime date) {
     state = state.copyWith(invoiceDate: date);
   }
 
-  void updatePlaceOfSupply(String val) {
+  void updatePlaceOfSupply(final String val) {
     state = state.copyWith(placeOfSupply: val);
   }
 
-  void updateReverseCharge(String val) {
+  void updateReverseCharge(final String val) {
     state = state.copyWith(reverseCharge: val);
   }
 
-  void updateDeliveryAddress(String val) {
+  void updateDeliveryAddress(final String val) {
     state = state.copyWith(deliveryAddress: val);
   }
 
-  void updateDueDate(DateTime? date) {
+  void updateDueDate(final DateTime? date) {
     state = state.copyWith(dueDate: date);
   }
 
-  void updatePaymentTerms(String val) {
+  void updatePaymentTerms(final String val) {
     state = state.copyWith(paymentTerms: val);
   }
 
-  void updateTermComments(String val) {
+  void updateTermComments(final String val) {
     state = state.copyWith(comments: val);
   }
 
-  void updateStyle(String val) {
+  void updateStyle(final String val) {
     state = state.copyWith(style: val);
   }
 
-  void updateInvoiceNo(String val) {
+  void updateInvoiceNo(final String val) {
     state = state.copyWith(invoiceNo: val);
   }
 
-  void updateCurrency(String val) {
+  void updateCurrency(final String val) {
     state = state.copyWith(currency: val);
   }
 
-  void updateDiscountAmount(String val) {
+  void updateDiscountAmount(final String val) {
     state = state.copyWith(discountAmount: double.tryParse(val) ?? 0.0);
   }
 
-  void updateSupplierName(String val) {
+  void updateSupplierName(final String val) {
     state = state.copyWith(supplier: state.supplier.copyWith(name: val));
   }
 
-  void updateSupplierGstin(String val) {
+  void updateSupplierGstin(final String val) {
     state = state.copyWith(supplier: state.supplier.copyWith(gstin: val));
   }
 
-  void updateReceiverName(String val) {
+  void updateReceiverName(final String val) {
     state = state.copyWith(receiver: state.receiver.copyWith(name: val));
   }
 
-  void updateReceiverGstin(String val) {
+  void updateReceiverGstin(final String val) {
     state = state.copyWith(receiver: state.receiver.copyWith(gstin: val));
 
     // Auto-populate state
@@ -152,75 +143,75 @@ class InvoiceNotifier extends Notifier<Invoice> {
     }
   }
 
-  void updateReceiverState(String val) {
+  void updateReceiverState(final String val) {
     state = state.copyWith(receiver: state.receiver.copyWith(state: val));
   }
 
-  void updateReceiverAddress(String val) {
+  void updateReceiverAddress(final String val) {
     state = state.copyWith(receiver: state.receiver.copyWith(address: val));
   }
 
-  void updateReceiverStateCode(String val) {
+  void updateReceiverStateCode(final String val) {
     state = state.copyWith(receiver: state.receiver.copyWith(stateCode: val));
   }
 
-  void updateReceiverEmail(String val) {
+  void updateReceiverEmail(final String val) {
     state = state.copyWith(receiver: state.receiver.copyWith(email: val));
   }
 
-  void updateItemDescription(int index, String val) {
+  void updateItemDescription(final int index, final String val) {
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = newItems[index].copyWith(description: val);
     state = state.copyWith(items: newItems);
   }
 
-  void updateItemAmount(int index, String val) {
+  void updateItemAmount(final int index, final String val) {
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] =
         newItems[index].copyWith(amount: double.tryParse(val) ?? 0.0);
     state = state.copyWith(items: newItems);
   }
 
-  void updateItemGstRate(int index, String val) {
+  void updateItemGstRate(final int index, final String val) {
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] =
         newItems[index].copyWith(gstRate: double.tryParse(val) ?? 0.0);
     state = state.copyWith(items: newItems);
   }
 
-  void updateItemCodeType(int index, String val) {
+  void updateItemCodeType(final int index, final String val) {
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = newItems[index].copyWith(codeType: val);
     state = state.copyWith(items: newItems);
   }
 
-  void updateItemSac(int index, String val) {
+  void updateItemSac(final int index, final String val) {
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = newItems[index].copyWith(sacCode: val);
     state = state.copyWith(items: newItems);
   }
 
-  void updateItemYear(int index, String val) {
+  void updateItemYear(final int index, final String val) {
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = newItems[index].copyWith(year: val);
     state = state.copyWith(items: newItems);
   }
 
-  void updateItemDiscount(int index, String val) {
+  void updateItemDiscount(final int index, final String val) {
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] =
         newItems[index].copyWith(discount: double.tryParse(val) ?? 0.0);
     state = state.copyWith(items: newItems);
   }
 
-  void updateItemQuantity(int index, String val) {
+  void updateItemQuantity(final int index, final String val) {
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] =
         newItems[index].copyWith(quantity: double.tryParse(val) ?? 1.0);
     state = state.copyWith(items: newItems);
   }
 
-  void updateItemUnit(int index, String val) {
+  void updateItemUnit(final int index, final String val) {
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = newItems[index].copyWith(unit: val);
     state = state.copyWith(items: newItems);
@@ -230,23 +221,23 @@ class InvoiceNotifier extends Notifier<Invoice> {
     state = state.copyWith(items: [
       ...state.items,
       InvoiceItem(
-          id: const Uuid().v4(), description: "", amount: 0, gstRate: 18)
+          id: const Uuid().v4())
     ]);
   }
 
-  void updateInvoiceType(InvoiceType type) {
+  void updateInvoiceType(final InvoiceType type) {
     state = state.copyWith(type: type);
   }
 
-  void updateOriginalInvoiceNumber(String val) {
+  void updateOriginalInvoiceNumber(final String val) {
     state = state.copyWith(originalInvoiceNumber: val);
   }
 
-  void updateOriginalInvoiceDate(DateTime? date) {
+  void updateOriginalInvoiceDate(final DateTime? date) {
     state = state.copyWith(originalInvoiceDate: date);
   }
 
-  void removeItem(int index) {
+  void removeItem(final int index) {
     if (state.items.length > 1) {
       final newItems = List<InvoiceItem>.from(state.items);
       newItems.removeAt(index);
@@ -254,7 +245,7 @@ class InvoiceNotifier extends Notifier<Invoice> {
     }
   }
 
-  void replaceItem(int index, InvoiceItem item) {
+  void replaceItem(final int index, final InvoiceItem item) {
     if (index >= 0 && index < state.items.length) {
       final newItems = List<InvoiceItem>.from(state.items);
       newItems[index] = item;
@@ -262,15 +253,15 @@ class InvoiceNotifier extends Notifier<Invoice> {
     }
   }
 
-  void addInvoiceItem(InvoiceItem item) {
+  void addInvoiceItem(final InvoiceItem item) {
     state = state.copyWith(items: [...state.items, item]);
   }
 
-  void batchUpdate(Invoice Function(Invoice) updater) {
+  void batchUpdate(final Invoice Function(Invoice) updater) {
     state = updater(state);
   }
 
-  void updateItemAt(int index, InvoiceItem Function(InvoiceItem) updater) {
+  void updateItemAt(final int index, final InvoiceItem Function(InvoiceItem) updater) {
     if (index < 0 || index >= state.items.length) return;
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = updater(newItems[index]);

@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/client.dart';
-import '../providers/client_provider.dart';
-import '../utils/validators.dart';
+import 'package:invobharat/models/client.dart';
+import 'package:invobharat/providers/client_provider.dart';
+import 'package:invobharat/utils/validators.dart';
 
 /// Mixin to handle form logic for creating/editing Clients.
 ///
@@ -34,7 +34,7 @@ mixin ClientFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   late TextEditingController notesController;
   late TextEditingController stateController;
 
-  void initClientControllers(Client? client) {
+  void initClientControllers(final Client? client) {
     nameController = TextEditingController(text: client?.name ?? '');
     gstinController = TextEditingController(text: client?.gstin ?? '');
     addressController = TextEditingController(text: client?.address ?? '');
@@ -60,8 +60,8 @@ mixin ClientFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   /// Validates the form and saves the client.
   /// Returns [true] if successful, [false] if validation failed.
   Future<bool> saveClient({
-    required Client? originalClient,
-    required WidgetRef ref, // Passed explicitly or use `ref` from ConsumerState
+    required final Client? originalClient,
+    required final WidgetRef ref, // Passed explicitly or use `ref` from ConsumerState
   }) async {
     if (!formKey.currentState!.validate()) {
       return false;
@@ -88,13 +88,13 @@ mixin ClientFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     return true;
   }
 
-  String? validateName(String? value) {
+  String? validateName(final String? value) {
     if (value == null || value.isEmpty) {
       return 'Name is required';
     }
     return null;
   }
 
-  String? validateEmail(String? value) => Validators.email(value);
-  String? validatePhone(String? value) => Validators.phone(value);
+  String? validateEmail(final String? value) => Validators.email(value);
+  String? validatePhone(final String? value) => Validators.phone(value);
 }

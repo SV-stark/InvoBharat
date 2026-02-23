@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../services/update_service.dart';
+import 'package:invobharat/services/update_service.dart';
 
 class AboutTab extends StatelessWidget {
   const AboutTab({super.key});
@@ -13,7 +13,7 @@ class AboutTab extends StatelessWidget {
     }
   }
 
-  Future<void> _checkForUpdates(BuildContext context) async {
+  Future<void> _checkForUpdates(final BuildContext context) async {
     // Show loading
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Checking for updates...')),
@@ -31,7 +31,7 @@ class AboutTab extends StatelessWidget {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (final context) => AlertDialog(
         title: const Text('Updates Available'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -77,7 +77,7 @@ class AboutTab extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

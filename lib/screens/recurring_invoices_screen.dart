@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../providers/recurring_provider.dart';
+import 'package:invobharat/providers/recurring_provider.dart';
 
 class RecurringInvoicesScreen extends ConsumerWidget {
   const RecurringInvoicesScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final recurringListAsync = ref.watch(recurringListProvider);
 
     return Scaffold(
@@ -24,7 +24,7 @@ class RecurringInvoicesScreen extends ConsumerWidget {
         ],
       ),
       body: recurringListAsync.when(
-        data: (profiles) {
+        data: (final profiles) {
           if (profiles.isEmpty) {
             return const Center(
               child: Column(
@@ -42,7 +42,7 @@ class RecurringInvoicesScreen extends ConsumerWidget {
           }
           return ListView.builder(
             itemCount: profiles.length,
-            itemBuilder: (context, index) {
+            itemBuilder: (final context, final index) {
               final profile = profiles[index];
               return Dismissible(
                 key: Key(profile.id),
@@ -55,7 +55,7 @@ class RecurringInvoicesScreen extends ConsumerWidget {
                 confirmDismiss: (_) async {
                   return await showDialog(
                       context: context,
-                      builder: (ctx) => AlertDialog(
+                      builder: (final ctx) => AlertDialog(
                             title: const Text("Delete Profile?"),
                             content: const Text(
                                 "This will stop future invoice generation."),
@@ -90,7 +90,7 @@ class RecurringInvoicesScreen extends ConsumerWidget {
                         "${profile.interval.name.toUpperCase()} • Next: ${DateFormat('dd MMM').format(profile.nextRunDate)} • ₹${profile.baseInvoice.grandTotal}"),
                     trailing: Switch(
                         value: profile.isActive,
-                        onChanged: (val) {
+                        onChanged: (final val) {
                           ref
                               .read(recurringListProvider.notifier)
                               .updateProfile(profile.copyWith(isActive: val));
@@ -102,7 +102,7 @@ class RecurringInvoicesScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text("Error: $err")),
+        error: (final err, final stack) => Center(child: Text("Error: $err")),
       ),
     );
   }

@@ -16,7 +16,7 @@ class Release {
     required this.publishedAt,
   });
 
-  factory Release.fromJson(Map<String, dynamic> json) {
+  factory Release.fromJson(final Map<String, dynamic> json) {
     return Release(
       tagName: json['tag_name'] ?? '',
       htmlUrl: json['html_url'] ?? '',
@@ -51,19 +51,19 @@ class UpdateService {
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = response.data;
         final releases =
-            jsonList.map((json) => Release.fromJson(json)).toList();
+            jsonList.map((final json) => Release.fromJson(json)).toList();
 
         Release? stableRelease;
         Release? betaRelease;
 
         try {
-          stableRelease = releases.firstWhere((r) => !r.prerelease);
+          stableRelease = releases.firstWhere((final r) => !r.prerelease);
         } catch (e) {
           // No stable release found
         }
 
         try {
-          betaRelease = releases.firstWhere((r) => r.prerelease);
+          betaRelease = releases.firstWhere((final r) => r.prerelease);
         } catch (e) {
           // No prerelease found
         }

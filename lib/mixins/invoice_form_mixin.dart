@@ -2,14 +2,14 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
 
-import '../models/invoice.dart';
-import '../models/business_profile.dart';
-import '../models/client.dart';
-import '../services/invoice_actions.dart';
-import '../utils/pdf_generator.dart';
-import '../providers/invoice_provider.dart';
-import '../providers/estimate_provider.dart';
-import '../providers/invoice_repository_provider.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/models/business_profile.dart';
+import 'package:invobharat/models/client.dart';
+import 'package:invobharat/services/invoice_actions.dart';
+import 'package:invobharat/utils/pdf_generator.dart';
+import 'package:invobharat/providers/invoice_provider.dart';
+import 'package:invobharat/providers/estimate_provider.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
 
 /// Mixin to handle form logic for creating/editing Invoices.
 /// Standardizes controller management and common actions.
@@ -30,7 +30,7 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   late TextEditingController paymentTermsCtrl;
   late TextEditingController originalInvoiceNoCtrl;
 
-  void initInvoiceControllers([Invoice? invoice]) {
+  void initInvoiceControllers([final Invoice? invoice]) {
     invoiceNoCtrl = TextEditingController(text: invoice?.invoiceNo);
     posCtrl = TextEditingController(text: invoice?.placeOfSupply);
     receiverNameCtrl = TextEditingController(text: invoice?.receiver.name);
@@ -61,7 +61,7 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
 
   /// Syncs controllers with provider state.
   /// call this inside a ref.listen callback or when setting initial data.
-  void syncInvoiceControllers(Invoice invoice) {
+  void syncInvoiceControllers(final Invoice invoice) {
     if (invoiceNoCtrl.text != invoice.invoiceNo) {
       invoiceNoCtrl.text = invoice.invoiceNo;
     }
@@ -95,7 +95,7 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   }
 
   /// Updates provider and controllers when a client is selected
-  void onClientSelected(Client client) {
+  void onClientSelected(final Client client) {
     final notifier = ref.read(invoiceProvider.notifier);
     notifier.updateReceiverName(client.name);
     notifier.updateReceiverGstin(client.gstin);
@@ -112,9 +112,9 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   }
 
   Future<bool> saveInvoice({
-    required Invoice invoice,
-    String? estimateIdToMarkConverted,
-    required BuildContext
+    required final Invoice invoice,
+    final String? estimateIdToMarkConverted,
+    required final BuildContext
         context, // required for notifications if specific UI logic needed?
     // Actually mixin shouldn't depend on UI widgets like ShowDialog if possible,
     // but here we return status or throw error?
@@ -136,7 +136,7 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     }
   }
 
-  Future<void> printInvoice(Invoice invoice, BusinessProfile profile) async {
+  Future<void> printInvoice(final Invoice invoice, final BusinessProfile profile) async {
     final pdfBytes = await generateInvoicePdf(invoice, profile);
     await Printing.layoutPdf(onLayout: (_) => pdfBytes);
   }
@@ -167,7 +167,7 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   }
 
   /// Calculates due date based on payment terms
-  DateTime? calculateDueDate(DateTime invoiceDate, String paymentTerms) {
+  DateTime? calculateDueDate(final DateTime invoiceDate, final String paymentTerms) {
     if (paymentTerms.isEmpty) {
       return invoiceDate.add(const Duration(days: 30));
     }

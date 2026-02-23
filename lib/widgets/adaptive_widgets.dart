@@ -15,7 +15,7 @@ class AdaptiveButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     if (Platform.isWindows || Platform.isLinux) {
       return isFilled
           ? fluent.FilledButton(onPressed: onPressed, child: child)
@@ -52,7 +52,7 @@ class AppTextInput extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     if (Platform.isWindows || Platform.isLinux) {
       return fluent.InfoLabel(
         label: label,
@@ -106,16 +106,16 @@ class AppDialog extends StatelessWidget {
     this.isDestructive = false,
   });
 
-  static Future<bool?> show(BuildContext context,
-      {required String title,
-      required String content,
-      VoidCallback? onConfirm,
-      String confirmText = "Confirm",
-      String cancelText = "Cancel",
-      bool isDestructive = false}) async {
+  static Future<bool?> show(final BuildContext context,
+      {required final String title,
+      required final String content,
+      final VoidCallback? onConfirm,
+      final String confirmText = "Confirm",
+      final String cancelText = "Cancel",
+      final bool isDestructive = false}) async {
     return showDialog<bool>(
       context: context,
-      builder: (context) => AppDialog(
+      builder: (final context) => AppDialog(
         title: title,
         content: content,
         onConfirm: () {
@@ -130,7 +130,7 @@ class AppDialog extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     if (Platform.isWindows || Platform.isLinux) {
       return fluent.ContentDialog(
         title: Text(title),

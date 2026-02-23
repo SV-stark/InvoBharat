@@ -3,13 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
 import 'package:uuid/uuid.dart';
 
-import '../models/client.dart';
-import '../models/estimate.dart';
-import '../models/invoice.dart';
-import '../providers/business_profile_provider.dart';
-import '../providers/estimate_provider.dart';
-import '../providers/invoice_repository_provider.dart';
-import '../utils/pdf_generator.dart';
+import 'package:invobharat/models/client.dart';
+import 'package:invobharat/models/estimate.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/estimate_provider.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:invobharat/utils/pdf_generator.dart';
 
 /// Mixin to handle shared logic for Estimate Forms (Material & Fluent UI)
 mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
@@ -52,7 +52,7 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   }
 
   /// Initialize data from existing estimate or defaults
-  Future<void> initializeEstimateData({String? estimateId}) async {
+  Future<void> initializeEstimateData({final String? estimateId}) async {
     final profile = ref.read(businessProfileProvider);
     date = DateTime.now();
     expiryDate = DateTime.now().add(const Duration(days: 30));
@@ -66,7 +66,7 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     if (estimateId != null) {
       final estimates = await ref.read(estimateListProvider.future);
       try {
-        existingEstimate = estimates.firstWhere((e) => e.id == estimateId);
+        existingEstimate = estimates.firstWhere((final e) => e.id == estimateId);
 
         date = existingEstimate!.date;
         expiryDate = existingEstimate!.expiryDate;
@@ -89,7 +89,7 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   }
 
   /// Update controllers when a client is selected
-  void onClientSelected(Client client) {
+  void onClientSelected(final Client client) {
     setState(() {
       receiverNameCtrl.text = client.name;
       receiverAddressCtrl.text = client.address;
@@ -99,7 +99,7 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   }
 
   /// Save the estimate
-  Future<void> saveEstimate(BuildContext context) async {
+  Future<void> saveEstimate(final BuildContext context) async {
     // Basic validation
     if (items.isEmpty) {
       throw Exception('Please add at least one item');
@@ -148,7 +148,6 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
 
     final newInvoice = Invoice(
       id: const Uuid().v4(),
-      style: 'Modern',
       supplier: existingEstimate!.supplier,
       receiver: existingEstimate!.receiver,
       invoiceNo: invoiceNo,
@@ -182,7 +181,6 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     // Create transient Invoice object for printing
     final estimateInvoice = Invoice(
       id: existingEstimate!.id,
-      style: 'Modern',
       supplier: existingEstimate!.supplier,
       receiver: existingEstimate!.receiver,
       invoiceNo: existingEstimate!.estimateNo,
@@ -197,7 +195,7 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     );
 
     await Printing.layoutPdf(
-        onLayout: (format) =>
+        onLayout: (final format) =>
             generateInvoicePdf(estimateInvoice, profile, title: "ESTIMATE"));
   }
 }

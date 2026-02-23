@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../database/database.dart';
-import '../providers/database_provider.dart';
+import 'package:invobharat/providers/database_provider.dart';
 
 final themeProvider =
     NotifierProvider<ThemeNotifier, ThemeMode>(ThemeNotifier.new);
@@ -19,7 +18,7 @@ class ThemeNotifier extends Notifier<ThemeMode> {
       final savedMode = await settingsService.getSetting('theme_mode');
       if (savedMode != null) {
         state = ThemeMode.values.firstWhere(
-          (e) => e.toString() == savedMode,
+          (final e) => e.toString() == savedMode,
           orElse: () => ThemeMode.system,
         );
       }
@@ -28,7 +27,7 @@ class ThemeNotifier extends Notifier<ThemeMode> {
     }
   }
 
-  Future<void> setTheme(ThemeMode mode) async {
+  Future<void> setTheme(final ThemeMode mode) async {
     state = mode;
     try {
       final settingsService = ref.read(appSettingsServiceProvider);

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'invoice_repository_provider.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
 
 class AgingBucket {
   final String label;
@@ -24,7 +24,7 @@ class AgingReportData {
   });
 }
 
-final agingReportProvider = FutureProvider<AgingReportData>((ref) async {
+final agingReportProvider = FutureProvider<AgingReportData>((final ref) async {
   final repository = ref.watch(invoiceRepositoryProvider);
   final allInvoices = await repository.getAllInvoices();
 
@@ -32,7 +32,7 @@ final agingReportProvider = FutureProvider<AgingReportData>((ref) async {
   // Note: invoice.paymentStatus logic is in model, but we can recheck here to be safe or use model getter.
   // We need actual balance due.
   final unpaidInvoices =
-      allInvoices.where((inv) => inv.balanceDue > 1.0).toList();
+      allInvoices.where((final inv) => inv.balanceDue > 1.0).toList();
   // > 1.0 to handle float rounding errors or negligible amounts.
 
   double current = 0;
@@ -47,7 +47,7 @@ final agingReportProvider = FutureProvider<AgingReportData>((ref) async {
   int count90 = 0;
   int count90Plus = 0;
 
-  Map<String, double> clientMap = {};
+  final Map<String, double> clientMap = {};
 
   final now = DateTime.now();
 

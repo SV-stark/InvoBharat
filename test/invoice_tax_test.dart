@@ -11,7 +11,7 @@ void main() {
         invoiceDate: DateTime.now(),
         receiver: const Receiver(),
         items: [
-          const InvoiceItem(amount: 100, gstRate: 18),
+          const InvoiceItem(amount: 100),
         ],
       );
 
@@ -30,7 +30,7 @@ void main() {
         invoiceDate: DateTime.now(),
         receiver: const Receiver(),
         items: [
-          const InvoiceItem(amount: 100, gstRate: 18),
+          const InvoiceItem(amount: 100),
         ],
       );
 
@@ -49,7 +49,7 @@ void main() {
         invoiceDate: DateTime.now(),
         receiver: const Receiver(),
         items: [
-          const InvoiceItem(amount: 100, gstRate: 18),
+          const InvoiceItem(amount: 100),
         ],
       );
 
@@ -60,12 +60,12 @@ void main() {
         'Empty state check (defaults to false/Intra usually or handles gracefully)',
         () {
       final invoice = Invoice(
-        supplier: const Supplier(state: ''),
+        supplier: const Supplier(),
         placeOfSupply: 'Karnataka',
         invoiceDate: DateTime.now(),
         receiver: const Receiver(),
         items: [
-          const InvoiceItem(amount: 100, gstRate: 18),
+          const InvoiceItem(amount: 100),
         ],
       );
       // If supplier state is empty, isInterState returns false logic in my code

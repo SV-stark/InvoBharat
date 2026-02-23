@@ -2,14 +2,14 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../providers/recurring_provider.dart';
-import 'fluent_recurring_form.dart';
+import 'package:invobharat/providers/recurring_provider.dart';
+import 'package:invobharat/screens/windows/fluent_recurring_form.dart';
 
 class FluentRecurringScreen extends ConsumerWidget {
   const FluentRecurringScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     final recurringListAsync = ref.watch(recurringListProvider);
     final theme = FluentTheme.of(context);
 
@@ -32,14 +32,14 @@ class FluentRecurringScreen extends ConsumerWidget {
                 Navigator.push(
                     context,
                     FluentPageRoute(
-                        builder: (context) => const FluentRecurringForm()));
+                        builder: (final context) => const FluentRecurringForm()));
               },
             ),
           ],
         ),
       ),
       content: recurringListAsync.when(
-        data: (profiles) {
+        data: (final profiles) {
           if (profiles.isEmpty) {
             return Center(
               child: Column(
@@ -62,7 +62,7 @@ class FluentRecurringScreen extends ConsumerWidget {
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: profiles.length,
-            itemBuilder: (context, index) {
+            itemBuilder: (final context, final index) {
               final profile = profiles[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
@@ -90,7 +90,7 @@ class FluentRecurringScreen extends ConsumerWidget {
                       children: [
                         ToggleSwitch(
                           checked: profile.isActive,
-                          onChanged: (val) {
+                          onChanged: (final val) {
                             ref
                                 .read(recurringListProvider.notifier)
                                 .updateProfile(profile.copyWith(isActive: val));
@@ -103,7 +103,7 @@ class FluentRecurringScreen extends ConsumerWidget {
                           onPressed: () async {
                             final confirm = await showDialog<bool>(
                               context: context,
-                              builder: (context) => ContentDialog(
+                              builder: (final context) => ContentDialog(
                                 title: const Text("Delete Profile?"),
                                 content: const Text(
                                     "This will stop future invoice generation permanently."),
@@ -142,7 +142,7 @@ class FluentRecurringScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: ProgressRing()),
-        error: (err, stack) => Center(child: Text("Error: $err")),
+        error: (final err, final stack) => Center(child: Text("Error: $err")),
       ),
     );
   }

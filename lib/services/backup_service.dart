@@ -7,9 +7,9 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive.dart';
 
-import '../providers/invoice_repository_provider.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
 // import '../data/file_invoice_repository.dart'; // Unused
-import 'csv_export_service.dart';
+import 'package:invobharat/services/csv_export_service.dart';
 
 class ImportResult {
   final int successCount;
@@ -20,7 +20,7 @@ class ImportResult {
 }
 
 class BackupService {
-  Future<String> exportData(WidgetRef ref) async {
+  Future<String> exportData(final WidgetRef ref) async {
     try {
       // 1. Fetch Data
       final invoices =
@@ -55,7 +55,7 @@ class BackupService {
     }
   }
 
-  Future<String> exportFullBackup(WidgetRef ref) async {
+  Future<String> exportFullBackup(final WidgetRef ref) async {
     try {
       final dbFolder = await getApplicationDocumentsDirectory();
       final dbPath = '${dbFolder.path}/InvoBharat/db.sqlite';
@@ -101,9 +101,9 @@ class BackupService {
     }
   }
 
-  Future<String> restoreFullBackup(WidgetRef ref) async {
+  Future<String> restoreFullBackup(final WidgetRef ref) async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
+      final FilePickerResult? result = await FilePicker.platform.pickFiles(
         dialogTitle: 'Select Full Backup (ZIP)',
         type: FileType.custom,
         allowedExtensions: ['zip'],

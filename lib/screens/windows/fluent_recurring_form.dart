@@ -3,16 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../models/invoice.dart';
-import '../../models/recurring_profile.dart';
-import '../../providers/business_profile_provider.dart';
-import '../../providers/invoice_provider.dart';
-import '../../providers/client_provider.dart';
-import '../../providers/recurring_provider.dart';
-import '../../models/client.dart';
-import '../../utils/validators.dart';
-import '../../mixins/invoice_form_mixin.dart';
-import '../../widgets/adaptive_widgets.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/models/recurring_profile.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/invoice_provider.dart';
+import 'package:invobharat/providers/client_provider.dart';
+import 'package:invobharat/providers/recurring_provider.dart';
+import 'package:invobharat/models/client.dart';
+import 'package:invobharat/utils/validators.dart';
+import 'package:invobharat/mixins/invoice_form_mixin.dart';
+import 'package:invobharat/widgets/adaptive_widgets.dart';
 
 class FluentRecurringForm extends ConsumerStatefulWidget {
   final RecurringProfile? profileToEdit;
@@ -48,7 +48,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
     } else {
       // Initialize with fresh invoice for template
       dueDaysCtrl.text = "7";
-      initInvoiceControllers(null);
+      initInvoiceControllers();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(invoiceProvider.notifier).reset();
         syncInvoiceControllers(ref.read(invoiceProvider));
@@ -64,7 +64,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final invoice = ref.watch(invoiceProvider);
 
     return CallbackShortcuts(
@@ -126,13 +126,13 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                   label: "Repeat Interval",
                   child: ComboBox<RecurringInterval>(
                     value: _interval,
-                    items: RecurringInterval.values.map((e) {
+                    items: RecurringInterval.values.map((final e) {
                       return ComboBoxItem(
                         value: e,
                         child: Text(e.name.toUpperCase()),
                       );
                     }).toList(),
-                    onChanged: (val) {
+                    onChanged: (final val) {
                       if (val != null) setState(() => _interval = val);
                     },
                   ),
@@ -142,7 +142,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                   label: "Next Run Date",
                   child: DatePicker(
                     selected: _nextRunDate,
-                    onChanged: (date) => setState(() => _nextRunDate = date),
+                    onChanged: (final date) => setState(() => _nextRunDate = date),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -194,7 +194,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                           AppTextInput(
                             label: "Receiver Name",
                             controller: receiverNameCtrl,
-                            onChanged: (val) => ref
+                            onChanged: (final val) => ref
                                 .read(invoiceProvider.notifier)
                                 .updateReceiverName(val),
                           ),
@@ -203,7 +203,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                             label: "GSTIN",
                             controller: receiverGstinCtrl,
                             validator: Validators.gstin,
-                            onChanged: (val) => ref
+                            onChanged: (final val) => ref
                                 .read(invoiceProvider.notifier)
                                 .updateReceiverGstin(val),
                           ),
@@ -229,7 +229,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                   ],
                 ),
                 const SizedBox(height: 10),
-                ...invoice.items.asMap().entries.map((entry) {
+                ...invoice.items.asMap().entries.map((final entry) {
                   final index = entry.key;
                   final item = entry.value;
                   return Padding(
@@ -244,7 +244,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                                   label: "Description",
                                   initialValue: item.description,
                                   placeholder: "Description",
-                                  onChanged: (val) => ref
+                                  onChanged: (final val) => ref
                                       .read(invoiceProvider.notifier)
                                       .updateItemDescription(index, val),
                                 ),
@@ -267,7 +267,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                                   placeholder: "Qty",
                                   initialValue: item.quantity.toString(),
                                   validator: Validators.doubleValue,
-                                  onChanged: (val) => ref
+                                  onChanged: (final val) => ref
                                       .read(invoiceProvider.notifier)
                                       .updateItemQuantity(index, val),
                                 ),
@@ -281,7 +281,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                                       ? ""
                                       : item.amount.toString(),
                                   validator: Validators.doubleValue,
-                                  onChanged: (val) => ref
+                                  onChanged: (final val) => ref
                                       .read(invoiceProvider.notifier)
                                       .updateItemAmount(index, val),
                                 ),
@@ -293,7 +293,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                                   placeholder: "GST %",
                                   initialValue: item.gstRate.toString(),
                                   validator: Validators.doubleValue,
-                                  onChanged: (val) => ref
+                                  onChanged: (final val) => ref
                                       .read(invoiceProvider.notifier)
                                       .updateItemGstRate(index, val),
                                 ),
@@ -314,10 +314,10 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
     );
   }
 
-  void _showClientSelector(BuildContext context, List<Client> clients) {
+  void _showClientSelector(final BuildContext context, final List<Client> clients) {
     if (clients.isEmpty) {
       displayInfoBar(context,
-          builder: (ctx, close) => InfoBar(
+          builder: (final ctx, final close) => InfoBar(
               title: const Text("No Clients"),
               content: const Text("Please add a client first."),
               severity: InfoBarSeverity.warning,
@@ -326,7 +326,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
     }
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (final context) {
         return ContentDialog(
           title: const Text("Select Client"),
           content: SizedBox(
@@ -334,7 +334,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
             width: 400,
             child: ListView.builder(
               itemCount: clients.length,
-              itemBuilder: (context, index) {
+              itemBuilder: (final context, final index) {
                 final client = clients[index];
                 return ListTile(
                   title: Text(client.name),
@@ -362,11 +362,11 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
     );
   }
 
-  Future<void> _saveProfile(BuildContext context, Invoice invoice) async {
+  Future<void> _saveProfile(final BuildContext context, final Invoice invoice) async {
     // Validate
     if (invoice.receiver.name.isEmpty) {
       displayInfoBar(context,
-          builder: (ctx, close) => InfoBar(
+          builder: (final ctx, final close) => InfoBar(
               title: const Text("Error"),
               content: const Text("Client name is required"),
               severity: InfoBarSeverity.error,
@@ -384,7 +384,6 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
       nextRunDate: _nextRunDate,
       dueDays: int.tryParse(dueDaysCtrl.text),
       baseInvoice: invoice,
-      isActive: true,
     );
 
     final notifier = ref.read(recurringListProvider.notifier);
@@ -397,7 +396,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
     if (context.mounted) {
       Navigator.pop(context);
       displayInfoBar(context,
-          builder: (ctx, close) => InfoBar(
+          builder: (final ctx, final close) => InfoBar(
               title: const Text("Success"),
               content: const Text("Recurring profile saved"),
               severity: InfoBarSeverity.success,

@@ -1,19 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../database/database.dart';
-import '../services/database_migration_service.dart';
+import 'package:invobharat/database/database.dart';
+import 'package:invobharat/services/database_migration_service.dart';
+import 'dart:async';
 
-final databaseProvider = Provider<AppDatabase>((ref) {
+final databaseProvider = Provider<AppDatabase>((final ref) {
   final database = AppDatabase();
   ref.onDispose(database.close);
   return database;
 });
 
-final appSettingsServiceProvider = Provider<AppSettingsService>((ref) {
+final appSettingsServiceProvider = Provider<AppSettingsService>((final ref) {
   final db = ref.watch(databaseProvider);
   return AppSettingsService(db);
 });
 
-final migrationServiceProvider = Provider<DatabaseMigrationService>((ref) {
+final migrationServiceProvider = Provider<DatabaseMigrationService>((
+  final ref,
+) {
   final db = ref.watch(databaseProvider);
   return DatabaseMigrationService(db);
 });
@@ -23,14 +26,15 @@ class MigrationStatusNotifier extends Notifier<String> {
   @override
   String build() => "Initializing...";
 
-  void update(String status) => state = status;
+  void update(final String status) => state = status;
 }
 
 final migrationStatusProvider =
     NotifierProvider<MigrationStatusNotifier, String>(
-        MigrationStatusNotifier.new);
+      MigrationStatusNotifier.new,
+    );
 
-final appInitializationProvider = FutureProvider<void>((ref) async {
+final appInitializationProvider = FutureProvider<void>((final ref) async {
   // Ensure database is ready
   Future.microtask(() {
     ref.read(migrationStatusProvider.notifier).update("Opening Database...");
@@ -40,7 +44,7 @@ final appInitializationProvider = FutureProvider<void>((ref) async {
 
   // Run Migration
   final migrationService = ref.read(migrationServiceProvider);
-  await migrationService.performMigration((status) {
+  await migrationService.performMigration((final status) {
     ref.read(migrationStatusProvider.notifier).update(status);
   });
 });

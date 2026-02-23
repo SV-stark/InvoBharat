@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import '../data/sql_client_repository.dart';
-import '../data/client_repository.dart';
-import '../models/client.dart';
-import 'database_provider.dart';
+import 'package:invobharat/data/sql_client_repository.dart';
+import 'package:invobharat/data/client_repository.dart';
+import 'package:invobharat/models/client.dart';
+import 'package:invobharat/providers/database_provider.dart';
 
-final clientRepositoryProvider = Provider<ClientRepository>((ref) {
+final clientRepositoryProvider = Provider<ClientRepository>((final ref) {
   final db = ref.watch(databaseProvider);
   return SqlClientRepository(db);
 });
@@ -29,7 +29,7 @@ class ClientListNotifier extends Notifier<List<Client>> {
     state = await repository.getAllClients();
   }
 
-  Future<void> addClient(Client client) async {
+  Future<void> addClient(final Client client) async {
     final repository = ref.read(clientRepositoryProvider);
 
     Client newClient = client;
@@ -41,13 +41,13 @@ class ClientListNotifier extends Notifier<List<Client>> {
     await _loadClients();
   }
 
-  Future<void> updateClient(Client client) async {
+  Future<void> updateClient(final Client client) async {
     final repository = ref.read(clientRepositoryProvider);
     await repository.saveClient(client);
     await _loadClients();
   }
 
-  Future<void> deleteClient(String clientId) async {
+  Future<void> deleteClient(final String clientId) async {
     final repository = ref.read(clientRepositoryProvider);
     await repository.deleteClient(clientId);
     await _loadClients();

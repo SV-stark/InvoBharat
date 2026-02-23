@@ -1,4 +1,4 @@
-String numberToWords(double number) {
+String numberToWords(final double number) {
   if (number == 0) return "Zero";
 
   final units = [
@@ -36,7 +36,7 @@ String numberToWords(double number) {
     "Ninety"
   ];
 
-  String convertLessThanOneThousand(int n) {
+  String convertLessThanOneThousand(final int n) {
     if (n == 0) return "";
     if (n < 20) {
       return units[n];
@@ -54,8 +54,8 @@ String numberToWords(double number) {
   // 1,00,000 (One Lakh)
 
   // Handling up to Crores for typical invoice needs
-  int integerPart = number.truncate();
-  int decimalPart = ((number - integerPart) * 100).round();
+  final int integerPart = number.truncate();
+  final int decimalPart = ((number - integerPart) * 100).round();
 
   String result = "";
 

@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dart:async';
 
-import '../providers/business_profile_provider.dart';
-import '../providers/theme_provider.dart';
-import '../services/backup_service.dart';
-import '../widgets/profile_switcher_sheet.dart';
-import '../widgets/about_tab.dart';
-import '../services/email_service.dart'; // NEW
-import 'item_templates_screen.dart'; // NEW import
+import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/theme_provider.dart';
+import 'package:invobharat/services/backup_service.dart';
+import 'package:invobharat/widgets/profile_switcher_sheet.dart';
+import 'package:invobharat/widgets/about_tab.dart';
+import 'package:invobharat/services/email_service.dart'; // NEW
+import 'package:invobharat/screens/item_templates_screen.dart'; // NEW import
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -57,14 +58,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _phoneController = TextEditingController(text: profile.phone);
     _stateController = TextEditingController(text: profile.state);
     _seriesController = TextEditingController(text: profile.invoiceSeries);
-    _sequenceController =
-        TextEditingController(text: profile.invoiceSequence.toString());
+    _sequenceController = TextEditingController(
+      text: profile.invoiceSequence.toString(),
+    );
     _termsController = TextEditingController(text: profile.termsAndConditions);
     _notesController = TextEditingController(text: profile.defaultNotes);
     _currencyController = TextEditingController(text: profile.currencySymbol);
     _bankNameController = TextEditingController(text: profile.bankName);
-    _accountNumberController =
-        TextEditingController(text: profile.accountNumber);
+    _accountNumberController = TextEditingController(
+      text: profile.accountNumber,
+    );
     _ifscCodeController = TextEditingController(text: profile.ifscCode);
     _branchNameController = TextEditingController(text: profile.branchName);
     _upiIdController = TextEditingController(text: profile.upiId ?? '');
@@ -123,10 +126,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         upiName: _upiNameController.text,
         pan: _panController.text,
       );
-      ref.read(businessProfileNotifierProvider).updateProfile(newProfile);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Settings Saved')),
+      unawaited(
+        ref.read(businessProfileNotifierProvider).updateProfile(newProfile),
       );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Settings Saved')));
     }
   }
 
@@ -137,7 +142,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (pickedFile != null) {
       final currentProfile = ref.read(businessProfileProvider);
       final newProfile = currentProfile.copyWith(logoPath: pickedFile.path);
-      ref.read(businessProfileNotifierProvider).updateProfile(newProfile);
+      unawaited(
+        ref.read(businessProfileNotifierProvider).updateProfile(newProfile),
+      );
     }
   }
 
@@ -147,14 +154,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     if (pickedFile != null) {
       final currentProfile = ref.read(businessProfileProvider);
-      final newProfile =
-          currentProfile.copyWith(signaturePath: pickedFile.path);
-      ref.read(businessProfileNotifierProvider).updateProfile(newProfile);
+      final newProfile = currentProfile.copyWith(
+        signaturePath: pickedFile.path,
+      );
+      unawaited(
+        ref.read(businessProfileNotifierProvider).updateProfile(newProfile),
+      );
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     // Watch profile changes to update controllers if needed?
     // Doing strict sync might be annoying if user is typing.
     // But if profile changes externally (switcher), we should reload.
@@ -202,19 +212,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildSectionHeader("Appearance"),
             ListTile(
               title: const Text("App Theme"),
-              subtitle:
-                  Text(themeMode.toString().split('.').last.toUpperCase()),
+              subtitle: Text(
+                themeMode.toString().split('.').last.toUpperCase(),
+              ),
               trailing: DropdownButton<ThemeMode>(
                 value: themeMode,
                 underline: const SizedBox(),
                 items: const [
                   DropdownMenuItem(
-                      value: ThemeMode.system, child: Text("System")),
+                    value: ThemeMode.system,
+                    child: Text("System"),
+                  ),
                   DropdownMenuItem(
-                      value: ThemeMode.light, child: Text("Light")),
+                    value: ThemeMode.light,
+                    child: Text("Light"),
+                  ),
                   DropdownMenuItem(value: ThemeMode.dark, child: Text("Dark")),
                 ],
-                onChanged: (val) {
+                onChanged: (final val) {
                   if (val != null) {
                     ref.read(themeProvider.notifier).setTheme(val);
                   }
@@ -240,12 +255,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             Row(
               children: [
                 Expanded(
-                    child: _buildTextField(
-                        "Series (e.g. INV-)", _seriesController)),
+                  child: _buildTextField(
+                    "Series (e.g. INV-)",
+                    _seriesController,
+                  ),
+                ),
                 const SizedBox(width: 16),
                 Expanded(
-                    child:
-                        _buildTextField("Next Sequence", _sequenceController)),
+                  child: _buildTextField("Next Sequence", _sequenceController),
+                ),
               ],
             ),
             _buildTextField("Currency Symbol", _currencyController),
@@ -269,20 +287,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title: const Text("Item Templates"),
               subtitle: const Text("Manage frequently used items"),
               onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const ItemTemplatesScreen())),
+                context,
+                MaterialPageRoute(builder: (_) => const ItemTemplatesScreen()),
+              ),
             ),
             const Divider(), // Added Divider
             // ... existing ...
             Row(
               children: [
                 Expanded(
-                  child: Column(children: [
-                    const Text("Logo",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    GestureDetector(
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Logo",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      GestureDetector(
                         onTap: _pickLogo,
                         child: CircleAvatar(
                           radius: 40,
@@ -292,15 +313,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           child: profile.logoPath == null
                               ? const Icon(Icons.add_a_photo, size: 30)
                               : null,
-                        )),
-                  ]),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 Expanded(
-                  child: Column(children: [
-                    const Text("Signature",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    GestureDetector(
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Signature",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      GestureDetector(
                         onTap: _pickSignature,
                         child: CircleAvatar(
                           radius: 40,
@@ -311,8 +337,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           child: profile.signaturePath == null
                               ? const Icon(Icons.edit, size: 30)
                               : null,
-                        )),
-                  ]),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -348,15 +376,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       padding: const EdgeInsets.all(16),
       children: [
         _buildSectionHeader("Manage Profiles"),
-        ...profiles.map((p) {
+        ...profiles.map((final p) {
           final isActive = p.id == activeId;
           return Card(
             child: ListTile(
               leading: CircleAvatar(
                 backgroundColor: Color(p.colorValue),
-                child: Text(p.companyName.isNotEmpty
-                    ? p.companyName[0].toUpperCase()
-                    : "?"),
+                child: Text(
+                  p.companyName.isNotEmpty
+                      ? p.companyName[0].toUpperCase()
+                      : "?",
+                ),
               ),
               title: Text(p.companyName),
               subtitle: Text(isActive ? "Active Profile" : "Tap to Switch"),
@@ -365,8 +395,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 children: [
                   if (!isActive)
                     IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => _confirmDeleteProfile(p)),
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _confirmDeleteProfile(p),
+                    ),
                   if (!isActive)
                     TextButton(
                       child: const Text("Switch"),
@@ -413,28 +444,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Future<void> _confirmDeleteProfile(dynamic profile) async {
+  Future<void> _confirmDeleteProfile(final dynamic profile) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (final context) => AlertDialog(
         title: const Text("Delete Profile?"),
         content: Text(
-            "Are you sure you want to delete '${profile.companyName}'? This will delete all associated invoices and cannot be undone."),
+          "Are you sure you want to delete '${profile.companyName}'? This will delete all associated invoices and cannot be undone.",
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text("Cancel")),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text("Delete", style: TextStyle(color: Colors.red))),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+          ),
         ],
       ),
     );
 
     if (confirmed == true) {
-      await ref
-          .read(businessProfileListProvider.notifier)
-          .deleteProfile(profile.id);
+      unawaited(
+        ref
+            .read(businessProfileListProvider.notifier)
+            .deleteProfile(profile.id),
+      );
     }
   }
 
@@ -446,8 +482,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         children: [
           const Icon(Icons.cloud_upload, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
-          const Text("Backup & Restore",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const Text(
+            "Backup & Restore",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 32),
           SizedBox(
             width: 250,
@@ -457,13 +495,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 try {
                   final msg = await BackupService().exportFullBackup(ref);
                   if (mounted) {
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text(msg)));
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(msg)));
                   }
                 } catch (e) {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Export Failed: $e")));
+                      SnackBar(content: Text("Export Failed: $e")),
+                    );
                   }
                 }
               },
@@ -481,16 +521,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   final result = await BackupService().restoreFullBackup(ref);
                   if (!mounted) return;
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(result)),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(result)));
                   _loadProfileData();
                   setState(() {});
                 } catch (e) {
                   if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Restore Failed: $e")),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text("Restore Failed: $e")));
                 }
               },
               icon: const Icon(Icons.upload),
@@ -498,26 +538,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 32),
-          const Text("Supports backing up all profiles and invoices.",
-              style: TextStyle(color: Colors.grey)),
+          const Text(
+            "Supports backing up all profiles and invoices.",
+            style: TextStyle(color: Colors.grey),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(final String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16, top: 8),
-      child: Text(title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary,
-              )),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller,
-      {int maxLines = 1}) {
+  Widget _buildTextField(
+    final String label,
+    final TextEditingController controller, {
+    final int maxLines = 1,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
@@ -527,17 +574,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           labelText: label,
           border: const OutlineInputBorder(),
         ),
-        validator: (value) =>
+        validator: (final value) =>
             // Only validate required fields if necessary.
             // For now, let's keep it loose or validate specific ones like Company Name.
             label == "Company Name" && (value == null || value.isEmpty)
-                ? 'Required'
-                : null,
+            ? 'Required'
+            : null,
       ),
     );
   }
 
-  Widget _buildColorOption(Color color) {
+  Widget _buildColorOption(final Color color) {
     final selectedColor = ref.watch(businessProfileProvider).colorValue;
     final isSelected = selectedColor == color.toARGB32();
 
@@ -612,14 +659,15 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
 
       await EmailService.saveSettings(settings);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Email Settings Saved")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Email Settings Saved")));
       }
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Form(
@@ -627,33 +675,40 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("SMTP Configuration",
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              "SMTP Configuration",
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 8),
             const Text(
-                "Configure your email provider to send invoices directly from the app."),
+              "Configure your email provider to send invoices directly from the app.",
+            ),
             const SizedBox(height: 24),
             TextFormField(
               controller: _hostController,
               decoration: const InputDecoration(
-                  labelText: "SMTP Host", hintText: "e.g. smtp.gmail.com"),
-              validator: (v) =>
+                labelText: "SMTP Host",
+                hintText: "e.g. smtp.gmail.com",
+              ),
+              validator: (final v) =>
                   v == null || v.isEmpty ? "Host is required" : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _portController,
               decoration: const InputDecoration(
-                  labelText: "SMTP Port", hintText: "e.g. 587 or 465"),
+                labelText: "SMTP Port",
+                hintText: "e.g. 587 or 465",
+              ),
               keyboardType: TextInputType.number,
-              validator: (v) =>
+              validator: (final v) =>
                   v == null || v.isEmpty ? "Port is required" : null,
             ),
             const SizedBox(height: 16),
             CheckboxListTile(
               title: const Text("Use SSL/TLS (Secure)"),
               value: _isSecure,
-              onChanged: (v) => setState(() => _isSecure = v!),
+              onChanged: (final v) => setState(() => _isSecure = v!),
               controlAffinity: ListTileControlAffinity.leading,
               contentPadding: EdgeInsets.zero,
             ),
@@ -661,16 +716,20 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
             TextFormField(
               controller: _emailController,
               decoration: const InputDecoration(
-                  labelText: "Sender Email", hintText: "you@example.com"),
-              validator: (v) =>
+                labelText: "Sender Email",
+                hintText: "you@example.com",
+              ),
+              validator: (final v) =>
                   v == null || v.isEmpty ? "Email is required" : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _usernameController,
               decoration: const InputDecoration(
-                  labelText: "Username", hintText: "Often same as email"),
-              validator: (v) =>
+                labelText: "Username",
+                hintText: "Often same as email",
+              ),
+              validator: (final v) =>
                   v == null || v.isEmpty ? "Username is required" : null,
             ),
             const SizedBox(height: 16),
@@ -679,9 +738,9 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
               decoration: InputDecoration(
                 labelText: "Password",
                 suffixIcon: IconButton(
-                  icon: Icon(_obscurePassword
-                      ? Icons.visibility
-                      : Icons.visibility_off),
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                  ),
                   onPressed: () =>
                       setState(() => _obscurePassword = !_obscurePassword),
                 ),

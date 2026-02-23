@@ -3,19 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
-import '../../models/invoice.dart';
-import '../../models/business_profile.dart';
-import '../../providers/business_profile_provider.dart';
-import '../../providers/invoice_provider.dart';
+import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/models/business_profile.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/invoice_provider.dart';
 
-import '../../models/client.dart';
-import '../../providers/client_provider.dart';
+import 'package:invobharat/models/client.dart';
+import 'package:invobharat/providers/client_provider.dart';
 
-import '../../utils/pdf_generator.dart';
-import '../../utils/constants.dart';
-import '../../utils/validators.dart';
-import '../../mixins/invoice_form_mixin.dart';
-import '../../widgets/adaptive_widgets.dart'; // NEW Import
+import 'package:invobharat/utils/pdf_generator.dart';
+import 'package:invobharat/utils/constants.dart';
+import 'package:invobharat/utils/validators.dart';
+import 'package:invobharat/mixins/invoice_form_mixin.dart';
+import 'package:invobharat/widgets/adaptive_widgets.dart'; // NEW Import
 
 // Generates a unique ID
 
@@ -56,7 +56,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final invoice = ref.watch(invoiceProvider);
     final profile = ref.watch(businessProfileProvider);
 
@@ -121,9 +121,9 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                 child: ComboBox<String>(
                   value: invoice.style,
                   items: ['Modern', 'Professional', 'Minimal']
-                      .map((e) => ComboBoxItem(value: e, child: Text(e)))
+                      .map((final e) => ComboBoxItem(value: e, child: Text(e)))
                       .toList(),
-                  onChanged: (val) {
+                  onChanged: (final val) {
                     if (val != null) {
                       ref.read(invoiceProvider.notifier).updateStyle(val);
                     }
@@ -137,7 +137,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                     child: AppTextInput(
                       label: "Invoice No",
                       controller: invoiceNoCtrl,
-                      onChanged: (val) => ref
+                      onChanged: (final val) => ref
                           .read(invoiceProvider.notifier)
                           .updateInvoiceNo(val),
                     ),
@@ -148,7 +148,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                       label: "Date",
                       child: DatePicker(
                         selected: invoice.invoiceDate,
-                        onChanged: (date) =>
+                        onChanged: (final date) =>
                             ref.read(invoiceProvider.notifier).updateDate(date),
                       ),
                     ),
@@ -163,14 +163,14 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                       posCtrl, // Use mixin controller (renamed from _placeOfSupplyController)
                   items: IndianStates.states
                       .map(
-                          (e) => AutoSuggestBoxItem<String>(value: e, label: e))
+                          (final e) => AutoSuggestBoxItem<String>(value: e, label: e))
                       .toList(),
-                  onSelected: (item) {
+                  onSelected: (final item) {
                     ref
                         .read(invoiceProvider.notifier)
                         .updatePlaceOfSupply(item.value!);
                   },
-                  onChanged: (text, reason) {
+                  onChanged: (final text, final reason) {
                     if (reason == TextChangedReason.userInput) {
                       ref
                           .read(invoiceProvider.notifier)
@@ -191,7 +191,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                     ComboBoxItem(value: "N", child: Text("No")),
                     ComboBoxItem(value: "Y", child: Text("Yes")),
                   ],
-                  onChanged: (val) {
+                  onChanged: (final val) {
                     if (val != null) {
                       ref
                           .read(invoiceProvider.notifier)
@@ -206,7 +206,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                 controller: deliveryAddressCtrl,
                 placeholder: "Leave empty if same as Receiver Address",
                 maxLines: 3,
-                onChanged: (val) => ref
+                onChanged: (final val) => ref
                     .read(invoiceProvider.notifier)
                     .updateDeliveryAddress(val),
               ),
@@ -257,7 +257,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                       child: const Text("Edit in Settings"),
                       onPressed: () {
                         // Ideally navigate to settings, but user can just click Settings tab
-                        displayInfoBar(context, builder: (context, close) {
+                        displayInfoBar(context, builder: (final context, final close) {
                           return InfoBar(
                             title: const Text("Go to Settings"),
                             content: const Text(
@@ -265,7 +265,6 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                             action: IconButton(
                                 icon: const Icon(FluentIcons.clear),
                                 onPressed: close),
-                            severity: InfoBarSeverity.info,
                           );
                         });
                       },
@@ -299,7 +298,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                           "Receiver Name", // Label added conceptually, though UI might just show placeholder
                       controller: receiverNameCtrl,
                       placeholder: "Name",
-                      onChanged: (val) => ref
+                      onChanged: (final val) => ref
                           .read(invoiceProvider.notifier)
                           .updateReceiverName(val),
                     ),
@@ -309,7 +308,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                       controller: receiverEmailCtrl,
                       placeholder: "Email",
                       validator: Validators.email,
-                      onChanged: (val) => ref
+                      onChanged: (final val) => ref
                           .read(invoiceProvider.notifier)
                           .updateReceiverEmail(val),
                     ),
@@ -319,7 +318,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                       controller: receiverGstinCtrl,
                       placeholder: "GSTIN",
                       validator: Validators.gstin,
-                      onChanged: (val) => ref
+                      onChanged: (final val) => ref
                           .read(invoiceProvider.notifier)
                           .updateReceiverGstin(val),
                     ),
@@ -329,15 +328,15 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                           receiverStateCtrl, // Use mixin controller (AutoSuggest requires controller for text)
                       placeholder: "State",
                       items: IndianStates.states
-                          .map((e) =>
+                          .map((final e) =>
                               AutoSuggestBoxItem<String>(value: e, label: e))
                           .toList(),
-                      onSelected: (item) {
+                      onSelected: (final item) {
                         ref
                             .read(invoiceProvider.notifier)
                             .updateReceiverState(item.value!);
                       },
-                      onChanged: (text, reason) {
+                      onChanged: (final text, final reason) {
                         if (reason == TextChangedReason.userInput) {
                           ref
                               .read(invoiceProvider.notifier)
@@ -352,7 +351,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                           .stateCode, // Keep initialValue if we don't track stateCode in mixin (we don't for now, let's proceed)
                       // Actually mixin doesn't have stateCodeCtrl.
                       // Should I add it? Yes to be thorough, but for now I leaving as is to minimize regression risk of missing field.
-                      onChanged: (val) => ref
+                      onChanged: (final val) => ref
                           .read(invoiceProvider.notifier)
                           .updateReceiverStateCode(val),
                     ),
@@ -369,7 +368,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                 fontWeight: FontWeight.bold,
                 color: FluentTheme.of(context).accentColor)),
         const SizedBox(height: 10),
-        ...invoice.items.asMap().entries.map((entry) {
+        ...invoice.items.asMap().entries.map((final entry) {
           final index = entry.key;
           final item = entry.value;
           return Padding(
@@ -384,7 +383,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                           label: "Description",
                           initialValue: item.description,
                           placeholder: "Description",
-                          onChanged: (val) => ref
+                          onChanged: (final val) => ref
                               .read(invoiceProvider.notifier)
                               .updateItemDescription(index, val),
                         ),
@@ -406,9 +405,9 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                           value: item.codeType,
                           items: ['SAC', 'HSN']
                               .map(
-                                  (e) => ComboBoxItem(value: e, child: Text(e)))
+                                  (final e) => ComboBoxItem(value: e, child: Text(e)))
                               .toList(),
-                          onChanged: (val) {
+                          onChanged: (final val) {
                             if (val != null) {
                               ref
                                   .read(invoiceProvider.notifier)
@@ -425,7 +424,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                           placeholder: "Qty",
                           initialValue: item.quantity.toString(),
                           validator: Validators.doubleValue,
-                          onChanged: (val) => ref
+                          onChanged: (final val) => ref
                               .read(invoiceProvider.notifier)
                               .updateItemQuantity(index, val),
                         ),
@@ -437,7 +436,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                           label: "Unit",
                           placeholder: "Unit",
                           initialValue: item.unit,
-                          onChanged: (val) => ref
+                          onChanged: (final val) => ref
                               .read(invoiceProvider.notifier)
                               .updateItemUnit(index, val),
                         ),
@@ -448,7 +447,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                           label: "Code",
                           placeholder: "Code",
                           initialValue: item.sacCode,
-                          onChanged: (val) => ref
+                          onChanged: (final val) => ref
                               .read(invoiceProvider.notifier)
                               .updateItemSac(index, val),
                         ),
@@ -461,7 +460,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                           initialValue:
                               item.amount == 0 ? "" : item.amount.toString(),
                           validator: Validators.doubleValue,
-                          onChanged: (val) => ref
+                          onChanged: (final val) => ref
                               .read(invoiceProvider.notifier)
                               .updateItemAmount(index, val),
                         ),
@@ -473,7 +472,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                           placeholder: "GST %",
                           initialValue: item.gstRate.toString(),
                           validator: Validators.doubleValue,
-                          onChanged: (val) => ref
+                          onChanged: (final val) => ref
                               .read(invoiceProvider.notifier)
                               .updateItemGstRate(index, val),
                         ),
@@ -501,7 +500,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
     );
   }
 
-  void _saveInvoiceUI(BuildContext context, Invoice invoice) async {
+  void _saveInvoiceUI(final BuildContext context, final Invoice invoice) async {
     try {
       await saveInvoice(
         invoice: invoice,
@@ -512,7 +511,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
       if (context.mounted) {
         displayInfoBar(
           context,
-          builder: (context, close) {
+          builder: (final context, final close) {
             return InfoBar(
               title: const Text('Success'),
               content: const Text('Invoice saved successfully'),
@@ -528,7 +527,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
     } catch (e) {
       if (context.mounted) {
         displayInfoBar(context,
-            builder: (context, close) => InfoBar(
+            builder: (final context, final close) => InfoBar(
                 title: const Text("Error"),
                 content: Text(e.toString()),
                 severity: InfoBarSeverity.error,
@@ -538,11 +537,11 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
   }
 
   void _showPreview(
-      BuildContext context, Invoice invoice, BusinessProfile profile) {
+      final BuildContext context, final Invoice invoice, final BusinessProfile profile) {
     Navigator.push(
       context,
       FluentPageRoute(
-        builder: (context) => ScaffoldPage(
+        builder: (final context) => ScaffoldPage(
           header: PageHeader(
             title: const Text("Invoice Preview"),
             leading: Padding(
@@ -554,14 +553,12 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
             ),
           ),
           content: PdfPreview(
-            build: (format) => generateInvoicePdf(invoice, profile),
-            allowPrinting: true,
-            allowSharing: true,
+            build: (final format) => generateInvoicePdf(invoice, profile),
             canChangePageFormat: false,
             initialPageFormat: PdfPageFormat.a4,
             pdfPreviewPageDecoration: BoxDecoration(
               color: FluentTheme.of(context).cardColor,
-              boxShadow: const [BoxShadow(blurRadius: 4, color: Colors.black)],
+              boxShadow: const [BoxShadow(blurRadius: 4)],
             ),
           ),
         ),
@@ -569,10 +566,10 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
     );
   }
 
-  void _showClientSelector(BuildContext context, List<Client> clients) {
+  void _showClientSelector(final BuildContext context, final List<Client> clients) {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (final context) {
         return ContentDialog(
           title: const Text("Select Client"),
           content: SizedBox(
@@ -580,7 +577,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
             width: 400,
             child: ListView.builder(
               itemCount: clients.length,
-              itemBuilder: (context, index) {
+              itemBuilder: (final context, final index) {
                 final client = clients[index];
                 return ListTile(
                   title: Text(client.name),

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/invoice.dart';
+import 'package:invobharat/models/invoice.dart';
 
-import 'invoice_repository_provider.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
 
 // Model for a single row in the ledger
 class LedgerEntry {
@@ -25,7 +25,7 @@ class LedgerEntry {
 // Provider that returns a list of LedgerEntry for a given Client Name (since we link by name mostly)
 // We use Family to pass arguments.
 final clientLedgerProvider =
-    FutureProvider.family<List<LedgerEntry>, String>((ref, clientName) async {
+    FutureProvider.family<List<LedgerEntry>, String>((final ref, final clientName) async {
   final repository = ref.watch(invoiceRepositoryProvider);
 
   // 1. Fetch all invoices
@@ -35,12 +35,12 @@ final clientLedgerProvider =
   // 2. Filter for this client
   // We match by Receiver Name as Invoice/Receiver models do not store a Client ID.
   final clientInvoices = allInvoices
-      .where((inv) =>
+      .where((final inv) =>
           inv.receiver.name.trim().toLowerCase() ==
           clientName.trim().toLowerCase())
       .toList();
 
-  List<LedgerEntry> entries = [];
+  final List<LedgerEntry> entries = [];
 
   for (final inv in clientInvoices) {
     // 3. Invoice Entry (Debit)
@@ -103,11 +103,11 @@ final clientLedgerProvider =
   }
 
   // 5. Sort by Date
-  entries.sort((a, b) => a.date.compareTo(b.date));
+  entries.sort((final a, final b) => a.date.compareTo(b.date));
 
   // 6. Calculate Running Balance
   double runningBalance = 0;
-  List<LedgerEntry> calculatedEntries = [];
+  final List<LedgerEntry> calculatedEntries = [];
 
   for (final entry in entries) {
     runningBalance += entry.debit - entry.credit;

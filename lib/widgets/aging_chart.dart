@@ -7,15 +7,15 @@ class AgingChart extends StatelessWidget {
   const AgingChart({super.key, required this.agingData});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     // Filter out zero values
-    final data = Map.fromEntries(agingData.entries.where((e) => e.value > 0));
+    final data = Map.fromEntries(agingData.entries.where((final e) => e.value > 0));
 
     if (data.isEmpty) {
       return const Center(child: Text("No aging data available"));
     }
 
-    final total = data.values.fold(0.0, (sum, val) => sum + val);
+    final total = data.values.fold(0.0, (final sum, final val) => sum + val);
 
     return Row(
       children: [
@@ -23,7 +23,7 @@ class AgingChart extends StatelessWidget {
           flex: 2,
           child: PieChart(
             PieChartData(
-              sections: data.entries.map((e) {
+              sections: data.entries.map((final e) {
                 final color = _getColorForKey(e.key);
                 final percentage = (e.value / total) * 100;
                 return PieChartSectionData(
@@ -48,7 +48,7 @@ class AgingChart extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: data.entries.map((e) {
+            children: data.entries.map((final e) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: Row(
@@ -72,7 +72,7 @@ class AgingChart extends StatelessWidget {
     );
   }
 
-  Color _getColorForKey(String key) {
+  Color _getColorForKey(final String key) {
     switch (key) {
       case "Current":
         return Colors.green;

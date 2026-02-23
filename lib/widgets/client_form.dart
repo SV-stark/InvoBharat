@@ -1,9 +1,9 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/client.dart';
-import '../providers/client_form_provider.dart';
-import '../widgets/adaptive_widgets.dart';
-import '../utils/validators.dart';
+import 'package:invobharat/models/client.dart';
+import 'package:invobharat/providers/client_form_provider.dart';
+import 'package:invobharat/widgets/adaptive_widgets.dart';
+import 'package:invobharat/utils/validators.dart';
 
 class ClientFormDialog extends ConsumerStatefulWidget {
   final Client? client;
@@ -104,7 +104,7 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
       if (error != null) {
         displayInfoBar(
           context,
-          builder: (context, close) => InfoBar(
+          builder: (final context, final close) => InfoBar(
             title: const Text('Error'),
             content: Text(error),
             severity: InfoBarSeverity.error,
@@ -114,7 +114,7 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
     }
   }
 
-  String? _validateName(String? value) {
+  String? _validateName(final String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Client name is required';
     }
@@ -122,7 +122,7 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final formState = ref.watch(clientFormProvider);
 
     return ContentDialog(
