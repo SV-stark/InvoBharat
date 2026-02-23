@@ -1,3 +1,4 @@
+// ignore_for_file: unawaited_futures
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -30,17 +31,21 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(FluentIcons.page_list,
-                      size: 64, color: Colors.grey),
+                  const Icon(
+                    FluentIcons.page_list,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(height: 16),
-                  Text("No templates yet.",
-                      style:
-                          theme.typography.title?.copyWith(color: Colors.grey)),
+                  Text(
+                    "No templates yet.",
+                    style: theme.typography.title?.copyWith(color: Colors.grey),
+                  ),
                   const SizedBox(height: 16),
                   FilledButton(
                     onPressed: () => _showEditDialog(context, ref, null),
                     child: const Text("Create Template"),
-                  )
+                  ),
                 ],
               ),
             )
@@ -54,10 +59,13 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
                   child: Card(
                     child: ListTile(
                       leading: const Icon(FluentIcons.page_list),
-                      title: Text(template.description,
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      title: Text(
+                        template.description,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       subtitle: Text(
-                          "Price: ₹${template.amount} / ${template.unit} (GST: ${template.gstRate}%) • Default Qty: ${template.quantity}"),
+                        "Price: ₹${template.amount} / ${template.unit} (GST: ${template.gstRate}%) • Default Qty: ${template.quantity}",
+                      ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -68,8 +76,12 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
                           ),
                           IconButton(
                             icon: Icon(FluentIcons.delete, color: Colors.red),
-                            onPressed: () => _deleteTemplate(context, ref,
-                                template.id, template.description),
+                            onPressed: () => _deleteTemplate(
+                              context,
+                              ref,
+                              template.id,
+                              template.description,
+                            ),
                           ),
                         ],
                       ),
@@ -82,7 +94,11 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
   }
 
   void _deleteTemplate(
-      final BuildContext context, final WidgetRef ref, final String id, final String name) async {
+    final BuildContext context,
+    final WidgetRef ref,
+    final String id,
+    final String name,
+  ) async {
     showDialog(
       context: context,
       builder: (final context) => ContentDialog(
@@ -95,8 +111,9 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
           ),
           FilledButton(
             style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(Colors.red),
-                foregroundColor: WidgetStateProperty.all(Colors.white)),
+              backgroundColor: WidgetStateProperty.all(Colors.red),
+              foregroundColor: WidgetStateProperty.all(Colors.white),
+            ),
             child: const Text("Delete"),
             onPressed: () {
               ref.read(itemTemplateListProvider.notifier).deleteTemplate(id);
@@ -109,17 +126,23 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
   }
 
   void _showEditDialog(
-      final BuildContext context, final WidgetRef ref, final ItemTemplate? template) {
+    final BuildContext context,
+    final WidgetRef ref,
+    final ItemTemplate? template,
+  ) {
     // Controllers
     final descCtrl = TextEditingController(text: template?.description ?? '');
-    final amountCtrl =
-        TextEditingController(text: template?.amount.toString() ?? '0');
+    final amountCtrl = TextEditingController(
+      text: template?.amount.toString() ?? '0',
+    );
     final unitCtrl = TextEditingController(text: template?.unit ?? 'Nos');
-    final gstCtrl =
-        TextEditingController(text: template?.gstRate.toString() ?? '18');
+    final gstCtrl = TextEditingController(
+      text: template?.gstRate.toString() ?? '18',
+    );
     final sacCtrl = TextEditingController(text: template?.sacCode ?? '');
-    final qtyCtrl =
-        TextEditingController(text: template?.quantity.toString() ?? '1');
+    final qtyCtrl = TextEditingController(
+      text: template?.quantity.toString() ?? '1',
+    );
 
     String codeType = template?.codeType ?? 'SAC';
 
@@ -149,7 +172,8 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
                         controller: amountCtrl,
                         placeholder: "0.00",
                         keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
+                          decimal: true,
+                        ),
                       ),
                     ),
                   ),
@@ -175,7 +199,8 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
                         controller: qtyCtrl,
                         placeholder: "1",
                         keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
+                          decimal: true,
+                        ),
                       ),
                     ),
                   ),
@@ -201,7 +226,10 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
                       child: ComboBox<String>(
                         value: codeType,
                         items: ['SAC', 'HSN']
-                            .map((final e) => ComboBoxItem(value: e, child: Text(e)))
+                            .map(
+                              (final e) =>
+                                  ComboBoxItem(value: e, child: Text(e)),
+                            )
                             .toList(),
                         onChanged: (final val) {
                           if (val != null) {

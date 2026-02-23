@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,8 +23,11 @@ import 'package:invobharat/widgets/adaptive_widgets.dart'; // NEW Import
 class FluentInvoiceForm extends ConsumerStatefulWidget {
   final Invoice? invoiceToEdit;
   final String? estimateIdToMarkConverted;
-  const FluentInvoiceForm(
-      {super.key, this.invoiceToEdit, this.estimateIdToMarkConverted});
+  const FluentInvoiceForm({
+    super.key,
+    this.invoiceToEdit,
+    this.estimateIdToMarkConverted,
+  });
 
   @override
   ConsumerState<FluentInvoiceForm> createState() => _FluentInvoiceFormState();
@@ -64,8 +68,9 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
 
     return ScaffoldPage.scrollable(
       header: PageHeader(
-        title:
-            Text(widget.invoiceToEdit != null ? "Edit Invoice" : "New Invoice"),
+        title: Text(
+          widget.invoiceToEdit != null ? "Edit Invoice" : "New Invoice",
+        ),
         leading: Navigator.canPop(context)
             ? Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -81,10 +86,12 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
         decoration: BoxDecoration(
           color: FluentTheme.of(context).cardColor,
           border: Border(
-              top: BorderSide(
-                  color: FluentTheme.of(context)
-                      .resources
-                      .dividerStrokeColorDefault)),
+            top: BorderSide(
+              color: FluentTheme.of(
+                context,
+              ).resources.dividerStrokeColorDefault,
+            ),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -108,10 +115,13 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
       ),
       children: [
         Expander(
-          header: Text("Invoice Details",
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: FluentTheme.of(context).accentColor)),
+          header: Text(
+            "Invoice Details",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: FluentTheme.of(context).accentColor,
+            ),
+          ),
           initiallyExpanded: true,
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,7 +173,9 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                       posCtrl, // Use mixin controller (renamed from _placeOfSupplyController)
                   items: IndianStates.states
                       .map(
-                          (final e) => AutoSuggestBoxItem<String>(value: e, label: e))
+                        (final e) =>
+                            AutoSuggestBoxItem<String>(value: e, label: e),
+                      )
                       .toList(),
                   onSelected: (final item) {
                     ref
@@ -217,10 +229,13 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
 
         // Parties Section
         Expander(
-          header: Text("Parties",
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: FluentTheme.of(context).accentColor)),
+          header: Text(
+            "Parties",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: FluentTheme.of(context).accentColor,
+            ),
+          ),
           content: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -229,8 +244,10 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Supplier",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      "Supplier",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 5),
                     Card(
                       child: SizedBox(
@@ -238,16 +255,20 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(profile.companyName,
-                                style: FluentTheme.of(context)
-                                    .typography
-                                    .bodyStrong),
-                            Text(profile.gstin,
-                                style:
-                                    FluentTheme.of(context).typography.caption),
-                            Text(profile.address,
-                                style:
-                                    FluentTheme.of(context).typography.caption),
+                            Text(
+                              profile.companyName,
+                              style: FluentTheme.of(
+                                context,
+                              ).typography.bodyStrong,
+                            ),
+                            Text(
+                              profile.gstin,
+                              style: FluentTheme.of(context).typography.caption,
+                            ),
+                            Text(
+                              profile.address,
+                              style: FluentTheme.of(context).typography.caption,
+                            ),
                           ],
                         ),
                       ),
@@ -257,18 +278,23 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                       child: const Text("Edit in Settings"),
                       onPressed: () {
                         // Ideally navigate to settings, but user can just click Settings tab
-                        displayInfoBar(context, builder: (final context, final close) {
-                          return InfoBar(
-                            title: const Text("Go to Settings"),
-                            content: const Text(
-                                "Please edit supplier details in the Settings tab."),
-                            action: IconButton(
+                        displayInfoBar(
+                          context,
+                          builder: (final context, final close) {
+                            return InfoBar(
+                              title: const Text("Go to Settings"),
+                              content: const Text(
+                                "Please edit supplier details in the Settings tab.",
+                              ),
+                              action: IconButton(
                                 icon: const Icon(FluentIcons.clear),
-                                onPressed: close),
-                          );
-                        });
+                                onPressed: close,
+                              ),
+                            );
+                          },
+                        );
                       },
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -281,8 +307,10 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("Receiver (Client)",
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text(
+                          "Receiver (Client)",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         IconButton(
                           icon: const Icon(FluentIcons.contact_list),
                           onPressed: () {
@@ -328,8 +356,10 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                           receiverStateCtrl, // Use mixin controller (AutoSuggest requires controller for text)
                       placeholder: "State",
                       items: IndianStates.states
-                          .map((final e) =>
-                              AutoSuggestBoxItem<String>(value: e, label: e))
+                          .map(
+                            (final e) =>
+                                AutoSuggestBoxItem<String>(value: e, label: e),
+                          )
                           .toList(),
                       onSelected: (final item) {
                         ref
@@ -347,7 +377,8 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                     const SizedBox(height: 5),
                     TextFormBox(
                       placeholder: "State Code (e.g. 29)",
-                      initialValue: invoice.receiver
+                      initialValue: invoice
+                          .receiver
                           .stateCode, // Keep initialValue if we don't track stateCode in mixin (we don't for now, let's proceed)
                       // Actually mixin doesn't have stateCodeCtrl.
                       // Should I add it? Yes to be thorough, but for now I leaving as is to minimize regression risk of missing field.
@@ -362,11 +393,14 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
           ),
         ),
         const SizedBox(height: 10),
-        Text("Items",
-            style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: FluentTheme.of(context).accentColor)),
+        Text(
+          "Items",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: FluentTheme.of(context).accentColor,
+          ),
+        ),
         const SizedBox(height: 10),
         ...invoice.items.asMap().entries.map((final entry) {
           final index = entry.key;
@@ -405,7 +439,9 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                           value: item.codeType,
                           items: ['SAC', 'HSN']
                               .map(
-                                  (final e) => ComboBoxItem(value: e, child: Text(e)))
+                                (final e) =>
+                                    ComboBoxItem(value: e, child: Text(e)),
+                              )
                               .toList(),
                           onChanged: (final val) {
                             if (val != null) {
@@ -457,8 +493,9 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                         child: AppTextInput(
                           label: "Amount",
                           placeholder: "Amount",
-                          initialValue:
-                              item.amount == 0 ? "" : item.amount.toString(),
+                          initialValue: item.amount == 0
+                              ? ""
+                              : item.amount.toString(),
                           validator: Validators.doubleValue,
                           onChanged: (final val) => ref
                               .read(invoiceProvider.notifier)
@@ -509,35 +546,45 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
       );
 
       if (context.mounted) {
-        displayInfoBar(
-          context,
-          builder: (final context, final close) {
-            return InfoBar(
-              title: const Text('Success'),
-              content: const Text('Invoice saved successfully'),
-              action: IconButton(
-                icon: const Icon(FluentIcons.clear),
-                onPressed: close,
-              ),
-              severity: InfoBarSeverity.success,
-            );
-          },
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (final context, final close) {
+              return InfoBar(
+                title: const Text('Success'),
+                content: const Text('Invoice saved successfully'),
+                action: IconButton(
+                  icon: const Icon(FluentIcons.clear),
+                  onPressed: close,
+                ),
+                severity: InfoBarSeverity.success,
+              );
+            },
+          ),
         );
       }
     } catch (e) {
       if (context.mounted) {
-        displayInfoBar(context,
+        unawaited(
+          displayInfoBar(
+            context,
             builder: (final context, final close) => InfoBar(
-                title: const Text("Error"),
-                content: Text(e.toString()),
-                severity: InfoBarSeverity.error,
-                onClose: close));
+              title: const Text("Error"),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            ),
+          ),
+        );
       }
     }
   }
 
   void _showPreview(
-      final BuildContext context, final Invoice invoice, final BusinessProfile profile) {
+    final BuildContext context,
+    final Invoice invoice,
+    final BusinessProfile profile,
+  ) {
     Navigator.push(
       context,
       FluentPageRoute(
@@ -566,42 +613,49 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
     );
   }
 
-  void _showClientSelector(final BuildContext context, final List<Client> clients) {
-    showDialog(
-      context: context,
-      builder: (final context) {
-        return ContentDialog(
-          title: const Text("Select Client"),
-          content: SizedBox(
-            height: 300,
-            width: 400,
-            child: ListView.builder(
-              itemCount: clients.length,
-              itemBuilder: (final context, final index) {
-                final client = clients[index];
-                return ListTile(
-                  title: Text(client.name),
-                  subtitle: Text(client.gstin.isNotEmpty
-                      ? client.gstin
-                      : (client.phone.isNotEmpty
-                          ? client.phone
-                          : "No details")),
-                  onPressed: () {
-                    onClientSelected(client); // Uses Mixin
-                    Navigator.pop(context);
-                  },
-                );
-              },
+  void _showClientSelector(
+    final BuildContext context,
+    final List<Client> clients,
+  ) {
+    unawaited(
+      showDialog(
+        context: context,
+        builder: (final context) {
+          return ContentDialog(
+            title: const Text("Select Client"),
+            content: SizedBox(
+              height: 300,
+              width: 400,
+              child: ListView.builder(
+                itemCount: clients.length,
+                itemBuilder: (final context, final index) {
+                  final client = clients[index];
+                  return ListTile(
+                    title: Text(client.name),
+                    subtitle: Text(
+                      client.gstin.isNotEmpty
+                          ? client.gstin
+                          : (client.phone.isNotEmpty
+                                ? client.phone
+                                : "No details"),
+                    ),
+                    onPressed: () {
+                      onClientSelected(client); // Uses Mixin
+                      Navigator.pop(context);
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-          actions: [
-            Button(
-              child: const Text("Cancel"),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
-        );
-      },
+            actions: [
+              Button(
+                child: const Text("Cancel"),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }

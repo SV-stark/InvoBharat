@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
@@ -52,14 +53,19 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        displayInfoBar(context, builder: (final context, final close) {
-          return InfoBar(
-            title: const Text("Error"),
-            content: Text(e.toString()),
-            severity: InfoBarSeverity.error,
-            onClose: close,
-          );
-        });
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (final context, final close) {
+              return InfoBar(
+                title: const Text("Error"),
+                content: Text(e.toString()),
+                severity: InfoBarSeverity.error,
+                onClose: close,
+              );
+            },
+          ),
+        );
       }
     }
   }
@@ -68,26 +74,36 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
     try {
       final invoiceNo = await convertToInvoice();
       if (mounted) {
-        displayInfoBar(context, builder: (final context, final close) {
-          return InfoBar(
-            title: const Text("Success"),
-            content: Text('Converted to Invoice $invoiceNo'),
-            severity: InfoBarSeverity.success,
-            onClose: close,
-          );
-        });
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (final context, final close) {
+              return InfoBar(
+                title: const Text("Success"),
+                content: Text('Converted to Invoice $invoiceNo'),
+                severity: InfoBarSeverity.success,
+                onClose: close,
+              );
+            },
+          ),
+        );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        displayInfoBar(context, builder: (final context, final close) {
-          return InfoBar(
-            title: const Text("Error"),
-            content: Text(e.toString()),
-            severity: InfoBarSeverity.error,
-            onClose: close,
-          );
-        });
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (final context, final close) {
+              return InfoBar(
+                title: const Text("Error"),
+                content: Text(e.toString()),
+                severity: InfoBarSeverity.error,
+                onClose: close,
+              );
+            },
+          ),
+        );
       }
     }
   }
@@ -103,7 +119,8 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
       child: ScaffoldPage.scrollable(
         header: PageHeader(
           title: Text(
-              widget.estimateId == null ? "New Estimate" : "Edit Estimate"),
+            widget.estimateId == null ? "New Estimate" : "Edit Estimate",
+          ),
           leading: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: IconButton(
@@ -130,8 +147,10 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
         ),
         children: [
           Expander(
-            header: const Text("Details",
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            header: const Text(
+              "Details",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             initiallyExpanded: true,
             content: Column(
               children: [
@@ -152,7 +171,7 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                           onChanged: (final d) => setState(() => date = d),
                         ),
                       ),
-                    )
+                    ),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -161,10 +180,7 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                   controller: receiverNameCtrl,
                 ),
                 const SizedBox(height: 10),
-                AppTextInput(
-                  label: "Address",
-                  controller: receiverAddressCtrl,
-                ),
+                AppTextInput(label: "Address", controller: receiverAddressCtrl),
                 const SizedBox(height: 10),
                 Row(
                   children: [
@@ -182,8 +198,12 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                         child: AutoSuggestBox<String>(
                           controller: receiverStateCtrl,
                           items: IndianStates.states
-                              .map((final e) => AutoSuggestBoxItem<String>(
-                                  value: e, label: e))
+                              .map(
+                                (final e) => AutoSuggestBoxItem<String>(
+                                  value: e,
+                                  label: e,
+                                ),
+                              )
                               .toList(),
                         ),
                       ),
@@ -198,12 +218,11 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
             header: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Items",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                Button(
-                  onPressed: _addItem,
-                  child: const Text("+ Add"),
-                )
+                const Text(
+                  "Items",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Button(onPressed: _addItem, child: const Text("+ Add")),
               ],
             ),
             initiallyExpanded: true,
@@ -221,11 +240,14 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: Card(
                       child: ListTile(
-                        title: Text(item.description.isEmpty
-                            ? "Item ${index + 1}"
-                            : item.description),
+                        title: Text(
+                          item.description.isEmpty
+                              ? "Item ${index + 1}"
+                              : item.description,
+                        ),
                         subtitle: Text(
-                            "${item.quantity} x ${item.amount} = ${item.netAmount}"),
+                          "${item.quantity} x ${item.amount} = ${item.netAmount}",
+                        ),
                         trailing: IconButton(
                           icon: Icon(FluentIcons.delete, color: Colors.red),
                           onPressed: () => _removeItem(index),
@@ -242,29 +264,40 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                          "Total: ₹${items.fold(0.0, (final sum, final i) => sum + i.totalAmount).toStringAsFixed(2)}",
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
+                        "Total: ₹${items.fold(0.0, (final sum, final i) => sum + i.totalAmount).toStringAsFixed(2)}",
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
-                )
+                ),
               ],
             ),
           ),
           const SizedBox(height: 10),
           Expander(
-            header: const Text("Additional Info",
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            header: const Text(
+              "Additional Info",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             content: Column(
               children: [
                 AppTextInput(
-                    label: "Notes", controller: notesCtrl, maxLines: 3),
+                  label: "Notes",
+                  controller: notesCtrl,
+                  maxLines: 3,
+                ),
                 const SizedBox(height: 10),
                 AppTextInput(
-                    label: "Terms", controller: termsCtrl, maxLines: 3),
+                  label: "Terms",
+                  controller: termsCtrl,
+                  maxLines: 3,
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -344,15 +377,19 @@ class _FluentItemEditDialogState extends State<_FluentItemEditDialog> {
           const SizedBox(height: 8),
           Row(
             children: [
-              Expanded(child: AppTextInput(label: "Qty", controller: _qtyCtrl)),
+              Expanded(
+                child: AppTextInput(label: "Qty", controller: _qtyCtrl),
+              ),
               const SizedBox(width: 8),
               Expanded(
-                  child: AppTextInput(label: "Rate", controller: _rateCtrl)),
+                child: AppTextInput(label: "Rate", controller: _rateCtrl),
+              ),
               const SizedBox(width: 8),
               Expanded(
-                  child: AppTextInput(label: "GST %", controller: _gstCtrl)),
+                child: AppTextInput(label: "GST %", controller: _gstCtrl),
+              ),
             ],
-          )
+          ),
         ],
       ),
       actions: [

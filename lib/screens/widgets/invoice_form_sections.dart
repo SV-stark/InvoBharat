@@ -203,7 +203,7 @@ class InvoiceHeaderSection extends ConsumerWidget {
           children: [
             Text(
               selectedDate != null
-                  ? DateFormat('dd MMM yyyy').format(selectedDate!)
+                  ? DateFormat('dd MMM yyyy').format(selectedDate)
                   : "Select Date",
               style: TextStyle(
                 color: selectedDate != null ? Colors.black : Colors.grey,

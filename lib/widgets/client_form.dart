@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/models/client.dart';
@@ -37,13 +38,15 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
     // Initialize controllers with existing data
     _nameController = TextEditingController(text: widget.client?.name ?? '');
     _gstinController = TextEditingController(text: widget.client?.gstin ?? '');
-    _addressController =
-        TextEditingController(text: widget.client?.address ?? '');
+    _addressController = TextEditingController(
+      text: widget.client?.address ?? '',
+    );
     _stateController = TextEditingController(text: widget.client?.state ?? '');
     _emailController = TextEditingController(text: widget.client?.email ?? '');
     _phoneController = TextEditingController(text: widget.client?.phone ?? '');
-    _contactController =
-        TextEditingController(text: widget.client?.primaryContact ?? '');
+    _contactController = TextEditingController(
+      text: widget.client?.primaryContact ?? '',
+    );
     _notesController = TextEditingController(text: widget.client?.notes ?? '');
 
     // Sync controllers to provider
@@ -102,12 +105,14 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
     } else if (mounted) {
       final error = ref.read(clientFormProvider).errorMessage;
       if (error != null) {
-        displayInfoBar(
-          context,
-          builder: (final context, final close) => InfoBar(
-            title: const Text('Error'),
-            content: Text(error),
-            severity: InfoBarSeverity.error,
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (final context, final close) => InfoBar(
+              title: const Text('Error'),
+              content: Text(error),
+              severity: InfoBarSeverity.error,
+            ),
           ),
         );
       }

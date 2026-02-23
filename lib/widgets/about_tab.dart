@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -15,9 +16,9 @@ class AboutTab extends StatelessWidget {
 
   Future<void> _checkForUpdates(final BuildContext context) async {
     // Show loading
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Checking for updates...')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Checking for updates...')));
 
     final updates = await UpdateService.checkForUpdates();
     if (!context.mounted) return;
@@ -29,49 +30,57 @@ class AboutTab extends StatelessWidget {
       return;
     }
 
-    showDialog(
-      context: context,
-      builder: (final context) => AlertDialog(
-        title: const Text('Updates Available'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (updates['stable'] != null) ...[
-              const Text('Stable Release:',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              ListTile(
-                title: Text(updates['stable']!.tagName),
-                subtitle: Text('Published: ${updates['stable']!.publishedAt}'),
-                trailing: IconButton(
-                  icon: const Icon(Icons.open_in_new),
-                  onPressed: () =>
-                      launchUrl(Uri.parse(updates['stable']!.htmlUrl)),
+    unawaited(
+      showDialog(
+        context: context,
+        builder: (final context) => AlertDialog(
+          title: const Text('Updates Available'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (updates['stable'] != null) ...[
+                const Text(
+                  'Stable Release:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-              ),
-              const SizedBox(height: 10),
-            ],
-            if (updates['beta'] != null) ...[
-              const Text('Beta / Nightly:',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              ListTile(
-                title: Text(updates['beta']!.tagName),
-                subtitle: Text('Published: ${updates['beta']!.publishedAt}'),
-                trailing: IconButton(
-                  icon: const Icon(Icons.open_in_new),
-                  onPressed: () =>
-                      launchUrl(Uri.parse(updates['beta']!.htmlUrl)),
+                ListTile(
+                  title: Text(updates['stable']!.tagName),
+                  subtitle: Text(
+                    'Published: ${updates['stable']!.publishedAt}',
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.open_in_new),
+                    onPressed: () =>
+                        launchUrl(Uri.parse(updates['stable']!.htmlUrl)),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 10),
+              ],
+              if (updates['beta'] != null) ...[
+                const Text(
+                  'Beta / Nightly:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                ListTile(
+                  title: Text(updates['beta']!.tagName),
+                  subtitle: Text('Published: ${updates['beta']!.publishedAt}'),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.open_in_new),
+                    onPressed: () =>
+                        launchUrl(Uri.parse(updates['beta']!.htmlUrl)),
+                  ),
+                ),
+              ],
             ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
       ),
     );
   }
@@ -102,19 +111,13 @@ class AboutTab extends StatelessWidget {
           // Version
           const Text(
             'Version 1.0.0',
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: Colors.grey, fontSize: 16),
           ),
           const SizedBox(height: 32),
           const Divider(indent: 64, endIndent: 64),
           const SizedBox(height: 32),
           // Credits
-          const Text(
-            'Made with ❤️ in India',
-            style: TextStyle(fontSize: 18),
-          ),
+          const Text('Made with ❤️ in India', style: TextStyle(fontSize: 18)),
           const SizedBox(height: 8),
           const Text(
             'Developed by SV-stark',

@@ -1,3 +1,4 @@
+// ignore_for_file: unawaited_futures
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -83,8 +84,9 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 final isSelected = _selectedIndex == index;
                 final theme = FluentTheme.of(context);
                 final color = isSelected ? theme.accentColor : theme.cardColor;
-                final fgColor =
-                    isSelected ? Colors.white : theme.typography.body?.color;
+                final fgColor = isSelected
+                    ? Colors.white
+                    : theme.typography.body?.color;
 
                 return Padding(
                   padding: const EdgeInsets.only(right: 12),
@@ -99,9 +101,13 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                         children: [
                           Icon(tab['icon'], size: 24, color: fgColor),
                           const SizedBox(height: 8),
-                          Text(tab['label'],
-                              style: TextStyle(
-                                  color: fgColor, fontWeight: FontWeight.bold)),
+                          Text(
+                            tab['label'],
+                            style: TextStyle(
+                              color: fgColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -171,20 +177,26 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           },
         ),
         const SizedBox(height: 20),
-        const Text("Sidebar Behavior",
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text(
+          "Sidebar Behavior",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 10),
         ComboBox<PaneDisplayMode>(
           value: appConfig.paneDisplayMode,
           items: const [
             ComboBoxItem(
-                value: PaneDisplayMode.open, child: Text("Always Open")),
+              value: PaneDisplayMode.open,
+              child: Text("Always Open"),
+            ),
             ComboBoxItem(
-                value: PaneDisplayMode.compact,
-                child: Text("Compact (Icons Only)")),
+              value: PaneDisplayMode.compact,
+              child: Text("Compact (Icons Only)"),
+            ),
             ComboBoxItem(
-                value: PaneDisplayMode.minimal,
-                child: Text("Minimal (Hamburger)")),
+              value: PaneDisplayMode.minimal,
+              child: Text("Minimal (Hamburger)"),
+            ),
           ],
           onChanged: (final mode) {
             if (mode != null) {
@@ -193,8 +205,10 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           },
         ),
         const SizedBox(height: 20),
-        const Text("Accent Color",
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text(
+          "Accent Color",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 10),
         Wrap(
           spacing: 10,
@@ -208,12 +222,18 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 backgroundColor: WidgetStateProperty.all(color),
               ),
               onPressed: () {
-                ref.read(businessProfileNotifierProvider).updateProfile(
-                    profile.copyWith(colorValue: color.toARGB32()));
+                ref
+                    .read(businessProfileNotifierProvider)
+                    .updateProfile(
+                      profile.copyWith(colorValue: color.toARGB32()),
+                    );
               },
               icon: isSelected
-                  ? const Icon(FluentIcons.check_mark,
-                      color: Colors.white, size: 16)
+                  ? const Icon(
+                      FluentIcons.check_mark,
+                      color: Colors.white,
+                      size: 16,
+                    )
                   : const SizedBox(width: 16, height: 16),
             );
           }).toList(),
@@ -230,16 +250,16 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
         Row(
           children: [
             Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.withValues(alpha: 0.5)),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: (profile.logoPath != null &&
-                        profile.logoPath!.isNotEmpty)
-                    ? Image.file(File(profile.logoPath!), fit: BoxFit.contain)
-                    : const Center(child: Icon(FluentIcons.photo2, size: 30))),
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.withValues(alpha: 0.5)),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: (profile.logoPath != null && profile.logoPath!.isNotEmpty)
+                  ? Image.file(File(profile.logoPath!), fit: BoxFit.contain)
+                  : const Center(child: Icon(FluentIcons.photo2, size: 30)),
+            ),
             const SizedBox(width: 20),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,11 +268,15 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   child: const Text("Select Brand Logo"),
                   onPressed: () async {
                     final picker = ImagePicker();
-                    final XFile? image =
-                        await picker.pickImage(source: ImageSource.gallery);
+                    final XFile? image = await picker.pickImage(
+                      source: ImageSource.gallery,
+                    );
                     if (image != null) {
-                      ref.read(businessProfileNotifierProvider).updateProfile(
-                          profile.copyWith(logoPath: image.path));
+                      ref
+                          .read(businessProfileNotifierProvider)
+                          .updateProfile(
+                            profile.copyWith(logoPath: image.path),
+                          );
                     }
                   },
                 ),
@@ -266,7 +290,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                           .updateProfile(profile.copyWith(logoPath: ""));
                     },
                   ),
-                ]
+                ],
               ],
             ),
           ],
@@ -281,25 +305,33 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Digital Signature",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  "Digital Signature",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 5),
                 Row(
                   children: [
                     Container(
-                        width: 100,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                              color: Colors.grey.withValues(alpha: 0.5)),
-                          borderRadius: BorderRadius.circular(4),
+                      width: 100,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.grey.withValues(alpha: 0.5),
                         ),
-                        child: (profile.signaturePath != null &&
-                                profile.signaturePath!.isNotEmpty)
-                            ? Image.file(File(profile.signaturePath!),
-                                fit: BoxFit.contain)
-                            : const Center(
-                                child: Icon(FluentIcons.edit, size: 24))),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child:
+                          (profile.signaturePath != null &&
+                              profile.signaturePath!.isNotEmpty)
+                          ? Image.file(
+                              File(profile.signaturePath!),
+                              fit: BoxFit.contain,
+                            )
+                          : const Center(
+                              child: Icon(FluentIcons.edit, size: 24),
+                            ),
+                    ),
                     const SizedBox(width: 10),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,12 +341,16 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                           onPressed: () async {
                             final picker = ImagePicker();
                             final XFile? image = await picker.pickImage(
-                                source: ImageSource.gallery);
+                              source: ImageSource.gallery,
+                            );
                             if (image != null) {
                               try {
                                 final imageBytes = await image.readAsBytes();
-                                final result = await processImageBackgroundInIsolate(imageBytes);
-                                
+                                final result =
+                                    await processImageBackgroundInIsolate(
+                                      imageBytes,
+                                    );
+
                                 if (result.error != null) {
                                   throw Exception(result.error);
                                 }
@@ -324,33 +360,43 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                                 final appDir =
                                     await getApplicationDocumentsDirectory();
                                 final fileName = 'sig_${const Uuid().v4()}.png';
-                                final savedFile =
-                                    File(p.join(appDir.path, fileName));
+                                final savedFile = File(
+                                  p.join(appDir.path, fileName),
+                                );
                                 await savedFile.writeAsBytes(processedBytes);
 
                                 ref
                                     .read(businessProfileNotifierProvider)
-                                    .updateProfile(profile.copyWith(
-                                        signaturePath: savedFile.path));
+                                    .updateProfile(
+                                      profile.copyWith(
+                                        signaturePath: savedFile.path,
+                                      ),
+                                    );
                               } catch (e) {
                                 if (!mounted) return;
-                                displayInfoBar(context,
-                                    builder: (final context, final close) {
-                                  return InfoBar(
-                                    title:
-                                        const Text('Background Removal Failed'),
-                                    content: Text(e.toString()),
-                                    severity: InfoBarSeverity.error,
-                                    action: IconButton(
-                                      icon: const Icon(FluentIcons.clear),
-                                      onPressed: close,
-                                    ),
-                                  );
-                                });
+                                displayInfoBar(
+                                  context,
+                                  builder: (final context, final close) {
+                                    return InfoBar(
+                                      title: const Text(
+                                        'Background Removal Failed',
+                                      ),
+                                      content: Text(e.toString()),
+                                      severity: InfoBarSeverity.error,
+                                      action: IconButton(
+                                        icon: const Icon(FluentIcons.clear),
+                                        onPressed: close,
+                                      ),
+                                    );
+                                  },
+                                );
                                 ref
                                     .read(businessProfileNotifierProvider)
-                                    .updateProfile(profile.copyWith(
-                                        signaturePath: image.path));
+                                    .updateProfile(
+                                      profile.copyWith(
+                                        signaturePath: image.path,
+                                      ),
+                                    );
                               }
                             }
                           },
@@ -363,10 +409,11 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                               ref
                                   .read(businessProfileNotifierProvider)
                                   .updateProfile(
-                                      profile.copyWith(signaturePath: ""));
+                                    profile.copyWith(signaturePath: ""),
+                                  );
                             },
                           ),
-                        ]
+                        ],
                       ],
                     ),
                   ],
@@ -378,28 +425,37 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Business Stamp",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  "Business Stamp",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 5),
                 Row(
                   children: [
                     Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                              color: Colors.grey.withValues(alpha: 0.5)),
-                          borderRadius:
-                              BorderRadius.circular(50), // Circular for stamp
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.grey.withValues(alpha: 0.5),
                         ),
-                        child: (profile.stampPath != null &&
-                                profile.stampPath!.isNotEmpty)
-                            ? ClipOval(
-                                child: Image.file(File(profile.stampPath!),
-                                    fit: BoxFit.cover),
-                              )
-                            : const Center(
-                                child: Icon(FluentIcons.tag, size: 24))),
+                        borderRadius: BorderRadius.circular(
+                          50,
+                        ), // Circular for stamp
+                      ),
+                      child:
+                          (profile.stampPath != null &&
+                              profile.stampPath!.isNotEmpty)
+                          ? ClipOval(
+                              child: Image.file(
+                                File(profile.stampPath!),
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : const Center(
+                              child: Icon(FluentIcons.tag, size: 24),
+                            ),
+                    ),
                     const SizedBox(width: 10),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -409,12 +465,16 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                           onPressed: () async {
                             final picker = ImagePicker();
                             final XFile? image = await picker.pickImage(
-                                source: ImageSource.gallery);
+                              source: ImageSource.gallery,
+                            );
                             if (image != null) {
                               try {
                                 final imageBytes = await image.readAsBytes();
-                                final result = await processImageBackgroundInIsolate(imageBytes);
-                                
+                                final result =
+                                    await processImageBackgroundInIsolate(
+                                      imageBytes,
+                                    );
+
                                 if (result.error != null) {
                                   throw Exception(result.error);
                                 }
@@ -425,33 +485,41 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                                     await getApplicationDocumentsDirectory();
                                 final fileName =
                                     'stamp_${const Uuid().v4()}.png';
-                                final savedFile =
-                                    File(p.join(appDir.path, fileName));
+                                final savedFile = File(
+                                  p.join(appDir.path, fileName),
+                                );
                                 await savedFile.writeAsBytes(processedBytes);
 
                                 ref
                                     .read(businessProfileNotifierProvider)
-                                    .updateProfile(profile.copyWith(
-                                        stampPath: savedFile.path));
+                                    .updateProfile(
+                                      profile.copyWith(
+                                        stampPath: savedFile.path,
+                                      ),
+                                    );
                               } catch (e) {
                                 if (!mounted) return;
-                                displayInfoBar(context,
-                                    builder: (final context, final close) {
-                                  return InfoBar(
-                                    title:
-                                        const Text('Background Removal Failed'),
-                                    content: Text(e.toString()),
-                                    severity: InfoBarSeverity.error,
-                                    action: IconButton(
-                                      icon: const Icon(FluentIcons.clear),
-                                      onPressed: close,
-                                    ),
-                                  );
-                                });
+                                displayInfoBar(
+                                  context,
+                                  builder: (final context, final close) {
+                                    return InfoBar(
+                                      title: const Text(
+                                        'Background Removal Failed',
+                                      ),
+                                      content: Text(e.toString()),
+                                      severity: InfoBarSeverity.error,
+                                      action: IconButton(
+                                        icon: const Icon(FluentIcons.clear),
+                                        onPressed: close,
+                                      ),
+                                    );
+                                  },
+                                );
                                 ref
                                     .read(businessProfileNotifierProvider)
-                                    .updateProfile(profile.copyWith(
-                                        stampPath: image.path));
+                                    .updateProfile(
+                                      profile.copyWith(stampPath: image.path),
+                                    );
                               }
                             }
                           },
@@ -464,10 +532,11 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                               ref
                                   .read(businessProfileNotifierProvider)
                                   .updateProfile(
-                                      profile.copyWith(stampPath: ""));
+                                    profile.copyWith(stampPath: ""),
+                                  );
                             },
                           ),
-                        ]
+                        ],
                       ],
                     ),
                   ],
@@ -543,7 +612,9 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           child: AutoSuggestBox<String>(
             controller: _stateController,
             items: IndianStates.states
-                .map((final e) => AutoSuggestBoxItem<String>(value: e, label: e))
+                .map(
+                  (final e) => AutoSuggestBoxItem<String>(value: e, label: e),
+                )
                 .toList(),
             onSelected: (final item) {
               ref
@@ -605,9 +676,13 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           label: "Currency Symbol",
           child: ComboBox<String>(
             value: profile.currencySymbol,
-            items: ['₹', '\$', '€', '£', '¥']
-                .map((final e) => ComboBoxItem(value: e, child: Text(e)))
-                .toList(),
+            items: [
+              '₹',
+              '\$',
+              '€',
+              '£',
+              '¥',
+            ].map((final e) => ComboBoxItem(value: e, child: Text(e))).toList(),
             onChanged: (final val) {
               if (val != null) {
                 ref
@@ -774,7 +849,8 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
         InfoLabel(
           label: "Backup & Restore",
           child: const Text(
-              "Export your data to a CSV file or restore from a previous backup. Note: Logos and images are not included in the backup file."),
+            "Export your data to a CSV file or restore from a previous backup. Note: Logos and images are not included in the backup file.",
+          ),
         ),
         const SizedBox(height: 15),
         Row(
@@ -785,28 +861,36 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   try {
                     final result = await BackupService().exportFullBackup(ref);
                     if (!mounted) return;
-                    displayInfoBar(context, builder: (final context, final close) {
-                      return InfoBar(
-                        title: const Text('Export Result'),
-                        content: Text(result),
-                        action: IconButton(
+                    displayInfoBar(
+                      context,
+                      builder: (final context, final close) {
+                        return InfoBar(
+                          title: const Text('Export Result'),
+                          content: Text(result),
+                          action: IconButton(
                             icon: const Icon(FluentIcons.clear),
-                            onPressed: close),
-                        severity: InfoBarSeverity.success,
-                      );
-                    });
+                            onPressed: close,
+                          ),
+                          severity: InfoBarSeverity.success,
+                        );
+                      },
+                    );
                   } catch (e) {
                     if (!mounted) return;
-                    displayInfoBar(context, builder: (final context, final close) {
-                      return InfoBar(
-                        title: const Text('Export Failed'),
-                        content: Text(e.toString()),
-                        action: IconButton(
+                    displayInfoBar(
+                      context,
+                      builder: (final context, final close) {
+                        return InfoBar(
+                          title: const Text('Export Failed'),
+                          content: Text(e.toString()),
+                          action: IconButton(
                             icon: const Icon(FluentIcons.clear),
-                            onPressed: close),
-                        severity: InfoBarSeverity.error,
-                      );
-                    });
+                            onPressed: close,
+                          ),
+                          severity: InfoBarSeverity.error,
+                        );
+                      },
+                    );
                   }
                 },
                 child: const Row(
@@ -826,28 +910,36 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   try {
                     final result = await BackupService().restoreFullBackup(ref);
                     if (!mounted) return;
-                    displayInfoBar(context, builder: (final context, final close) {
-                      return InfoBar(
-                        title: const Text('Restore Result'),
-                        content: Text(result),
-                        action: IconButton(
+                    displayInfoBar(
+                      context,
+                      builder: (final context, final close) {
+                        return InfoBar(
+                          title: const Text('Restore Result'),
+                          content: Text(result),
+                          action: IconButton(
                             icon: const Icon(FluentIcons.clear),
-                            onPressed: close),
-                        severity: InfoBarSeverity.success,
-                      );
-                    });
+                            onPressed: close,
+                          ),
+                          severity: InfoBarSeverity.success,
+                        );
+                      },
+                    );
                   } catch (e) {
                     if (!mounted) return;
-                    displayInfoBar(context, builder: (final context, final close) {
-                      return InfoBar(
-                        title: const Text('Restore Failed'),
-                        content: Text(e.toString()),
-                        action: IconButton(
+                    displayInfoBar(
+                      context,
+                      builder: (final context, final close) {
+                        return InfoBar(
+                          title: const Text('Restore Failed'),
+                          content: Text(e.toString()),
+                          action: IconButton(
                             icon: const Icon(FluentIcons.clear),
-                            onPressed: close),
-                        severity: InfoBarSeverity.error,
-                      );
-                    });
+                            onPressed: close,
+                          ),
+                          severity: InfoBarSeverity.error,
+                        );
+                      },
+                    );
                   }
                 },
                 child: const Row(
@@ -879,76 +971,91 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 child: const Text("Clear All App Data"),
                 onPressed: () {
                   showDialog(
-                      context: context,
-                      builder: (final dialogContext) {
-                        return ContentDialog(
-                          title: const Text("Reset Everything?"),
-                          content: const Text(
-                              "This will delete ALL invoices, clients, estimates, and settings. This cannot be undone."),
-                          actions: [
-                            Button(
-                                child: const Text("Cancel"),
-                                onPressed: () => Navigator.pop(dialogContext)),
-                            FilledButton(
-                                style: ButtonStyle(
-                                    backgroundColor:
-                                        WidgetStateProperty.all(Colors.red)),
-                                child: const Text("Delete Everything"),
-                                onPressed: () async {
-                                  Navigator.pop(dialogContext);
-                                  try {
-                                    await ref
-                                        .read(invoiceRepositoryProvider)
-                                        .deleteAll();
-                                    await ref
-                                        .read(clientRepositoryProvider)
-                                        .deleteAll();
-                                    await ref
-                                        .read(estimateRepositoryProvider)
-                                        .deleteAll();
-                                    await ref
-                                        .read(recurringRepositoryProvider)
-                                        .deleteAll();
+                    context: context,
+                    builder: (final dialogContext) {
+                      return ContentDialog(
+                        title: const Text("Reset Everything?"),
+                        content: const Text(
+                          "This will delete ALL invoices, clients, estimates, and settings. This cannot be undone.",
+                        ),
+                        actions: [
+                          Button(
+                            child: const Text("Cancel"),
+                            onPressed: () => Navigator.pop(dialogContext),
+                          ),
+                          FilledButton(
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all(
+                                Colors.red,
+                              ),
+                            ),
+                            child: const Text("Delete Everything"),
+                            onPressed: () async {
+                              Navigator.pop(dialogContext);
+                              try {
+                                await ref
+                                    .read(invoiceRepositoryProvider)
+                                    .deleteAll();
+                                await ref
+                                    .read(clientRepositoryProvider)
+                                    .deleteAll();
+                                await ref
+                                    .read(estimateRepositoryProvider)
+                                    .deleteAll();
+                                await ref
+                                    .read(recurringRepositoryProvider)
+                                    .deleteAll();
 
-                                    ref.invalidate(invoiceListProvider);
-                                    ref.invalidate(clientListProvider);
-                                    ref.invalidate(estimateListProvider);
-                                    ref.invalidate(recurringListProvider);
+                                ref.invalidate(invoiceListProvider);
+                                ref.invalidate(clientListProvider);
+                                ref.invalidate(estimateListProvider);
+                                ref.invalidate(recurringListProvider);
 
-                                    final context = this.context;
-                                    if (!context.mounted) return;
-                                    displayInfoBar(context,
-                                        builder: (final c, final close) => InfoBar(
-                                            severity: InfoBarSeverity.success,
-                                            title: const Text("Reset Complete"),
-                                            content: const Text(
-                                                "All data has been cleared."),
-                                            onClose: close));
-                                  } catch (e) {
-                                    final context = this.context;
-                                    if (!context.mounted) return;
-                                    displayInfoBar(context,
-                                        builder: (final c, final close) => InfoBar(
-                                            severity: InfoBarSeverity.error,
-                                            title: const Text("Error"),
-                                            content: Text(
-                                                "Failed to clear data: $e"),
-                                            onClose: close));
-                                  }
-                                })
-                          ],
-                        );
-                      });
+                                final context = this.context;
+                                if (!context.mounted) return;
+                                displayInfoBar(
+                                  context,
+                                  builder: (final c, final close) => InfoBar(
+                                    severity: InfoBarSeverity.success,
+                                    title: const Text("Reset Complete"),
+                                    content: const Text(
+                                      "All data has been cleared.",
+                                    ),
+                                    onClose: close,
+                                  ),
+                                );
+                              } catch (e) {
+                                final context = this.context;
+                                if (!context.mounted) return;
+                                displayInfoBar(
+                                  context,
+                                  builder: (final c, final close) => InfoBar(
+                                    severity: InfoBarSeverity.error,
+                                    title: const Text("Error"),
+                                    content: Text("Failed to clear data: $e"),
+                                    onClose: close,
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 },
-              )
+              ),
             ],
           ),
-        )
+        ),
       ],
     );
   }
 
-  Widget _buildProfilesSection(final BuildContext context, final WidgetRef ref) {
+  Widget _buildProfilesSection(
+    final BuildContext context,
+    final WidgetRef ref,
+  ) {
     final profiles = ref.watch(businessProfileListProvider);
     final activeId = ref.watch(activeProfileIdProvider);
 
@@ -959,8 +1066,9 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Card(
-              borderColor:
-                  isActive ? FluentTheme.of(context).accentColor : null,
+              borderColor: isActive
+                  ? FluentTheme.of(context).accentColor
+                  : null,
               child: ListTile(
                 leading: CircleAvatar(
                   backgroundColor: isActive
@@ -968,16 +1076,21 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                       : Colors.grey,
                   radius: 16,
                   child: Text(
-                      p.companyName.isNotEmpty
-                          ? p.companyName[0].toUpperCase()
-                          : '?',
-                      style: const TextStyle(color: Colors.white)),
+                    p.companyName.isNotEmpty
+                        ? p.companyName[0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 ),
-                title: Text(p.companyName,
-                    style: TextStyle(
-                        fontWeight: isActive ? FontWeight.bold : null)),
+                title: Text(
+                  p.companyName,
+                  style: TextStyle(
+                    fontWeight: isActive ? FontWeight.bold : null,
+                  ),
+                ),
                 subtitle: Text(
-                    isActive ? 'Active Profile' : 'Switch to this profile'),
+                  isActive ? 'Active Profile' : 'Switch to this profile',
+                ),
                 trailing: Row(
                   children: [
                     if (!isActive)
@@ -995,43 +1108,52 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                         icon: const Icon(FluentIcons.delete),
                         onPressed: () async {
                           if (isActive) {
-                            displayInfoBar(context, builder: (final context, final close) {
-                              return InfoBar(
-                                title: const Text("Cannot Delete"),
-                                content: const Text(
-                                    "Cannot delete the active profile. Switch to another profile first."),
-                                severity: InfoBarSeverity.error,
-                                onClose: close,
-                              );
-                            });
+                            displayInfoBar(
+                              context,
+                              builder: (final context, final close) {
+                                return InfoBar(
+                                  title: const Text("Cannot Delete"),
+                                  content: const Text(
+                                    "Cannot delete the active profile. Switch to another profile first.",
+                                  ),
+                                  severity: InfoBarSeverity.error,
+                                  onClose: close,
+                                );
+                              },
+                            );
                             return;
                           }
                           showDialog(
-                              context: context,
-                              builder: (final context) {
-                                return ContentDialog(
-                                  title: const Text("Delete Profile?"),
-                                  content: Text(
-                                      "Are you sure you want to delete ${p.companyName}? All associated data might be lost."),
-                                  actions: [
-                                    Button(
-                                        child: const Text("Cancel"),
-                                        onPressed: () =>
-                                            Navigator.pop(context)),
-                                    FilledButton(
-                                        child: const Text("Delete"),
-                                        onPressed: () {
-                                          ref
-                                              .read(businessProfileListProvider
-                                                  .notifier)
-                                              .deleteProfile(p.id);
-                                          Navigator.pop(context);
-                                        }),
-                                  ],
-                                );
-                              });
+                            context: context,
+                            builder: (final context) {
+                              return ContentDialog(
+                                title: const Text("Delete Profile?"),
+                                content: Text(
+                                  "Are you sure you want to delete ${p.companyName}? All associated data might be lost.",
+                                ),
+                                actions: [
+                                  Button(
+                                    child: const Text("Cancel"),
+                                    onPressed: () => Navigator.pop(context),
+                                  ),
+                                  FilledButton(
+                                    child: const Text("Delete"),
+                                    onPressed: () {
+                                      ref
+                                          .read(
+                                            businessProfileListProvider
+                                                .notifier,
+                                          )
+                                          .deleteProfile(p.id);
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
                         },
-                      )
+                      ),
                   ],
                 ),
               ),
@@ -1044,59 +1166,71 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           onPressed: () {
             final TextEditingController nameCtrl = TextEditingController();
             showDialog(
-                context: context,
-                builder: (final context) {
-                  return ContentDialog(
-                    title: const Text("New Business Profile"),
-                    content: TextBox(
-                      controller: nameCtrl,
-                      placeholder: "Company Name",
+              context: context,
+              builder: (final context) {
+                return ContentDialog(
+                  title: const Text("New Business Profile"),
+                  content: TextBox(
+                    controller: nameCtrl,
+                    placeholder: "Company Name",
+                  ),
+                  actions: [
+                    Button(
+                      child: const Text("Cancel"),
+                      onPressed: () => Navigator.pop(context),
                     ),
-                    actions: [
-                      Button(
-                          child: const Text("Cancel"),
-                          onPressed: () => Navigator.pop(context)),
-                      FilledButton(
-                          child: const Text("Create"),
-                          onPressed: () {
-                            if (nameCtrl.text.isNotEmpty) {
-                              final newProfile =
-                                  BusinessProfile.defaults().copyWith(
+                    FilledButton(
+                      child: const Text("Create"),
+                      onPressed: () {
+                        if (nameCtrl.text.isNotEmpty) {
+                          final newProfile = BusinessProfile.defaults()
+                              .copyWith(
                                 id: const Uuid().v4(),
                                 companyName: nameCtrl.text,
                               );
-                              ref
-                                  .read(businessProfileListProvider.notifier)
-                                  .addProfile(newProfile);
-                              Navigator.pop(context);
-                            }
-                          }),
-                    ],
-                  );
-                });
+                          ref
+                              .read(businessProfileListProvider.notifier)
+                              .addProfile(newProfile);
+                          Navigator.pop(context);
+                        }
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
           },
-        )
+        ),
       ],
     );
   }
 
-  Widget _buildDataCard<T>(final BuildContext context, final String title,
-      final AsyncValue<List<T>> asyncValue, final IconData icon) {
+  Widget _buildDataCard<T>(
+    final BuildContext context,
+    final String title,
+    final AsyncValue<List<T>> asyncValue,
+    final IconData icon,
+  ) {
     return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Icon(icon, size: 16, color: FluentTheme.of(context).accentColor),
-            const SizedBox(width: 8),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          ]),
+          Row(
+            children: [
+              Icon(icon, size: 16, color: FluentTheme.of(context).accentColor),
+              const SizedBox(width: 8),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
           const SizedBox(height: 8),
           asyncValue.when(
-            data: (final data) => Text("${data.length} Items",
-                style: FluentTheme.of(context).typography.bodyLarge),
+            data: (final data) => Text(
+              "${data.length} Items",
+              style: FluentTheme.of(context).typography.bodyLarge,
+            ),
             loading: () => const ProgressRing(strokeWidth: 2),
-            error: (final e, final s) => Text("Error", style: TextStyle(color: Colors.red)),
+            error: (final e, final s) =>
+                Text("Error", style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -1104,19 +1238,27 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
   }
 
   Widget _buildClientDataCard(
-      final BuildContext context, final String title, final List<dynamic> data, final IconData icon) {
+    final BuildContext context,
+    final String title,
+    final List<dynamic> data,
+    final IconData icon,
+  ) {
     return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Icon(icon, size: 16, color: FluentTheme.of(context).accentColor),
-            const SizedBox(width: 8),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          ]),
+          Row(
+            children: [
+              Icon(icon, size: 16, color: FluentTheme.of(context).accentColor),
+              const SizedBox(width: 8),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
           const SizedBox(height: 8),
-          Text("${data.length} Items",
-              style: FluentTheme.of(context).typography.bodyLarge),
+          Text(
+            "${data.length} Items",
+            style: FluentTheme.of(context).typography.bodyLarge,
+          ),
         ],
       ),
     );

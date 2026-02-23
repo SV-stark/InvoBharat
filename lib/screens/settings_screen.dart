@@ -763,7 +763,7 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
               child: OutlinedButton(
                 onPressed: () async {
                   await EmailService.clearSettings();
-                  _loadSettings();
+                  unawaited(_loadSettings());
                 },
                 child: const Text("Clear Settings"),
               ),

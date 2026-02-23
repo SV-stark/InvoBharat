@@ -1,3 +1,4 @@
+// ignore_for_file: unawaited_futures
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
@@ -75,9 +76,11 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
       },
       child: ScaffoldPage.scrollable(
         header: PageHeader(
-          title: Text(widget.profileToEdit != null
-              ? "Edit Recurring Profile"
-              : "New Recurring Profile"),
+          title: Text(
+            widget.profileToEdit != null
+                ? "Edit Recurring Profile"
+                : "New Recurring Profile",
+          ),
           leading: Navigator.canPop(context)
               ? Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -93,10 +96,12 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
           decoration: BoxDecoration(
             color: FluentTheme.of(context).cardColor,
             border: Border(
-                top: BorderSide(
-                    color: FluentTheme.of(context)
-                        .resources
-                        .dividerStrokeColorDefault)),
+              top: BorderSide(
+                color: FluentTheme.of(
+                  context,
+                ).resources.dividerStrokeColorDefault,
+              ),
+            ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -116,8 +121,10 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
         children: [
           // Schedule Section
           Expander(
-            header: const Text("Schedule Settings",
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            header: const Text(
+              "Schedule Settings",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             initiallyExpanded: true,
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,7 +149,8 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                   label: "Next Run Date",
                   child: DatePicker(
                     selected: _nextRunDate,
-                    onChanged: (final date) => setState(() => _nextRunDate = date),
+                    onChanged: (final date) =>
+                        setState(() => _nextRunDate = date),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -161,8 +169,10 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
 
           // Copied Invoice Form Sections (Simplified)
           Expander(
-            header: const Text("Invoice Template Details",
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            header: const Text(
+              "Invoice Template Details",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             initiallyExpanded: true,
             content: Column(
               children: [
@@ -178,9 +188,10 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text("Client / Receiver",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
+                              const Text(
+                                "Client / Receiver",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
                               IconButton(
                                 icon: const Icon(FluentIcons.contact_list),
                                 onPressed: () {
@@ -218,9 +229,13 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("Items",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16)),
+                    const Text(
+                      "Items",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                     Button(
                       child: const Text("Add Item"),
                       onPressed: () =>
@@ -250,8 +265,10 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                                 ),
                               ),
                               IconButton(
-                                icon:
-                                    Icon(FluentIcons.delete, color: Colors.red),
+                                icon: Icon(
+                                  FluentIcons.delete,
+                                  color: Colors.red,
+                                ),
                                 onPressed: () => ref
                                     .read(invoiceProvider.notifier)
                                     .removeItem(index),
@@ -314,14 +331,20 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
     );
   }
 
-  void _showClientSelector(final BuildContext context, final List<Client> clients) {
+  void _showClientSelector(
+    final BuildContext context,
+    final List<Client> clients,
+  ) {
     if (clients.isEmpty) {
-      displayInfoBar(context,
-          builder: (final ctx, final close) => InfoBar(
-              title: const Text("No Clients"),
-              content: const Text("Please add a client first."),
-              severity: InfoBarSeverity.warning,
-              onClose: close));
+      displayInfoBar(
+        context,
+        builder: (final ctx, final close) => InfoBar(
+          title: const Text("No Clients"),
+          content: const Text("Please add a client first."),
+          severity: InfoBarSeverity.warning,
+          onClose: close,
+        ),
+      );
       return;
     }
     showDialog(
@@ -338,11 +361,13 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                 final client = clients[index];
                 return ListTile(
                   title: Text(client.name),
-                  subtitle: Text(client.gstin.isNotEmpty
-                      ? client.gstin
-                      : (client.phone.isNotEmpty
-                          ? client.phone
-                          : "No details")),
+                  subtitle: Text(
+                    client.gstin.isNotEmpty
+                        ? client.gstin
+                        : (client.phone.isNotEmpty
+                              ? client.phone
+                              : "No details"),
+                  ),
                   onPressed: () {
                     onClientSelected(client);
                     Navigator.pop(context);
@@ -362,15 +387,21 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
     );
   }
 
-  Future<void> _saveProfile(final BuildContext context, final Invoice invoice) async {
+  Future<void> _saveProfile(
+    final BuildContext context,
+    final Invoice invoice,
+  ) async {
     // Validate
     if (invoice.receiver.name.isEmpty) {
-      displayInfoBar(context,
-          builder: (final ctx, final close) => InfoBar(
-              title: const Text("Error"),
-              content: const Text("Client name is required"),
-              severity: InfoBarSeverity.error,
-              onClose: close));
+      displayInfoBar(
+        context,
+        builder: (final ctx, final close) => InfoBar(
+          title: const Text("Error"),
+          content: const Text("Client name is required"),
+          severity: InfoBarSeverity.error,
+          onClose: close,
+        ),
+      );
       return;
     }
 
@@ -395,12 +426,15 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
 
     if (context.mounted) {
       Navigator.pop(context);
-      displayInfoBar(context,
-          builder: (final ctx, final close) => InfoBar(
-              title: const Text("Success"),
-              content: const Text("Recurring profile saved"),
-              severity: InfoBarSeverity.success,
-              onClose: close));
+      displayInfoBar(
+        context,
+        builder: (final ctx, final close) => InfoBar(
+          title: const Text("Success"),
+          content: const Text("Recurring profile saved"),
+          severity: InfoBarSeverity.success,
+          onClose: close,
+        ),
+      );
     }
   }
 }

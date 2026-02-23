@@ -1,3 +1,4 @@
+// ignore_for_file: unawaited_futures
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -30,9 +31,11 @@ class FluentRecurringScreen extends ConsumerWidget {
               label: const Text('New Recurring'),
               onPressed: () {
                 Navigator.push(
-                    context,
-                    FluentPageRoute(
-                        builder: (final context) => const FluentRecurringForm()));
+                  context,
+                  FluentPageRoute(
+                    builder: (final context) => const FluentRecurringForm(),
+                  ),
+                );
               },
             ),
           ],
@@ -45,16 +48,21 @@ class FluentRecurringScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(FluentIcons.repeat_all,
-                      size: 64, color: Colors.grey),
+                  const Icon(
+                    FluentIcons.repeat_all,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(height: 16),
-                  Text("No recurring profiles found.",
-                      style:
-                          theme.typography.title?.copyWith(color: Colors.grey)),
+                  Text(
+                    "No recurring profiles found.",
+                    style: theme.typography.title?.copyWith(color: Colors.grey),
+                  ),
                   const SizedBox(height: 8),
                   const Text(
-                      "Open an invoice and select 'Make Recurring' to create one.",
-                      style: TextStyle(color: Colors.grey)),
+                    "Open an invoice and select 'Make Recurring' to create one.",
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ],
               ),
             );
@@ -81,10 +89,13 @@ class FluentRecurringScreen extends ConsumerWidget {
                         color: profile.isActive ? Colors.green : Colors.grey,
                       ),
                     ),
-                    title: Text(profile.baseInvoice.receiver.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    title: Text(
+                      profile.baseInvoice.receiver.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     subtitle: Text(
-                        "${profile.interval.name.toUpperCase()} • Next: ${DateFormat('dd MMM').format(profile.nextRunDate)} • ₹${profile.baseInvoice.grandTotal}"),
+                      "${profile.interval.name.toUpperCase()} • Next: ${DateFormat('dd MMM').format(profile.nextRunDate)} • ₹${profile.baseInvoice.grandTotal}",
+                    ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -106,7 +117,8 @@ class FluentRecurringScreen extends ConsumerWidget {
                               builder: (final context) => ContentDialog(
                                 title: const Text("Delete Profile?"),
                                 content: const Text(
-                                    "This will stop future invoice generation permanently."),
+                                  "This will stop future invoice generation permanently.",
+                                ),
                                 actions: [
                                   Button(
                                     child: const Text("Cancel"),
@@ -115,9 +127,10 @@ class FluentRecurringScreen extends ConsumerWidget {
                                   ),
                                   FilledButton(
                                     style: ButtonStyle(
-                                        backgroundColor:
-                                            WidgetStateProperty.all(
-                                                Colors.red)),
+                                      backgroundColor: WidgetStateProperty.all(
+                                        Colors.red,
+                                      ),
+                                    ),
                                     child: const Text("Delete"),
                                     onPressed: () =>
                                         Navigator.pop(context, true),

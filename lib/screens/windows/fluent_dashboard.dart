@@ -1,3 +1,4 @@
+// ignore_for_file: unawaited_futures
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -94,16 +95,21 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
               // Type Filter
               ComboBox<String>(
                 value: _selectedType,
-                items: [
-                  "All",
-                  "Invoices",
-                  "Challans",
-                  "Credit Notes",
-                  "Debit Notes",
-                  "Fully Paid", // New Filter
-                  "Partially Paid", // New Filter
-                  "Overdue", // New Filter
-                ].map((final e) => ComboBoxItem(value: e, child: Text(e))).toList(),
+                items:
+                    [
+                          "All",
+                          "Invoices",
+                          "Challans",
+                          "Credit Notes",
+                          "Debit Notes",
+                          "Fully Paid", // New Filter
+                          "Partially Paid", // New Filter
+                          "Overdue", // New Filter
+                        ]
+                        .map(
+                          (final e) => ComboBoxItem(value: e, child: Text(e)),
+                        )
+                        .toList(),
                 onChanged: (final v) {
                   if (v != null) setState(() => _selectedType = v);
                 },
@@ -111,15 +117,20 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
               const SizedBox(width: 8),
               ComboBox<String>(
                 value: _selectedPeriod,
-                items: [
-                  "All Time",
-                  "This Month",
-                  "Last Month",
-                  "Q1 (Apr-Jun)",
-                  "Q2 (Jul-Sep)",
-                  "Q3 (Oct-Dec)",
-                  "Q4 (Jan-Mar)",
-                ].map((final e) => ComboBoxItem(value: e, child: Text(e))).toList(),
+                items:
+                    [
+                          "All Time",
+                          "This Month",
+                          "Last Month",
+                          "Q1 (Apr-Jun)",
+                          "Q2 (Jul-Sep)",
+                          "Q3 (Oct-Dec)",
+                          "Q4 (Jan-Mar)",
+                        ]
+                        .map(
+                          (final e) => ComboBoxItem(value: e, child: Text(e)),
+                        )
+                        .toList(),
                 onChanged: (final v) {
                   if (v != null) setState(() => _selectedPeriod = v);
                 },
@@ -138,7 +149,9 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
 
         // Recurring Notification
         // Recurring Notification
-        if (ref.watch(recurringListProvider).when(
+        if (ref
+            .watch(recurringListProvider)
+            .when(
               data: (final data) => data.any(
                 (final p) =>
                     p.isActive &&
@@ -205,11 +218,11 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                   .where(
                     (final inv) =>
                         inv.receiver.name.toLowerCase().contains(
-                              _searchQuery.toLowerCase(),
-                            ) ||
+                          _searchQuery.toLowerCase(),
+                        ) ||
                         inv.invoiceNo.toLowerCase().contains(
-                              _searchQuery.toLowerCase(),
-                            ),
+                          _searchQuery.toLowerCase(),
+                        ),
                   )
                   .toList();
             }
@@ -284,9 +297,11 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                       label: const Text('Recurring'),
                       icon: const Icon(FluentIcons.repeat_all),
                       onPressed: () => Navigator.push(
-                          context,
-                          FluentPageRoute(
-                              builder: (_) => const FluentRecurringScreen())),
+                        context,
+                        FluentPageRoute(
+                          builder: (_) => const FluentRecurringScreen(),
+                        ),
+                      ),
                     ),
                     CommandBarButton(
                       label: const Text('Payments'),
@@ -448,7 +463,8 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                           padding: EdgeInsets.only(left: 8),
                           child: Icon(FluentIcons.search),
                         ),
-                        onChanged: (final v) => setState(() => _searchQuery = v),
+                        onChanged: (final v) =>
+                            setState(() => _searchQuery = v),
                       ),
                     ),
                   ],
@@ -476,13 +492,16 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                     ),
                   )
                 else
-                  ...filteredInvoices.take(50).map(
+                  ...filteredInvoices
+                      .take(50)
+                      .map(
                         (final inv) => Padding(
                           padding: const EdgeInsets.only(bottom: 8.0),
                           child: Card(
                             child: ListTile(
                               leading: Checkbox(
-                                checked: inv.id != null &&
+                                checked:
+                                    inv.id != null &&
                                     _selectedIds.contains(inv.id!),
                                 onChanged: (final v) {
                                   if (inv.id == null) return;
@@ -1193,7 +1212,10 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     );
   }
 
-  void _duplicateInvoice(final BuildContext context, final Invoice invoice) async {
+  void _duplicateInvoice(
+    final BuildContext context,
+    final Invoice invoice,
+  ) async {
     // Calculate original term in days
     final days = invoice.dueDate != null
         ? invoice.dueDate!.difference(invoice.invoiceDate).inDays

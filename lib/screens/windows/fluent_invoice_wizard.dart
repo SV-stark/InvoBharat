@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 import 'package:flutter/services.dart';
+// ignore_for_file: unawaited_futures
 import 'dart:async';
 
 import 'package:invobharat/models/invoice.dart';
@@ -855,7 +856,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                   if (await canLaunchUrl(emailLaunchUri)) {
                     await launchUrl(emailLaunchUri);
                   } else {
-                    // ignore: use_build_context_synchronously
+                    if (!context.mounted) return;
                     displayInfoBar(
                       context,
                       builder: (final context, final close) {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/models/client.dart';
@@ -92,8 +93,10 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
                       placeholder: "e.g. Karnataka",
                       controller: _stateCtrl,
                       items: IndianStates.states
-                          .map((final e) =>
-                              AutoSuggestBoxItem<String>(value: e, label: e))
+                          .map(
+                            (final e) =>
+                                AutoSuggestBoxItem<String>(value: e, label: e),
+                          )
                           .toList(),
                       onSelected: (final item) {
                         setState(() {
@@ -140,38 +143,45 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
       ),
       actions: [
         Button(
-            child: const Text("Cancel"),
-            onPressed: () => Navigator.pop(context)),
+          child: const Text("Cancel"),
+          onPressed: () => Navigator.pop(context),
+        ),
         FilledButton(
-            child: const Text("Save Client"),
-            onPressed: () async {
-              if (!_formKey.currentState!.validate()) return;
-              // Capture context for async gap
-              final ctx = context;
+          child: const Text("Save Client"),
+          onPressed: () async {
+            if (!_formKey.currentState!.validate()) return;
+            // Capture context for async gap
+            final ctx = context;
 
-              final newClient = Client(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
-                name: name,
-                address: address,
-                gstin: gstin,
-                state: state,
-                email: email,
-                phone: phone,
-              );
+            final newClient = Client(
+              id: DateTime.now().millisecondsSinceEpoch.toString(),
+              name: name,
+              address: address,
+              gstin: gstin,
+              state: state,
+              email: email,
+              phone: phone,
+            );
 
-              await ref.read(clientRepositoryProvider).saveClient(newClient);
-              ref.invalidate(clientListProvider);
+            await ref.read(clientRepositoryProvider).saveClient(newClient);
+            ref.invalidate(clientListProvider);
 
-              if (!ctx.mounted) return;
-              widget.onClientAdded(newClient);
-              Navigator.pop(ctx);
-              displayInfoBar(ctx,
-                  builder: (final c, final close) => InfoBar(
-                      title: const Text("Success"),
-                      content: const Text("Client added successfully"),
-                      severity: InfoBarSeverity.success,
-                      onClose: close));
-            }),
+            if (!ctx.mounted) return;
+            widget.onClientAdded(newClient);
+            Navigator.pop(ctx);
+            unawaited(
+              displayInfoBar(
+                ctx,
+                builder: (final c, final close) => InfoBar(
+                  title: const Text("Success"),
+                  content: const Text("Client added successfully"),
+                  severity: InfoBarSeverity.success,
+                  onClose: close,
+                ),
+              ),
+            );
+          },
+        ),
       ],
     );
   }

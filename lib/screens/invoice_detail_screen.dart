@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
@@ -588,10 +589,13 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     if (!mounted) return;
 
     // Show sending dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (final ctx) => const Center(child: CircularProgressIndicator()),
+    unawaited(
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (final ctx) =>
+            const Center(child: CircularProgressIndicator()),
+      ),
     );
 
     try {
