@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -102,7 +103,6 @@ class BackupService {
 
   Future<String> restoreFullBackup(WidgetRef ref) async {
     try {
-      // 1. Pick File
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         dialogTitle: 'Select Full Backup (ZIP)',
         type: FileType.custom,
@@ -115,40 +115,48 @@ class BackupService {
 
         final archive = ZipDecoder().decodeBytes(bytes);
 
-        // Find db.sqlite
         final dbEntry = archive.findFile('db.sqlite');
-
         if (dbEntry == null) {
           throw Exception("Invalid Backup: 'db.sqlite' not found inside zip.");
         }
 
-        // 2. Prepare Paths
+        final prefsEntry = archive.findFile('manifest.json');
+        if (prefsEntry != null) {
+          final manifestContent = String.fromCharCodes(prefsEntry.content as List<int>);
+          final manifest = jsonDecode(manifestContent) as Map<String, dynamic>;
+          final backedUpSchemaVersion = manifest['schemaVersion'] as int?;
+          if (backedUpSchemaVersion != 5) {
+            throw Exception("Incompatible backup: schema version $backedUpSchemaVersion, expected 5");
+          }
+        }
+
         final dbFolder = await getApplicationDocumentsDirectory();
         final dbPath = '${dbFolder.path}/InvoBharat/db.sqlite';
         final dbDestFile = File(dbPath);
 
-        // 3. Backup Current (Safety)
+        String? backupPath;
         if (await dbDestFile.exists()) {
-          await dbDestFile.copy('$dbPath.bak');
+          backupPath = '$dbPath.bak';
+          await dbDestFile.copy(backupPath);
         } else {
-          // Create dir if needed? Database class does it but safe to check
-          await Directory('${dbFolder.path}/InvoBharat')
-              .create(recursive: true);
+          await Directory('${dbFolder.path}/InvoBharat').create(recursive: true);
         }
 
-        // 4. Overwrite
-        if (dbEntry.isFile) {
-          final data = dbEntry.content as List<int>;
-          await dbDestFile.writeAsBytes(data, flush: true);
+        try {
+          if (dbEntry.isFile) {
+            final data = dbEntry.content as List<int>;
+            await dbDestFile.writeAsBytes(data, flush: true);
+          }
+          return "Restore Successful. Please restart the app manually.";
+        } catch (e) {
+          if (backupPath != null) {
+            final backupFile = File(backupPath);
+            if (await backupFile.exists()) {
+              await backupFile.copy(dbPath);
+            }
+          }
+          rethrow;
         }
-
-        // Trigger programmatic restart for Windows
-        Future.delayed(const Duration(seconds: 2), () {
-          Process.run(Platform.resolvedExecutable, []);
-          exit(0);
-        });
-
-        return "Restore Successful. App will RESTART in 2 seconds.";
       } else {
         return "Restore cancelled";
       }

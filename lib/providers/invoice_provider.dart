@@ -265,4 +265,15 @@ class InvoiceNotifier extends Notifier<Invoice> {
   void addInvoiceItem(InvoiceItem item) {
     state = state.copyWith(items: [...state.items, item]);
   }
+
+  void batchUpdate(Invoice Function(Invoice) updater) {
+    state = updater(state);
+  }
+
+  void updateItemAt(int index, InvoiceItem Function(InvoiceItem) updater) {
+    if (index < 0 || index >= state.items.length) return;
+    final newItems = List<InvoiceItem>.from(state.items);
+    newItems[index] = updater(newItems[index]);
+    state = state.copyWith(items: newItems);
+  }
 }

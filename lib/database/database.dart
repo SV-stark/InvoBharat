@@ -107,10 +107,7 @@ class AppDatabase extends _$AppDatabase {
         }
       }
       if (from < 5) {
-        // Accessing the 'pan' column dynamically to avoid compilation errors
-        // until the code is regenerated.
-        final panColumn = (businessProfiles as dynamic).pan as GeneratedColumn;
-        await m.addColumn(businessProfiles, panColumn);
+        await m.addColumn(businessProfiles, businessProfiles.pan);
       }
     }, beforeOpen: (details) async {
       // We can do data migration here too if needed
@@ -125,6 +122,10 @@ LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'InvoBharat', 'db.sqlite'));
-    return NativeDatabase.createInBackground(file);
+    return NativeDatabase.createInBackground(file, setup: (db) {
+      db.execute('PRAGMA journal_mode=WAL');
+      db.execute('PRAGMA busy_timeout=5000');
+      db.execute('PRAGMA foreign_keys=ON');
+    });
   });
 }
