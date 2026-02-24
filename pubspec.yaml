@@ -37,7 +37,7 @@ dependencies:
   json_annotation: ^4.9.0
   image_background_remover: ^2.0.0
   mailer: ^6.0.0
-  flutter_secure_storage: ^9.2.4
+  flutter_secure_storage: ^10.0.0
   http: ^1.2.0
   dio: ^5.4.0
   package_info_plus: ^8.3.1
