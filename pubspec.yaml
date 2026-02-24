@@ -25,7 +25,7 @@ dependencies:
   # Database
   drift: ^2.14.0
   sqlite3: ^2.9.4
-  sqlite3_flutter_libs: ^0.5.18
+  sqlite3_flutter_libs: ^0.6.0+eol
   path: ^1.9.0
   csv: ^6.0.0
 
