@@ -30,7 +30,7 @@ class Release {
 class UpdateService {
   static const String _repoOwner = 'SV-stark';
   static const String _repoName = 'InvoBharat';
-  
+
   static final Dio _dio = Dio(
     BaseOptions(
       connectTimeout: const Duration(seconds: 10),
@@ -42,16 +42,18 @@ class UpdateService {
     ),
   );
 
-  static Future<Map<String, Release?>> checkForUpdates() async {
+  static Future<Map<String, Release?>> checkForUpdates({Dio? dio}) async {
+    final client = dio ?? _dio;
     try {
-      final response = await _dio.get(
+      final response = await client.get(
         'https://api.github.com/repos/$_repoOwner/$_repoName/releases',
       );
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = response.data;
-        final releases =
-            jsonList.map((final json) => Release.fromJson(json)).toList();
+        final releases = jsonList
+            .map((final json) => Release.fromJson(json))
+            .toList();
 
         Release? stableRelease;
         Release? betaRelease;
@@ -68,19 +70,13 @@ class UpdateService {
           // No prerelease found
         }
 
-        return {
-          'stable': stableRelease,
-          'beta': betaRelease,
-        };
+        return {'stable': stableRelease, 'beta': betaRelease};
       } else {
         throw Exception('Failed to load releases');
       }
     } catch (e) {
       debugPrint('Error checking for updates: $e');
-      return {
-        'stable': null,
-        'beta': null,
-      };
+      return {'stable': null, 'beta': null};
     }
   }
 }

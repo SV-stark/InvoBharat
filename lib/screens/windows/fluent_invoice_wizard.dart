@@ -561,7 +561,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: style),
+          Flexible(child: Text(label, style: style)),
           Text(value, style: style),
         ],
       ),

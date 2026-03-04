@@ -84,6 +84,7 @@ class EmailService {
     required final String subject,
     required final String body,
     required final String recipientEmail,
+    Future<PersistentConnection> Function(Message, SmtpServer)? sendFunction,
   }) async {
     final smtpServer = SmtpServer(
       settings.smtpHost,
@@ -102,11 +103,16 @@ class EmailService {
       ..attachments.add(FileAttachment(pdfFile));
 
     try {
-      await send(message, smtpServer);
+      if (sendFunction != null) {
+        await sendFunction(message, smtpServer);
+      } else {
+        await send(message, smtpServer);
+      }
     } on MailerException catch (e) {
       // Re-throw with user friendly message if possible
       throw Exception(
-          "Email failed: ${e.message}\nCheck settings or internet.");
+        "Email failed: ${e.message}\nCheck settings or internet.",
+      );
     }
   }
 }

@@ -16,7 +16,9 @@ class AdaptiveButton extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    if (Platform.isWindows || Platform.isLinux) {
+    final platform = Theme.of(context).platform;
+    if (platform == TargetPlatform.windows ||
+        platform == TargetPlatform.linux) {
       return isFilled
           ? fluent.FilledButton(onPressed: onPressed, child: child)
           : fluent.Button(onPressed: onPressed, child: child);
@@ -53,7 +55,9 @@ class AppTextInput extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    if (Platform.isWindows || Platform.isLinux) {
+    final platform = Theme.of(context).platform;
+    if (platform == TargetPlatform.windows ||
+        platform == TargetPlatform.linux) {
       return fluent.InfoLabel(
         label: label,
         child: fluent.TextFormBox(
@@ -106,13 +110,15 @@ class AppDialog extends StatelessWidget {
     this.isDestructive = false,
   });
 
-  static Future<bool?> show(final BuildContext context,
-      {required final String title,
-      required final String content,
-      final VoidCallback? onConfirm,
-      final String confirmText = "Confirm",
-      final String cancelText = "Cancel",
-      final bool isDestructive = false}) async {
+  static Future<bool?> show(
+    final BuildContext context, {
+    required final String title,
+    required final String content,
+    final VoidCallback? onConfirm,
+    final String confirmText = "Confirm",
+    final String cancelText = "Cancel",
+    final bool isDestructive = false,
+  }) async {
     return showDialog<bool>(
       context: context,
       builder: (final context) => AppDialog(
@@ -131,7 +137,9 @@ class AppDialog extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    if (Platform.isWindows || Platform.isLinux) {
+    final platform = Theme.of(context).platform;
+    if (platform == TargetPlatform.windows ||
+        platform == TargetPlatform.linux) {
       return fluent.ContentDialog(
         title: Text(title),
         content: Text(content),
@@ -149,8 +157,10 @@ class AppDialog extends StatelessWidget {
           fluent.FilledButton(
             style: isDestructive
                 ? fluent.ButtonStyle(
-                    backgroundColor:
-                        fluent.WidgetStateProperty.all(fluent.Colors.red))
+                    backgroundColor: fluent.WidgetStateProperty.all(
+                      fluent.Colors.red,
+                    ),
+                  )
                 : null,
             onPressed: onConfirm,
             child: Text(confirmText),

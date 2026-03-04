@@ -1,0 +1,102 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:invobharat/data/business_profile_repository.dart';
+import 'package:invobharat/models/business_profile.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
+
+class MockBusinessProfileRepository extends Mock
+    implements BusinessProfileRepository {}
+
+void main() {
+  setUpAll(() {
+    registerFallbackValue(BusinessProfile.defaults());
+  });
+
+  group('BusinessProfile Providers', () {
+    late MockBusinessProfileRepository mockRepository;
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+      mockRepository = MockBusinessProfileRepository();
+      when(() => mockRepository.getAllProfiles()).thenAnswer((_) async => []);
+    });
+
+    test(
+      'BusinessProfileListNotifier should load profiles from repository',
+      () async {
+        final profiles = [
+          BusinessProfile.defaults().copyWith(
+            id: 'p1',
+            companyName: 'Company 1',
+          ),
+        ];
+        when(
+          () => mockRepository.getAllProfiles(),
+        ).thenAnswer((_) async => profiles);
+
+        final container = ProviderContainer(
+          overrides: [
+            businessProfileRepositoryProvider.overrideWithValue(mockRepository),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        container.read(businessProfileListProvider);
+        // Wait for the async _init to complete
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        expect(container.read(businessProfileListProvider), profiles);
+      },
+    );
+
+    test('ActiveProfileIdNotifier should load and select active ID', () async {
+      SharedPreferences.setMockInitialValues({'active_profile_id': 'p1'});
+
+      final container = ProviderContainer(
+        overrides: [
+          businessProfileRepositoryProvider.overrideWithValue(mockRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(activeProfileIdProvider);
+      // Wait for the async _loadActiveId to complete
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      expect(container.read(activeProfileIdProvider), 'p1');
+    });
+
+    test('BusinessProfileNotifierProxy should increment sequence', () async {
+      final profile = BusinessProfile.defaults().copyWith(
+        id: 'p1',
+        invoiceSequence: 10,
+      );
+      when(
+        () => mockRepository.getAllProfiles(),
+      ).thenAnswer((_) async => [profile]);
+      when(() => mockRepository.saveProfile(any())).thenAnswer((_) async => {});
+
+      final container = ProviderContainer(
+        overrides: [
+          businessProfileRepositoryProvider.overrideWithValue(mockRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(businessProfileListProvider);
+      container.read(activeProfileIdProvider);
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      final proxy = container.read(businessProfileNotifierProvider);
+      await proxy.incrementInvoiceSequence();
+
+      verify(
+        () => mockRepository.saveProfile(
+          any(that: predicate<BusinessProfile>((p) => p.invoiceSequence == 11)),
+        ),
+      ).called(1);
+    });
+  });
+}

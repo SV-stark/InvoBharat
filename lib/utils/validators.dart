@@ -1,5 +1,8 @@
 class Validators {
-  static String? required(final String? value, {final String message = 'Required'}) {
+  static String? required(
+    final String? value, {
+    final String message = 'Required',
+  }) {
     if (value == null || value.trim().isEmpty) {
       return message;
     }
@@ -8,7 +11,7 @@ class Validators {
 
   static String? email(final String? value) {
     if (value == null || value.isEmpty) return null;
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    final emailRegex = RegExp(r'^[\w-\.\+]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!emailRegex.hasMatch(value)) {
       return 'Invalid email address';
     }
@@ -26,8 +29,9 @@ class Validators {
   static String? gstin(final String? value) {
     if (value == null || value.isEmpty) return null;
     // Basic GSTIN regex: 2 digits, 5 chars, 4 digits, 1 char, 1 char, Z, 1 char
-    final gstinRegex =
-        RegExp(r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$');
+    final gstinRegex = RegExp(
+      r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$',
+    );
     if (!gstinRegex.hasMatch(value)) {
       return 'Invalid GSTIN format';
     }
