@@ -5,14 +5,14 @@ import 'package:invobharat/models/payment_transaction.dart';
 void main() {
   group('Supplier & Receiver', () {
     test('Supplier fromJson/toJson', () {
-      final supplier = Supplier(name: 'Sup', state: 'Karnataka');
+      final supplier = const Supplier(name: 'Sup', state: 'Karnataka');
       final json = supplier.toJson();
       expect(json['name'], 'Sup');
       expect(Supplier.fromJson(json).state, 'Karnataka');
     });
 
     test('Receiver fromJson/toJson', () {
-      final receiver = Receiver(name: 'Rec', email: 'test@test.com');
+      final receiver = const Receiver(name: 'Rec', email: 'test@test.com');
       final json = receiver.toJson();
       expect(json['email'], 'test@test.com');
       expect(Receiver.fromJson(json).name, 'Rec');
@@ -25,7 +25,6 @@ void main() {
       amount: 100,
       quantity: 2,
       discount: 10,
-      gstRate: 18,
     );
 
     test('netAmount calculation', () {
@@ -56,18 +55,15 @@ void main() {
   });
 
   group('Invoice', () {
-    final supplier = Supplier(state: 'Karnataka');
-    final receiver = Receiver(state: 'Maharashtra');
-    final date = DateTime(2025, 1, 1);
+    final supplier = const Supplier(state: 'Karnataka');
+    final receiver = const Receiver(state: 'Maharashtra');
+    final date = DateTime(2025);
 
     final item1 = const InvoiceItem(
       amount: 100,
-      quantity: 1,
-      gstRate: 18,
     ); // Net 100
     final item2 = const InvoiceItem(
       amount: 200,
-      quantity: 1,
       gstRate: 12,
     ); // Net 200
 
@@ -137,7 +133,7 @@ void main() {
         receiver: receiver,
         placeOfSupply: 'Karnataka',
         invoiceDate: date,
-        items: [const InvoiceItem(amount: 100, quantity: 1, gstRate: 0)],
+        items: [const InvoiceItem(amount: 100, gstRate: 0)],
         dueDate: DateTime.now().subtract(const Duration(days: 1)),
       );
 

@@ -42,7 +42,7 @@ class UpdateService {
     ),
   );
 
-  static Future<Map<String, Release?>> checkForUpdates({Dio? dio}) async {
+  static Future<Map<String, Release?>> checkForUpdates({final Dio? dio}) async {
     final client = dio ?? _dio;
     try {
       final response = await client.get(

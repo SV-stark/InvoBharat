@@ -94,7 +94,7 @@ void main() {
 
       verify(
         () => mockRepository.saveProfile(
-          any(that: predicate<BusinessProfile>((p) => p.invoiceSequence == 11)),
+          any(that: predicate<BusinessProfile>((final p) => p.invoiceSequence == 11)),
         ),
       ).called(1);
     });

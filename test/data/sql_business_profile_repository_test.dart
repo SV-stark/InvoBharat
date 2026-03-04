@@ -28,15 +28,6 @@ void main() {
       state: 'State',
       pan: 'PAN',
       colorValue: 0,
-      invoiceSeries: 'INV-',
-      invoiceSequence: 1,
-      termsAndConditions: '',
-      defaultNotes: '',
-      currencySymbol: '₹',
-      bankName: '',
-      accountNumber: '',
-      ifscCode: '',
-      branchName: '',
     );
 
     test('saveProfile should insert or update profile', () async {

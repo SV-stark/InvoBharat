@@ -15,7 +15,7 @@ void main() {
       final results = await repository.search('Audit');
       expect(results.isNotEmpty, true);
       expect(
-        results.any((e) => e.description.toLowerCase().contains('audit')),
+        results.any((final e) => e.description.toLowerCase().contains('audit')),
         true,
       );
     });

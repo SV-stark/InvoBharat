@@ -36,11 +36,10 @@ void main() {
         receiver: const Receiver(),
         items: [],
         invoiceDate: DateTime.now(),
-        invoiceNo: '',
       ),
     );
     registerFallbackValue(
-      const Client(id: '', name: '', gstin: '', address: '', state: ''),
+      const Client(id: '', name: ''),
     ); // Added fallback
     registerFallbackValue(BusinessProfile.defaults());
   });
@@ -121,11 +120,9 @@ void main() {
           supplier: const Supplier(),
           receiver: const Receiver(name: 'Client A'),
           items: [
-            InvoiceItem(
+            const InvoiceItem(
               description: 'Item 1',
-              quantity: 1,
               amount: 1000,
-              gstRate: 18,
             ),
           ],
         ),

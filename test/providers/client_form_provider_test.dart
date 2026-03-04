@@ -35,7 +35,7 @@ void main() {
     });
 
     test('loadClient should populate form', () {
-      final client = Client(
+      final client = const Client(
         id: '1',
         name: 'Existing',
         address: 'Addr',
@@ -60,7 +60,7 @@ void main() {
     });
 
     test('save should call addClient for new client', () async {
-      registerFallbackValue(Client(id: '', name: '', profileId: ''));
+      registerFallbackValue(const Client(id: '', name: '', profileId: ''));
       when(
         () => mockClientListNotifier.addClient(any()),
       ).thenAnswer((_) async => {});

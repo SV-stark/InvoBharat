@@ -40,12 +40,11 @@ void main() {
     final testEstimate = Estimate(
       id: 'est-1',
       estimateNo: 'EST-001',
-      date: DateTime(2024, 1, 1),
+      date: DateTime(2024),
       expiryDate: DateTime(2024, 1, 10),
       supplier: const Supplier(name: 'S', address: 'A', gstin: 'G'),
       receiver: const Receiver(name: 'R', address: 'A', gstin: 'G'),
       items: [],
-      status: 'Draft',
     );
 
     test('saveEstimate and getAllEstimates should work', () async {

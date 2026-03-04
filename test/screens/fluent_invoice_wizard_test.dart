@@ -6,7 +6,7 @@ import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/models/business_profile.dart';
 
 void main() {
-  testWidgets('FluentInvoiceWizard should render on Windows', (tester) async {
+  testWidgets('FluentInvoiceWizard should render on Windows', (final tester) async {
     final profile = BusinessProfile(
       id: 'p1',
       companyName: 'Test Biz',

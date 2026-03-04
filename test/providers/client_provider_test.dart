@@ -42,12 +42,8 @@ void main() {
       // Access the provider to trigger build()
       container.read(clientListProvider);
 
-      // The build() method calls _loadClients() which updates state.
-      // We need to wait for the async operation.
-      // Since it's a Notifier with an internal async _init/load,
-      // we can verify state after a short delay or await the notifier's completion if it exposed one.
-      // For now, let's manually trigger load for verification or use a delay.
-      await container.read(clientListProvider.notifier).build();
+      // Give it a moment to finish async _loadClients
+      await Future.delayed(Duration.zero);
 
       expect(container.read(clientListProvider), clients);
     });

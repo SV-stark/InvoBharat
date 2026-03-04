@@ -859,7 +859,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
               child: Button(
                 onPressed: () async {
                   try {
-                    final result = await BackupService().exportFullBackup(ref);
+                    final result = await BackupService().exportFullBackup();
                     if (!mounted) return;
                     displayInfoBar(
                       context,
@@ -908,7 +908,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
               child: Button(
                 onPressed: () async {
                   try {
-                    final result = await BackupService().restoreFullBackup(ref);
+                    final result = await BackupService().restoreFullBackup();
                     if (!mounted) return;
                     displayInfoBar(
                       context,

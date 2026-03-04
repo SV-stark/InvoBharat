@@ -22,7 +22,6 @@ void main() {
           description: 'Item 1',
           amount: 100,
           quantity: 2,
-          gstRate: 18,
         ),
       ],
     );

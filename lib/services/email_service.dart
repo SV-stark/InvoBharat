@@ -84,7 +84,7 @@ class EmailService {
     required final String subject,
     required final String body,
     required final String recipientEmail,
-    Future<PersistentConnection> Function(Message, SmtpServer)? sendFunction,
+    final Future<PersistentConnection> Function(Message, SmtpServer)? sendFunction,
   }) async {
     final smtpServer = SmtpServer(
       settings.smtpHost,

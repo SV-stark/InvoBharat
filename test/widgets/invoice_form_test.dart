@@ -35,11 +35,10 @@ void main() {
         receiver: const Receiver(),
         items: [],
         invoiceDate: DateTime.now(),
-        invoiceNo: '',
       ),
     );
     registerFallbackValue(
-      const Client(id: '', name: '', gstin: '', address: '', state: ''),
+      const Client(id: '', name: ''),
     );
     registerFallbackValue(BusinessProfile.defaults());
   });

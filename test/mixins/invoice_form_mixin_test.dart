@@ -25,12 +25,12 @@ class TestInvoiceState extends ConsumerState<TestInvoiceWidget>
   }
 
   @override
-  Widget build(BuildContext context) => Container();
+  Widget build(final BuildContext context) => Container();
 }
 
 void main() {
   testWidgets('InvoiceFormMixin should initialize and sync controllers', (
-    tester,
+    final tester,
   ) async {
     await tester.pumpWidget(
       const ProviderScope(child: MaterialApp(home: TestInvoiceWidget())),
@@ -43,7 +43,7 @@ void main() {
     expect(state.invoiceNoCtrl, isNotNull);
 
     // Test onClientSelected
-    final client = Client(
+    final client = const Client(
       id: 'c1',
       name: 'Test Client',
       address: 'Addr',
@@ -58,7 +58,7 @@ void main() {
     expect(state.receiverGstinCtrl.text, 'GST');
   });
 
-  testWidgets('calculateDueDate should work correctly', (tester) async {
+  testWidgets('calculateDueDate should work correctly', (final tester) async {
     await tester.pumpWidget(
       const ProviderScope(child: MaterialApp(home: TestInvoiceWidget())),
     );
@@ -66,7 +66,7 @@ void main() {
       find.byType(TestInvoiceWidget),
     );
 
-    final date = DateTime(2024, 1, 1);
+    final date = DateTime(2024);
 
     // Net 30
     expect(state.calculateDueDate(date, 'Net 30'), DateTime(2024, 1, 31));

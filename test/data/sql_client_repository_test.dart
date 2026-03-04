@@ -44,7 +44,7 @@ void main() {
   });
 
   group('SqlClientRepository', () {
-    final testClient = model.Client(
+    final testClient = const model.Client(
       id: 'client-1',
       name: 'Test Client',
       address: 'Client Address',

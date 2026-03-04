@@ -7,7 +7,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:invobharat/screens/settings_screen.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
-import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/providers/database_provider.dart';
 import 'package:invobharat/data/business_profile_repository.dart';
 

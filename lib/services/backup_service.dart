@@ -19,25 +19,25 @@ class ImportResult {
 
 abstract class FilePickerWrapper {
   Future<String?> saveFile({
-    String? dialogTitle,
-    String? fileName,
-    List<String>? allowedExtensions,
-    FileType type = FileType.any,
+    final String? dialogTitle,
+    final String? fileName,
+    final List<String>? allowedExtensions,
+    final FileType type = FileType.any,
   });
   Future<FilePickerResult?> pickFiles({
-    String? dialogTitle,
-    FileType type = FileType.any,
-    List<String>? allowedExtensions,
+    final String? dialogTitle,
+    final FileType type = FileType.any,
+    final List<String>? allowedExtensions,
   });
 }
 
 class DefaultFilePickerWrapper implements FilePickerWrapper {
   @override
   Future<String?> saveFile({
-    String? dialogTitle,
-    String? fileName,
-    List<String>? allowedExtensions,
-    FileType type = FileType.any,
+    final String? dialogTitle,
+    final String? fileName,
+    final List<String>? allowedExtensions,
+    final FileType type = FileType.any,
   }) {
     return FilePicker.platform.saveFile(
       dialogTitle: dialogTitle,
@@ -49,9 +49,9 @@ class DefaultFilePickerWrapper implements FilePickerWrapper {
 
   @override
   Future<FilePickerResult?> pickFiles({
-    String? dialogTitle,
-    FileType type = FileType.any,
-    List<String>? allowedExtensions,
+    final String? dialogTitle,
+    final FileType type = FileType.any,
+    final List<String>? allowedExtensions,
   }) {
     return FilePicker.platform.pickFiles(
       dialogTitle: dialogTitle,
@@ -134,7 +134,7 @@ class BackupService {
         type: FileType.custom,
       );
 
-      if (outputFile != null && zipData != null) {
+      if (outputFile != null) {
         if (!outputFile.toLowerCase().endsWith('.zip')) {
           outputFile = '$outputFile.zip';
         }

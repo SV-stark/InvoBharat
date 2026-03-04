@@ -53,9 +53,12 @@ dev_dependencies:
   freezed: ^3.2.3
   json_serializable: ^6.8.0
   drift_dev: ^2.30.1
+  mocktail: ^1.0.4
 
 
 
+  path_provider_platform_interface: any
+  plugin_platform_interface: any
 flutter_launcher_icons:
   android: false
   ios: false

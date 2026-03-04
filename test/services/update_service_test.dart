@@ -33,7 +33,7 @@ void main() {
         (_) async => Response(
           data: mockData,
           statusCode: 200,
-          requestOptions: RequestOptions(path: ''),
+          requestOptions: RequestOptions(),
         ),
       );
 
@@ -50,7 +50,7 @@ void main() {
         (_) async => Response(
           data: [],
           statusCode: 200,
-          requestOptions: RequestOptions(path: ''),
+          requestOptions: RequestOptions(),
         ),
       );
 
@@ -63,7 +63,7 @@ void main() {
     test('checkForUpdates handles errors gracefully', () async {
       when(
         () => mockDio.get(any()),
-      ).thenThrow(DioException(requestOptions: RequestOptions(path: '')));
+      ).thenThrow(DioException(requestOptions: RequestOptions()));
 
       final results = await UpdateService.checkForUpdates(dio: mockDio);
 

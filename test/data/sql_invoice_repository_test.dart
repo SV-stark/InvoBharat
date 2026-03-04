@@ -65,7 +65,7 @@ void main() {
   group('SqlInvoiceRepository', () {
     final testInvoice = model.Invoice(
       invoiceNo: 'INV-001',
-      invoiceDate: DateTime(2024, 1, 1),
+      invoiceDate: DateTime(2024),
       supplier: const model.Supplier(
         name: 'Test Company',
         address: 'Test Address',
@@ -83,14 +83,13 @@ void main() {
           description: 'Item 1',
           amount: 100.0,
           quantity: 2.0,
-          gstRate: 18.0,
         ),
       ],
       payments: [
         PaymentTransaction(
           id: '', // Let repo generate unique ID
           invoiceId: '',
-          date: DateTime(2024, 1, 1),
+          date: DateTime(2024),
           amount: 50.0,
           paymentMode: 'Cash',
         ),
@@ -172,7 +171,7 @@ void main() {
 
         final profile = await (db.select(
           db.businessProfiles,
-        )..where((t) => t.id.equals('default'))).getSingle();
+        )..where((final t) => t.id.equals('default'))).getSingle();
         expect(profile.invoiceSequence, 2);
       },
     );
@@ -200,12 +199,12 @@ void main() {
       // 3. Verify original invoice now has a "Credit Note" payment
       final originalAfter = await repository.getInvoice(originalId);
       expect(
-        originalAfter!.payments.any((p) => p.paymentMode == 'Credit Note'),
+        originalAfter!.payments.any((final p) => p.paymentMode == 'Credit Note'),
         true,
       );
 
       final cnPayment = originalAfter.payments.firstWhere(
-        (p) => p.paymentMode == 'Credit Note',
+        (final p) => p.paymentMode == 'Credit Note',
       );
       expect(cnPayment.id, 'CN-PAY-$cnId');
     });

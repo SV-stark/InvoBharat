@@ -46,12 +46,10 @@ void main() {
       id: 'rec-1',
       profileId: 'biz-1',
       interval: RecurringInterval.monthly,
-      nextRunDate: DateTime(2024, 1, 1),
-      isActive: true,
+      nextRunDate: DateTime(2024),
       baseInvoice: Invoice(
         id: 'tmpl-1',
-        invoiceNo: '',
-        invoiceDate: DateTime(2024, 1, 1),
+        invoiceDate: DateTime(2024),
         supplier: const Supplier(name: 'S', address: 'A', gstin: 'G'),
         receiver: const Receiver(name: 'R', address: 'A', gstin: 'G'),
         items: [],
@@ -97,7 +95,7 @@ void main() {
 
     test('calculateNextDate should work for intervals', () {
       final service = container.read(recurringServiceProvider);
-      final start = DateTime(2024, 1, 1);
+      final start = DateTime(2024);
 
       expect(
         service.calculateNextDate(start, RecurringInterval.daily),
@@ -109,11 +107,11 @@ void main() {
       );
       expect(
         service.calculateNextDate(start, RecurringInterval.monthly),
-        DateTime(2024, 2, 1),
+        DateTime(2024, 2),
       );
       expect(
         service.calculateNextDate(start, RecurringInterval.yearly),
-        DateTime(2025, 1, 1),
+        DateTime(2025),
       );
     });
   });

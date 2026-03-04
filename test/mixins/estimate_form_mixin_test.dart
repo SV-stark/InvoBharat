@@ -25,12 +25,12 @@ class TestEstimateState extends ConsumerState<TestEstimateWidget>
   }
 
   @override
-  Widget build(BuildContext context) => Container();
+  Widget build(final BuildContext context) => Container();
 }
 
 void main() {
   testWidgets('EstimateFormMixin should initialize and sync controllers', (
-    tester,
+    final tester,
   ) async {
     await tester.pumpWidget(
       const ProviderScope(child: MaterialApp(home: TestEstimateWidget())),
@@ -42,7 +42,7 @@ void main() {
 
     expect(state.estimateNoCtrl, isNotNull);
 
-    final client = Client(
+    final client = const Client(
       id: 'c1',
       name: 'Test Client',
       address: 'Addr',

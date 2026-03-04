@@ -137,7 +137,7 @@ void main() {
       expect(retrieved, isNull);
 
       final items = await database.select(database.invoiceItems).get();
-      expect(items.any((it) => it.invoiceId == 'inv-to-delete'), isFalse);
+      expect(items.any((final it) => it.invoiceId == 'inv-to-delete'), isFalse);
     });
 
     test('checkInvoiceExists functionality', () async {

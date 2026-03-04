@@ -6,7 +6,7 @@ import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/models/business_profile.dart';
 
 void main() {
-  testWidgets('InvoiceFormScreen should render', (tester) async {
+  testWidgets('InvoiceFormScreen should render', (final tester) async {
     // Provide a default business profile so it doesn't fail
     final profile = BusinessProfile(
       id: 'p1',

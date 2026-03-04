@@ -167,7 +167,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     // For now, let's assume one active profile edit at a time.
 
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Settings"),
@@ -487,7 +487,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onPressed: () async {
                 // Export logic
                 try {
-                  final msg = await BackupService().exportFullBackup(ref);
+                  final msg = await BackupService().exportFullBackup();
                   if (mounted) {
                     ScaffoldMessenger.of(
                       context,
@@ -512,7 +512,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onPressed: () async {
                 // Restore logic
                 try {
-                  final result = await BackupService().restoreFullBackup(ref);
+                  final result = await BackupService().restoreFullBackup();
                   if (!mounted) return;
 
                   ScaffoldMessenger.of(

@@ -15,15 +15,12 @@ class MockMessage extends Mock implements Message {}
 class MockPersistentConnection extends Mock implements PersistentConnection {}
 
 void main() {
-  late MockSecureStorage mockStorage;
-
   setUpAll(() {
     registerFallbackValue(Message());
     registerFallbackValue(SmtpServer('host'));
   });
 
   setUp(() {
-    mockStorage = MockSecureStorage();
     SharedPreferences.setMockInitialValues({});
   });
 
@@ -56,7 +53,7 @@ void main() {
           subject: 'Test Subject',
           body: 'Test Body',
           recipientEmail: 'client@test.com',
-          sendFunction: (message, server) async {
+          sendFunction: (final message, final server) async {
             called = true;
             expect(message.subject, 'Test Subject');
             expect(
