@@ -103,7 +103,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (_formKey.currentState!.validate()) {
       final currentProfile = ref.read(businessProfileProvider);
       final newProfile = currentProfile.copyWith(
@@ -126,12 +126,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         upiName: _upiNameController.text,
         pan: _panController.text,
       );
-      unawaited(
-        ref.read(businessProfileNotifierProvider).updateProfile(newProfile),
-      );
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Settings Saved')));
+      await ref.read(businessProfileNotifierProvider).updateProfile(newProfile);
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Settings Saved')));
+      }
     }
   }
 
@@ -142,9 +142,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (pickedFile != null) {
       final currentProfile = ref.read(businessProfileProvider);
       final newProfile = currentProfile.copyWith(logoPath: pickedFile.path);
-      unawaited(
-        ref.read(businessProfileNotifierProvider).updateProfile(newProfile),
-      );
+      await ref.read(businessProfileNotifierProvider).updateProfile(newProfile);
     }
   }
 
@@ -157,9 +155,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final newProfile = currentProfile.copyWith(
         signaturePath: pickedFile.path,
       );
-      unawaited(
-        ref.read(businessProfileNotifierProvider).updateProfile(newProfile),
-      );
+      await ref.read(businessProfileNotifierProvider).updateProfile(newProfile);
     }
   }
 
@@ -466,11 +462,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
 
     if (confirmed == true) {
-      unawaited(
-        ref
-            .read(businessProfileListProvider.notifier)
-            .deleteProfile(profile.id),
-      );
+      await ref
+          .read(businessProfileListProvider.notifier)
+          .deleteProfile(profile.id);
     }
   }
 
@@ -763,7 +757,7 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
               child: OutlinedButton(
                 onPressed: () async {
                   await EmailService.clearSettings();
-                  unawaited(_loadSettings());
+                  await _loadSettings();
                 },
                 child: const Text("Clear Settings"),
               ),

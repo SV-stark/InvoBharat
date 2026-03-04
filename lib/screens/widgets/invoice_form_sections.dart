@@ -83,7 +83,14 @@ class InvoiceHeaderSection extends ConsumerWidget {
         _buildDropdownField(
           label: "Invoice Style",
           value: invoice.style,
-          items: ['Modern', 'Professional', 'Minimal'],
+          items: [
+            'Modern',
+            'Professional',
+            'Minimal',
+            'Classic',
+            'Corporate',
+            'Creative',
+          ],
           onChanged: (final val) =>
               ref.read(invoiceProvider.notifier).updateStyle(val!),
         ),
@@ -410,11 +417,22 @@ class InvoiceSummarySection extends ConsumerWidget {
                 const SizedBox(width: 8),
                 SizedBox(
                   width: 120,
-                  child: AppTextInput(
-                    controller: TextEditingController(
-                      text: invoice.discountAmount.toString(),
+                  child: TextFormField(
+                    key: ValueKey(invoice.discountAmount),
+                    initialValue: invoice.discountAmount == 0.0
+                        ? ''
+                        : invoice.discountAmount.toStringAsFixed(2),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
                     ),
-                    label: "Amount",
+                    decoration: const InputDecoration(
+                      labelText: "Amount",
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 8,
+                      ),
+                    ),
                     onChanged: (final val) => ref
                         .read(invoiceProvider.notifier)
                         .updateDiscountAmount(val),

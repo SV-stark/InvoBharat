@@ -7,14 +7,13 @@ import 'package:uuid/uuid.dart';
 import 'dart:io'; // NEW
 import 'package:path_provider/path_provider.dart'; // NEW
 import 'dart:async';
-import 'package:share_plus/share_plus.dart';
 
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/payment_transaction.dart';
 import 'package:invobharat/models/recurring_profile.dart'; // New
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/providers/recurring_provider.dart'; // New
-import 'package:url_launcher/url_launcher.dart';
+
 import 'package:printing/printing.dart';
 import 'package:invobharat/services/email_service.dart'; // NEW
 import 'package:invobharat/screens/settings_screen.dart'; // For settings navigation
@@ -92,35 +91,8 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.email),
-            tooltip: "Email Client",
-            onPressed: () async {
-              final email = _invoice.receiver.email;
-              if (email.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Client has no email")),
-                );
-                return;
-              }
-
-              final Uri emailLaunchUri = Uri(
-                scheme: 'mailto',
-                path: email,
-                query:
-                    'subject=Invoice ${_invoice.invoiceNo}&body=Dear ${_invoice.receiver.name},\n\nPlease find attached invoice ${_invoice.invoiceNo}.\n\nRegards,\n${_invoice.supplier.name}',
-              );
-
-              if (await canLaunchUrl(emailLaunchUri)) {
-                await launchUrl(emailLaunchUri);
-              } else {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Could not launch email client"),
-                    ),
-                  );
-                }
-              }
-            },
+            tooltip: "Send Email",
+            onPressed: _sendEmail,
           ),
           IconButton(
             icon: const Icon(Icons.edit),
@@ -135,21 +107,14 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.email),
-            tooltip: "Send Email",
-            onPressed: _sendEmail,
-          ),
-          IconButton(
             icon: const Icon(Icons.share),
             tooltip: "Share",
             onPressed: () async {
               final profile = ref.read(businessProfileProvider);
               final bytes = await generateInvoicePdf(_invoice, profile);
-              unawaited(
-                Printing.sharePdf(
-                  bytes: bytes,
-                  filename: 'invoice_${_invoice.invoiceNo}.pdf',
-                ),
+              await Printing.sharePdf(
+                bytes: bytes,
+                filename: 'invoice_${_invoice.invoiceNo}.pdf',
               );
             },
           ),
@@ -465,7 +430,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
         baseInvoice: base,
       );
 
-      unawaited(ref.read(recurringListProvider.notifier).addProfile(profile));
+      await ref.read(recurringListProvider.notifier).addProfile(profile);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Recurring Profile Created")),
@@ -476,7 +441,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
 
   void _toggleArchive() async {
     final updated = _invoice.copyWith(isArchived: !_invoice.isArchived);
-    unawaited(ref.read(invoiceRepositoryProvider).saveInvoice(updated));
+    await ref.read(invoiceRepositoryProvider).saveInvoice(updated);
     _refreshInvoice();
     ref.invalidate(invoiceListProvider); // Refresh list
     if (mounted) {
@@ -506,7 +471,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     final updated = _invoice.copyWith(
       payments: [..._invoice.payments, payment],
     );
-    unawaited(ref.read(invoiceRepositoryProvider).saveInvoice(updated));
+    await ref.read(invoiceRepositoryProvider).saveInvoice(updated);
     _refreshInvoice();
     ref.invalidate(invoiceListProvider);
     if (mounted) {
@@ -536,9 +501,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     );
 
     if (confirmed == true) {
-      unawaited(
-        ref.read(invoiceRepositoryProvider).deleteInvoice(_invoice.id!),
-      );
+      await ref.read(invoiceRepositoryProvider).deleteInvoice(_invoice.id!);
       ref.invalidate(invoiceListProvider);
       if (mounted) {
         Navigator.pop(context); // Go back to list
@@ -576,12 +539,11 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       );
 
       if (configNow == true && mounted) {
-        unawaited(
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const SettingsScreen()),
-          ).then((_) => _sendEmail()),
-        ); // Retry after return
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SettingsScreen()),
+        );
+        if (mounted) await _sendEmail();
       }
       return;
     }
@@ -602,14 +564,10 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       final profile = ref.read(businessProfileProvider);
       final pdfBytes = await generateInvoicePdf(_invoice, profile);
 
-      // Save temp file
+      // Save temp file and send email
       final tempDir = await getTemporaryDirectory();
       final file = File('${tempDir.path}/invoice_${_invoice.invoiceNo}.pdf');
       await file.writeAsBytes(pdfBytes);
-
-      unawaited(
-        Share.shareXFiles([XFile(file.path)], text: 'Invoice from InvoBharat'),
-      );
       await EmailService.sendInvoiceEmail(
         settings: settings,
         invoice: _invoice,

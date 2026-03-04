@@ -1,9 +1,9 @@
+// ignore_for_file: unawaited_futures
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 import 'package:flutter/services.dart';
-// ignore_for_file: unawaited_futures
 import 'dart:async';
 
 import 'package:invobharat/models/invoice.dart';
@@ -35,27 +35,36 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
 
   // Unused fields removed
 
+  // Controller for comments/terms field (must NOT be created in build)
+  late TextEditingController _commentsCtrl;
+
   @override
   void initState() {
     super.initState();
     initInvoiceControllers(widget.invoiceToEdit); // Mixin init
+    _commentsCtrl = TextEditingController(
+      text: widget.invoiceToEdit?.comments ?? '',
+    );
 
     if (widget.invoiceToEdit != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(invoiceProvider.notifier).setInvoice(widget.invoiceToEdit!);
         syncInvoiceControllers(ref.read(invoiceProvider));
+        _commentsCtrl.text = ref.read(invoiceProvider).comments;
       });
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // Ensure reset if new
         ref.read(invoiceProvider.notifier).reset();
         syncInvoiceControllers(ref.read(invoiceProvider));
+        _commentsCtrl.clear();
       });
     }
   }
 
   @override
   void dispose() {
+    _commentsCtrl.dispose();
     disposeInvoiceControllers(); // Mixin dispose
     super.dispose();
   }
@@ -282,7 +291,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
               InfoLabel(
                 label: "Due Date",
                 child: DatePicker(
-                  selected: invoice.dueDate ?? DateTime.now(),
+                  selected: invoice.dueDate,
                   onChanged: (final v) => notifier.updateDueDate(v),
                 ),
               ),
@@ -772,7 +781,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                 label: "Terms & Conditions / Comments",
                 child: TextBox(
                   placeholder: "Thanks for your business.",
-                  controller: TextEditingController(text: invoice.comments),
+                  controller: _commentsCtrl,
                   onChanged: (final v) => notifier.updateTermComments(v),
                   maxLines: 4,
                 ),
@@ -787,11 +796,20 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                     label: "Invoice Style",
                     child: ComboBox<String>(
                       value: invoice.style,
-                      items: ['Modern', 'Professional', 'Minimal']
-                          .map(
-                            (final e) => ComboBoxItem(value: e, child: Text(e)),
-                          )
-                          .toList(),
+                      items:
+                          [
+                                'Modern',
+                                'Professional',
+                                'Minimal',
+                                'Classic',
+                                'Corporate',
+                                'Creative',
+                              ]
+                              .map(
+                                (final e) =>
+                                    ComboBoxItem(value: e, child: Text(e)),
+                              )
+                              .toList(),
                       onChanged: (final v) {
                         if (v != null) notifier.updateStyle(v);
                       },
@@ -961,6 +979,21 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
       // But we have custom UI here.
       // Let's call repository directly as before.
       await repository.saveInvoice(invoice);
+
+      // Increment invoice sequence only for new invoices (not edits)
+      if (widget.invoiceToEdit == null) {
+        final currentProfile = ref.read(businessProfileProvider);
+        final updatedProfile = currentProfile.copyWith(
+          invoiceSequence: currentProfile.invoiceSequence + 1,
+        );
+        await ref
+            .read(businessProfileNotifierProvider)
+            .updateProfile(updatedProfile);
+      }
+
+      // Invalidate invoice list so dashboard refreshes
+      ref.invalidate(invoiceListProvider);
+
       final context = this.context;
       if (!context.mounted) return;
 
