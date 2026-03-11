@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:invobharat/screens/dashboard_screen.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
@@ -29,7 +28,6 @@ void main() {
   late BusinessProfile testProfile;
 
   setUpAll(() {
-    GoogleFonts.config.allowRuntimeFetching = false;
     registerFallbackValue(
       Invoice(
         supplier: const Supplier(),
@@ -38,9 +36,7 @@ void main() {
         invoiceDate: DateTime.now(),
       ),
     );
-    registerFallbackValue(
-      const Client(id: '', name: ''),
-    ); // Added fallback
+    registerFallbackValue(const Client(id: '', name: '')); // Added fallback
     registerFallbackValue(BusinessProfile.defaults());
   });
 
@@ -119,12 +115,7 @@ void main() {
           invoiceDate: now,
           supplier: const Supplier(),
           receiver: const Receiver(name: 'Client A'),
-          items: [
-            const InvoiceItem(
-              description: 'Item 1',
-              amount: 1000,
-            ),
-          ],
+          items: [const InvoiceItem(description: 'Item 1', amount: 1000)],
         ),
       ];
 

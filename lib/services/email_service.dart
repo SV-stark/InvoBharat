@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:invobharat/database/database.dart' hide Invoice;
 
 import 'package:invobharat/models/invoice.dart';
 
@@ -36,12 +36,13 @@ class EmailService {
 
   /// Saves SMTP settings. Password is stored securely.
   static Future<void> saveSettings(final EmailSettings settings) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyHost, settings.smtpHost);
-    await prefs.setInt(_keyPort, settings.smtpPort);
-    await prefs.setString(_keyEmail, settings.email);
-    await prefs.setString(_keyUsername, settings.username);
-    await prefs.setBool(_keySecure, settings.isSecure);
+    final db = AppDatabase();
+    final prefs = AppSettingsService(db);
+    await prefs.setSetting(_keyHost, settings.smtpHost);
+    await prefs.setSetting(_keyPort, settings.smtpPort.toString());
+    await prefs.setSetting(_keyEmail, settings.email);
+    await prefs.setSetting(_keyUsername, settings.username);
+    await prefs.setSetting(_keySecure, settings.isSecure.toString());
 
     if (settings.password != null && settings.password!.isNotEmpty) {
       await _storage.write(key: _keyPassword, value: settings.password);
@@ -50,30 +51,36 @@ class EmailService {
 
   /// Retrieves SMTP settings. Password is fetched from secure storage.
   static Future<EmailSettings?> getSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    final host = prefs.getString(_keyHost);
+    final db = AppDatabase();
+    final prefs = AppSettingsService(db);
+
+    final host = await prefs.getSetting(_keyHost);
     if (host == null || host.isEmpty) return null;
 
     final password = await _storage.read(key: _keyPassword);
 
+    final portStr = await prefs.getSetting(_keyPort);
+    final secureStr = await prefs.getSetting(_keySecure);
+
     return EmailSettings(
       smtpHost: host,
-      smtpPort: prefs.getInt(_keyPort) ?? 587,
-      email: prefs.getString(_keyEmail) ?? '',
-      username: prefs.getString(_keyUsername) ?? '',
+      smtpPort: portStr != null ? int.tryParse(portStr) ?? 587 : 587,
+      email: await prefs.getSetting(_keyEmail) ?? '',
+      username: await prefs.getSetting(_keyUsername) ?? '',
       password: password,
-      isSecure: prefs.getBool(_keySecure) ?? true,
+      isSecure: secureStr != null ? secureStr.toLowerCase() == 'true' : true,
     );
   }
 
   /// Clears all settings.
   static Future<void> clearSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_keyHost);
-    await prefs.remove(_keyPort);
-    await prefs.remove(_keyEmail);
-    await prefs.remove(_keyUsername);
-    await prefs.remove(_keySecure);
+    final db = AppDatabase();
+    final prefs = AppSettingsService(db);
+    await prefs.setSetting(_keyHost, '');
+    await prefs.setSetting(_keyPort, '');
+    await prefs.setSetting(_keyEmail, '');
+    await prefs.setSetting(_keyUsername, '');
+    await prefs.setSetting(_keySecure, '');
     await _storage.delete(key: _keyPassword);
   }
 
@@ -84,7 +91,8 @@ class EmailService {
     required final String subject,
     required final String body,
     required final String recipientEmail,
-    final Future<PersistentConnection> Function(Message, SmtpServer)? sendFunction,
+    final Future<PersistentConnection> Function(Message, SmtpServer)?
+    sendFunction,
   }) async {
     final smtpServer = SmtpServer(
       settings.smtpHost,

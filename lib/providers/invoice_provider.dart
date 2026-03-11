@@ -5,6 +5,7 @@ import 'package:invobharat/utils/gst_helper.dart'; // New Import
 
 import 'package:invobharat/providers/business_profile_provider.dart';
 
+const _uuid = Uuid();
 final invoiceProvider =
     NotifierProvider<InvoiceNotifier, Invoice>(InvoiceNotifier.new);
 
@@ -63,7 +64,7 @@ class InvoiceNotifier extends Notifier<Invoice> {
           "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}",
       items: [
         InvoiceItem(
-            id: const Uuid().v4()),
+            id: _uuid.v4()),
       ],
       bankName: profile.bankName,
       accountNo: profile.accountNumber,
@@ -221,7 +222,7 @@ class InvoiceNotifier extends Notifier<Invoice> {
     state = state.copyWith(items: [
       ...state.items,
       InvoiceItem(
-          id: const Uuid().v4())
+          id: _uuid.v4())
     ]);
   }
 

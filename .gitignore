@@ -64,3 +64,4 @@ db.sqlite
 *.g.dart
 *.freezed.dart
 build.yaml
+nul

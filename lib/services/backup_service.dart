@@ -4,7 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:archive/archive.dart';
+import 'package:archive/archive_io.dart';
 
 import 'package:invobharat/services/csv_export_service.dart';
 import 'package:invobharat/data/sql_invoice_repository.dart';
@@ -77,7 +77,7 @@ class BackupService {
       final invoices = await repository.getAllInvoices();
 
       // 2. Generate CSV
-      final csvString = _csvService.generateInvoiceCsv(invoices);
+      final csvString = await _csvService.generateInvoiceCsv(invoices);
 
       // 3. Save to file
       String? outputFile = await _filePicker.saveFile(
@@ -115,16 +115,7 @@ class BackupService {
         throw Exception("Database file not found at $dbPath");
       }
 
-      // Read DB bytes
-      final dbBytes = await dbFile.readAsBytes();
-
-      // Create Archive
-      final archive = Archive();
-      archive.addFile(ArchiveFile('db.sqlite', dbBytes.length, dbBytes));
-
-      // Encode to Zip
-      final zipEncoder = ZipEncoder();
-      final zipData = zipEncoder.encode(archive);
+      // Read DB File Path
 
       String? outputFile = await _filePicker.saveFile(
         dialogTitle: 'Save Full Backup (ZIP)',
@@ -139,8 +130,12 @@ class BackupService {
           outputFile = '$outputFile.zip';
         }
 
-        final file = File(outputFile);
-        await file.writeAsBytes(zipData);
+        // Encode to Zip directly using streaming
+        final zipEncoder = ZipFileEncoder();
+        zipEncoder.create(outputFile);
+        await zipEncoder.addFile(dbFile);
+        await zipEncoder.close();
+
         return "Full Backup saved to $outputFile";
       } else {
         return "Backup cancelled";

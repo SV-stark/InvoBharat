@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/payment_transaction.dart';
 
@@ -36,10 +37,14 @@ class CsvExportService {
     'IFSC Code',
     'Branch',
     'Notes',
-    'Payment Total' // Simplified payment restoration
+    'Payment Total', // Simplified payment restoration
   ];
 
-  String generateInvoiceCsv(final List<Invoice> invoices) {
+  Future<String> generateInvoiceCsv(final List<Invoice> invoices) async {
+    return compute(_generateInvoiceCsvSync, invoices);
+  }
+
+  static String _generateInvoiceCsvSync(final List<Invoice> invoices) {
     final buffer = StringBuffer();
 
     // Write Header
@@ -84,7 +89,7 @@ class CsvExportService {
           _escape(invoice.ifscCode),
           _escape(invoice.branch),
           _escape(invoice.comments),
-          invoice.totalPaid.toStringAsFixed(2)
+          invoice.totalPaid.toStringAsFixed(2),
         ];
 
         buffer.writeln(row.join(','));
@@ -95,7 +100,11 @@ class CsvExportService {
   }
 
   /// Parses CSV string back into List of Invoice objects
-  List<Invoice> parseInvoiceCsv(final String csvContent) {
+  Future<List<Invoice>> parseInvoiceCsv(final String csvContent) async {
+    return compute(_parseInvoiceCsvSync, csvContent);
+  }
+
+  static List<Invoice> _parseInvoiceCsvSync(final String csvContent) {
     final lines = const LineSplitter().convert(csvContent);
     if (lines.isEmpty) return [];
 
@@ -196,12 +205,15 @@ class CsvExportService {
         // Reconstruct payments (simplified as one lump sum transaction if totalPaid > 0)
         final List<PaymentTransaction> payments = [];
         if (paidTotal > 0) {
-          payments.add(PaymentTransaction(
+          payments.add(
+            PaymentTransaction(
               id: 'restored_${DateTime.now().microsecondsSinceEpoch}',
               invoiceId: invoiceNo,
               date: invDate,
               amount: paidTotal,
-              paymentMode: 'Cash'));
+              paymentMode: 'Cash',
+            ),
+          );
         }
 
         final invoice = Invoice(
@@ -230,7 +242,7 @@ class CsvExportService {
     return invoiceMap.values.toList();
   }
 
-  String _escape(final String? val) {
+  static String _escape(final String? val) {
     if (val == null) return '';
     if (val.contains(',') || val.contains('"') || val.contains('\n')) {
       return '"${val.replaceAll('"', '""')}"';
@@ -238,7 +250,7 @@ class CsvExportService {
     return val;
   }
 
-  List<String> _parseRow(final String line) {
+  static List<String> _parseRow(final String line) {
     final values = <String>[];
     final sb = StringBuffer();
     bool inQuotes = false;

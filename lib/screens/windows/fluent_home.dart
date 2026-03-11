@@ -2,7 +2,6 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:invobharat/screens/windows/fluent_dashboard.dart';
 
 import 'package:invobharat/screens/windows/fluent_invoice_wizard.dart';
@@ -44,12 +43,9 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
             children: [
               Image.asset('logo.png', width: 24, height: 24),
               const SizedBox(width: 10),
-              Text(
+              const Text(
                 'InvoBharat',
-                style: GoogleFonts.outfit(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
             ],
           ),

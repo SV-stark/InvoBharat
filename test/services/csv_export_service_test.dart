@@ -18,16 +18,12 @@ void main() {
       supplier: const Supplier(name: 'My Biz', gstin: '27AAAAA0000A1Z5'),
       receiver: const Receiver(name: 'Client A', gstin: '27BBBBB0000B1Z5'),
       items: [
-        const InvoiceItem(
-          description: 'Item 1',
-          amount: 100,
-          quantity: 2,
-        ),
+        const InvoiceItem(description: 'Item 1', amount: 100, quantity: 2),
       ],
     );
 
-    test('generateInvoiceCsv should create valid header and rows', () {
-      final csv = csvService.generateInvoiceCsv([invoice]);
+    test('generateInvoiceCsv should create valid header and rows', () async {
+      final csv = await csvService.generateInvoiceCsv([invoice]);
 
       expect(csv, contains('GSTIN/UIN Of Supplier,Trade Name,Invoice No'));
       expect(
@@ -38,9 +34,9 @@ void main() {
       );
     });
 
-    test('parseInvoiceCsv should reconstruct invoice correctly', () {
-      final csv = csvService.generateInvoiceCsv([invoice]);
-      final parsed = csvService.parseInvoiceCsv(csv);
+    test('parseInvoiceCsv should reconstruct invoice correctly', () async {
+      final csv = await csvService.generateInvoiceCsv([invoice]);
+      final parsed = await csvService.parseInvoiceCsv(csv);
 
       expect(parsed.length, 1);
       expect(parsed.first.invoiceNo, 'INV-001');
@@ -48,26 +44,26 @@ void main() {
       expect(parsed.first.items.first.quantity, 2);
     });
 
-    test('escaping logic in CSV', () {
+    test('escaping logic in CSV', () async {
       final complexInvoice = invoice.copyWith(
         comments: 'Notes with , comma and "quotes"',
       );
-      final csv = csvService.generateInvoiceCsv([complexInvoice]);
+      final csv = await csvService.generateInvoiceCsv([complexInvoice]);
       expect(csv, contains('"Notes with , comma and ""quotes"""'));
 
-      final parsed = csvService.parseInvoiceCsv(csv);
+      final parsed = await csvService.parseInvoiceCsv(csv);
       expect(parsed.first.comments, 'Notes with , comma and "quotes"');
     });
 
-    test('restore multiple items same invoice', () {
+    test('restore multiple items same invoice', () async {
       final multiItem = invoice.copyWith(
         items: [
           const InvoiceItem(description: 'Item A', amount: 50),
           const InvoiceItem(description: 'Item B', amount: 30),
         ],
       );
-      final csv = csvService.generateInvoiceCsv([multiItem]);
-      final parsed = csvService.parseInvoiceCsv(csv);
+      final csv = await csvService.generateInvoiceCsv([multiItem]);
+      final parsed = await csvService.parseInvoiceCsv(csv);
 
       expect(parsed.length, 1);
       expect(parsed.first.items.length, 2);

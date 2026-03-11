@@ -40,7 +40,7 @@ void main() {
       when(() => mockRepo.getAllInvoices()).thenAnswer((_) async => invoices);
       when(
         () => mockCsvService.generateInvoiceCsv(any()),
-      ).thenReturn('csvContent');
+      ).thenAnswer((_) async => 'csvContent');
 
       final tempFile = File('${Directory.systemTemp.path}/test_backup.csv');
       when(
@@ -67,7 +67,7 @@ void main() {
         when(() => mockRepo.getAllInvoices()).thenAnswer((_) async => []);
         when(
           () => mockCsvService.generateInvoiceCsv(any()),
-        ).thenReturn('csvContent');
+        ).thenAnswer((_) async => 'csvContent');
         when(
           () => mockFilePicker.saveFile(
             dialogTitle: any(named: 'dialogTitle'),

@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:invobharat/screens/invoice_form.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
@@ -28,7 +27,6 @@ void main() {
   late MockBusinessProfileRepository mockProfileRepo;
 
   setUpAll(() {
-    GoogleFonts.config.allowRuntimeFetching = false;
     registerFallbackValue(
       Invoice(
         supplier: const Supplier(),
@@ -37,9 +35,7 @@ void main() {
         invoiceDate: DateTime.now(),
       ),
     );
-    registerFallbackValue(
-      const Client(id: '', name: ''),
-    );
+    registerFallbackValue(const Client(id: '', name: ''));
     registerFallbackValue(BusinessProfile.defaults());
   });
 

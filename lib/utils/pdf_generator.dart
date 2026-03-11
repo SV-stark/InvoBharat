@@ -1,7 +1,6 @@
 import 'dart:isolate';
-import 'dart:typed_data';
+import 'package:flutter/services.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/utils/invoice_template.dart';
@@ -37,8 +36,11 @@ Future<Uint8List> _generatePdfInIsolate(final PdfGeneratorParams params) async {
   pw.Font font;
   pw.Font fontBold;
   try {
-    font = await PdfGoogleFonts.notoSansRegular();
-    fontBold = await PdfGoogleFonts.notoSansBold();
+    final regularData = await rootBundle.load('fonts/NotoSans-Regular.ttf');
+    font = pw.Font.ttf(regularData.buffer.asByteData());
+
+    final boldData = await rootBundle.load('fonts/NotoSans-Bold.ttf');
+    fontBold = pw.Font.ttf(boldData.buffer.asByteData());
   } catch (_) {
     font = pw.Font.helvetica();
     fontBold = pw.Font.helveticaBold();
@@ -112,17 +114,13 @@ Future<Uint8List> generateInvoicePdf(
   return Isolate.run(() => _generatePdfInIsolate(params));
 }
 
-/// Call once at app startup (e.g. in main.dart) to pre-warm the font cache
-/// so the first PDF generation is not slow.
 Future<void> warmUpFonts() async {
-  if (_fontsWarmedUp) return; // Already warmed up
+  if (_fontsWarmedUp) return;
   _fontsWarmedUp = true;
   try {
-    // Load and discard — this populates the printing package's disk cache so
-    // the worker isolate reloads from disk (fast) on first real PDF.
-    await PdfGoogleFonts.notoSansRegular();
-    await PdfGoogleFonts.notoSansBold();
+    // Load to memory early
+    await rootBundle.load('fonts/NotoSans-Regular.ttf');
   } catch (_) {
-    _fontsWarmedUp = false; // Allow retry
+    _fontsWarmedUp = false;
   }
 }

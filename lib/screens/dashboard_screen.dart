@@ -6,7 +6,6 @@ import 'package:invobharat/widgets/skeleton_widgets.dart';
 import 'package:invobharat/widgets/gst_pie_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:invobharat/screens/invoice_form.dart';
 import 'package:invobharat/screens/invoice_detail_screen.dart';
 import 'package:invobharat/screens/recurring_invoices_screen.dart';
@@ -102,12 +101,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           children: [
             Image.asset('logo.png', height: 32, width: 32),
             const SizedBox(width: 12),
-            Text(
+            const Text(
               "InvoBharat",
-              style: GoogleFonts.outfit(
-                fontWeight: FontWeight.bold,
-                fontSize: 22,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
             ),
           ],
         ),

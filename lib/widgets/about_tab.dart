@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:invobharat/services/update_service.dart';
 
@@ -99,13 +98,9 @@ class AboutTab extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           // App Name
-          Text(
+          const Text(
             'InvoBharat',
-            style: GoogleFonts.outfit(
-              // Using Outfit as requested in rules or consistent with modern UI
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           // Version

@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:invobharat/screens/settings_screen.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
@@ -23,7 +22,6 @@ void main() {
   late BusinessProfile testProfile;
 
   setUpAll(() {
-    GoogleFonts.config.allowRuntimeFetching = false;
     registerFallbackValue(BusinessProfile.defaults());
   });
 

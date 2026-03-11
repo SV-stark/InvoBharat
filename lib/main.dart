@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:invobharat/providers/database_provider.dart'; // New
 import 'package:invobharat/providers/business_profile_provider.dart';
@@ -28,19 +27,21 @@ void main() {
               const Text(
                 "Critical Application Error",
                 style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    decoration: TextDecoration.none,
-                    fontWeight: FontWeight.bold),
+                  color: Colors.white,
+                  fontSize: 20,
+                  decoration: TextDecoration.none,
+                  fontWeight: FontWeight.bold,
+                ),
                 textDirection: TextDirection.ltr,
               ),
               const SizedBox(height: 10),
               Text(
                 details.exceptionAsString(),
                 style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                    decoration: TextDecoration.none),
+                  color: Colors.white70,
+                  fontSize: 14,
+                  decoration: TextDecoration.none,
+                ),
                 textAlign: TextAlign.center,
                 textDirection: TextDirection.ltr,
               ),
@@ -49,10 +50,11 @@ void main() {
               Text(
                 details.stack.toString(),
                 style: const TextStyle(
-                    color: Colors.white38,
-                    fontSize: 10,
-                    fontFamily: 'Consolas',
-                    decoration: TextDecoration.none),
+                  color: Colors.white38,
+                  fontSize: 10,
+                  fontFamily: 'Consolas',
+                  decoration: TextDecoration.none,
+                ),
                 textDirection: TextDirection.ltr,
               ),
             ],
@@ -108,16 +110,19 @@ class InvoBharatApp extends ConsumerWidget {
           theme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.light,
-            colorScheme: ColorScheme.fromSeed(
-                seedColor: profile.color),
-            textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme),
+            colorScheme: ColorScheme.fromSeed(seedColor: profile.color),
+            textTheme: ThemeData.light().textTheme.apply(
+              fontFamily: 'NotoSans',
+            ),
           ),
           darkTheme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.dark,
             colorScheme: ColorScheme.fromSeed(
-                seedColor: profile.color, brightness: Brightness.dark),
-            textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+              seedColor: profile.color,
+              brightness: Brightness.dark,
+            ),
+            textTheme: ThemeData.dark().textTheme.apply(fontFamily: 'NotoSans'),
           ),
           home: const DashboardScreen(),
         );
@@ -132,11 +137,15 @@ class InvoBharatApp extends ConsumerWidget {
                   children: [
                     const fluent.ProgressRing(),
                     const SizedBox(height: 20),
-                    Consumer(builder: (final context, final ref, _) {
-                      final status = ref.watch(migrationStatusProvider);
-                      return Text(status,
-                          style: const TextStyle(fontWeight: FontWeight.bold));
-                    }),
+                    Consumer(
+                      builder: (final context, final ref, _) {
+                        final status = ref.watch(migrationStatusProvider);
+                        return Text(
+                          status,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -152,11 +161,15 @@ class InvoBharatApp extends ConsumerWidget {
                   const CircularProgressIndicator(),
                   const SizedBox(height: 20),
                   // Watch status
-                  Consumer(builder: (final context, final ref, _) {
-                    final status = ref.watch(migrationStatusProvider);
-                    return Text(status,
-                        style: const TextStyle(fontWeight: FontWeight.bold));
-                  }),
+                  Consumer(
+                    builder: (final context, final ref, _) {
+                      final status = ref.watch(migrationStatusProvider);
+                      return Text(
+                        status,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -166,9 +179,7 @@ class InvoBharatApp extends ConsumerWidget {
       error: (final err, final stack) {
         return fluent.FluentApp(
           home: fluent.ScaffoldPage(
-            content: Center(
-              child: Text("Error initializing app: $err"),
-            ),
+            content: Center(child: Text("Error initializing app: $err")),
           ),
         );
       },
