@@ -4,7 +4,6 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_linux
-  flutter_onnxruntime
   flutter_secure_storage_linux
   printing
   sqlite3_flutter_libs

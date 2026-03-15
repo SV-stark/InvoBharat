@@ -1,6 +1,7 @@
-import 'dart:convert';
+import 'dart:isolate';
 import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
+import 'package:csv/csv.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/payment_transaction.dart';
 
@@ -41,121 +42,111 @@ class CsvExportService {
   ];
 
   Future<String> generateInvoiceCsv(final List<Invoice> invoices) async {
-    return compute(_generateInvoiceCsvSync, invoices);
+    return Isolate.run(() => _generateInvoiceCsvSync(invoices));
   }
 
   static String _generateInvoiceCsvSync(final List<Invoice> invoices) {
-    final buffer = StringBuffer();
-
-    // Write Header
-    buffer.writeln(headers.join(','));
+    final List<List<dynamic>> rows = [headers];
+    final dateFormat = DateFormat('dd-MM-yyyy');
 
     for (final invoice in invoices) {
-      final dateFormat = DateFormat('dd-MM-yyyy');
-
       // If no items, write at least one row for the invoice header
       final itemsToWrite = invoice.items.isEmpty
           ? [const InvoiceItem(description: 'Service', gstRate: 0)]
           : invoice.items;
 
       for (final item in itemsToWrite) {
-        final row = [
-          _escape(invoice.supplier.gstin),
-          _escape(invoice.supplier.name),
-          _escape(invoice.invoiceNo),
-          _escape(dateFormat.format(invoice.invoiceDate)),
+        rows.add([
+          invoice.supplier.gstin,
+          invoice.supplier.name,
+          invoice.invoiceNo,
+          dateFormat.format(invoice.invoiceDate),
           invoice.grandTotal.toStringAsFixed(2),
           item.gstRate.toString(),
           item.netAmount.toStringAsFixed(2),
           '0', // CESS
-          _escape(invoice.placeOfSupply),
-          _escape(invoice.reverseCharge),
-          _escape(item.sacCode),
-          _escape(item.description),
+          invoice.placeOfSupply,
+          invoice.reverseCharge,
+          item.sacCode,
+          item.description,
 
           // Restore fields
-          _escape(invoice.receiver.name),
-          _escape(invoice.receiver.gstin),
-          _escape(invoice.receiver.address),
-          _escape(invoice.receiver.state),
+          invoice.receiver.name,
+          invoice.receiver.gstin,
+          invoice.receiver.address,
+          invoice.receiver.state,
           item.quantity.toString(),
-          _escape(item.unit),
+          item.unit,
           item.amount.toStringAsFixed(2),
           item.discount.toStringAsFixed(2),
           invoice.dueDate != null ? dateFormat.format(invoice.dueDate!) : '',
-          _escape(invoice.paymentTerms),
-          _escape(invoice.bankName),
-          _escape(invoice.accountNo),
-          _escape(invoice.ifscCode),
-          _escape(invoice.branch),
-          _escape(invoice.comments),
+          invoice.paymentTerms,
+          invoice.bankName,
+          invoice.accountNo,
+          invoice.ifscCode,
+          invoice.branch,
+          invoice.comments,
           invoice.totalPaid.toStringAsFixed(2),
-        ];
-
-        buffer.writeln(row.join(','));
+        ]);
       }
     }
 
-    return buffer.toString();
+    return const ListToCsvConverter().convert(rows);
   }
 
   /// Parses CSV string back into List of Invoice objects
   Future<List<Invoice>> parseInvoiceCsv(final String csvContent) async {
-    return compute(_parseInvoiceCsvSync, csvContent);
+    return Isolate.run(() => _parseInvoiceCsvSync(csvContent));
   }
 
   static List<Invoice> _parseInvoiceCsvSync(final String csvContent) {
-    final lines = const LineSplitter().convert(csvContent);
-    if (lines.isEmpty) return [];
+    final rows = const CsvToListConverter().convert(csvContent);
+    if (rows.isEmpty) return [];
 
-    final headerRow = _parseRow(lines.first);
+    final headerRow = rows.first;
     // Basic validation
     if (headerRow.length < 3 || headerRow[2] != 'Invoice No') {
       throw Exception('Invalid CSV Format: Missing Invoice No column');
     }
 
     final Map<String, Invoice> invoiceMap = {};
-    // Map<InvoiceNo, List<InvoiceItem>>
 
-    for (int i = 1; i < lines.length; i++) {
-      final line = lines[i];
-      if (line.trim().isEmpty) continue;
+    for (int i = 1; i < rows.length; i++) {
+      final row = rows[i];
+      if (row.isEmpty) continue;
 
-      final row = _parseRow(line);
       // Safety check for column count
-      if (row.length < headers.length) {
-        // Pad with empty strings if older format or truncated
-        row.addAll(List.filled(headers.length - row.length, ''));
+      final paddedRow = List<dynamic>.from(row);
+      if (paddedRow.length < headers.length) {
+        paddedRow.addAll(List.filled(headers.length - paddedRow.length, ''));
       }
 
-      final invoiceNo = row[2];
+      final invoiceNo = paddedRow[2].toString();
 
       // Parse fields
-      final dateStr = row[3];
-      final gstRate = double.tryParse(row[5]) ?? 0;
-      // taxableValue row[6] is derived
-      // cess row[7] unused
-      final pos = row[8];
-      final rcm = row[9];
-      final hsn = row[10];
-      final desc = row[11];
+      final dateStr = paddedRow[3].toString();
+      final gstRate = double.tryParse(paddedRow[5].toString()) ?? 0;
+      final pos = paddedRow[8].toString();
+      final rcm = paddedRow[9].toString();
+      final hsn = paddedRow[10].toString();
+      final desc = paddedRow[11].toString();
 
-      final recvName = row[12];
-      final recvGstin = row[13];
-      final recvAddr = row[14];
-      final recvState = row[15];
-      final qty = double.tryParse(row[16]) ?? 1;
-      final unit = row[17];
-      final price = double.tryParse(row[18]) ?? 0;
-      final discount = double.tryParse(row[19]) ?? 0;
-      final dueDateStr = row[20];
-      final terms = row[21];
-      final bank = row[22];
-      final acct = row[23];
-      final ifsc = row[24];
-      final branch = row[25];
-      final notes = row[26];
-      final paidTotal = double.tryParse(row[27]) ?? 0;
+      final recvName = paddedRow[12].toString();
+      final recvGstin = paddedRow[13].toString();
+      final recvAddr = paddedRow[14].toString();
+      final recvState = paddedRow[15].toString();
+      final qty = double.tryParse(paddedRow[16].toString()) ?? 1;
+      final unit = paddedRow[17].toString();
+      final price = double.tryParse(paddedRow[18].toString()) ?? 0;
+      final discount = double.tryParse(paddedRow[19].toString()) ?? 0;
+      final dueDateStr = paddedRow[20].toString();
+      final terms = paddedRow[21].toString();
+      final bank = paddedRow[22].toString();
+      final acct = paddedRow[23].toString();
+      final ifsc = paddedRow[24].toString();
+      final branch = paddedRow[25].toString();
+      final notes = paddedRow[26].toString();
+      final paidTotal = double.tryParse(paddedRow[27].toString()) ?? 0;
 
       // Create Item
       final item = InvoiceItem(
@@ -189,10 +180,9 @@ class CsvExportService {
       } else {
         // Create new Invoice
         final supplier = Supplier(
-          gstin: row[0],
-          name: row[1],
-          state: pos, // Approx
-          // We don't have full supplier address/email/phone in basic CSV
+          gstin: paddedRow[0].toString(),
+          name: paddedRow[1].toString(),
+          state: pos,
         );
 
         final receiver = Receiver(
@@ -202,7 +192,6 @@ class CsvExportService {
           state: recvState,
         );
 
-        // Reconstruct payments (simplified as one lump sum transaction if totalPaid > 0)
         final List<PaymentTransaction> payments = [];
         if (paidTotal > 0) {
           payments.add(
@@ -217,7 +206,7 @@ class CsvExportService {
         }
 
         final invoice = Invoice(
-          id: 'restored_${DateTime.now().millisecondsSinceEpoch}_$i', // Generate new ID
+          id: 'restored_${DateTime.now().millisecondsSinceEpoch}_$i',
           invoiceNo: invoiceNo,
           invoiceDate: invDate,
           dueDate: dueDate,
@@ -240,38 +229,5 @@ class CsvExportService {
     }
 
     return invoiceMap.values.toList();
-  }
-
-  static String _escape(final String? val) {
-    if (val == null) return '';
-    if (val.contains(',') || val.contains('"') || val.contains('\n')) {
-      return '"${val.replaceAll('"', '""')}"';
-    }
-    return val;
-  }
-
-  static List<String> _parseRow(final String line) {
-    final values = <String>[];
-    final sb = StringBuffer();
-    bool inQuotes = false;
-
-    for (int i = 0; i < line.length; i++) {
-      final char = line[i];
-      if (char == '"') {
-        if (i + 1 < line.length && line[i + 1] == '"') {
-          sb.write('"');
-          i++; // Skip escaped quote
-        } else {
-          inQuotes = !inQuotes;
-        }
-      } else if (char == ',' && !inQuotes) {
-        values.add(sb.toString());
-        sb.clear();
-      } else {
-        sb.write(char);
-      }
-    }
-    values.add(sb.toString());
-    return values;
   }
 }

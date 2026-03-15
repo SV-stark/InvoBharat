@@ -1,17 +1,10 @@
-import 'package:dio/dio.dart';
+import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:invobharat/services/update_service.dart';
 
-class MockDio extends Mock implements Dio {}
-
 void main() {
-  late MockDio mockDio;
-
-  setUp(() {
-    mockDio = MockDio();
-  });
-
   group('UpdateService', () {
     test('checkForUpdates returns correct stable and beta releases', () async {
       final mockData = [
@@ -29,15 +22,11 @@ void main() {
         },
       ];
 
-      when(() => mockDio.get(any())).thenAnswer(
-        (_) async => Response(
-          data: mockData,
-          statusCode: 200,
-          requestOptions: RequestOptions(),
-        ),
-      );
+      final client = MockClient((request) async {
+        return http.Response(jsonEncode(mockData), 200);
+      });
 
-      final results = await UpdateService.checkForUpdates(dio: mockDio);
+      final results = await UpdateService.checkForUpdates(client: client);
 
       expect(results['stable']?.tagName, 'v1.1.0');
       expect(results['beta']?.tagName, 'v1.2.0-beta');
@@ -46,26 +35,33 @@ void main() {
     });
 
     test('checkForUpdates handles empty results', () async {
-      when(() => mockDio.get(any())).thenAnswer(
-        (_) async => Response(
-          data: [],
-          statusCode: 200,
-          requestOptions: RequestOptions(),
-        ),
-      );
+      final client = MockClient((request) async {
+        return http.Response(jsonEncode([]), 200);
+      });
 
-      final results = await UpdateService.checkForUpdates(dio: mockDio);
+      final results = await UpdateService.checkForUpdates(client: client);
 
       expect(results['stable'], isNull);
       expect(results['beta'], isNull);
     });
 
     test('checkForUpdates handles errors gracefully', () async {
-      when(
-        () => mockDio.get(any()),
-      ).thenThrow(DioException(requestOptions: RequestOptions()));
+      final client = MockClient((request) async {
+        return http.Response('Error', 500);
+      });
 
-      final results = await UpdateService.checkForUpdates(dio: mockDio);
+      final results = await UpdateService.checkForUpdates(client: client);
+
+      expect(results['stable'], isNull);
+      expect(results['beta'], isNull);
+    });
+
+    test('checkForUpdates handles exception gracefully', () async {
+      final client = MockClient((request) async {
+        throw Exception('Network error');
+      });
+
+      final results = await UpdateService.checkForUpdates(client: client);
 
       expect(results['stable'], isNull);
       expect(results['beta'], isNull);

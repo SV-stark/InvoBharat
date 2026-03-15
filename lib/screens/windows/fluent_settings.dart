@@ -16,7 +16,6 @@ import 'package:invobharat/utils/constants.dart';
 import 'package:invobharat/utils/validators.dart';
 import 'package:invobharat/services/backup_service.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:image_background_remover/image_background_remover.dart';
 import 'package:path/path.dart' as p;
 import 'package:invobharat/utils/image_isolate_helper.dart';
 
@@ -35,15 +34,6 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
   void initState() {
     super.initState();
     _stateController = TextEditingController();
-    _initializeBackgroundRemover();
-  }
-
-  Future<void> _initializeBackgroundRemover() async {
-    try {
-      await BackgroundRemover.instance.initializeOrt();
-    } catch (e) {
-      debugPrint('Error initializing background remover: $e');
-    }
   }
 
   @override
@@ -244,6 +234,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
 
   Widget _buildBusinessSection() {
     final profile = ref.watch(businessProfileProvider);
+    final theme = FluentTheme.of(context);
     return Column(
       children: [
         // Logo Picker
@@ -344,60 +335,13 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                               source: ImageSource.gallery,
                             );
                             if (image != null) {
-                              try {
-                                final imageBytes = await image.readAsBytes();
-                                final result =
-                                    await processImageBackgroundInIsolate(
-                                      imageBytes,
-                                    );
-
-                                if (result.error != null) {
-                                  throw Exception(result.error);
-                                }
-
-                                final processedBytes = result.bytes;
-
-                                final appDir =
-                                    await getApplicationDocumentsDirectory();
-                                final fileName = 'sig_${const Uuid().v4()}.png';
-                                final savedFile = File(
-                                  p.join(appDir.path, fileName),
-                                );
-                                await savedFile.writeAsBytes(processedBytes);
-
-                                ref
-                                    .read(businessProfileNotifierProvider)
-                                    .updateProfile(
-                                      profile.copyWith(
-                                        signaturePath: savedFile.path,
-                                      ),
-                                    );
-                              } catch (e) {
-                                if (!mounted) return;
-                                displayInfoBar(
-                                  context,
-                                  builder: (final context, final close) {
-                                    return InfoBar(
-                                      title: const Text(
-                                        'Background Removal Failed',
-                                      ),
-                                      content: Text(e.toString()),
-                                      severity: InfoBarSeverity.error,
-                                      action: IconButton(
-                                        icon: const Icon(FluentIcons.clear),
-                                        onPressed: close,
-                                      ),
-                                    );
-                                  },
-                                );
-                                ref
-                                    .read(businessProfileNotifierProvider)
-                                    .updateProfile(
-                                      profile.copyWith(
-                                        signaturePath: image.path,
-                                      ),
-                                    );
-                              }
+                              ref
+                                  .read(businessProfileNotifierProvider)
+                                  .updateProfile(
+                                    profile.copyWith(
+                                      signaturePath: image.path,
+                                    ),
+                                  );
                             }
                           },
                         ),
@@ -468,59 +412,11 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                               source: ImageSource.gallery,
                             );
                             if (image != null) {
-                              try {
-                                final imageBytes = await image.readAsBytes();
-                                final result =
-                                    await processImageBackgroundInIsolate(
-                                      imageBytes,
-                                    );
-
-                                if (result.error != null) {
-                                  throw Exception(result.error);
-                                }
-
-                                final processedBytes = result.bytes;
-
-                                final appDir =
-                                    await getApplicationDocumentsDirectory();
-                                final fileName =
-                                    'stamp_${const Uuid().v4()}.png';
-                                final savedFile = File(
-                                  p.join(appDir.path, fileName),
-                                );
-                                await savedFile.writeAsBytes(processedBytes);
-
-                                ref
-                                    .read(businessProfileNotifierProvider)
-                                    .updateProfile(
-                                      profile.copyWith(
-                                        stampPath: savedFile.path,
-                                      ),
-                                    );
-                              } catch (e) {
-                                if (!mounted) return;
-                                displayInfoBar(
-                                  context,
-                                  builder: (final context, final close) {
-                                    return InfoBar(
-                                      title: const Text(
-                                        'Background Removal Failed',
-                                      ),
-                                      content: Text(e.toString()),
-                                      severity: InfoBarSeverity.error,
-                                      action: IconButton(
-                                        icon: const Icon(FluentIcons.clear),
-                                        onPressed: close,
-                                      ),
-                                    );
-                                  },
-                                );
-                                ref
-                                    .read(businessProfileNotifierProvider)
-                                    .updateProfile(
-                                      profile.copyWith(stampPath: image.path),
-                                    );
-                              }
+                              ref
+                                  .read(businessProfileNotifierProvider)
+                                  .updateProfile(
+                                    profile.copyWith(stampPath: image.path),
+                                  );
                             }
                           },
                         ),
@@ -544,6 +440,18 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
               ],
             ),
           ],
+        ),
+        const SizedBox(height: 10),
+        Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: InfoBar(
+            title: const Text("Tip: Use Transparent Images"),
+            content: const Text(
+              "For best results on invoices, use PNG images with transparent backgrounds for your Logo, Signature, and Stamp.",
+            ),
+            severity: InfoBarSeverity.info,
+            isIconVisible: true,
+          ),
         ),
         const SizedBox(height: 20),
         InfoLabel(

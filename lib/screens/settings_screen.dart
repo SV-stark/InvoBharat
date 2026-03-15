@@ -278,6 +278,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildTextField("Business PAN", _panController),
             const SizedBox(height: 24),
             _buildSectionHeader("Branding"), // KEEP
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                "Tip: Use PNG images with transparent backgrounds for your Logo and Signature for best results on invoices.",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.blue,
+                ),
+              ),
+            ),
             ListTile(
               leading: const Icon(Icons.copy_all),
               title: const Text("Item Templates"),

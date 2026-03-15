@@ -704,7 +704,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         return;
       }
 
-      final csvData = GstrService().generateGstr1Csv(filteredInvoices);
+      final csvData = await GstrService().generateGstr1CsvAsync(filteredInvoices);
 
       String? outputFile = await FilePicker.platform.saveFile(
         dialogTitle: 'Save GSTR-1 CSV',

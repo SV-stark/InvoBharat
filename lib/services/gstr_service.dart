@@ -1,8 +1,13 @@
+import 'dart:isolate';
 import 'package:invobharat/models/invoice.dart';
 import 'package:intl/intl.dart';
 import 'package:csv/csv.dart';
 
 class GstrService {
+  Future<String> generateGstr1CsvAsync(final List<Invoice> invoices) async {
+    return Isolate.run(() => generateGstr1Csv(invoices));
+  }
+
   String generateGstr1Csv(final List<Invoice> invoices) {
     // Header based on user request
     final List<List<dynamic>> rows = [];
