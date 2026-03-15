@@ -27,11 +27,20 @@ class BusinessProfiles extends Table {
 
   @override
   Set<Column> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => [
+        'UNIQUE (gstin)',
+      ];
 }
 
 class Clients extends Table {
   TextColumn get id => text()();
-  TextColumn get profileId => text().references(BusinessProfiles, #id)();
+  TextColumn get profileId => text().references(
+        BusinessProfiles,
+        #id,
+        onDelete: KeyAction.cascade,
+      )();
   TextColumn get name => text()();
   TextColumn get address => text()();
   TextColumn get gstin => text()();
@@ -43,20 +52,25 @@ class Clients extends Table {
 
   @override
   Set<Column> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => [
+        'UNIQUE (profile_id, gstin)',
+      ];
 }
 
 class Invoices extends Table {
   TextColumn get id => text()();
-  TextColumn get profileId => text().references(BusinessProfiles, #id)();
-  TextColumn get clientId => text().references(
-      Clients, #id)(); // Optional link? No, receiver is embedded in JSON.
-  // In JSON model, 'Supplier' and 'Receiver' are embedded objects.
-  // In SQL, normalization suggests using referencing IDs, BUT historic invoices should preserve their snapshot of details.
-  // Design Decision: Store ClientId for reference, but also store snapshot of receiver details to handle updates?
-  // OR just store the JSON dump of supplier/receiver if we don't need to query by them deeply?
-  // Use "TextColumn get receiverSnapshot => text()();" (JSON)
-  // Let's stick to normalized for now, but `Invoice` model has `required Receiver receiver`.
-
+  TextColumn get profileId => text().references(
+        BusinessProfiles,
+        #id,
+        onDelete: KeyAction.cascade,
+      )();
+  TextColumn get clientId => text().nullable().references(
+        Clients,
+        #id,
+        onDelete: KeyAction.setNull,
+      )();
   TextColumn get invoiceNo => text()();
   TextColumn get type =>
       text().withDefault(const Constant('invoice'))(); // Stores enum name
@@ -96,11 +110,20 @@ class Invoices extends Table {
 
   @override
   Set<Column> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => [
+        'UNIQUE (profile_id, invoice_no)',
+      ];
 }
 
 class InvoiceItems extends Table {
   TextColumn get id => text()();
-  TextColumn get invoiceId => text().references(Invoices, #id)();
+  TextColumn get invoiceId => text().references(
+        Invoices,
+        #id,
+        onDelete: KeyAction.cascade,
+      )();
   TextColumn get description => text()();
   TextColumn get sacCode => text()();
   TextColumn get codeType => text()();
@@ -117,7 +140,11 @@ class InvoiceItems extends Table {
 
 class Payments extends Table {
   TextColumn get id => text()();
-  TextColumn get invoiceId => text().references(Invoices, #id)();
+  TextColumn get invoiceId => text().references(
+        Invoices,
+        #id,
+        onDelete: KeyAction.cascade,
+      )();
   RealColumn get amount => real()();
   DateTimeColumn get date => dateTime()();
   TextColumn get method => text()(); // e.g. Cash, UPI
