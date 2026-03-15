@@ -22,7 +22,7 @@ void main() {
         },
       ];
 
-      final client = MockClient((request) async {
+      final client = MockClient((final request) async {
         return http.Response(jsonEncode(mockData), 200);
       });
 
@@ -35,7 +35,7 @@ void main() {
     });
 
     test('checkForUpdates handles empty results', () async {
-      final client = MockClient((request) async {
+      final client = MockClient((final request) async {
         return http.Response(jsonEncode([]), 200);
       });
 
@@ -46,7 +46,7 @@ void main() {
     });
 
     test('checkForUpdates handles errors gracefully', () async {
-      final client = MockClient((request) async {
+      final client = MockClient((final request) async {
         return http.Response('Error', 500);
       });
 
@@ -57,7 +57,7 @@ void main() {
     });
 
     test('checkForUpdates handles exception gracefully', () async {
-      final client = MockClient((request) async {
+      final client = MockClient((final request) async {
         throw Exception('Network error');
       });
 

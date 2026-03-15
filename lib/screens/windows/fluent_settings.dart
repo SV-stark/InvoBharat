@@ -8,16 +8,13 @@ import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/providers/app_config_provider.dart';
-import 'package:invobharat/providers/client_provider.dart'; // NEW
-import 'package:invobharat/providers/estimate_provider.dart'; // NEW
-import 'package:invobharat/providers/recurring_provider.dart'; // NEW
-import 'package:invobharat/providers/invoice_repository_provider.dart'; // NEW
+import 'package:invobharat/providers/client_provider.dart';
+import 'package:invobharat/providers/estimate_provider.dart';
+import 'package:invobharat/providers/recurring_provider.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/utils/constants.dart';
 import 'package:invobharat/utils/validators.dart';
 import 'package:invobharat/services/backup_service.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
-import 'package:invobharat/utils/image_isolate_helper.dart';
 
 class FluentSettings extends ConsumerStatefulWidget {
   const FluentSettings({super.key});
@@ -234,7 +231,6 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
 
   Widget _buildBusinessSection() {
     final profile = ref.watch(businessProfileProvider);
-    final theme = FluentTheme.of(context);
     return Column(
       children: [
         // Logo Picker
@@ -442,15 +438,13 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           ],
         ),
         const SizedBox(height: 10),
-        Padding(
-          padding: const EdgeInsets.only(top: 10),
+        const Padding(
+          padding: EdgeInsets.only(top: 10),
           child: InfoBar(
-            title: const Text("Tip: Use Transparent Images"),
-            content: const Text(
+            title: Text("Tip: Use Transparent Images"),
+            content: Text(
               "For best results on invoices, use PNG images with transparent backgrounds for your Logo, Signature, and Stamp.",
             ),
-            severity: InfoBarSeverity.info,
-            isIconVisible: true,
           ),
         ),
         const SizedBox(height: 20),
