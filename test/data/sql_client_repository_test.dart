@@ -82,10 +82,18 @@ void main() {
 
     test('getAllClients should return all', () async {
       await repository.saveClient(
-        testClient.copyWith(id: '1', name: 'Client 1'),
+        testClient.copyWith(
+          id: '1',
+          name: 'Client 1',
+          gstin: '27BBBBB1111B1Z0',
+        ),
       );
       await repository.saveClient(
-        testClient.copyWith(id: '2', name: 'Client 2'),
+        testClient.copyWith(
+          id: '2',
+          name: 'Client 2',
+          gstin: '27CCCCC2222C1Z1',
+        ),
       );
 
       final all = await repository.getAllClients();

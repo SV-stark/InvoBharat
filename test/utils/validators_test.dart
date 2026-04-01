@@ -29,8 +29,14 @@ void main() {
       expect(Validators.phone('1234567890'), null);
       expect(Validators.phone('9876543210'), null);
 
-      expect(Validators.phone('12345'), 'Phone number too short');
-      expect(Validators.phone('123456789'), 'Phone number too short');
+      expect(
+        Validators.phone('12345'),
+        'Phone number too short (min 10 digits)',
+      );
+      expect(
+        Validators.phone('123456789'),
+        'Phone number too short (min 10 digits)',
+      );
     });
 
     test('gstin should validate GSTIN formats correctly', () {
@@ -41,18 +47,21 @@ void main() {
       // Valid format with mixed chars
       expect(Validators.gstin('07ABCDE1234F1Z0'), null);
 
-      expect(Validators.gstin('123'), 'Invalid GSTIN format');
+      expect(
+        Validators.gstin('123'),
+        'Invalid GSTIN format (15 characters: 2 digits + 5 letters + 4 digits + 1 letter + 1 alphanumeric + Z + 1 alphanumeric)',
+      );
       expect(
         Validators.gstin('29AAAAA0000A1Z'),
-        'Invalid GSTIN format',
+        'Invalid GSTIN format (15 characters: 2 digits + 5 letters + 4 digits + 1 letter + 1 alphanumeric + Z + 1 alphanumeric)',
       ); // Too short
       expect(
         Validators.gstin('29AAAAA0000A1Z55'),
-        'Invalid GSTIN format',
+        'Invalid GSTIN format (15 characters: 2 digits + 5 letters + 4 digits + 1 letter + 1 alphanumeric + Z + 1 alphanumeric)',
       ); // Too long
       expect(
         Validators.gstin('29AAAAA0000A1A5'),
-        'Invalid GSTIN format',
+        'Invalid GSTIN format (15 characters: 2 digits + 5 letters + 4 digits + 1 letter + 1 alphanumeric + Z + 1 alphanumeric)',
       ); // Should have Z at 14th pos
     });
 
@@ -73,12 +82,21 @@ void main() {
       expect(Validators.pan(''), null);
       expect(Validators.pan('ABCDE1234F'), null);
 
-      expect(Validators.pan('12345ABCDE'), 'Invalid PAN format');
-      expect(Validators.pan('ABCDE1234'), 'Invalid PAN format');
-      expect(Validators.pan('ABCDE1234FG'), 'Invalid PAN format');
+      expect(
+        Validators.pan('12345ABCDE'),
+        'Invalid PAN format (5 letters + 4 digits + 1 letter)',
+      );
+      expect(
+        Validators.pan('ABCDE1234'),
+        'Invalid PAN format (5 letters + 4 digits + 1 letter)',
+      );
+      expect(
+        Validators.pan('ABCDE1234FG'),
+        'Invalid PAN format (5 letters + 4 digits + 1 letter)',
+      );
       expect(
         Validators.pan('abcd1234f'),
-        'Invalid PAN format',
+        'Invalid PAN format (5 letters + 4 digits + 1 letter)',
       ); // Case sensitive? Regex shows [A-Z]
     });
   });
