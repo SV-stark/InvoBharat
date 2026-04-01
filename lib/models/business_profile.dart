@@ -15,6 +15,10 @@ class BusinessProfile {
   int invoiceSequence;
   String? signaturePath;
   String? stampPath;
+  double signatureX;
+  double signatureY;
+  double stampX;
+  double stampY;
   String termsAndConditions;
   String defaultNotes;
   String currencySymbol;
@@ -44,6 +48,10 @@ class BusinessProfile {
     this.invoiceSequence = 1,
     this.signaturePath,
     this.stampPath,
+    this.signatureX = 0.7,
+    this.signatureY = 0.85,
+    this.stampX = 0.55,
+    this.stampY = 0.85,
     this.termsAndConditions = '',
     this.defaultNotes = '',
     this.currencySymbol = '₹',
@@ -59,7 +67,7 @@ class BusinessProfile {
 
   factory BusinessProfile.defaults() {
     return BusinessProfile(
-      id: "default", // Will be replaced by UUID for new profiles usually
+      id: "default",
       companyName: "Your Company Name",
       address: "",
       gstin: "",
@@ -92,6 +100,10 @@ class BusinessProfile {
       'invoiceSequence': invoiceSequence,
       'signaturePath': signaturePath,
       'stampPath': stampPath,
+      'signatureX': signatureX,
+      'signatureY': signatureY,
+      'stampX': stampX,
+      'stampY': stampY,
       'termsAndConditions': termsAndConditions,
       'defaultNotes': defaultNotes,
       'currencySymbol': currencySymbol,
@@ -120,6 +132,10 @@ class BusinessProfile {
       invoiceSequence: json['invoiceSequence'] ?? 1,
       signaturePath: json['signaturePath'],
       stampPath: json['stampPath'],
+      signatureX: json['signatureX'] ?? 0.7,
+      signatureY: json['signatureY'] ?? 0.85,
+      stampX: json['stampX'] ?? 0.55,
+      stampY: json['stampY'] ?? 0.85,
       termsAndConditions: json['termsAndConditions'] ?? '',
       defaultNotes: json['defaultNotes'] ?? '',
       currencySymbol: json['currencySymbol'] ?? '₹',
@@ -147,6 +163,10 @@ class BusinessProfile {
     final int? invoiceSequence,
     final String? signaturePath,
     final String? stampPath,
+    final double? signatureX,
+    final double? signatureY,
+    final double? stampX,
+    final double? stampY,
     final String? termsAndConditions,
     final String? defaultNotes,
     final String? currencySymbol,
@@ -172,6 +192,10 @@ class BusinessProfile {
       invoiceSequence: invoiceSequence ?? this.invoiceSequence,
       signaturePath: signaturePath ?? this.signaturePath,
       stampPath: stampPath ?? this.stampPath,
+      signatureX: signatureX ?? this.signatureX,
+      signatureY: signatureY ?? this.signatureY,
+      stampX: stampX ?? this.stampX,
+      stampY: stampY ?? this.stampY,
       termsAndConditions: termsAndConditions ?? this.termsAndConditions,
       defaultNotes: defaultNotes ?? this.defaultNotes,
       currencySymbol: currencySymbol ?? this.currencySymbol,

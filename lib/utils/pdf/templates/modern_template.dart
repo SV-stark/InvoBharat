@@ -162,19 +162,27 @@ class ModernTemplate extends BasePdfTemplate {
                         alignment: pw.Alignment.center,
                         children: [
                           if (hasStamp)
-                            pw.Opacity(
-                              opacity: 0.6,
-                              child: pw.Image(
-                                pw.MemoryImage(
-                                  File(stampPath).readAsBytesSync(),
+                            pw.Positioned(
+                              left: profile.stampX * 100,
+                              bottom: profile.stampY * 60,
+                              child: pw.Opacity(
+                                opacity: 0.6,
+                                child: pw.Image(
+                                  pw.MemoryImage(
+                                    File(stampPath).readAsBytesSync(),
+                                  ),
+                                  width: 80,
                                 ),
-                                width: 80,
                               ),
                             ),
                           if (hasSignature)
-                            pw.Image(
-                              pw.MemoryImage(
-                                File(signaturePath).readAsBytesSync(),
+                            pw.Positioned(
+                              left: profile.signatureX * 100,
+                              bottom: profile.signatureY * 60,
+                              child: pw.Image(
+                                pw.MemoryImage(
+                                  File(signaturePath).readAsBytesSync(),
+                                ),
                               ),
                             ),
                         ],
