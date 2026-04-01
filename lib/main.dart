@@ -198,7 +198,6 @@ class InvoBharatApp extends ConsumerWidget {
   }
 
   fluent.AccentColor _getAccentColor(final Color color) {
-    // Map standard colors to Fluent AccentColors
     final colorMap = {
       fluent.Colors.teal.toARGB32(): fluent.Colors.teal,
       fluent.Colors.blue.toARGB32(): fluent.Colors.blue,
@@ -214,15 +213,27 @@ class InvoBharatApp extends ConsumerWidget {
       return colorMap[color.toARGB32()]!;
     }
 
-    // Custom Color Swatch Generation
+    final hsl = HSLColor.fromColor(color);
     final Map<String, Color> swatch = {
       'normal': color,
-      'dark': color, // Ideally darken
-      'light': color, // Ideally lighten
-      'darkest': color,
-      'darker': color,
-      'lighter': color,
-      'lightest': color,
+      'dark': hsl
+          .withLightness((hsl.lightness - 0.15).clamp(0.0, 1.0))
+          .toColor(),
+      'light': hsl
+          .withLightness((hsl.lightness + 0.15).clamp(0.0, 1.0))
+          .toColor(),
+      'darkest': hsl
+          .withLightness((hsl.lightness - 0.3).clamp(0.0, 1.0))
+          .toColor(),
+      'darker': hsl
+          .withLightness((hsl.lightness - 0.075).clamp(0.0, 1.0))
+          .toColor(),
+      'lighter': hsl
+          .withLightness((hsl.lightness + 0.075).clamp(0.0, 1.0))
+          .toColor(),
+      'lightest': hsl
+          .withLightness((hsl.lightness + 0.3).clamp(0.0, 1.0))
+          .toColor(),
     };
     return fluent.AccentColor('normal', swatch);
   }

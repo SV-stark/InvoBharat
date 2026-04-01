@@ -4,10 +4,14 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 import 'package:archive/archive_io.dart';
 
 import 'package:invobharat/services/csv_export_service.dart';
 import 'package:invobharat/data/sql_invoice_repository.dart';
+
+const kDbFileName = 'db.sqlite';
+const kMinCompatibleSchemaVersion = 5;
 
 class ImportResult {
   final int successCount;
@@ -105,17 +109,19 @@ class BackupService {
     }
   }
 
+  Future<String> _getDbPath() async {
+    final dbFolder = await getApplicationDocumentsDirectory();
+    return p.join(dbFolder.path, 'InvoBharat', kDbFileName);
+  }
+
   Future<String> exportFullBackup() async {
     try {
-      final dbFolder = await getApplicationDocumentsDirectory();
-      final dbPath = '${dbFolder.path}/InvoBharat/db.sqlite';
+      final dbPath = await _getDbPath();
       final dbFile = File(dbPath);
 
       if (!await dbFile.exists()) {
         throw Exception("Database file not found at $dbPath");
       }
-
-      // Read DB File Path
 
       String? outputFile = await _filePicker.saveFile(
         dialogTitle: 'Save Full Backup (ZIP)',
@@ -130,7 +136,6 @@ class BackupService {
           outputFile = '$outputFile.zip';
         }
 
-        // Encode to Zip directly using streaming
         final zipEncoder = ZipFileEncoder();
         zipEncoder.create(outputFile);
         await zipEncoder.addFile(dbFile);
@@ -160,9 +165,11 @@ class BackupService {
 
         final archive = ZipDecoder().decodeBytes(bytes);
 
-        final dbEntry = archive.findFile('db.sqlite');
+        final dbEntry = archive.findFile(kDbFileName);
         if (dbEntry == null) {
-          throw Exception("Invalid Backup: 'db.sqlite' not found inside zip.");
+          throw Exception(
+            "Invalid Backup: '$kDbFileName' not found inside zip.",
+          );
         }
 
         final prefsEntry = archive.findFile('manifest.json');
@@ -172,15 +179,15 @@ class BackupService {
           );
           final manifest = jsonDecode(manifestContent) as Map<String, dynamic>;
           final backedUpSchemaVersion = manifest['schemaVersion'] as int?;
-          if (backedUpSchemaVersion != 5 && backedUpSchemaVersion != 6) {
+          if (backedUpSchemaVersion != null &&
+              backedUpSchemaVersion < kMinCompatibleSchemaVersion) {
             throw Exception(
-              "Incompatible backup: schema version $backedUpSchemaVersion",
+              "Incompatible backup: schema version $backedUpSchemaVersion (minimum: $kMinCompatibleSchemaVersion)",
             );
           }
         }
 
-        final dbFolder = await getApplicationDocumentsDirectory();
-        final dbPath = '${dbFolder.path}/InvoBharat/db.sqlite';
+        final dbPath = await _getDbPath();
         final dbDestFile = File(dbPath);
 
         String? backupPath;
@@ -188,6 +195,7 @@ class BackupService {
           backupPath = '$dbPath.bak';
           await dbDestFile.copy(backupPath);
         } else {
+          final dbFolder = await getApplicationDocumentsDirectory();
           await Directory(
             '${dbFolder.path}/InvoBharat',
           ).create(recursive: true);

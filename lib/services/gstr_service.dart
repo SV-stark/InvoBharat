@@ -24,7 +24,7 @@ class GstrService {
       'CESS',
       'Place Of Supply',
       'RCM Applicable',
-      'HSN Description'
+      'HSN Description',
     ]);
 
     for (final inv in invoices) {
@@ -32,9 +32,10 @@ class GstrService {
       final receiverName = inv.receiver.name;
       final gstin = inv.receiver.gstin;
       final invoiceValue = inv.grandTotal;
-      final placeOfSupply =
-          inv.receiver.state.isEmpty ? inv.placeOfSupply : inv.receiver.state;
-      const rcm = "N"; // Default RCM to No
+      final placeOfSupply = inv.receiver.state.isEmpty
+          ? inv.placeOfSupply
+          : inv.receiver.state;
+      final rcm = inv.reverseCharge;
       const cess = "0.00";
 
       if (inv.items.isEmpty) {
@@ -50,7 +51,7 @@ class GstrService {
           cess,
           placeOfSupply,
           rcm,
-          ''
+          '',
         ]);
       } else {
         for (final item in inv.items) {
@@ -69,7 +70,7 @@ class GstrService {
             cess,
             placeOfSupply,
             rcm,
-            hsnDesc
+            hsnDesc,
           ]);
         }
       }

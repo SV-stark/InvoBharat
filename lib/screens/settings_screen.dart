@@ -21,6 +21,8 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _formKey = GlobalKey<FormState>();
+  bool _isBackupLoading = false;
+  bool _isRestoreLoading = false;
   // General & Invoice Config Controllers
   late TextEditingController _nameController;
   late TextEditingController _addressController;
@@ -495,24 +497,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SizedBox(
             width: 250,
             child: ElevatedButton.icon(
-              onPressed: () async {
-                // Export logic
-                try {
-                  final msg = await BackupService().exportFullBackup();
-                  if (mounted) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(msg)));
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Export Failed: $e")),
-                    );
-                  }
-                }
-              },
-              icon: const Icon(Icons.download),
+              onPressed: _isBackupLoading
+                  ? null
+                  : () async {
+                      setState(() => _isBackupLoading = true);
+                      try {
+                        final msg = await BackupService().exportFullBackup();
+                        if (mounted) {
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text(msg)));
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Export Failed: $e")),
+                          );
+                        }
+                      } finally {
+                        if (mounted) {
+                          setState(() => _isBackupLoading = false);
+                        }
+                      }
+                    },
+              icon: _isBackupLoading
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.download),
               label: const Text("Export Full Backup (ZIP)"),
             ),
           ),
@@ -520,25 +534,38 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SizedBox(
             width: 250,
             child: OutlinedButton.icon(
-              onPressed: () async {
-                // Restore logic
-                try {
-                  final result = await BackupService().restoreFullBackup();
-                  if (!mounted) return;
+              onPressed: _isRestoreLoading
+                  ? null
+                  : () async {
+                      setState(() => _isRestoreLoading = true);
+                      try {
+                        final result = await BackupService()
+                            .restoreFullBackup();
+                        if (!mounted) return;
 
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(result)));
-                  _loadProfileData();
-                  setState(() {});
-                } catch (e) {
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text("Restore Failed: $e")));
-                }
-              },
-              icon: const Icon(Icons.upload),
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(result)));
+                        _loadProfileData();
+                        setState(() {});
+                      } catch (e) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Restore Failed: $e")),
+                        );
+                      } finally {
+                        if (mounted) {
+                          setState(() => _isRestoreLoading = false);
+                        }
+                      }
+                    },
+              icon: _isRestoreLoading
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.upload),
               label: const Text("Restore Data (ZIP)"),
             ),
           ),
@@ -636,7 +663,7 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
   }
 
   Future<void> _loadSettings() async {
-    final settings = await EmailService.getSettings();
+    final settings = await EmailService.getSettingsStatic();
     if (settings != null) {
       if (mounted) {
         setState(() {
@@ -662,7 +689,7 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
         isSecure: _isSecure,
       );
 
-      await EmailService.saveSettings(settings);
+      await EmailService.saveSettingsStatic(settings);
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -767,7 +794,7 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () async {
-                  await EmailService.clearSettings();
+                  await EmailService.clearSettingsStatic();
                   await _loadSettings();
                 },
                 child: const Text("Clear Settings"),

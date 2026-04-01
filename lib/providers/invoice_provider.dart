@@ -1,46 +1,43 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:invobharat/models/invoice.dart';
-import 'package:invobharat/utils/gst_helper.dart'; // New Import
+import 'package:invobharat/utils/gst_helper.dart';
 
 import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/models/business_profile.dart';
 
 const _uuid = Uuid();
-final invoiceProvider =
-    NotifierProvider<InvoiceNotifier, Invoice>(InvoiceNotifier.new);
+final invoiceProvider = NotifierProvider<InvoiceNotifier, Invoice>(
+  InvoiceNotifier.new,
+);
+
+Invoice _createDefaultInvoice(final BusinessProfile profile) {
+  return Invoice(
+    supplier: Supplier(
+      name: profile.companyName,
+      address: profile.address,
+      gstin: profile.gstin,
+      email: profile.email,
+      phone: profile.phone,
+      state: profile.state,
+    ),
+    receiver: const Receiver(),
+    invoiceDate: DateTime.now(),
+    invoiceNo:
+        "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}",
+    items: [InvoiceItem(id: _uuid.v4())],
+    bankName: profile.bankName,
+    accountNo: profile.accountNumber,
+    ifscCode: profile.ifscCode,
+    branch: profile.branchName,
+  );
+}
 
 class InvoiceNotifier extends Notifier<Invoice> {
   @override
   Invoice build() {
     final profile = ref.watch(businessProfileProvider);
-    // Initialize with defaults from profile
-    return Invoice(
-      supplier: Supplier(
-        name: profile.companyName,
-        address: profile.address,
-        gstin: profile.gstin,
-        email: profile.email,
-
-        phone: profile.phone,
-        state: profile.state,
-      ),
-      receiver: const Receiver(), // Empty
-      invoiceDate: DateTime.now(),
-      invoiceNo:
-          "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}",
-      items: [
-        // One empty item to start
-        const InvoiceItem(
-            ), // We can't generate ID here because it's const
-        // We'll update it in init or make it non-const?
-        // Actually, we can just make it not const in the provider.
-      ],
-      // Pre-fill bank details
-      bankName: profile.bankName,
-      accountNo: profile.accountNumber,
-      ifscCode: profile.ifscCode,
-      branch: profile.branchName,
-    );
+    return _createDefaultInvoice(profile);
   }
 
   void setInvoice(final Invoice invoice) {
@@ -49,28 +46,7 @@ class InvoiceNotifier extends Notifier<Invoice> {
 
   void reset() {
     final profile = ref.read(businessProfileProvider);
-    state = Invoice(
-      supplier: Supplier(
-        name: profile.companyName,
-        address: profile.address,
-        gstin: profile.gstin,
-        email: profile.email,
-        phone: profile.phone,
-        state: profile.state,
-      ),
-      receiver: const Receiver(),
-      invoiceDate: DateTime.now(),
-      invoiceNo:
-          "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}",
-      items: [
-        InvoiceItem(
-            id: _uuid.v4()),
-      ],
-      bankName: profile.bankName,
-      accountNo: profile.accountNumber,
-      ifscCode: profile.ifscCode,
-      branch: profile.branchName,
-    );
+    state = _createDefaultInvoice(profile);
   }
 
   void updateDate(final DateTime date) {
@@ -168,15 +144,17 @@ class InvoiceNotifier extends Notifier<Invoice> {
 
   void updateItemAmount(final int index, final String val) {
     final newItems = List<InvoiceItem>.from(state.items);
-    newItems[index] =
-        newItems[index].copyWith(amount: double.tryParse(val) ?? 0.0);
+    newItems[index] = newItems[index].copyWith(
+      amount: double.tryParse(val) ?? 0.0,
+    );
     state = state.copyWith(items: newItems);
   }
 
   void updateItemGstRate(final int index, final String val) {
     final newItems = List<InvoiceItem>.from(state.items);
-    newItems[index] =
-        newItems[index].copyWith(gstRate: double.tryParse(val) ?? 0.0);
+    newItems[index] = newItems[index].copyWith(
+      gstRate: double.tryParse(val) ?? 0.0,
+    );
     state = state.copyWith(items: newItems);
   }
 
@@ -200,15 +178,17 @@ class InvoiceNotifier extends Notifier<Invoice> {
 
   void updateItemDiscount(final int index, final String val) {
     final newItems = List<InvoiceItem>.from(state.items);
-    newItems[index] =
-        newItems[index].copyWith(discount: double.tryParse(val) ?? 0.0);
+    newItems[index] = newItems[index].copyWith(
+      discount: double.tryParse(val) ?? 0.0,
+    );
     state = state.copyWith(items: newItems);
   }
 
   void updateItemQuantity(final int index, final String val) {
     final newItems = List<InvoiceItem>.from(state.items);
-    newItems[index] =
-        newItems[index].copyWith(quantity: double.tryParse(val) ?? 1.0);
+    newItems[index] = newItems[index].copyWith(
+      quantity: double.tryParse(val) ?? 1.0,
+    );
     state = state.copyWith(items: newItems);
   }
 
@@ -219,11 +199,12 @@ class InvoiceNotifier extends Notifier<Invoice> {
   }
 
   void addItem() {
-    state = state.copyWith(items: [
-      ...state.items,
-      InvoiceItem(
-          id: _uuid.v4())
-    ]);
+    state = state.copyWith(
+      items: [
+        ...state.items,
+        InvoiceItem(id: _uuid.v4()),
+      ],
+    );
   }
 
   void updateInvoiceType(final InvoiceType type) {
@@ -262,7 +243,10 @@ class InvoiceNotifier extends Notifier<Invoice> {
     state = updater(state);
   }
 
-  void updateItemAt(final int index, final InvoiceItem Function(InvoiceItem) updater) {
+  void updateItemAt(
+    final int index,
+    final InvoiceItem Function(InvoiceItem) updater,
+  ) {
     if (index < 0 || index >= state.items.length) return;
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = updater(newItems[index]);

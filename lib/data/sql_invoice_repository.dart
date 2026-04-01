@@ -53,9 +53,10 @@ class SqlInvoiceRepository implements InvoiceRepository {
     // Transaction
     await database.transaction(() async {
       // 1. Resolve Client ID and handle snapshots
-      final client = await (database.select(database.clients)
-            ..where((final t) => t.name.equals(invoice.receiver.name)))
-          .getSingleOrNull();
+      final client =
+          await (database.select(database.clients)
+                ..where((final t) => t.name.equals(invoice.receiver.name)))
+              .getSingleOrNull();
 
       final String clientId = client?.id ?? 'temp_default';
 
@@ -63,76 +64,80 @@ class SqlInvoiceRepository implements InvoiceRepository {
       final String finalInvoiceNo = invoice.invoiceNo;
       if (invoice.id == null || invoice.id!.isEmpty) {
         // Only increment for NEW invoices if it matches the pattern
-        final profile = await (database.select(database.businessProfiles)
-              ..where((final t) => t.id.equals('default')))
-            .getSingle();
+        final profile = await (database.select(
+          database.businessProfiles,
+        )..where((final t) => t.id.equals('default'))).getSingle();
 
         final expectedNo =
             "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}";
 
         if (finalInvoiceNo == expectedNo) {
           // Increment in DB
-          await (database.update(database.businessProfiles)
-                ..where((final t) => t.id.equals('default')))
-              .write(BusinessProfilesCompanion(
-            invoiceSequence: Value(profile.invoiceSequence + 1),
-          ));
+          await (database.update(
+            database.businessProfiles,
+          )..where((final t) => t.id.equals('default'))).write(
+            BusinessProfilesCompanion(
+              invoiceSequence: Value(profile.invoiceSequence + 1),
+            ),
+          );
         }
       }
 
       await database
           .into(database.invoices)
-          .insertOnConflictUpdate(InvoicesCompanion(
-            id: Value(invoiceId),
-            profileId: const Value("default"),
-            clientId: Value(clientId),
-            invoiceNo: Value(finalInvoiceNo),
-            invoiceDate: Value(invoice.invoiceDate),
-            type: Value(invoice.type.name),
-            dueDate: Value(invoice.dueDate),
-            placeOfSupply: Value(invoice.placeOfSupply),
-            style: Value(invoice.style),
-            reverseCharge: Value(invoice.reverseCharge),
-            paymentTerms: Value(invoice.paymentTerms),
-            comments: Value(invoice.comments),
-            bankName: Value(invoice.bankName),
-            accountNo: Value(invoice.accountNo),
-            ifscCode: Value(invoice.ifscCode),
-            branch: Value(invoice.branch),
+          .insertOnConflictUpdate(
+            InvoicesCompanion(
+              id: Value(invoiceId),
+              profileId: const Value("default"),
+              clientId: Value(clientId),
+              invoiceNo: Value(finalInvoiceNo),
+              invoiceDate: Value(invoice.invoiceDate),
+              type: Value(invoice.type.name),
+              dueDate: Value(invoice.dueDate),
+              placeOfSupply: Value(invoice.placeOfSupply),
+              style: Value(invoice.style),
+              reverseCharge: Value(invoice.reverseCharge),
+              paymentTerms: Value(invoice.paymentTerms),
+              comments: Value(invoice.comments),
+              bankName: Value(invoice.bankName),
+              accountNo: Value(invoice.accountNo),
+              ifscCode: Value(invoice.ifscCode),
+              branch: Value(invoice.branch),
 
-            // Supplier Snapshot
-            supplierName: Value(invoice.supplier.name),
-            supplierAddress: Value(invoice.supplier.address),
-            supplierGstin: Value(invoice.supplier.gstin),
-            supplierEmail: Value(invoice.supplier.email),
-            supplierPhone: Value(invoice.supplier.phone),
+              // Supplier Snapshot
+              supplierName: Value(invoice.supplier.name),
+              supplierAddress: Value(invoice.supplier.address),
+              supplierGstin: Value(invoice.supplier.gstin),
+              supplierEmail: Value(invoice.supplier.email),
+              supplierPhone: Value(invoice.supplier.phone),
 
-            // Receiver Snapshot (New V4)
-            receiverName: Value(invoice.receiver.name),
-            receiverAddress: Value(invoice.receiver.address),
-            receiverGstin: Value(invoice.receiver.gstin),
-            receiverPan: Value(invoice.receiver.pan),
-            receiverState: Value(invoice.receiver.state),
-            receiverStateCode: Value(invoice.receiver.stateCode),
-            receiverEmail: Value(invoice.receiver.email),
+              // Receiver Snapshot (New V4)
+              receiverName: Value(invoice.receiver.name),
+              receiverAddress: Value(invoice.receiver.address),
+              receiverGstin: Value(invoice.receiver.gstin),
+              receiverPan: Value(invoice.receiver.pan),
+              receiverState: Value(invoice.receiver.state),
+              receiverStateCode: Value(invoice.receiver.stateCode),
+              receiverEmail: Value(invoice.receiver.email),
 
-            // Credit/Debit Note
-            originalInvoiceNumber: Value(invoice.originalInvoiceNumber),
-            originalInvoiceDate: Value(invoice.originalInvoiceDate),
-          ));
+              // Credit/Debit Note
+              originalInvoiceNumber: Value(invoice.originalInvoiceNumber),
+              originalInvoiceDate: Value(invoice.originalInvoiceDate),
+            ),
+          );
 
       // Replace Items
-      await (database.delete(database.invoiceItems)
-            ..where((final t) => t.invoiceId.equals(invoiceId)))
-          .go();
+      await (database.delete(
+        database.invoiceItems,
+      )..where((final t) => t.invoiceId.equals(invoiceId))).go();
       for (var item in items) {
         await database.into(database.invoiceItems).insert(item);
       }
 
       // Replace Payments
-      await (database.delete(database.payments)
-            ..where((final t) => t.invoiceId.equals(invoiceId)))
-          .go();
+      await (database.delete(
+        database.payments,
+      )..where((final t) => t.invoiceId.equals(invoiceId))).go();
       for (var p in payments) {
         await database.into(database.payments).insert(p);
       }
@@ -142,10 +147,12 @@ class SqlInvoiceRepository implements InvoiceRepository {
       if (invoice.type == model.InvoiceType.creditNote &&
           invoice.originalInvoiceNumber != null &&
           invoice.originalInvoiceNumber!.isNotEmpty) {
-        final originalInv = await (database.select(database.invoices)
-              ..where(
-                  (final t) => t.invoiceNo.equals(invoice.originalInvoiceNumber!)))
-            .getSingleOrNull();
+        final originalInv =
+            await (database.select(database.invoices)..where(
+                  (final t) =>
+                      t.invoiceNo.equals(invoice.originalInvoiceNumber!),
+                ))
+                .getSingleOrNull();
 
         if (originalInv != null) {
           // Check if we already added a CN payment for this specific Credit Note ID
@@ -157,29 +164,38 @@ class SqlInvoiceRepository implements InvoiceRepository {
           final cnPaymentId = "CN-PAY-$invoiceId";
 
           // Check if exists
-          final existingPay = await (database.select(database.payments)
-                ..where((final t) => t.id.equals(cnPaymentId)))
-              .getSingleOrNull();
+          final existingPay = await (database.select(
+            database.payments,
+          )..where((final t) => t.id.equals(cnPaymentId))).getSingleOrNull();
 
           if (existingPay == null) {
             // Create Payment Linked to Orignal Invoice
-            await database.into(database.payments).insert(PaymentsCompanion(
-                  id: Value(cnPaymentId),
-                  invoiceId: Value(originalInv.id),
-                  date: Value(invoice.invoiceDate),
-                  amount: Value(invoice.grandTotal), // CN Total reduces balance
-                  method: const Value('Credit Note'),
-                  notes: Value(
-                      'Auto-generated from Credit Note ${invoice.invoiceNo}'),
-                ));
+            await database
+                .into(database.payments)
+                .insert(
+                  PaymentsCompanion(
+                    id: Value(cnPaymentId),
+                    invoiceId: Value(originalInv.id),
+                    date: Value(invoice.invoiceDate),
+                    amount: Value(
+                      invoice.grandTotal,
+                    ), // CN Total reduces balance
+                    method: const Value('Credit Note'),
+                    notes: Value(
+                      'Auto-generated from Credit Note ${invoice.invoiceNo}',
+                    ),
+                  ),
+                );
           } else {
             // Update Amount if changed
-            await (database.update(database.payments)
-                  ..where((final t) => t.id.equals(cnPaymentId)))
-                .write(PaymentsCompanion(
-              date: Value(invoice.invoiceDate),
-              amount: Value(invoice.grandTotal),
-            ));
+            await (database.update(
+              database.payments,
+            )..where((final t) => t.id.equals(cnPaymentId))).write(
+              PaymentsCompanion(
+                date: Value(invoice.invoiceDate),
+                amount: Value(invoice.grandTotal),
+              ),
+            );
           }
         }
       }
@@ -189,22 +205,22 @@ class SqlInvoiceRepository implements InvoiceRepository {
   @override
   Future<model.Invoice?> getInvoice(final String id) async {
     // Join Invoices with InvoiceItems and Clients
-    final invoiceRow = await (database.select(database.invoices)
-          ..where((final t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final invoiceRow = await (database.select(
+      database.invoices,
+    )..where((final t) => t.id.equals(id))).getSingleOrNull();
     if (invoiceRow == null) return null;
 
-    final itemsRows = await (database.select(database.invoiceItems)
-          ..where((final t) => t.invoiceId.equals(id)))
-        .get();
+    final itemsRows = await (database.select(
+      database.invoiceItems,
+    )..where((final t) => t.invoiceId.equals(id))).get();
 
-    final clientRow = await (database.select(database.clients)
-          ..where((final t) => t.id.equals(invoiceRow.clientId)))
-        .getSingleOrNull();
+    final clientRow = await (database.select(
+      database.clients,
+    )..where((final t) => t.id.equals(invoiceRow.clientId))).getSingleOrNull();
 
-    final paymentRows = await (database.select(database.payments)
-          ..where((final t) => t.invoiceId.equals(id)))
-        .get();
+    final paymentRows = await (database.select(
+      database.payments,
+    )..where((final t) => t.invoiceId.equals(id))).get();
 
     // Map to Model
     return model.Invoice(
@@ -228,36 +244,41 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
       // Map Items
       items: itemsRows
-          .map((final row) => model.InvoiceItem(
-                // id: row.id, // Model constructor param? InvoiceItem factory in model (Step 126) has id?
-                // Yes: String? id in factory.
-                // Wait, freezed factory arguments map to fields.
-                // Let's check Step 126 content again. "String? id".
-                id: row.id,
-                description: row.description,
-                sacCode: row.sacCode,
-                codeType: row.codeType,
-                year: row.year,
-                amount: row.amount,
-                discount: row.discount,
-                quantity: row.quantity,
-                unit: row.unit,
-                gstRate: row.gstRate,
-              ))
+          .map(
+            (final row) => model.InvoiceItem(
+              // id: row.id, // Model constructor param? InvoiceItem factory in model (Step 126) has id?
+              // Yes: String? id in factory.
+              // Wait, freezed factory arguments map to fields.
+              // Let's check Step 126 content again. "String? id".
+              id: row.id,
+              description: row.description,
+              sacCode: row.sacCode,
+              codeType: row.codeType,
+              year: row.year,
+              amount: row.amount,
+              discount: row.discount,
+              quantity: row.quantity,
+              unit: row.unit,
+              gstRate: row.gstRate,
+            ),
+          )
           .toList(),
 
       payments: paymentRows
-          .map((final row) => PaymentTransaction(
-                id: row.id,
-                invoiceId: row.invoiceId,
-                date: row.date,
-                amount: row.amount,
-                paymentMode: row.method,
-                notes: row.notes,
-              ))
+          .map(
+            (final row) => PaymentTransaction(
+              id: row.id,
+              invoiceId: row.invoiceId,
+              date: row.date,
+              amount: row.amount,
+              paymentMode: row.method,
+              notes: row.notes,
+            ),
+          )
           .toList(),
 
-      receiver: (invoiceRow.receiverName != null &&
+      receiver:
+          (invoiceRow.receiverName != null &&
               invoiceRow.receiverName!.isNotEmpty)
           ? model.Receiver(
               name: invoiceRow.receiverName!,
@@ -269,19 +290,20 @@ class SqlInvoiceRepository implements InvoiceRepository {
               email: invoiceRow.receiverEmail ?? "",
             )
           : (clientRow != null
-              ? model.Receiver(
-                  name: clientRow.name,
-                  address: clientRow.address,
-                  gstin: clientRow.gstin,
-                  pan: clientRow.pan,
-                  state: clientRow.state,
-                  stateCode: clientRow.stateCode,
-                  email: clientRow.email, // Client row has email
-                )
-              : const model.Receiver(name: "Unknown")),
+                ? model.Receiver(
+                    name: clientRow.name,
+                    address: clientRow.address,
+                    gstin: clientRow.gstin,
+                    pan: clientRow.pan,
+                    state: clientRow.state,
+                    stateCode: clientRow.stateCode,
+                    email: clientRow.email, // Client row has email
+                  )
+                : const model.Receiver(name: "Unknown")),
 
       // Map Supplier from Snapshot or Fallback
-      supplier: (invoiceRow.supplierName != null &&
+      supplier:
+          (invoiceRow.supplierName != null &&
               invoiceRow.supplierName!.isNotEmpty)
           ? model.Supplier(
               name: invoiceRow.supplierName!,
@@ -300,42 +322,85 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
   @override
   Future<List<model.Invoice>> getAllInvoices() async {
-    // 1. Fetch all invoices
     final invoiceRows = await database.select(database.invoices).get();
     if (invoiceRows.isEmpty) return [];
-
-    // 2. Fetch all items and payments in bulk to avoid N+1
     final allItems = await database.select(database.invoiceItems).get();
     final allPayments = await database.select(database.payments).get();
+    return _mapInvoices(invoiceRows, allItems, allPayments);
+  }
 
-    // 3. Map everything efficiently
+  @override
+  Future<List<model.Invoice>> getInvoicesPaginated({
+    required final int limit,
+    required final int offset,
+  }) async {
+    final invoiceRows =
+        await (database.select(database.invoices)
+              ..orderBy([
+                (final t) => OrderingTerm(
+                  expression: t.invoiceDate,
+                  mode: OrderingMode.desc,
+                ),
+              ])
+              ..limit(limit, offset: offset))
+            .get();
+    if (invoiceRows.isEmpty) return [];
+    final invoiceIds = invoiceRows.map((final r) => r.id).toSet();
+    final allItems = await database.select(database.invoiceItems).get();
+    final allPayments = await database.select(database.payments).get();
+    final filteredItems = allItems
+        .where((final i) => invoiceIds.contains(i.invoiceId))
+        .toList();
+    final filteredPayments = allPayments
+        .where((final p) => invoiceIds.contains(p.invoiceId))
+        .toList();
+    return _mapInvoices(invoiceRows, filteredItems, filteredPayments);
+  }
+
+  @override
+  Future<int> getInvoiceCount() async {
+    final result = await database
+        .customSelect('SELECT COUNT(*) as cnt FROM invoices')
+        .getSingle();
+    return result.read<int>('cnt');
+  }
+
+  List<model.Invoice> _mapInvoices(
+    final List<dynamic> invoiceRows,
+    final List<dynamic> allItems,
+    final List<dynamic> allPayments,
+  ) {
     return invoiceRows.map((final row) {
       final items = allItems
           .where((final item) => item.invoiceId == row.id)
-          .map((final itemRow) => model.InvoiceItem(
-                id: itemRow.id,
-                description: itemRow.description,
-                sacCode: itemRow.sacCode,
-                codeType: itemRow.codeType,
-                year: itemRow.year,
-                amount: itemRow.amount,
-                discount: itemRow.discount,
-                quantity: itemRow.quantity,
-                unit: itemRow.unit,
-                gstRate: itemRow.gstRate,
-              ))
+          .map(
+            (final itemRow) => model.InvoiceItem(
+              id: itemRow.id,
+              description: itemRow.description,
+              sacCode: itemRow.sacCode,
+              codeType: itemRow.codeType,
+              year: itemRow.year,
+              amount: itemRow.amount,
+              discount: itemRow.discount,
+              quantity: itemRow.quantity,
+              unit: itemRow.unit,
+              gstRate: itemRow.gstRate,
+            ),
+          )
           .toList();
 
       final payments = allPayments
           .where((final p) => p.invoiceId == row.id)
-          .map((final pRow) => PaymentTransaction(
-                id: pRow.id,
-                invoiceId: pRow.invoiceId,
-                date: pRow.date,
-                amount: pRow.amount,
-                paymentMode: pRow.method,
-                notes: pRow.notes,
-              ))
+          .map(
+            (final pRow) => PaymentTransaction(
+              id: pRow.id,
+              invoiceId: pRow.invoiceId,
+              date: pRow.date,
+              amount: pRow.amount,
+              paymentMode: pRow.method,
+              notes: pRow.notes,
+            ),
+          )
           .toList();
 
       return model.Invoice(
@@ -382,14 +447,15 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
   @override
   Future<void> deleteInvoice(final String id) async {
-    await (database.delete(database.invoiceItems)
-          ..where((final t) => t.invoiceId.equals(id)))
-        .go();
-    await (database.delete(database.payments)
-          ..where((final t) => t.invoiceId.equals(id)))
-        .go();
-    await (database.delete(database.invoices)..where((final t) => t.id.equals(id)))
-        .go();
+    await (database.delete(
+      database.invoiceItems,
+    )..where((final t) => t.invoiceId.equals(id))).go();
+    await (database.delete(
+      database.payments,
+    )..where((final t) => t.invoiceId.equals(id))).go();
+    await (database.delete(
+      database.invoices,
+    )..where((final t) => t.id.equals(id))).go();
   }
 
   @override
@@ -399,8 +465,10 @@ class SqlInvoiceRepository implements InvoiceRepository {
   }
 
   @override
-  Future<bool> checkInvoiceExists(final String invoiceNumber,
-      {final String? excludeId}) async {
+  Future<bool> checkInvoiceExists(
+    final String invoiceNumber, {
+    final String? excludeId,
+  }) async {
     final query = database.select(database.invoices)
       ..where((final tbl) => tbl.invoiceNo.equals(invoiceNumber));
 

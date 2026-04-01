@@ -4,6 +4,7 @@ analyzer:
   errors:
     unused_element: warning
     deprecated_member_use: warning
+    public_member_api_docs: ignore
   exclude:
     - "**/*.g.dart"
     - "**/*.freezed.dart"

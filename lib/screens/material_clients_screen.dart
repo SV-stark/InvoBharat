@@ -3,42 +3,122 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/client_provider.dart';
 import 'package:invobharat/widgets/material_client_form.dart';
+import 'package:invobharat/screens/client_ledger_screen.dart';
 
-class MaterialClientsScreen extends ConsumerWidget {
+class MaterialClientsScreen extends ConsumerStatefulWidget {
   const MaterialClientsScreen({super.key});
 
   @override
-  Widget build(final BuildContext context, final WidgetRef ref) {
+  ConsumerState<MaterialClientsScreen> createState() =>
+      _MaterialClientsScreenState();
+}
+
+class _MaterialClientsScreenState extends ConsumerState<MaterialClientsScreen> {
+  final TextEditingController _searchCtrl = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(final BuildContext context) {
     final clients = ref.watch(clientListProvider);
+
+    final filteredClients = _searchQuery.isEmpty
+        ? clients
+        : clients
+              .where(
+                (final c) =>
+                    c.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                    c.gstin.toLowerCase().contains(
+                      _searchQuery.toLowerCase(),
+                    ) ||
+                    c.email.toLowerCase().contains(
+                      _searchQuery.toLowerCase(),
+                    ) ||
+                    c.phone.contains(_searchQuery),
+              )
+              .toList();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Clients'),
         centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: TextField(
+              controller: _searchCtrl,
+              decoration: InputDecoration(
+                hintText: "Search clients...",
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchCtrl.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      )
+                    : null,
+                filled: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              onChanged: (final val) => setState(() => _searchQuery = val),
+            ),
+          ),
+        ),
       ),
-      body: clients.isEmpty
+      body: filteredClients.isEmpty
           ? _buildEmptyState(context, ref)
           : ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: clients.length,
+              itemCount: filteredClients.length,
               itemBuilder: (final context, final index) {
-                final client = clients[index];
+                final client = filteredClients[index];
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     leading: CircleAvatar(
-                      child: Text(client.name.isNotEmpty
-                          ? client.name[0].toUpperCase()
-                          : '?'),
+                      child: Text(
+                        client.name.isNotEmpty
+                            ? client.name[0].toUpperCase()
+                            : '?',
+                      ),
                     ),
-                    title: Text(client.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(client.gstin.isNotEmpty
-                        ? 'GSTIN: ${client.gstin}'
-                        : 'No GSTIN'),
+                    title: Text(
+                      client.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      client.gstin.isNotEmpty
+                          ? 'GSTIN: ${client.gstin}'
+                          : 'No GSTIN',
+                    ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.receipt_long,
+                            color: Colors.teal,
+                          ),
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  ClientLedgerScreen(client: client),
+                            ),
+                          ),
+                        ),
                         IconButton(
                           icon: const Icon(Icons.edit, color: Colors.blue),
                           onPressed: () =>
@@ -68,20 +148,29 @@ class MaterialClientsScreen extends ConsumerWidget {
         children: [
           const Icon(Icons.contacts, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
-          const Text('No clients yet'),
-          const SizedBox(height: 16),
-          FilledButton.icon(
-            icon: const Icon(Icons.add),
-            label: const Text('Add Client'),
-            onPressed: () => _showClientDialog(context, null, ref),
+          Text(
+            _searchQuery.isNotEmpty
+                ? "No clients match your search"
+                : "No clients yet",
+            style: Theme.of(context).textTheme.titleMedium,
           ),
+          const SizedBox(height: 16),
+          if (_searchQuery.isEmpty)
+            FilledButton.icon(
+              icon: const Icon(Icons.add),
+              label: const Text('Add Client'),
+              onPressed: () => _showClientDialog(context, null, ref),
+            ),
         ],
       ),
     );
   }
 
   void _showClientDialog(
-      final BuildContext context, final Client? client, final WidgetRef ref) async {
+    final BuildContext context,
+    final Client? client,
+    final WidgetRef ref,
+  ) async {
     await showDialog(
       context: context,
       builder: (final context) => MaterialClientFormDialog(client: client),
@@ -89,7 +178,10 @@ class MaterialClientsScreen extends ConsumerWidget {
   }
 
   void _confirmDelete(
-      final BuildContext context, final Client client, final WidgetRef ref) async {
+    final BuildContext context,
+    final Client client,
+    final WidgetRef ref,
+  ) async {
     final result = await showDialog<String>(
       context: context,
       builder: (final context) => AlertDialog(

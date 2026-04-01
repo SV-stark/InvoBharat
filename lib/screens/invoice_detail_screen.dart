@@ -514,7 +514,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
 
   Future<void> _sendEmail() async {
     // Check settings first
-    final settings = await EmailService.getSettings();
+    final settings = await EmailService.getSettingsStatic();
 
     if (settings == null) {
       if (!mounted) return;
