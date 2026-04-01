@@ -4,6 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/ledger_provider.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:invobharat/utils/client_statement_generator.dart';
+import 'package:printing/printing.dart';
 
 class ClientLedgerScreen extends ConsumerStatefulWidget {
   final Client client;
@@ -15,6 +19,27 @@ class ClientLedgerScreen extends ConsumerStatefulWidget {
 }
 
 class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
+  Future<void> _printStatement() async {
+    final profile = ref.read(businessProfileProvider);
+    final invoices = await ref.read(invoiceRepositoryProvider).getAllInvoices();
+
+    final now = DateTime.now();
+    final oneYearAgo = DateTime(now.year - 1, now.month, now.day);
+
+    final params = ClientStatementParams(
+      client: widget.client,
+      profile: profile,
+      invoices: invoices,
+      dateRange: material.DateTimeRange(start: oneYearAgo, end: now),
+    );
+
+    final pdfBytes = await generateClientStatement(params);
+    await Printing.layoutPdf(
+      onLayout: (_) => pdfBytes,
+      name: 'statement_${widget.client.name}.pdf',
+    );
+  }
+
   @override
   Widget build(final BuildContext context) {
     final ledgerAsync = ref.watch(clientLedgerProvider(widget.client.name));
@@ -22,36 +47,52 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
     return ScaffoldPage(
       header: PageHeader(
         title: Text('Ledger: ${widget.client.name}'),
+        commandBar: CommandBar(
+          primaryItems: [
+            CommandBarButton(
+              icon: const Icon(FluentIcons.print),
+              label: const Text('Print Statement'),
+              onPressed: _printStatement,
+            ),
+          ],
+        ),
       ),
       content: ledgerAsync.when(
         data: (final entries) {
           if (entries.isEmpty) {
             return const Center(
-                child: Text("No transactions found for this client."));
+              child: Text("No transactions found for this client."),
+            );
           }
 
-          // Compute Totals
-          final totalDebit = entries.fold(0.0, (final sum, final e) => sum + e.debit);
-          final totalCredit = entries.fold(0.0, (final sum, final e) => sum + e.credit);
+          final totalDebit = entries.fold(
+            0.0,
+            (final sum, final e) => sum + e.debit,
+          );
+          final totalCredit = entries.fold(
+            0.0,
+            (final sum, final e) => sum + e.credit,
+          );
           final closingBalance = entries.last.balance;
 
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                // Summary Cards
                 Row(
                   children: [
                     _buildSummaryCard("Total Billed", totalDebit, Colors.blue),
                     const SizedBox(width: 16),
                     _buildSummaryCard("Total Paid", totalCredit, Colors.green),
                     const SizedBox(width: 16),
-                    _buildSummaryCard("Closing Balance", closingBalance,
-                        closingBalance > 0 ? Colors.red : Colors.teal),
+                    _buildSummaryCard(
+                      "Closing Balance",
+                      closingBalance,
+                      closingBalance > 0 ? Colors.red : Colors.teal,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 24),
-                // Table
                 Expanded(
                   child: SingleChildScrollView(
                     child: SizedBox(
@@ -66,25 +107,40 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
                           material.DataColumn(label: Text('Balance')),
                         ],
                         rows: entries.map((final e) {
-                          return material.DataRow(cells: [
-                            material.DataCell(
-                                Text(DateFormat('dd-MM-yyyy').format(e.date))),
-                            material.DataCell(Text(e.particulars)),
-                            material.DataCell(Text(e.type)),
-                            material.DataCell(Text(e.debit > 0
-                                ? "₹${e.debit.toStringAsFixed(2)}"
-                                : "")),
-                            material.DataCell(Text(e.credit > 0
-                                ? "₹${e.credit.toStringAsFixed(2)}"
-                                : "")),
-                            material.DataCell(Text(
-                                "₹${e.balance.toStringAsFixed(2)}",
-                                style: TextStyle(
+                          return material.DataRow(
+                            cells: [
+                              material.DataCell(
+                                Text(DateFormat('dd-MM-yyyy').format(e.date)),
+                              ),
+                              material.DataCell(Text(e.particulars)),
+                              material.DataCell(Text(e.type)),
+                              material.DataCell(
+                                Text(
+                                  e.debit > 0
+                                      ? "₹${e.debit.toStringAsFixed(2)}"
+                                      : "",
+                                ),
+                              ),
+                              material.DataCell(
+                                Text(
+                                  e.credit > 0
+                                      ? "₹${e.credit.toStringAsFixed(2)}"
+                                      : "",
+                                ),
+                              ),
+                              material.DataCell(
+                                Text(
+                                  "₹${e.balance.toStringAsFixed(2)}",
+                                  style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: e.balance > 0
                                         ? Colors.red
-                                        : Colors.green))),
-                          ]);
+                                        : Colors.green,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
                         }).toList(),
                       ),
                     ),
@@ -100,7 +156,11 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
     );
   }
 
-  Widget _buildSummaryCard(final String title, final double amount, final Color color) {
+  Widget _buildSummaryCard(
+    final String title,
+    final double amount,
+    final Color color,
+  ) {
     return Expanded(
       child: Card(
         child: Padding(
@@ -108,13 +168,18 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title,
-                  style: const TextStyle(fontSize: 14, color: Colors.grey)),
+              Text(
+                title,
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              ),
               const SizedBox(height: 4),
               Text(
                 "₹${amount.toStringAsFixed(2)}",
                 style: TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.bold, color: color),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
               ),
             ],
           ),

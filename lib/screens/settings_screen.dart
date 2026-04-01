@@ -250,21 +250,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 24),
             _buildSectionHeader("Invoice Configuration"),
+            _buildTextField("Prefix (e.g. INV-)", _seriesController),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
-                  child: _buildTextField(
-                    "Series (e.g. INV-)",
-                    _seriesController,
-                  ),
+                  child: _buildTextField("Next Number", _sequenceController),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: _buildTextField("Next Sequence", _sequenceController),
+                  child: _buildTextField(
+                    "Suffix (e.g. -FY25)",
+                    _currencyController,
+                  ),
                 ),
               ],
             ),
-            _buildTextField("Currency Symbol", _currencyController),
+            const SizedBox(height: 8),
+            const Text(
+              "Invoice number format: Prefix + Number + Suffix (e.g. INV-001-FY25)",
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
             _buildTextField("Default Terms", _termsController, maxLines: 4),
             _buildTextField("Default Notes", _notesController, maxLines: 2),
             const SizedBox(height: 24),

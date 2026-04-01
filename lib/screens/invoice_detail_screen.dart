@@ -121,6 +121,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
           PopupMenuButton<String>(
             onSelected: (final val) {
               if (val == 'recurring') _setupRecurring();
+              if (val == 'duplicate') _duplicateInvoice();
               if (val == 'archive') _toggleArchive();
               if (val == 'delete') _deleteInvoice();
             },
@@ -128,6 +129,16 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
               const PopupMenuItem(
                 value: 'recurring',
                 child: Text("Make Recurring"),
+              ),
+              const PopupMenuItem(
+                value: 'duplicate',
+                child: Row(
+                  children: [
+                    Icon(Icons.copy, size: 20),
+                    SizedBox(width: 8),
+                    Text("Duplicate Invoice"),
+                  ],
+                ),
               ),
               PopupMenuItem(
                 value: 'archive',
@@ -335,6 +346,29 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
         style: TextStyle(color: color, fontWeight: FontWeight.bold),
       ),
     );
+  }
+
+  void _duplicateInvoice() async {
+    final duplicated = _invoice.copyWith(
+      id: null,
+      invoiceNo: '',
+      invoiceDate: DateTime.now(),
+      payments: [],
+    );
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FluentInvoiceWizard(invoiceToEdit: duplicated),
+      ),
+    );
+    _refreshInvoice();
+    ref.invalidate(invoiceListProvider);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invoice duplicated for editing")),
+      );
+    }
   }
 
   void _setupRecurring() async {

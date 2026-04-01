@@ -1,10 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
-// import '../models/invoice.dart'; // Removed unused import
+import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/screens/invoice_detail_screen.dart';
 import 'package:invobharat/screens/invoice_form.dart';
+import 'package:invobharat/screens/windows/fluent_invoice_wizard.dart';
 
 class InvoicesListScreen extends ConsumerStatefulWidget {
   const InvoicesListScreen({super.key});
@@ -15,8 +17,10 @@ class InvoicesListScreen extends ConsumerStatefulWidget {
 
 class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
   final TextEditingController _searchCtrl = TextEditingController();
-  String _filter = 'All'; // All, Unpaid, Paid (Derived)
+  String _filter = 'All';
   DateTimeRange? _dateRange;
+  bool _isMultiSelectMode = false;
+  final Set<String> _selectedIds = {};
 
   @override
   void dispose() {
@@ -24,17 +28,121 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
     super.dispose();
   }
 
+  void _toggleMultiSelect() {
+    setState(() {
+      _isMultiSelectMode = !_isMultiSelectMode;
+      _selectedIds.clear();
+    });
+  }
+
+  void _toggleSelection(final String id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else {
+        _selectedIds.add(id);
+      }
+    });
+  }
+
+  Future<void> _bulkDelete() async {
+    if (_selectedIds.isEmpty) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (final ctx) => AlertDialog(
+        title: const Text("Delete Selected Invoices?"),
+        content: Text(
+          "Are you sure you want to delete ${_selectedIds.length} invoice(s)?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Cancel"),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Delete"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final deletedInvoices = <Invoice>[];
+      final repo = ref.read(invoiceRepositoryProvider);
+      for (final id in _selectedIds) {
+        final inv = await repo.getInvoice(id);
+        if (inv != null) deletedInvoices.add(inv);
+        await repo.deleteInvoice(id);
+      }
+      ref.invalidate(invoiceListProvider);
+      setState(() {
+        _isMultiSelectMode = false;
+        _selectedIds.clear();
+      });
+      if (context.mounted) {
+        final messenger = ScaffoldMessenger.of(context);
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text("${deletedInvoices.length} invoice(s) deleted"),
+            action: SnackBarAction(
+              label: "Undo",
+              onPressed: () async {
+                for (final inv in deletedInvoices) {
+                  await repo.saveInvoice(inv);
+                }
+                ref.invalidate(invoiceListProvider);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Deletion undone")),
+                  );
+                }
+              },
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _duplicateInvoice(final Invoice invoice) async {
+    final duplicated = invoice.copyWith(
+      id: null,
+      invoiceNo: '',
+      invoiceDate: DateTime.now(),
+      payments: [],
+    );
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FluentInvoiceWizard(invoiceToEdit: duplicated),
+      ),
+    );
+    ref.invalidate(invoiceListProvider);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Invoice duplicated for editing")),
+    );
+  }
+
   @override
   Widget build(final BuildContext context) {
     final invoiceListAsync = ref.watch(invoiceListProvider);
     final theme = Theme.of(context);
 
-    // Derived Logic for Paid/Unpaid relies on `paymentStatus` getter in Invoice model
-    // which checks totalPaid >= grandTotal.
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Invoices"),
+        title: _isMultiSelectMode
+            ? Text("${_selectedIds.length} selected")
+            : const Text("Invoices"),
+        leading: _isMultiSelectMode
+            ? IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: _toggleMultiSelect,
+              )
+            : null,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
@@ -45,70 +153,88 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                   child: TextField(
                     controller: _searchCtrl,
                     decoration: InputDecoration(
-                        hintText: "Search Client / Invoice #",
-                        prefixIcon: const Icon(Icons.search),
-                        filled: true,
-                        fillColor: theme.colorScheme.surfaceContainerHighest,
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16)),
+                      hintText: "Search Client / Invoice # / Amount",
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: theme.colorScheme.surfaceContainerHighest,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                      ),
+                    ),
                     onChanged: (final val) => setState(() {}),
                   ),
                 ),
                 const SizedBox(width: 8),
                 IconButton(
-                  icon: Icon(Icons.filter_list,
-                      color: _dateRange != null || _filter != 'All'
-                          ? theme.primaryColor
-                          : null),
+                  icon: Icon(
+                    Icons.filter_list,
+                    color: _dateRange != null || _filter != 'All'
+                        ? theme.primaryColor
+                        : null,
+                  ),
                   onPressed: _showFilterDialog,
-                )
+                ),
               ],
             ),
           ),
         ),
+        actions: [
+          if (!_isMultiSelectMode)
+            IconButton(
+              icon: const Icon(Icons.select_all),
+              tooltip: "Multi-select",
+              onPressed: _toggleMultiSelect,
+            ),
+          if (_isMultiSelectMode)
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              tooltip: "Delete selected",
+              onPressed: _selectedIds.isNotEmpty ? _bulkDelete : null,
+            ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const InvoiceFormScreen()))
-            .then((_) => ref.refresh(invoiceListProvider)),
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const InvoiceFormScreen()),
+        ).then((_) => ref.refresh(invoiceListProvider)),
         child: const Icon(Icons.add),
       ),
       body: invoiceListAsync.when(
         data: (final invoices) {
-          // Filter Logic
           final filtered = invoices.where((final inv) {
-            // Search
-            final query = _searchCtrl.text.toLowerCase();
-            final matchesSearch = query.isEmpty ||
+            final query = _searchCtrl.text.toLowerCase().trim();
+            final matchesSearch =
+                query.isEmpty ||
                 inv.receiver.name.toLowerCase().contains(query) ||
-                inv.invoiceNo.toLowerCase().contains(query);
+                inv.invoiceNo.toLowerCase().contains(query) ||
+                inv.grandTotal.toStringAsFixed(2).contains(query);
 
             if (!matchesSearch) return false;
 
-            // Date Range
             if (_dateRange != null) {
               if (inv.invoiceDate.isBefore(_dateRange!.start) ||
-                  inv.invoiceDate
-                      .isAfter(_dateRange!.end.add(const Duration(days: 1)))) {
+                  inv.invoiceDate.isAfter(
+                    _dateRange!.end.add(const Duration(days: 1)),
+                  )) {
                 return false;
               }
             }
 
-            // Archive Filter
             if (_filter == 'Archived') {
               if (!inv.isArchived) return false;
             } else {
-              // For All, Paid, Unpaid -> Only show Active (unarchived)
               if (inv.isArchived) return false;
 
               if (_filter == 'Paid') {
                 if (inv.paymentStatus != 'Paid') return false;
               } else if (_filter == 'Unpaid') {
                 if (inv.paymentStatus == 'Paid') {
-                  return false; // Show Pending/Partial
+                  return false;
                 }
               }
             }
@@ -134,6 +260,26 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
             itemCount: filtered.length,
             itemBuilder: (final context, final index) {
               final invoice = filtered[index];
+              final isSelected = _selectedIds.contains(invoice.id);
+
+              if (_isMultiSelectMode) {
+                return CheckboxListTile(
+                  value: isSelected,
+                  onChanged: (_) => _toggleSelection(invoice.id!),
+                  title: Text(
+                    invoice.receiver.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    "${invoice.invoiceNo} • ${DateFormat('dd MMM yyyy').format(invoice.invoiceDate)}",
+                  ),
+                  secondary: Text(
+                    "₹${invoice.grandTotal.toStringAsFixed(2)}",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                );
+              }
+
               return Dismissible(
                 key: Key(invoice.id!),
                 direction: DismissDirection.endToStart,
@@ -143,35 +289,59 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                     builder: (final ctx) => AlertDialog(
                       title: const Text("Delete Invoice?"),
                       content: Text(
-                          "Are you sure you want to delete ${invoice.invoiceNo}?"),
+                        "Are you sure you want to delete ${invoice.invoiceNo}?",
+                      ),
                       actions: [
                         TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text("Cancel")),
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: const Text("Cancel"),
+                        ),
                         TextButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text("Delete",
-                                style: TextStyle(color: Colors.red))),
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: const Text(
+                            "Delete",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
                       ],
                     ),
                   );
                 },
                 onDismissed: (final direction) async {
-                  await ref
-                      .read(invoiceRepositoryProvider)
-                      .deleteInvoice(invoice.id!);
+                  final repo = ref.read(invoiceRepositoryProvider);
+                  await repo.deleteInvoice(invoice.id!);
                   ref.invalidate(invoiceListProvider);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Invoice deleted")));
+                      SnackBar(
+                        content: const Text("Invoice deleted"),
+                        action: SnackBarAction(
+                          label: "Undo",
+                          onPressed: () async {
+                            await repo.saveInvoice(invoice);
+                            ref.invalidate(invoiceListProvider);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Deletion undone"),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    );
                   }
                 },
                 background: Container(
                   alignment: Alignment.centerRight,
                   padding: const EdgeInsets.only(right: 20),
                   color: Colors.red,
-                  child:
-                      const Icon(Icons.delete, color: Colors.white, size: 30),
+                  child: const Icon(
+                    Icons.delete,
+                    color: Colors.white,
+                    size: 30,
+                  ),
                 ),
                 child: Card(
                   elevation: 2,
@@ -198,18 +368,20 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                            "${invoice.invoiceNo} • ${DateFormat('dd MMM yyyy').format(invoice.invoiceDate)}"),
+                          "${invoice.invoiceNo} • ${DateFormat('dd MMM yyyy').format(invoice.invoiceDate)}",
+                        ),
                         if (invoice.dueDate != null)
                           Text(
                             "Due: ${DateFormat('dd MMM').format(invoice.dueDate!)}",
                             style: TextStyle(
-                                fontSize: 11,
-                                color:
-                                    invoice.dueDate!.isBefore(DateTime.now()) &&
-                                            invoice.paymentStatus != 'Paid'
-                                        ? Colors.red
-                                        : Colors.grey),
-                          )
+                              fontSize: 11,
+                              color:
+                                  invoice.dueDate!.isBefore(DateTime.now()) &&
+                                      invoice.paymentStatus != 'Paid'
+                                  ? Colors.red
+                                  : Colors.grey,
+                            ),
+                          ),
                       ],
                     ),
                     trailing: Column(
@@ -219,9 +391,18 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                         Text(
                           "₹${invoice.grandTotal.toStringAsFixed(2)}",
                           style: const TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.bold),
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         _buildStatusBadge(invoice.paymentStatus),
+                        IconButton(
+                          icon: const Icon(Icons.copy, size: 18),
+                          tooltip: "Duplicate invoice",
+                          onPressed: () => _duplicateInvoice(invoice),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
                       ],
                     ),
                   ),
@@ -238,43 +419,48 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
 
   void _showFilterDialog() {
     showDialog(
-        context: context,
-        builder: (final context) {
-          return StatefulBuilder(builder: (final context, final setDialogState) {
+      context: context,
+      builder: (final context) {
+        return StatefulBuilder(
+          builder: (final context, final setDialogState) {
             return AlertDialog(
               title: const Text("Filters"),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<String>(
-                      key: ValueKey(_filter),
-                      initialValue: _filter,
-                      decoration: const InputDecoration(labelText: "Status"),
-                      items: const [
-                        DropdownMenuItem(
-                            value: 'All', child: Text("All Active")),
-                        DropdownMenuItem(value: 'Paid', child: Text("Paid")),
-                        DropdownMenuItem(
-                            value: 'Unpaid', child: Text("Unpaid")),
-                        DropdownMenuItem(
-                            value: 'Archived', child: Text("Archived")),
-                      ],
-                      onChanged: (final val) {
-                        setDialogState(() => _filter = val!);
-                      }),
+                    key: ValueKey(_filter),
+                    initialValue: _filter,
+                    decoration: const InputDecoration(labelText: "Status"),
+                    items: const [
+                      DropdownMenuItem(value: 'All', child: Text("All Active")),
+                      DropdownMenuItem(value: 'Paid', child: Text("Paid")),
+                      DropdownMenuItem(value: 'Unpaid', child: Text("Unpaid")),
+                      DropdownMenuItem(
+                        value: 'Archived',
+                        child: Text("Archived"),
+                      ),
+                    ],
+                    onChanged: (final val) {
+                      setDialogState(() => _filter = val!);
+                    },
+                  ),
                   const SizedBox(height: 16),
                   ListTile(
                     title: const Text("Date Range"),
-                    subtitle: Text(_dateRange == null
-                        ? "All Time"
-                        : "${DateFormat('dd/MM').format(_dateRange!.start)} - ${DateFormat('dd/MM').format(_dateRange!.end)}"),
+                    subtitle: Text(
+                      _dateRange == null
+                          ? "All Time"
+                          : "${DateFormat('dd/MM').format(_dateRange!.start)} - ${DateFormat('dd/MM').format(_dateRange!.end)}",
+                    ),
                     trailing: const Icon(Icons.calendar_today),
                     onTap: () async {
                       final picked = await showDateRangePicker(
-                          context: context,
-                          firstDate: DateTime(2020),
-                          lastDate: DateTime(2100),
-                          initialDateRange: _dateRange);
+                        context: context,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime(2100),
+                        initialDateRange: _dateRange,
+                      );
                       if (picked != null) {
                         setDialogState(() => _dateRange = picked);
                       }
@@ -282,25 +468,29 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                   ),
                   if (_dateRange != null)
                     TextButton(
-                        onPressed: () =>
-                            setDialogState(() => _dateRange = null),
-                        child: const Text("Clear Date Filter"))
+                      onPressed: () => setDialogState(() => _dateRange = null),
+                      child: const Text("Clear Date Filter"),
+                    ),
                 ],
               ),
               actions: [
                 TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text("Cancel")),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
+                ),
                 FilledButton(
-                    onPressed: () {
-                      setState(() {}); // Apply to main screen
-                      Navigator.pop(context);
-                    },
-                    child: const Text("Apply")),
+                  onPressed: () {
+                    setState(() {});
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Apply"),
+                ),
               ],
             );
-          });
-        });
+          },
+        );
+      },
+    );
   }
 
   Widget _buildStatusBadge(final String status) {
@@ -312,9 +502,10 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(color: color.withValues(alpha: 0.5))),
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+      ),
       child: Text(status, style: TextStyle(color: color, fontSize: 10)),
     );
   }

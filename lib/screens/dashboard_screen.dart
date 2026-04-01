@@ -21,6 +21,7 @@ import 'package:invobharat/models/business_profile.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:invobharat/services/gstr_service.dart';
+import 'package:invobharat/services/gstr3b_service.dart';
 import 'package:invobharat/services/dashboard_actions.dart';
 import 'package:invobharat/screens/widgets/dashboard_widgets.dart';
 import 'package:invobharat/screens/material_clients_screen.dart';
@@ -479,6 +480,13 @@ class _DashboardQuickActions extends ConsumerWidget {
               bgColor: theme.colorScheme.tertiaryContainer,
               onTap: () async => _exportGstr1(context, invoices),
             ),
+            const SizedBox(width: 16),
+            DashboardActionButton(
+              label: "Export GSTR-3B",
+              icon: Icons.summarize,
+              bgColor: theme.colorScheme.secondaryContainer,
+              onTap: () async => _exportGstr3b(context, invoices),
+            ),
           ],
         ),
       ],
@@ -497,10 +505,52 @@ class _DashboardQuickActions extends ConsumerWidget {
         return;
       }
 
-      final csvData = await GstrService().generateGstr1CsvAsync(filteredInvoices);
+      final csvData = await GstrService().generateGstr1CsvAsync(
+        filteredInvoices,
+      );
       String? outputFile = await FilePicker.platform.saveFile(
         dialogTitle: 'Save GSTR-1 CSV',
         fileName: 'GSTR1_${selectedFilter.replaceAll(" ", "_")}.csv',
+        allowedExtensions: ['csv'],
+        type: FileType.custom,
+      );
+
+      if (outputFile != null) {
+        if (!outputFile.toLowerCase().endsWith('.csv')) {
+          outputFile = '$outputFile.csv';
+        }
+        await File(outputFile).writeAsString(csvData);
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Exported to $outputFile")));
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
+
+  Future<void> _exportGstr3b(
+    final BuildContext context,
+    final List<Invoice> filteredInvoices,
+  ) async {
+    try {
+      if (filteredInvoices.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No invoices in selected period")),
+        );
+        return;
+      }
+
+      final csvData = await Gstr3bService().generateGstr3bCsvAsync(
+        filteredInvoices,
+      );
+      String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save GSTR-3B CSV',
+        fileName: 'GSTR3B_${selectedFilter.replaceAll(" ", "_")}.csv',
         allowedExtensions: ['csv'],
         type: FileType.custom,
       );
