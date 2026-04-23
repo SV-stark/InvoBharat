@@ -92,7 +92,7 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
                     child: AutoSuggestBox<String>(
                       placeholder: "e.g. Karnataka",
                       controller: _stateCtrl,
-                      items: IndianStates.states
+                      items: AppStates.states
                           .map(
                             (final e) =>
                                 AutoSuggestBoxItem<String>(value: e, label: e),

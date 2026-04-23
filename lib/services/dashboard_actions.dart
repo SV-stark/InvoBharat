@@ -1,5 +1,6 @@
-import 'package:intl/intl.dart'; // New
+import 'package:intl/intl.dart';
 import 'package:invobharat/models/invoice.dart';
+import 'package:indian_formatters/indian_formatters.dart';
 
 class DashboardActions {
   static Map<String, double> calculateRevenueTrend(final List<Invoice> invoices) {
@@ -25,8 +26,6 @@ class DashboardActions {
 
     for (var inv in invoices) {
       if (inv.paymentStatus == 'Paid') continue;
-      // Use invoiceDate or dueDate? Usually DueDate.
-      // If dueDate is null, use invoiceDate.
       final due = inv.dueDate;
       final diff = now.difference(due ?? now).inDays;
 
@@ -60,30 +59,36 @@ class DashboardActions {
 
     if (period == "This Month") {
       start = DateTime(now.year, now.month);
-      end = DateTime(now.year, now.month + 1, 0); // Last day of month
+      end = DateTime(now.year, now.month + 1, 0);
     } else if (period == "Last Month") {
       start = DateTime(now.year, now.month - 1);
       end = DateTime(now.year, now.month, 0);
-    } else if (period.startsWith("Q1")) {
-      // Apr-Jun
-      final fyStartYear = now.month >= 4 ? now.year : now.year - 1;
-      start = DateTime(fyStartYear, 4);
-      end = DateTime(fyStartYear, 6, 30);
-    } else if (period.startsWith("Q2")) {
-      // Jul-Sep
-      final fyStartYear = now.month >= 4 ? now.year : now.year - 1;
-      start = DateTime(fyStartYear, 7);
-      end = DateTime(fyStartYear, 9, 30);
-    } else if (period.startsWith("Q3")) {
-      // Oct-Dec
-      final fyStartYear = now.month >= 4 ? now.year : now.year - 1;
-      start = DateTime(fyStartYear, 10);
-      end = DateTime(fyStartYear, 12, 31);
-    } else if (period.startsWith("Q4")) {
-      // Jan-Mar
-      final fyStartYear = now.month >= 4 ? now.year : now.year - 1;
-      start = DateTime(fyStartYear + 1);
-      end = DateTime(fyStartYear + 1, 3, 31);
+    } else if (period.startsWith("Q")) {
+      final quarter = int.tryParse(period.substring(1, 2));
+      if (quarter != null) {
+        // Find FY start year based on current date
+        final currentFY = IndianDateFormatter.fiscalYear(now); // "FY 2025-26"
+        final fyStartYear = int.parse(currentFY.substring(3, 7));
+        
+        switch (quarter) {
+          case 1: // Apr-Jun
+            start = DateTime(fyStartYear, 4);
+            end = DateTime(fyStartYear, 6, 30);
+            break;
+          case 2: // Jul-Sep
+            start = DateTime(fyStartYear, 7);
+            end = DateTime(fyStartYear, 9, 30);
+            break;
+          case 3: // Oct-Dec
+            start = DateTime(fyStartYear, 10);
+            end = DateTime(fyStartYear, 12, 31);
+            break;
+          case 4: // Jan-Mar
+            start = DateTime(fyStartYear + 1);
+            end = DateTime(fyStartYear + 1, 3, 31);
+            break;
+        }
+      }
     }
 
     if (start != null && end != null) {

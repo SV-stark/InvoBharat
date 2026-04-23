@@ -301,7 +301,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                 child: AutoSuggestBox<String>(
                   placeholder: "State Name",
                   controller: posCtrl, // Mixin Controller
-                  items: IndianStates.states
+                  items: AppStates.states
                       .map(
                         (final e) =>
                             AutoSuggestBoxItem<String>(value: e, label: e),

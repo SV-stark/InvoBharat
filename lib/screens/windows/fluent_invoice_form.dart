@@ -171,7 +171,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                 child: AutoSuggestBox<String>(
                   controller:
                       posCtrl, // Use mixin controller (renamed from _placeOfSupplyController)
-                  items: IndianStates.states
+                  items: AppStates.states
                       .map(
                         (final e) =>
                             AutoSuggestBoxItem<String>(value: e, label: e),
@@ -355,7 +355,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                       controller:
                           receiverStateCtrl, // Use mixin controller (AutoSuggest requires controller for text)
                       placeholder: "State",
-                      items: IndianStates.states
+                      items: AppStates.states
                           .map(
                             (final e) =>
                                 AutoSuggestBoxItem<String>(value: e, label: e),

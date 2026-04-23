@@ -5,7 +5,7 @@ class GstUtils {
   /// Returns true if GSTIN is valid, false otherwise
   static bool isValidGstin(final String gstin) {
     if (gstin.isEmpty) return true; // Empty is allowed (optional field)
-    return IndianValidators.validateGST(gstin.toUpperCase()) == null;
+    return IndianValidators.isGST(gstin.toUpperCase());
   }
 
   /// Extracts state name from GSTIN
@@ -17,13 +17,15 @@ class GstUtils {
   /// Extracts state code from GSTIN
   static String? getStateCode(final String gstin) {
     if (gstin.length < 2) return null;
-    return gstin.substring(0, 2);
+    final code = IndianValidators.getGSTStateCode(gstin.toUpperCase());
+    return code?.toString().padLeft(2, '0');
   }
 
   /// Extracts PAN from GSTIN
   static String? getPan(final String gstin) {
     if (gstin.length < 12) return null;
-    return gstin.substring(2, 12);
+    // GSTIN has PAN from index 2 to 12
+    return gstin.substring(2, 12).toUpperCase();
   }
 
   /// Validates GSTIN and returns detailed validation result
@@ -43,7 +45,7 @@ class GstUtils {
     return GstinValidationResult.valid(
       stateCode: stateCode,
       stateName: stateName,
-      pan: gstin.length >= 12 ? gstin.substring(2, 12) : null,
+      pan: getPan(gstin),
     );
   }
 }

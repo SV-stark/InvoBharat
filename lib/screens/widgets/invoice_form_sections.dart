@@ -130,7 +130,7 @@ class InvoiceHeaderSection extends ConsumerWidget {
                 label: "Place of Supply",
                 child: fluent.AutoSuggestBox<String>(
                   controller: posCtrl,
-                  items: IndianStates.states
+                  items: AppStates.states
                       .map(
                         (final e) =>
                             fluent.AutoSuggestBoxItem<String>(value: e, label: e),
@@ -311,7 +311,7 @@ class ClientDetailsSection extends ConsumerWidget {
                 label: "State",
                 child: fluent.AutoSuggestBox<String>(
                   controller: receiverStateCtrl,
-                  items: IndianStates.states
+                  items: AppStates.states
                       .map(
                         (final e) =>
                             fluent.AutoSuggestBoxItem<String>(value: e, label: e),

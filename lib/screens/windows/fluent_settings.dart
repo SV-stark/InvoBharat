@@ -513,7 +513,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           label: "State",
           child: AutoSuggestBox<String>(
             controller: _stateController,
-            items: IndianStates.states
+            items: AppStates.states
                 .map(
                   (final e) => AutoSuggestBoxItem<String>(value: e, label: e),
                 )

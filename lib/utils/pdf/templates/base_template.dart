@@ -4,6 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/utils/invoice_template.dart';
+import 'package:indian_formatters/indian_formatters.dart';
 
 abstract class BasePdfTemplate implements InvoiceTemplate {
   @override
@@ -53,25 +54,24 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
       row.add(item.description);
       row.add(item.sacCode);
       row.add("${item.quantity} ${item.unit}");
-      row.add(item.amount.toStringAsFixed(2));
-      row.add(taxableValue.toStringAsFixed(2));
+      row.add(IndianNumberFormatter.format(item.amount));
+      row.add(IndianNumberFormatter.format(taxableValue));
 
       if (isInterState) {
         row.add("${item.gstRate}%");
-        row.add(item.calculateIgst(true).toStringAsFixed(2));
+        row.add(IndianNumberFormatter.format(item.calculateIgst(true)));
       } else {
         final halfRate = item.gstRate / 2;
-        // Display as integer if whole number (e.g. 9 not 9.0), else 1 decimal
         final halfRateStr = halfRate == halfRate.truncateToDouble()
             ? halfRate.toInt().toString()
             : halfRate.toStringAsFixed(1);
         row.add("$halfRateStr%");
-        row.add(item.calculateCgst(false).toStringAsFixed(2));
+        row.add(IndianNumberFormatter.format(item.calculateCgst(false)));
         row.add("$halfRateStr%");
-        row.add(item.calculateSgst(false).toStringAsFixed(2));
+        row.add(IndianNumberFormatter.format(item.calculateSgst(false)));
       }
 
-      row.add(item.totalAmount.toStringAsFixed(2));
+      row.add(IndianNumberFormatter.format(item.totalAmount));
       return row;
     }).toList();
 
@@ -135,7 +135,7 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
             ),
           ),
           pw.Text(
-            "$symbol ${value.toStringAsFixed(2)}",
+            "$symbol ${IndianNumberFormatter.format(value)}",
             style: pw.TextStyle(
               fontSize: 9,
               fontWeight: isBold ? pw.FontWeight.bold : null,

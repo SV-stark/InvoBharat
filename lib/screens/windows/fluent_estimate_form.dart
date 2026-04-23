@@ -197,7 +197,7 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                         label: "State",
                         child: AutoSuggestBox<String>(
                           controller: receiverStateCtrl,
-                          items: IndianStates.states
+                          items: AppStates.states
                               .map(
                                 (final e) => AutoSuggestBoxItem<String>(
                                   value: e,

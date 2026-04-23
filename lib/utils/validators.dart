@@ -1,3 +1,5 @@
+import 'package:indian_formatters/indian_formatters.dart';
+
 class ValidationResult {
   final bool isValid;
   final bool isEmpty;
@@ -46,10 +48,9 @@ class Validators {
 
   static ValidationResult validatePhone(final String? value) {
     if (value == null || value.isEmpty) return const ValidationResult.empty();
-    if (value.length < 10) {
-      return const ValidationResult.invalid(
-        'Phone number too short (min 10 digits)',
-      );
+    final error = IndianValidators.validateMobile(value);
+    if (error != null) {
+      return ValidationResult.invalid(error);
     }
     return const ValidationResult.valid();
   }
@@ -63,14 +64,9 @@ class Validators {
     if (value == null || value.trim().isEmpty) {
       return const ValidationResult.empty();
     }
-    final trimmed = value.trim().toUpperCase();
-    final gstinRegex = RegExp(
-      r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$',
-    );
-    if (!gstinRegex.hasMatch(trimmed)) {
-      return const ValidationResult.invalid(
-        'Invalid GSTIN format (15 characters: 2 digits + 5 letters + 4 digits + 1 letter + 1 alphanumeric + Z + 1 alphanumeric)',
-      );
+    final error = IndianValidators.validateGST(value.trim().toUpperCase());
+    if (error != null) {
+      return ValidationResult.invalid(error);
     }
     return const ValidationResult.valid();
   }
@@ -92,12 +88,9 @@ class Validators {
     if (value == null || value.trim().isEmpty) {
       return const ValidationResult.empty();
     }
-    final trimmed = value.trim().toUpperCase();
-    final panRegex = RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$');
-    if (!panRegex.hasMatch(trimmed)) {
-      return const ValidationResult.invalid(
-        'Invalid PAN format (5 letters + 4 digits + 1 letter)',
-      );
+    final error = IndianValidators.validatePAN(value.trim().toUpperCase());
+    if (error != null) {
+      return ValidationResult.invalid(error);
     }
     return const ValidationResult.valid();
   }
@@ -105,5 +98,15 @@ class Validators {
   static String? pan(final String? value) {
     final result = validatePan(value);
     return result.errorMessage;
+  }
+  
+  static String? ifsc(final String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    return IndianValidators.validateIFSC(value.trim().toUpperCase());
+  }
+
+  static String? aadhaar(final String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    return IndianValidators.validateAadhaar(value.trim());
   }
 }

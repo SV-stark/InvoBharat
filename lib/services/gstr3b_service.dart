@@ -2,6 +2,7 @@ import 'dart:isolate';
 import 'package:invobharat/models/invoice.dart';
 import 'package:intl/intl.dart';
 import 'package:csv/csv.dart';
+import 'package:indian_formatters/indian_formatters.dart';
 
 class Gstr3bService {
   Future<String> generateGstr3bCsvAsync(final List<Invoice> invoices) async {
@@ -31,8 +32,9 @@ class Gstr3bService {
       if (inv.items.isEmpty) continue;
 
       final isInter = inv.isInterState;
-      final fy =
-          '${inv.invoiceDate.year - (inv.invoiceDate.month < 4 ? 1 : 0)}-${(inv.invoiceDate.year - (inv.invoiceDate.month < 4 ? 1 : 0) + 1) % 100}';
+      // IndianDateFormatter.fiscalYear(date) returns "FY 2025-26"
+      // We want something like "2025-26" or similar.
+      final fy = IndianDateFormatter.fiscalYear(inv.invoiceDate).replaceAll('FY ', '');
       final period = DateFormat('MM').format(inv.invoiceDate);
 
       for (final item in inv.items) {

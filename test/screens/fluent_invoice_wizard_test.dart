@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart' as material;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/screens/windows/fluent_invoice_wizard.dart';
@@ -22,7 +23,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [businessProfileProvider.overrideWithValue(profile)],
-        child: const FluentApp(home: FluentInvoiceWizard()),
+        child: FluentApp(
+          home: material.Material(
+            child: const FluentInvoiceWizard(),
+          ),
+        ),
       ),
     );
 

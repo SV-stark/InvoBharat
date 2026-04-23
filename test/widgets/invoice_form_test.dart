@@ -1,4 +1,6 @@
+import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
@@ -62,13 +64,11 @@ void main() {
 
     return ProviderScope(
       overrides: overrides,
-      child: MaterialApp(
-        theme: ThemeData(
-          useMaterial3: true,
-          platform:
-              TargetPlatform.android, // Force Android for stable widget testing
+      child: fluent.FluentApp(
+        theme: fluent.FluentThemeData(),
+        home: const Material(
+          child: InvoiceFormScreen(),
         ),
-        home: const InvoiceFormScreen(),
       ),
     );
   }
