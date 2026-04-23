@@ -1,9 +1,6 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
+import 'package:drift_flutter/drift_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:invobharat/database/tables.dart';
@@ -163,19 +160,8 @@ class AppDatabase extends _$AppDatabase {
   }
 }
 
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'InvoBharat', 'db.sqlite'));
-    return NativeDatabase.createInBackground(
-      file,
-      setup: (final db) {
-        db.execute('PRAGMA journal_mode=WAL');
-        db.execute('PRAGMA busy_timeout=5000');
-        db.execute('PRAGMA foreign_keys=ON');
-      },
-    );
-  });
+QueryExecutor _openConnection() {
+  return driftDatabase(name: 'db');
 }
 
 class AppSettingsService {

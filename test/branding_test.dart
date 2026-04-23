@@ -15,8 +15,7 @@ void main() {
       ),
     );
 
-    // Wait for fonts/assets if needed, but in test env assets mock might be needed.
-    // We already fixed assets issue in previous test run, assuming it works for 'logo.png'.
+    await tester.pumpAndSettle();
 
     // Verify "InvoBharat" title is present
     expect(find.text('InvoBharat'), findsAtLeastNWidgets(1));

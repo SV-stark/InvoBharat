@@ -1,10 +1,11 @@
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:drift/native.dart';
+
 import 'package:invobharat/screens/invoice_form.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
@@ -12,9 +13,11 @@ import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/client_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:invobharat/providers/database_provider.dart';
 import 'package:invobharat/data/invoice_repository.dart';
 import 'package:invobharat/data/client_repository.dart';
 import 'package:invobharat/data/business_profile_repository.dart';
+import 'package:invobharat/database/database.dart' hide Client, Invoice, BusinessProfile, InvoiceItem, PaymentTransaction, AppSetting;
 
 class MockInvoiceRepository extends Mock implements InvoiceRepository {}
 
@@ -60,6 +63,7 @@ void main() {
       invoiceRepositoryProvider.overrideWithValue(mockInvoiceRepo),
       clientRepositoryProvider.overrideWithValue(mockClientRepo),
       businessProfileRepositoryProvider.overrideWithValue(mockProfileRepo),
+      databaseProvider.overrideWithValue(AppDatabase(NativeDatabase.memory())),
     ];
 
     return ProviderScope(

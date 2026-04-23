@@ -4,16 +4,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:drift/native.dart';
+
 import 'package:invobharat/screens/dashboard_screen.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:invobharat/providers/database_provider.dart';
 import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/client_provider.dart';
 import 'package:invobharat/data/client_repository.dart';
 import 'package:invobharat/data/invoice_repository.dart';
 import 'package:invobharat/data/business_profile_repository.dart';
+import 'package:invobharat/database/database.dart' hide Client, Invoice, BusinessProfile, InvoiceItem, PaymentTransaction, AppSetting;
 
 class MockInvoiceRepository extends Mock implements InvoiceRepository {}
 
@@ -70,6 +74,7 @@ void main() {
           mockClientRepo,
         ), // Added override
         businessProfileProvider.overrideWithValue(testProfile),
+        databaseProvider.overrideWithValue(AppDatabase(NativeDatabase.memory())),
       ],
       child: fluent.FluentApp(
         theme: fluent.FluentThemeData(),
