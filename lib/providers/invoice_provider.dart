@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:invobharat/models/invoice.dart';
-import 'package:invobharat/utils/gst_helper.dart';
+import 'package:invobharat/utils/gst_utils.dart';
 
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/models/business_profile.dart';

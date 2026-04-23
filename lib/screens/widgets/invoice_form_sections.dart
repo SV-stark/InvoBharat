@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart' as fluent;
+import 'package:invobharat/utils/constants.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:invobharat/models/invoice.dart';
@@ -123,13 +126,27 @@ class InvoiceHeaderSection extends ConsumerWidget {
         Row(
           children: [
             Expanded(
-              child: AppTextInput(
-                controller: posCtrl,
+              child: fluent.InfoLabel(
                 label: "Place of Supply",
-                onChanged: (final val) =>
-                    ref.read(invoiceProvider.notifier).updatePlaceOfSupply(val),
-                validator: (final val) =>
-                    val == null || val.isEmpty ? "Required" : null,
+                child: fluent.AutoSuggestBox<String>(
+                  controller: posCtrl,
+                  items: IndianStates.states
+                      .map(
+                        (final e) =>
+                            fluent.AutoSuggestBoxItem<String>(value: e, label: e),
+                      )
+                      .toList(),
+                  onSelected: (final item) {
+                    ref
+                        .read(invoiceProvider.notifier)
+                        .updatePlaceOfSupply(item.value!);
+                  },
+                  onChanged: (final text, final reason) {
+                    if (reason == fluent.TextChangedReason.userInput) {
+                      ref.read(invoiceProvider.notifier).updatePlaceOfSupply(text);
+                    }
+                  },
+                ),
               ),
             ),
             const SizedBox(width: 16),
@@ -290,11 +307,27 @@ class ClientDetailsSection extends ConsumerWidget {
             Expanded(child: gstinField),
             const SizedBox(width: 16),
             Expanded(
-              child: AppTextInput(
-                controller: receiverStateCtrl,
+              child: fluent.InfoLabel(
                 label: "State",
-                onChanged: (final val) =>
-                    ref.read(invoiceProvider.notifier).updateReceiverState(val),
+                child: fluent.AutoSuggestBox<String>(
+                  controller: receiverStateCtrl,
+                  items: IndianStates.states
+                      .map(
+                        (final e) =>
+                            fluent.AutoSuggestBoxItem<String>(value: e, label: e),
+                      )
+                      .toList(),
+                  onSelected: (final item) {
+                    ref
+                        .read(invoiceProvider.notifier)
+                        .updateReceiverState(item.value!);
+                  },
+                  onChanged: (final text, final reason) {
+                    if (reason == fluent.TextChangedReason.userInput) {
+                      ref.read(invoiceProvider.notifier).updateReceiverState(text);
+                    }
+                  },
+                ),
               ),
             ),
           ],

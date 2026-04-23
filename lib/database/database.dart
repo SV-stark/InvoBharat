@@ -122,30 +122,34 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 7) {
           // Migration for foreign key constraints and unique indices.
-          // Since SQLite's ALTER TABLE is limited, we recreate the tables.
-          // This is the safest way to ensure constraints are applied.
+          // Recreating tables safely with data preservation.
           await m.database.transaction(() async {
-            // Recreating tables with new constraints
-            // 1. BusinessProfiles (Unique GSTIN)
-            // 2. Clients (ProfileId Cascade, Unique ProfileId+GSTIN)
-            // 3. Invoices (ProfileId Cascade, Unique ProfileId+InvoiceNo)
-            // 4. InvoiceItems (InvoiceId Cascade)
-            // 5. Payments (InvoiceId Cascade)
-
-            final List<TableInfo<Table, dynamic>> tablesToRecreate = [
-              businessProfiles,
-              clients,
-              invoices,
-              invoiceItems,
-              payments,
+            final List<TableInfo<Table, dynamic>> tables = [
+              businessProfiles as TableInfo<Table, dynamic>,
+              clients as TableInfo<Table, dynamic>,
+              invoices as TableInfo<Table, dynamic>,
+              invoiceItems as TableInfo<Table, dynamic>,
+              payments as TableInfo<Table, dynamic>,
             ];
 
-            for (final table in tablesToRecreate) {
-              // In a real-world scenario, you might want to use m.alterTable
-              // but for complex constraints, recreation is often required in SQLite.
-              // Drift provides a helper for this.
-              await m.deleteTable(table.actualTableName);
+            for (final table in tables) {
+              final tableName = table.actualTableName;
+              final tempName = '${tableName}_temp';
+
+              // 1. Rename existing table to temp
+              await m.database.customStatement('ALTER TABLE `$tableName` RENAME TO `$tempName`');
+
+              // 2. Create new table with updated constraints
               await m.createTable(table);
+
+              // 3. Copy data from temp to new table
+              final columns = table.$columns.map((final c) => c.name).join(', ');
+              await m.database.customStatement(
+                'INSERT INTO `$tableName` ($columns) SELECT $columns FROM `$tempName`'
+              );
+
+              // 4. Drop temp table
+              await m.database.customStatement('DROP TABLE `$tempName`');
             }
           });
         }
