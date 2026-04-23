@@ -23,9 +23,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [businessProfileProvider.overrideWithValue(profile)],
-        child: FluentApp(
+        child: const FluentApp(
           home: material.Material(
-            child: const FluentInvoiceWizard(),
+            child: FluentInvoiceWizard(),
           ),
         ),
       ),
