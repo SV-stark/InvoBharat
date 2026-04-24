@@ -186,12 +186,12 @@ class $BusinessProfilesTable extends BusinessProfiles
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _accountNumberMeta = const VerificationMeta(
-    'accountNumber',
+  static const VerificationMeta _accountNoMeta = const VerificationMeta(
+    'accountNo',
   );
   @override
-  late final GeneratedColumn<String> accountNumber = GeneratedColumn<String>(
-    'account_number',
+  late final GeneratedColumn<String> accountNo = GeneratedColumn<String>(
+    'account_no',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -208,12 +208,10 @@ class $BusinessProfilesTable extends BusinessProfiles
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _branchNameMeta = const VerificationMeta(
-    'branchName',
-  );
+  static const VerificationMeta _branchMeta = const VerificationMeta('branch');
   @override
-  late final GeneratedColumn<String> branchName = GeneratedColumn<String>(
-    'branch_name',
+  late final GeneratedColumn<String> branch = GeneratedColumn<String>(
+    'branch',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -248,6 +246,50 @@ class $BusinessProfilesTable extends BusinessProfiles
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _stampXMeta = const VerificationMeta('stampX');
+  @override
+  late final GeneratedColumn<double> stampX = GeneratedColumn<double>(
+    'stamp_x',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _stampYMeta = const VerificationMeta('stampY');
+  @override
+  late final GeneratedColumn<double> stampY = GeneratedColumn<double>(
+    'stamp_y',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _signatureXMeta = const VerificationMeta(
+    'signatureX',
+  );
+  @override
+  late final GeneratedColumn<double> signatureX = GeneratedColumn<double>(
+    'signature_x',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _signatureYMeta = const VerificationMeta(
+    'signatureY',
+  );
+  @override
+  late final GeneratedColumn<double> signatureY = GeneratedColumn<double>(
+    'signature_y',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -267,12 +309,16 @@ class $BusinessProfilesTable extends BusinessProfiles
     defaultNotes,
     currencySymbol,
     bankName,
-    accountNumber,
+    accountNo,
     ifscCode,
-    branchName,
+    branch,
     upiId,
     upiName,
     pan,
+    stampX,
+    stampY,
+    signatureX,
+    signatureY,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -434,16 +480,13 @@ class $BusinessProfilesTable extends BusinessProfiles
     } else if (isInserting) {
       context.missing(_bankNameMeta);
     }
-    if (data.containsKey('account_number')) {
+    if (data.containsKey('account_no')) {
       context.handle(
-        _accountNumberMeta,
-        accountNumber.isAcceptableOrUnknown(
-          data['account_number']!,
-          _accountNumberMeta,
-        ),
+        _accountNoMeta,
+        accountNo.isAcceptableOrUnknown(data['account_no']!, _accountNoMeta),
       );
     } else if (isInserting) {
-      context.missing(_accountNumberMeta);
+      context.missing(_accountNoMeta);
     }
     if (data.containsKey('ifsc_code')) {
       context.handle(
@@ -453,13 +496,13 @@ class $BusinessProfilesTable extends BusinessProfiles
     } else if (isInserting) {
       context.missing(_ifscCodeMeta);
     }
-    if (data.containsKey('branch_name')) {
+    if (data.containsKey('branch')) {
       context.handle(
-        _branchNameMeta,
-        branchName.isAcceptableOrUnknown(data['branch_name']!, _branchNameMeta),
+        _branchMeta,
+        branch.isAcceptableOrUnknown(data['branch']!, _branchMeta),
       );
     } else if (isInserting) {
-      context.missing(_branchNameMeta);
+      context.missing(_branchMeta);
     }
     if (data.containsKey('upi_id')) {
       context.handle(
@@ -480,6 +523,30 @@ class $BusinessProfilesTable extends BusinessProfiles
       );
     } else if (isInserting) {
       context.missing(_panMeta);
+    }
+    if (data.containsKey('stamp_x')) {
+      context.handle(
+        _stampXMeta,
+        stampX.isAcceptableOrUnknown(data['stamp_x']!, _stampXMeta),
+      );
+    }
+    if (data.containsKey('stamp_y')) {
+      context.handle(
+        _stampYMeta,
+        stampY.isAcceptableOrUnknown(data['stamp_y']!, _stampYMeta),
+      );
+    }
+    if (data.containsKey('signature_x')) {
+      context.handle(
+        _signatureXMeta,
+        signatureX.isAcceptableOrUnknown(data['signature_x']!, _signatureXMeta),
+      );
+    }
+    if (data.containsKey('signature_y')) {
+      context.handle(
+        _signatureYMeta,
+        signatureY.isAcceptableOrUnknown(data['signature_y']!, _signatureYMeta),
+      );
     }
     return context;
   }
@@ -558,17 +625,17 @@ class $BusinessProfilesTable extends BusinessProfiles
         DriftSqlType.string,
         data['${effectivePrefix}bank_name'],
       )!,
-      accountNumber: attachedDatabase.typeMapping.read(
+      accountNo: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}account_number'],
+        data['${effectivePrefix}account_no'],
       )!,
       ifscCode: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}ifsc_code'],
       )!,
-      branchName: attachedDatabase.typeMapping.read(
+      branch: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}branch_name'],
+        data['${effectivePrefix}branch'],
       )!,
       upiId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -581,6 +648,22 @@ class $BusinessProfilesTable extends BusinessProfiles
       pan: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}pan'],
+      )!,
+      stampX: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}stamp_x'],
+      )!,
+      stampY: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}stamp_y'],
+      )!,
+      signatureX: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}signature_x'],
+      )!,
+      signatureY: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}signature_y'],
       )!,
     );
   }
@@ -609,12 +692,16 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
   final String defaultNotes;
   final String currencySymbol;
   final String bankName;
-  final String accountNumber;
+  final String accountNo;
   final String ifscCode;
-  final String branchName;
+  final String branch;
   final String? upiId;
   final String? upiName;
   final String pan;
+  final double stampX;
+  final double stampY;
+  final double signatureX;
+  final double signatureY;
   const BusinessProfile({
     required this.id,
     required this.companyName,
@@ -633,12 +720,16 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
     required this.defaultNotes,
     required this.currencySymbol,
     required this.bankName,
-    required this.accountNumber,
+    required this.accountNo,
     required this.ifscCode,
-    required this.branchName,
+    required this.branch,
     this.upiId,
     this.upiName,
     required this.pan,
+    required this.stampX,
+    required this.stampY,
+    required this.signatureX,
+    required this.signatureY,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -666,9 +757,9 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
     map['default_notes'] = Variable<String>(defaultNotes);
     map['currency_symbol'] = Variable<String>(currencySymbol);
     map['bank_name'] = Variable<String>(bankName);
-    map['account_number'] = Variable<String>(accountNumber);
+    map['account_no'] = Variable<String>(accountNo);
     map['ifsc_code'] = Variable<String>(ifscCode);
-    map['branch_name'] = Variable<String>(branchName);
+    map['branch'] = Variable<String>(branch);
     if (!nullToAbsent || upiId != null) {
       map['upi_id'] = Variable<String>(upiId);
     }
@@ -676,6 +767,10 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
       map['upi_name'] = Variable<String>(upiName);
     }
     map['pan'] = Variable<String>(pan);
+    map['stamp_x'] = Variable<double>(stampX);
+    map['stamp_y'] = Variable<double>(stampY);
+    map['signature_x'] = Variable<double>(signatureX);
+    map['signature_y'] = Variable<double>(signatureY);
     return map;
   }
 
@@ -704,9 +799,9 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
       defaultNotes: Value(defaultNotes),
       currencySymbol: Value(currencySymbol),
       bankName: Value(bankName),
-      accountNumber: Value(accountNumber),
+      accountNo: Value(accountNo),
       ifscCode: Value(ifscCode),
-      branchName: Value(branchName),
+      branch: Value(branch),
       upiId: upiId == null && nullToAbsent
           ? const Value.absent()
           : Value(upiId),
@@ -714,6 +809,10 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
           ? const Value.absent()
           : Value(upiName),
       pan: Value(pan),
+      stampX: Value(stampX),
+      stampY: Value(stampY),
+      signatureX: Value(signatureX),
+      signatureY: Value(signatureY),
     );
   }
 
@@ -742,12 +841,16 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
       defaultNotes: serializer.fromJson<String>(json['defaultNotes']),
       currencySymbol: serializer.fromJson<String>(json['currencySymbol']),
       bankName: serializer.fromJson<String>(json['bankName']),
-      accountNumber: serializer.fromJson<String>(json['accountNumber']),
+      accountNo: serializer.fromJson<String>(json['accountNo']),
       ifscCode: serializer.fromJson<String>(json['ifscCode']),
-      branchName: serializer.fromJson<String>(json['branchName']),
+      branch: serializer.fromJson<String>(json['branch']),
       upiId: serializer.fromJson<String?>(json['upiId']),
       upiName: serializer.fromJson<String?>(json['upiName']),
       pan: serializer.fromJson<String>(json['pan']),
+      stampX: serializer.fromJson<double>(json['stampX']),
+      stampY: serializer.fromJson<double>(json['stampY']),
+      signatureX: serializer.fromJson<double>(json['signatureX']),
+      signatureY: serializer.fromJson<double>(json['signatureY']),
     );
   }
   @override
@@ -771,12 +874,16 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
       'defaultNotes': serializer.toJson<String>(defaultNotes),
       'currencySymbol': serializer.toJson<String>(currencySymbol),
       'bankName': serializer.toJson<String>(bankName),
-      'accountNumber': serializer.toJson<String>(accountNumber),
+      'accountNo': serializer.toJson<String>(accountNo),
       'ifscCode': serializer.toJson<String>(ifscCode),
-      'branchName': serializer.toJson<String>(branchName),
+      'branch': serializer.toJson<String>(branch),
       'upiId': serializer.toJson<String?>(upiId),
       'upiName': serializer.toJson<String?>(upiName),
       'pan': serializer.toJson<String>(pan),
+      'stampX': serializer.toJson<double>(stampX),
+      'stampY': serializer.toJson<double>(stampY),
+      'signatureX': serializer.toJson<double>(signatureX),
+      'signatureY': serializer.toJson<double>(signatureY),
     };
   }
 
@@ -798,12 +905,16 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
     String? defaultNotes,
     String? currencySymbol,
     String? bankName,
-    String? accountNumber,
+    String? accountNo,
     String? ifscCode,
-    String? branchName,
+    String? branch,
     Value<String?> upiId = const Value.absent(),
     Value<String?> upiName = const Value.absent(),
     String? pan,
+    double? stampX,
+    double? stampY,
+    double? signatureX,
+    double? signatureY,
   }) => BusinessProfile(
     id: id ?? this.id,
     companyName: companyName ?? this.companyName,
@@ -824,12 +935,16 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
     defaultNotes: defaultNotes ?? this.defaultNotes,
     currencySymbol: currencySymbol ?? this.currencySymbol,
     bankName: bankName ?? this.bankName,
-    accountNumber: accountNumber ?? this.accountNumber,
+    accountNo: accountNo ?? this.accountNo,
     ifscCode: ifscCode ?? this.ifscCode,
-    branchName: branchName ?? this.branchName,
+    branch: branch ?? this.branch,
     upiId: upiId.present ? upiId.value : this.upiId,
     upiName: upiName.present ? upiName.value : this.upiName,
     pan: pan ?? this.pan,
+    stampX: stampX ?? this.stampX,
+    stampY: stampY ?? this.stampY,
+    signatureX: signatureX ?? this.signatureX,
+    signatureY: signatureY ?? this.signatureY,
   );
   BusinessProfile copyWithCompanion(BusinessProfilesCompanion data) {
     return BusinessProfile(
@@ -866,16 +981,20 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
           ? data.currencySymbol.value
           : this.currencySymbol,
       bankName: data.bankName.present ? data.bankName.value : this.bankName,
-      accountNumber: data.accountNumber.present
-          ? data.accountNumber.value
-          : this.accountNumber,
+      accountNo: data.accountNo.present ? data.accountNo.value : this.accountNo,
       ifscCode: data.ifscCode.present ? data.ifscCode.value : this.ifscCode,
-      branchName: data.branchName.present
-          ? data.branchName.value
-          : this.branchName,
+      branch: data.branch.present ? data.branch.value : this.branch,
       upiId: data.upiId.present ? data.upiId.value : this.upiId,
       upiName: data.upiName.present ? data.upiName.value : this.upiName,
       pan: data.pan.present ? data.pan.value : this.pan,
+      stampX: data.stampX.present ? data.stampX.value : this.stampX,
+      stampY: data.stampY.present ? data.stampY.value : this.stampY,
+      signatureX: data.signatureX.present
+          ? data.signatureX.value
+          : this.signatureX,
+      signatureY: data.signatureY.present
+          ? data.signatureY.value
+          : this.signatureY,
     );
   }
 
@@ -899,12 +1018,16 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
           ..write('defaultNotes: $defaultNotes, ')
           ..write('currencySymbol: $currencySymbol, ')
           ..write('bankName: $bankName, ')
-          ..write('accountNumber: $accountNumber, ')
+          ..write('accountNo: $accountNo, ')
           ..write('ifscCode: $ifscCode, ')
-          ..write('branchName: $branchName, ')
+          ..write('branch: $branch, ')
           ..write('upiId: $upiId, ')
           ..write('upiName: $upiName, ')
-          ..write('pan: $pan')
+          ..write('pan: $pan, ')
+          ..write('stampX: $stampX, ')
+          ..write('stampY: $stampY, ')
+          ..write('signatureX: $signatureX, ')
+          ..write('signatureY: $signatureY')
           ..write(')'))
         .toString();
   }
@@ -928,12 +1051,16 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
     defaultNotes,
     currencySymbol,
     bankName,
-    accountNumber,
+    accountNo,
     ifscCode,
-    branchName,
+    branch,
     upiId,
     upiName,
     pan,
+    stampX,
+    stampY,
+    signatureX,
+    signatureY,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -956,12 +1083,16 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
           other.defaultNotes == this.defaultNotes &&
           other.currencySymbol == this.currencySymbol &&
           other.bankName == this.bankName &&
-          other.accountNumber == this.accountNumber &&
+          other.accountNo == this.accountNo &&
           other.ifscCode == this.ifscCode &&
-          other.branchName == this.branchName &&
+          other.branch == this.branch &&
           other.upiId == this.upiId &&
           other.upiName == this.upiName &&
-          other.pan == this.pan);
+          other.pan == this.pan &&
+          other.stampX == this.stampX &&
+          other.stampY == this.stampY &&
+          other.signatureX == this.signatureX &&
+          other.signatureY == this.signatureY);
 }
 
 class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
@@ -982,12 +1113,16 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
   final Value<String> defaultNotes;
   final Value<String> currencySymbol;
   final Value<String> bankName;
-  final Value<String> accountNumber;
+  final Value<String> accountNo;
   final Value<String> ifscCode;
-  final Value<String> branchName;
+  final Value<String> branch;
   final Value<String?> upiId;
   final Value<String?> upiName;
   final Value<String> pan;
+  final Value<double> stampX;
+  final Value<double> stampY;
+  final Value<double> signatureX;
+  final Value<double> signatureY;
   final Value<int> rowid;
   const BusinessProfilesCompanion({
     this.id = const Value.absent(),
@@ -1007,12 +1142,16 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
     this.defaultNotes = const Value.absent(),
     this.currencySymbol = const Value.absent(),
     this.bankName = const Value.absent(),
-    this.accountNumber = const Value.absent(),
+    this.accountNo = const Value.absent(),
     this.ifscCode = const Value.absent(),
-    this.branchName = const Value.absent(),
+    this.branch = const Value.absent(),
     this.upiId = const Value.absent(),
     this.upiName = const Value.absent(),
     this.pan = const Value.absent(),
+    this.stampX = const Value.absent(),
+    this.stampY = const Value.absent(),
+    this.signatureX = const Value.absent(),
+    this.signatureY = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   BusinessProfilesCompanion.insert({
@@ -1033,12 +1172,16 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
     required String defaultNotes,
     required String currencySymbol,
     required String bankName,
-    required String accountNumber,
+    required String accountNo,
     required String ifscCode,
-    required String branchName,
+    required String branch,
     this.upiId = const Value.absent(),
     this.upiName = const Value.absent(),
     required String pan,
+    this.stampX = const Value.absent(),
+    this.stampY = const Value.absent(),
+    this.signatureX = const Value.absent(),
+    this.signatureY = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        companyName = Value(companyName),
@@ -1054,9 +1197,9 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
        defaultNotes = Value(defaultNotes),
        currencySymbol = Value(currencySymbol),
        bankName = Value(bankName),
-       accountNumber = Value(accountNumber),
+       accountNo = Value(accountNo),
        ifscCode = Value(ifscCode),
-       branchName = Value(branchName),
+       branch = Value(branch),
        pan = Value(pan);
   static Insertable<BusinessProfile> custom({
     Expression<String>? id,
@@ -1076,12 +1219,16 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
     Expression<String>? defaultNotes,
     Expression<String>? currencySymbol,
     Expression<String>? bankName,
-    Expression<String>? accountNumber,
+    Expression<String>? accountNo,
     Expression<String>? ifscCode,
-    Expression<String>? branchName,
+    Expression<String>? branch,
     Expression<String>? upiId,
     Expression<String>? upiName,
     Expression<String>? pan,
+    Expression<double>? stampX,
+    Expression<double>? stampY,
+    Expression<double>? signatureX,
+    Expression<double>? signatureY,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1103,12 +1250,16 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
       if (defaultNotes != null) 'default_notes': defaultNotes,
       if (currencySymbol != null) 'currency_symbol': currencySymbol,
       if (bankName != null) 'bank_name': bankName,
-      if (accountNumber != null) 'account_number': accountNumber,
+      if (accountNo != null) 'account_no': accountNo,
       if (ifscCode != null) 'ifsc_code': ifscCode,
-      if (branchName != null) 'branch_name': branchName,
+      if (branch != null) 'branch': branch,
       if (upiId != null) 'upi_id': upiId,
       if (upiName != null) 'upi_name': upiName,
       if (pan != null) 'pan': pan,
+      if (stampX != null) 'stamp_x': stampX,
+      if (stampY != null) 'stamp_y': stampY,
+      if (signatureX != null) 'signature_x': signatureX,
+      if (signatureY != null) 'signature_y': signatureY,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1131,12 +1282,16 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
     Value<String>? defaultNotes,
     Value<String>? currencySymbol,
     Value<String>? bankName,
-    Value<String>? accountNumber,
+    Value<String>? accountNo,
     Value<String>? ifscCode,
-    Value<String>? branchName,
+    Value<String>? branch,
     Value<String?>? upiId,
     Value<String?>? upiName,
     Value<String>? pan,
+    Value<double>? stampX,
+    Value<double>? stampY,
+    Value<double>? signatureX,
+    Value<double>? signatureY,
     Value<int>? rowid,
   }) {
     return BusinessProfilesCompanion(
@@ -1157,12 +1312,16 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
       defaultNotes: defaultNotes ?? this.defaultNotes,
       currencySymbol: currencySymbol ?? this.currencySymbol,
       bankName: bankName ?? this.bankName,
-      accountNumber: accountNumber ?? this.accountNumber,
+      accountNo: accountNo ?? this.accountNo,
       ifscCode: ifscCode ?? this.ifscCode,
-      branchName: branchName ?? this.branchName,
+      branch: branch ?? this.branch,
       upiId: upiId ?? this.upiId,
       upiName: upiName ?? this.upiName,
       pan: pan ?? this.pan,
+      stampX: stampX ?? this.stampX,
+      stampY: stampY ?? this.stampY,
+      signatureX: signatureX ?? this.signatureX,
+      signatureY: signatureY ?? this.signatureY,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1221,14 +1380,14 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
     if (bankName.present) {
       map['bank_name'] = Variable<String>(bankName.value);
     }
-    if (accountNumber.present) {
-      map['account_number'] = Variable<String>(accountNumber.value);
+    if (accountNo.present) {
+      map['account_no'] = Variable<String>(accountNo.value);
     }
     if (ifscCode.present) {
       map['ifsc_code'] = Variable<String>(ifscCode.value);
     }
-    if (branchName.present) {
-      map['branch_name'] = Variable<String>(branchName.value);
+    if (branch.present) {
+      map['branch'] = Variable<String>(branch.value);
     }
     if (upiId.present) {
       map['upi_id'] = Variable<String>(upiId.value);
@@ -1238,6 +1397,18 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
     }
     if (pan.present) {
       map['pan'] = Variable<String>(pan.value);
+    }
+    if (stampX.present) {
+      map['stamp_x'] = Variable<double>(stampX.value);
+    }
+    if (stampY.present) {
+      map['stamp_y'] = Variable<double>(stampY.value);
+    }
+    if (signatureX.present) {
+      map['signature_x'] = Variable<double>(signatureX.value);
+    }
+    if (signatureY.present) {
+      map['signature_y'] = Variable<double>(signatureY.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -1265,12 +1436,16 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
           ..write('defaultNotes: $defaultNotes, ')
           ..write('currencySymbol: $currencySymbol, ')
           ..write('bankName: $bankName, ')
-          ..write('accountNumber: $accountNumber, ')
+          ..write('accountNo: $accountNo, ')
           ..write('ifscCode: $ifscCode, ')
-          ..write('branchName: $branchName, ')
+          ..write('branch: $branch, ')
           ..write('upiId: $upiId, ')
           ..write('upiName: $upiName, ')
           ..write('pan: $pan, ')
+          ..write('stampX: $stampX, ')
+          ..write('stampY: $stampY, ')
+          ..write('signatureX: $signatureX, ')
+          ..write('signatureY: $signatureY, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1302,7 +1477,7 @@ class $ClientsTable extends Clients with TableInfo<$ClientsTable, Client> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES business_profiles (id)',
+      'REFERENCES business_profiles (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
@@ -1900,7 +2075,7 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES business_profiles (id)',
+      'REFERENCES business_profiles (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _clientIdMeta = const VerificationMeta(
@@ -1910,11 +2085,11 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
   late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
     'client_id',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES clients (id)',
+      'REFERENCES clients (id) ON DELETE SET NULL',
     ),
   );
   static const VerificationMeta _invoiceNoMeta = const VerificationMeta(
@@ -2275,8 +2450,6 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
         _clientIdMeta,
         clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
       );
-    } else if (isInserting) {
-      context.missing(_clientIdMeta);
     }
     if (data.containsKey('invoice_no')) {
       context.handle(
@@ -2532,7 +2705,7 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
       clientId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}client_id'],
-      )!,
+      ),
       invoiceNo: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}invoice_no'],
@@ -2653,7 +2826,7 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
 class Invoice extends DataClass implements Insertable<Invoice> {
   final String id;
   final String profileId;
-  final String clientId;
+  final String? clientId;
   final String invoiceNo;
   final String type;
   final DateTime invoiceDate;
@@ -2684,7 +2857,7 @@ class Invoice extends DataClass implements Insertable<Invoice> {
   const Invoice({
     required this.id,
     required this.profileId,
-    required this.clientId,
+    this.clientId,
     required this.invoiceNo,
     required this.type,
     required this.invoiceDate,
@@ -2718,7 +2891,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['profile_id'] = Variable<String>(profileId);
-    map['client_id'] = Variable<String>(clientId);
+    if (!nullToAbsent || clientId != null) {
+      map['client_id'] = Variable<String>(clientId);
+    }
     map['invoice_no'] = Variable<String>(invoiceNo);
     map['type'] = Variable<String>(type);
     map['invoice_date'] = Variable<DateTime>(invoiceDate);
@@ -2783,7 +2958,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     return InvoicesCompanion(
       id: Value(id),
       profileId: Value(profileId),
-      clientId: Value(clientId),
+      clientId: clientId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(clientId),
       invoiceNo: Value(invoiceNo),
       type: Value(type),
       invoiceDate: Value(invoiceDate),
@@ -2852,7 +3029,7 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     return Invoice(
       id: serializer.fromJson<String>(json['id']),
       profileId: serializer.fromJson<String>(json['profileId']),
-      clientId: serializer.fromJson<String>(json['clientId']),
+      clientId: serializer.fromJson<String?>(json['clientId']),
       invoiceNo: serializer.fromJson<String>(json['invoiceNo']),
       type: serializer.fromJson<String>(json['type']),
       invoiceDate: serializer.fromJson<DateTime>(json['invoiceDate']),
@@ -2894,7 +3071,7 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'profileId': serializer.toJson<String>(profileId),
-      'clientId': serializer.toJson<String>(clientId),
+      'clientId': serializer.toJson<String?>(clientId),
       'invoiceNo': serializer.toJson<String>(invoiceNo),
       'type': serializer.toJson<String>(type),
       'invoiceDate': serializer.toJson<DateTime>(invoiceDate),
@@ -2930,7 +3107,7 @@ class Invoice extends DataClass implements Insertable<Invoice> {
   Invoice copyWith({
     String? id,
     String? profileId,
-    String? clientId,
+    Value<String?> clientId = const Value.absent(),
     String? invoiceNo,
     String? type,
     DateTime? invoiceDate,
@@ -2961,7 +3138,7 @@ class Invoice extends DataClass implements Insertable<Invoice> {
   }) => Invoice(
     id: id ?? this.id,
     profileId: profileId ?? this.profileId,
-    clientId: clientId ?? this.clientId,
+    clientId: clientId.present ? clientId.value : this.clientId,
     invoiceNo: invoiceNo ?? this.invoiceNo,
     type: type ?? this.type,
     invoiceDate: invoiceDate ?? this.invoiceDate,
@@ -3192,7 +3369,7 @@ class Invoice extends DataClass implements Insertable<Invoice> {
 class InvoicesCompanion extends UpdateCompanion<Invoice> {
   final Value<String> id;
   final Value<String> profileId;
-  final Value<String> clientId;
+  final Value<String?> clientId;
   final Value<String> invoiceNo;
   final Value<String> type;
   final Value<DateTime> invoiceDate;
@@ -3257,7 +3434,7 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
   InvoicesCompanion.insert({
     required String id,
     required String profileId,
-    required String clientId,
+    this.clientId = const Value.absent(),
     required String invoiceNo,
     this.type = const Value.absent(),
     required DateTime invoiceDate,
@@ -3288,7 +3465,6 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        profileId = Value(profileId),
-       clientId = Value(clientId),
        invoiceNo = Value(invoiceNo),
        invoiceDate = Value(invoiceDate),
        placeOfSupply = Value(placeOfSupply),
@@ -3371,7 +3547,7 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
   InvoicesCompanion copyWith({
     Value<String>? id,
     Value<String>? profileId,
-    Value<String>? clientId,
+    Value<String?>? clientId,
     Value<String>? invoiceNo,
     Value<String>? type,
     Value<DateTime>? invoiceDate,
@@ -3605,7 +3781,7 @@ class $InvoiceItemsTable extends InvoiceItems
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES invoices (id)',
+      'REFERENCES invoices (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _descriptionMeta = const VerificationMeta(
@@ -4262,7 +4438,7 @@ class $PaymentsTable extends Payments with TableInfo<$PaymentsTable, Payment> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES invoices (id)',
+      'REFERENCES invoices (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _amountMeta = const VerificationMeta('amount');
@@ -4872,6 +5048,44 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     payments,
     appSettings,
   ];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'business_profiles',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('clients', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'business_profiles',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('invoices', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'clients',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('invoices', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'invoices',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('invoice_items', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'invoices',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('payments', kind: UpdateKind.delete)],
+    ),
+  ]);
 }
 
 typedef $$BusinessProfilesTableCreateCompanionBuilder =
@@ -4893,12 +5107,16 @@ typedef $$BusinessProfilesTableCreateCompanionBuilder =
       required String defaultNotes,
       required String currencySymbol,
       required String bankName,
-      required String accountNumber,
+      required String accountNo,
       required String ifscCode,
-      required String branchName,
+      required String branch,
       Value<String?> upiId,
       Value<String?> upiName,
       required String pan,
+      Value<double> stampX,
+      Value<double> stampY,
+      Value<double> signatureX,
+      Value<double> signatureY,
       Value<int> rowid,
     });
 typedef $$BusinessProfilesTableUpdateCompanionBuilder =
@@ -4920,12 +5138,16 @@ typedef $$BusinessProfilesTableUpdateCompanionBuilder =
       Value<String> defaultNotes,
       Value<String> currencySymbol,
       Value<String> bankName,
-      Value<String> accountNumber,
+      Value<String> accountNo,
       Value<String> ifscCode,
-      Value<String> branchName,
+      Value<String> branch,
       Value<String?> upiId,
       Value<String?> upiName,
       Value<String> pan,
+      Value<double> stampX,
+      Value<double> stampY,
+      Value<double> signatureX,
+      Value<double> signatureY,
       Value<int> rowid,
     });
 
@@ -5077,8 +5299,8 @@ class $$BusinessProfilesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get accountNumber => $composableBuilder(
-    column: $table.accountNumber,
+  ColumnFilters<String> get accountNo => $composableBuilder(
+    column: $table.accountNo,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5087,8 +5309,8 @@ class $$BusinessProfilesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get branchName => $composableBuilder(
-    column: $table.branchName,
+  ColumnFilters<String> get branch => $composableBuilder(
+    column: $table.branch,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5104,6 +5326,26 @@ class $$BusinessProfilesTableFilterComposer
 
   ColumnFilters<String> get pan => $composableBuilder(
     column: $table.pan,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get stampX => $composableBuilder(
+    column: $table.stampX,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get stampY => $composableBuilder(
+    column: $table.stampY,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get signatureX => $composableBuilder(
+    column: $table.signatureX,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get signatureY => $composableBuilder(
+    column: $table.signatureY,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5252,8 +5494,8 @@ class $$BusinessProfilesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get accountNumber => $composableBuilder(
-    column: $table.accountNumber,
+  ColumnOrderings<String> get accountNo => $composableBuilder(
+    column: $table.accountNo,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -5262,8 +5504,8 @@ class $$BusinessProfilesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get branchName => $composableBuilder(
-    column: $table.branchName,
+  ColumnOrderings<String> get branch => $composableBuilder(
+    column: $table.branch,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -5279,6 +5521,26 @@ class $$BusinessProfilesTableOrderingComposer
 
   ColumnOrderings<String> get pan => $composableBuilder(
     column: $table.pan,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get stampX => $composableBuilder(
+    column: $table.stampX,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get stampY => $composableBuilder(
+    column: $table.stampY,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get signatureX => $composableBuilder(
+    column: $table.signatureX,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get signatureY => $composableBuilder(
+    column: $table.signatureY,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -5359,18 +5621,14 @@ class $$BusinessProfilesTableAnnotationComposer
   GeneratedColumn<String> get bankName =>
       $composableBuilder(column: $table.bankName, builder: (column) => column);
 
-  GeneratedColumn<String> get accountNumber => $composableBuilder(
-    column: $table.accountNumber,
-    builder: (column) => column,
-  );
+  GeneratedColumn<String> get accountNo =>
+      $composableBuilder(column: $table.accountNo, builder: (column) => column);
 
   GeneratedColumn<String> get ifscCode =>
       $composableBuilder(column: $table.ifscCode, builder: (column) => column);
 
-  GeneratedColumn<String> get branchName => $composableBuilder(
-    column: $table.branchName,
-    builder: (column) => column,
-  );
+  GeneratedColumn<String> get branch =>
+      $composableBuilder(column: $table.branch, builder: (column) => column);
 
   GeneratedColumn<String> get upiId =>
       $composableBuilder(column: $table.upiId, builder: (column) => column);
@@ -5380,6 +5638,22 @@ class $$BusinessProfilesTableAnnotationComposer
 
   GeneratedColumn<String> get pan =>
       $composableBuilder(column: $table.pan, builder: (column) => column);
+
+  GeneratedColumn<double> get stampX =>
+      $composableBuilder(column: $table.stampX, builder: (column) => column);
+
+  GeneratedColumn<double> get stampY =>
+      $composableBuilder(column: $table.stampY, builder: (column) => column);
+
+  GeneratedColumn<double> get signatureX => $composableBuilder(
+    column: $table.signatureX,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get signatureY => $composableBuilder(
+    column: $table.signatureY,
+    builder: (column) => column,
+  );
 
   Expression<T> clientsRefs<T extends Object>(
     Expression<T> Function($$ClientsTableAnnotationComposer a) f,
@@ -5479,12 +5753,16 @@ class $$BusinessProfilesTableTableManager
                 Value<String> defaultNotes = const Value.absent(),
                 Value<String> currencySymbol = const Value.absent(),
                 Value<String> bankName = const Value.absent(),
-                Value<String> accountNumber = const Value.absent(),
+                Value<String> accountNo = const Value.absent(),
                 Value<String> ifscCode = const Value.absent(),
-                Value<String> branchName = const Value.absent(),
+                Value<String> branch = const Value.absent(),
                 Value<String?> upiId = const Value.absent(),
                 Value<String?> upiName = const Value.absent(),
                 Value<String> pan = const Value.absent(),
+                Value<double> stampX = const Value.absent(),
+                Value<double> stampY = const Value.absent(),
+                Value<double> signatureX = const Value.absent(),
+                Value<double> signatureY = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BusinessProfilesCompanion(
                 id: id,
@@ -5504,12 +5782,16 @@ class $$BusinessProfilesTableTableManager
                 defaultNotes: defaultNotes,
                 currencySymbol: currencySymbol,
                 bankName: bankName,
-                accountNumber: accountNumber,
+                accountNo: accountNo,
                 ifscCode: ifscCode,
-                branchName: branchName,
+                branch: branch,
                 upiId: upiId,
                 upiName: upiName,
                 pan: pan,
+                stampX: stampX,
+                stampY: stampY,
+                signatureX: signatureX,
+                signatureY: signatureY,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -5531,12 +5813,16 @@ class $$BusinessProfilesTableTableManager
                 required String defaultNotes,
                 required String currencySymbol,
                 required String bankName,
-                required String accountNumber,
+                required String accountNo,
                 required String ifscCode,
-                required String branchName,
+                required String branch,
                 Value<String?> upiId = const Value.absent(),
                 Value<String?> upiName = const Value.absent(),
                 required String pan,
+                Value<double> stampX = const Value.absent(),
+                Value<double> stampY = const Value.absent(),
+                Value<double> signatureX = const Value.absent(),
+                Value<double> signatureY = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BusinessProfilesCompanion.insert(
                 id: id,
@@ -5556,12 +5842,16 @@ class $$BusinessProfilesTableTableManager
                 defaultNotes: defaultNotes,
                 currencySymbol: currencySymbol,
                 bankName: bankName,
-                accountNumber: accountNumber,
+                accountNo: accountNo,
                 ifscCode: ifscCode,
-                branchName: branchName,
+                branch: branch,
                 upiId: upiId,
                 upiName: upiName,
                 pan: pan,
+                stampX: stampX,
+                stampY: stampY,
+                signatureX: signatureX,
+                signatureY: signatureY,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -6141,7 +6431,7 @@ typedef $$InvoicesTableCreateCompanionBuilder =
     InvoicesCompanion Function({
       required String id,
       required String profileId,
-      required String clientId,
+      Value<String?> clientId,
       required String invoiceNo,
       Value<String> type,
       required DateTime invoiceDate,
@@ -6175,7 +6465,7 @@ typedef $$InvoicesTableUpdateCompanionBuilder =
     InvoicesCompanion Function({
       Value<String> id,
       Value<String> profileId,
-      Value<String> clientId,
+      Value<String?> clientId,
       Value<String> invoiceNo,
       Value<String> type,
       Value<DateTime> invoiceDate,
@@ -6232,9 +6522,9 @@ final class $$InvoicesTableReferences
   static $ClientsTable _clientIdTable(_$AppDatabase db) => db.clients
       .createAlias($_aliasNameGenerator(db.invoices.clientId, db.clients.id));
 
-  $$ClientsTableProcessedTableManager get clientId {
-    final $_column = $_itemColumn<String>('client_id')!;
-
+  $$ClientsTableProcessedTableManager? get clientId {
+    final $_column = $_itemColumn<String>('client_id');
+    if ($_column == null) return null;
     final manager = $$ClientsTableTableManager(
       $_db,
       $_db.clients,
@@ -6987,7 +7277,7 @@ class $$InvoicesTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> profileId = const Value.absent(),
-                Value<String> clientId = const Value.absent(),
+                Value<String?> clientId = const Value.absent(),
                 Value<String> invoiceNo = const Value.absent(),
                 Value<String> type = const Value.absent(),
                 Value<DateTime> invoiceDate = const Value.absent(),
@@ -7053,7 +7343,7 @@ class $$InvoicesTableTableManager
               ({
                 required String id,
                 required String profileId,
-                required String clientId,
+                Value<String?> clientId = const Value.absent(),
                 required String invoiceNo,
                 Value<String> type = const Value.absent(),
                 required DateTime invoiceDate,

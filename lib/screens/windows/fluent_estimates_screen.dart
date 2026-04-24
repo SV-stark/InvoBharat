@@ -1,12 +1,11 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import 'package:invobharat/providers/estimate_provider.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/estimate.dart';
-import 'package:invobharat/screens/windows/fluent_estimate_form.dart';
-import 'package:invobharat/screens/windows/fluent_invoice_form.dart';
+import 'package:go_router/go_router.dart';
 
 class FluentEstimatesScreen extends ConsumerWidget {
   const FluentEstimatesScreen({super.key});
@@ -34,11 +33,7 @@ class FluentEstimatesScreen extends ConsumerWidget {
               icon: const Icon(FluentIcons.add),
               label: const Text('New Estimate'),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  FluentPageRoute(
-                      builder: (final context) => const FluentEstimateForm()),
-                );
+                context.push('/estimate-form');
               },
             ),
           ],
@@ -60,11 +55,7 @@ class FluentEstimatesScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   FilledButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        FluentPageRoute(
-                            builder: (final context) => const FluentEstimateForm()),
-                      );
+                      context.push('/estimate-form');
                     },
                     child: const Text("Create Estimate"),
                   )
@@ -116,13 +107,7 @@ class FluentEstimatesScreen extends ConsumerWidget {
                       ],
                     ),
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        FluentPageRoute(
-                          builder: (final context) =>
-                              FluentEstimateForm(estimateId: estimate.id),
-                        ),
-                      );
+                      context.push('/estimate-form', extra: estimate.id);
                     },
                   ),
                 ),
@@ -179,14 +164,6 @@ class FluentEstimatesScreen extends ConsumerWidget {
       paymentTerms: estimate.terms.isNotEmpty ? estimate.terms : '',
     );
 
-    Navigator.push(
-      context,
-      FluentPageRoute(
-        builder: (final context) => FluentInvoiceForm(
-          invoiceToEdit: invoice,
-          estimateIdToMarkConverted: estimate.id,
-        ),
-      ),
-    );
+    context.push('/invoice-form', extra: {'invoice': invoice, 'estimateId': estimate.id});
   }
 }

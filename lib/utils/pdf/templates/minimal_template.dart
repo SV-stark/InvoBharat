@@ -1,16 +1,12 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:intl/intl.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
-import 'package:invobharat/utils/number_to_words.dart';
-import 'package:invobharat/utils/pdf/pdf_helpers.dart';
-
 import 'package:invobharat/utils/pdf/templates/base_template.dart';
-
-// ... imports
+import 'package:intl/intl.dart';
+import 'package:invobharat/utils/number_to_words.dart';
+import 'dart:io';
 
 class MinimalTemplate extends BasePdfTemplate {
   @override
@@ -24,375 +20,315 @@ class MinimalTemplate extends BasePdfTemplate {
     final pw.Font fontBold, {
     final String? title,
   }) async {
-    final pdf = pw.Document(
-      theme: pw.ThemeData.withFont(base: font, bold: fontBold),
-    );
-
-    final titleStyle = pw.TextStyle(
-      fontSize: 20,
-      fontWeight: pw.FontWeight.bold,
-    );
-    final headerLabel = const pw.TextStyle(
-      fontSize: 9,
-      color: PdfColors.grey700,
-    );
-    final headerValue = pw.TextStyle(
-      fontSize: 9,
-      fontWeight: pw.FontWeight.bold,
-    );
-
-    // Determines Supply Type
-    String supplyType = title ?? "Tax Invoice";
-    if (title == null && invoice.receiver.gstin.isEmpty) {
-      supplyType = "Retail Invoice";
-    }
+    final pdf = pw.Document();
 
     pdf.addPage(
-      pw.Page(
+      pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(32),
-        build: (final context) {
-          return pw.Column(
+        theme: pw.ThemeData.withFont(base: font, bold: fontBold),
+        build: (final context) => [
+          // Header
+          pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
-              // Header
-              pw.Row(
+              pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      if (profile.logoPath != null &&
-                          File(profile.logoPath!).existsSync())
-                        pw.Container(
-                          height: 50,
-                          margin: const pw.EdgeInsets.only(bottom: 10),
-                          child: pw.Image(
-                            pw.MemoryImage(
-                              File(profile.logoPath!).readAsBytesSync(),
-                            ),
-                          ),
-                        )
-                      else
-                        pw.Text(profile.companyName, style: titleStyle),
-                      pw.SizedBox(height: 5),
-                      if (profile.address.isNotEmpty)
-                        pw.Text(profile.address, style: headerLabel),
-                      if (profile.gstin.isNotEmpty)
-                        pw.Text("GSTIN: ${profile.gstin}", style: headerLabel),
-                      if (profile.phone.isNotEmpty)
-                        pw.Text("Phone: ${profile.phone}", style: headerLabel),
-                      if (profile.email.isNotEmpty)
-                        pw.Text("Email: ${profile.email}", style: headerLabel),
-                    ],
-                  ),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.end,
-                    children: [
-                      pw.Text(
-                        supplyType.toUpperCase(),
-                        style: titleStyle.copyWith(fontSize: 16),
+                  if (profile.logoPath != null &&
+                      profile.logoPath!.isNotEmpty &&
+                      File(profile.logoPath!).existsSync())
+                    pw.Image(
+                      pw.MemoryImage(
+                        File(profile.logoPath!).readAsBytesSync(),
                       ),
-                      pw.SizedBox(height: 10),
-                      buildField(
-                        "Invoice #",
-                        invoice.invoiceNo,
-                        headerLabel,
-                        headerValue,
+                      height: 50,
+                    )
+                  else
+                    pw.Text(
+                      profile.companyName,
+                      style: pw.TextStyle(
+                        fontSize: 24,
+                        fontWeight: pw.FontWeight.bold,
                       ),
-                      buildField(
-                        "Date",
-                        DateFormat('dd MMM yyyy').format(invoice.invoiceDate),
-                        headerLabel,
-                        headerValue,
-                      ),
-                      buildField(
-                        "Place of Supply",
-                        invoice.placeOfSupply,
-                        headerLabel,
-                        headerValue,
-                      ),
-                      buildField(
-                        "Reverse Charge",
-                        invoice.reverseCharge,
-                        headerLabel,
-                        headerValue,
-                      ),
-                    ],
+                    ),
+                  pw.SizedBox(height: 8),
+                  pw.Text(profile.address, style: const pw.TextStyle(fontSize: 9)),
+                  pw.Text(
+                    "GSTIN: ${profile.gstin}",
+                    style: const pw.TextStyle(fontSize: 9),
                   ),
                 ],
               ),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    title ?? "INVOICE",
+                    style: pw.TextStyle(
+                      fontSize: 32,
+                      fontWeight: pw.FontWeight.bold,
+                      color: PdfColors.grey700,
+                    ),
+                  ),
+                  pw.SizedBox(height: 8),
+                  buildField(
+                    "No",
+                    invoice.invoiceNo,
+                    const pw.TextStyle(fontSize: 10),
+                    pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+                  ),
+                  buildField(
+                    "Date",
+                    DateFormat('dd MMM yyyy').format(invoice.invoiceDate),
+                    const pw.TextStyle(fontSize: 10),
+                    const pw.TextStyle(fontSize: 10),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 32),
 
-              pw.SizedBox(height: 30),
-              pw.Divider(thickness: 0.5, color: PdfColors.grey400),
-              pw.SizedBox(height: 10),
-
-              // Bill To
-              pw.Container(
-                padding: const pw.EdgeInsets.symmetric(vertical: 5),
-                child: pw.Row(
+          // Bill To
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Expanded(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Expanded(
-                      child: pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.Text(
-                            "Bill To:",
-                            style: pw.TextStyle(
-                              fontSize: 10,
-                              fontWeight: pw.FontWeight.bold,
-                            ),
-                          ),
-                          pw.Text(
-                            invoice.receiver.name,
-                            style: const pw.TextStyle(fontSize: 11),
-                          ),
-                          if (invoice.receiver.address.isNotEmpty)
-                            pw.Text(
-                              invoice.receiver.address,
-                              style: headerLabel,
-                            ),
-                          pw.Text(
-                            "GSTIN: ${invoice.receiver.gstin.isEmpty ? 'Unregistered' : invoice.receiver.gstin}",
-                            style: headerLabel,
-                          ),
-                          if (invoice.receiver.state.isNotEmpty)
-                            pw.Text(
-                              "State: ${invoice.receiver.state}",
-                              style: headerLabel,
-                            ),
-                        ],
+                    pw.Text(
+                      "BILL TO",
+                      style: pw.TextStyle(
+                        fontSize: 10,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.grey700,
                       ),
                     ),
-                    if (invoice.deliveryAddress != null &&
-                        invoice.deliveryAddress!.isNotEmpty &&
-                        invoice.deliveryAddress !=
-                            invoice.receiver.address) ...[
-                      pw.SizedBox(width: 20),
-                      pw.Expanded(
-                        child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: [
-                            pw.Text(
-                              "Shipped To:",
-                              style: pw.TextStyle(
-                                fontSize: 10,
-                                fontWeight: pw.FontWeight.bold,
-                              ),
-                            ),
-                            pw.Text(
-                              invoice.deliveryAddress!,
-                              style: headerLabel,
-                            ),
-                          ],
-                        ),
+                    pw.Divider(thickness: 1, color: PdfColors.grey300),
+                    pw.SizedBox(height: 4),
+                    pw.Text(
+                      invoice.receiver.name,
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    ),
+                    pw.Text(invoice.receiver.address),
+                    if (invoice.receiver.gstin.isNotEmpty)
+                      pw.Text("GSTIN: ${invoice.receiver.gstin}"),
+                    if (invoice.receiver.state.isNotEmpty)
+                      pw.Text("State: ${invoice.receiver.state}"),
+                  ],
+                ),
+              ),
+              pw.SizedBox(width: 64),
+              pw.Expanded(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      "PLACE OF SUPPLY",
+                      style: pw.TextStyle(
+                        fontSize: 10,
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.grey700,
+                      ),
+                    ),
+                    pw.Divider(thickness: 1, color: PdfColors.grey300),
+                    pw.SizedBox(height: 4),
+                    pw.Text(invoice.placeOfSupply),
+                    if (invoice.reverseCharge == 'Y')
+                      pw.Text(
+                        "Reverse Charge: YES",
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 32),
+
+          // Items Table
+          buildItemsTable(invoice),
+          pw.SizedBox(height: 16),
+
+          // Summary and Notes
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Expanded(
+                flex: 2,
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    if (invoice.comments.isNotEmpty) ...[
+                      pw.Text(
+                        "Notes",
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                      ),
+                      pw.SizedBox(height: 4),
+                      pw.Text(
+                        invoice.comments,
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
+                      pw.SizedBox(height: 16),
+                    ],
+                    if (invoice.paymentTerms.isNotEmpty) ...[
+                      pw.Text(
+                        "Terms",
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                      ),
+                      pw.SizedBox(height: 4),
+                      pw.Text(
+                        invoice.paymentTerms,
+                        style: const pw.TextStyle(fontSize: 8),
                       ),
                     ],
                   ],
                 ),
               ),
-
-              pw.SizedBox(height: 30),
-
-              // Table
-              buildItemsTable(invoice),
-
-              pw.SizedBox(height: 20),
-
-              // Amounts
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Expanded(
-                    flex: 5,
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text(
-                          "Amount in words:",
-                          style: pw.TextStyle(
-                            fontSize: 9,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
-                        ),
-                        pw.Text(
-                          "${getCurrencyName(profile.currencySymbol)} ${numberToWords(invoice.grandTotal)} Only",
-                          style: pw.TextStyle(
-                            fontSize: 9,
-                            fontStyle: pw.FontStyle.italic,
-                            color: PdfColors.grey800,
-                          ),
-                        ),
-                        pw.SizedBox(height: 5),
-                        pw.Text(
-                          "Tax Amount in words:",
-                          style: pw.TextStyle(
-                            fontSize: 9,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
-                        ),
-                        pw.Text(
-                          "${getCurrencyName(profile.currencySymbol)} ${numberToWords(invoice.totalCGST + invoice.totalSGST + invoice.totalIGST)} Only",
-                          style: pw.TextStyle(
-                            fontSize: 9,
-                            fontStyle: pw.FontStyle.italic,
-                            color: PdfColors.grey800,
-                          ),
-                        ),
-                        pw.SizedBox(height: 15),
-                        pw.Text(
-                          "Bank Details:",
-                          style: pw.TextStyle(
-                            fontSize: 9,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
-                        ),
-                        pw.Text(
-                          "${invoice.bankName}\nA/c: ${invoice.accountNo}\nIFSC: ${invoice.ifscCode}\nBranch: ${invoice.branch}",
-                          style: const pw.TextStyle(
-                            fontSize: 9,
-                            color: PdfColors.grey700,
-                          ),
-                        ),
-                      ],
+              pw.SizedBox(width: 32),
+              pw.Expanded(
+                child: pw.Column(
+                  children: [
+                    buildSummaryRow(
+                      "Taxable Value",
+                      invoice.totalTaxableValue,
+                      profile.currency,
                     ),
-                  ),
-                  pw.SizedBox(width: 10),
-                  // moved upi to footer
-                  pw.Expanded(
-                    flex: 5,
-                    child: pw.Column(
-                      children: [
-                        buildSummaryRow(
-                          "Total Taxable Value",
-                          invoice.totalTaxableValue,
-                          profile.currencySymbol,
-                        ),
-                        if (invoice.totalCGST > 0)
-                          buildSummaryRow(
-                            "Total CGST",
-                            invoice.totalCGST,
-                            profile.currencySymbol,
-                          ),
-                        if (invoice.totalSGST > 0)
-                          buildSummaryRow(
-                            "Total SGST",
-                            invoice.totalSGST,
-                            profile.currencySymbol,
-                          ),
-                        if (invoice.totalIGST > 0)
-                          buildSummaryRow(
-                            "Total IGST",
-                            invoice.totalIGST,
-                            profile.currencySymbol,
-                          ),
-                        pw.Divider(),
-                        buildSummaryRow(
-                          "Grand Total",
-                          invoice.grandTotal,
-                          profile.currencySymbol,
-                          isBold: true,
-                        ),
-                      ],
+                    if (invoice.isInterState)
+                      buildSummaryRow(
+                        "IGST",
+                        invoice.totalIGST,
+                        profile.currency,
+                      )
+                    else ...[
+                      buildSummaryRow(
+                        "CGST",
+                        invoice.totalCGST,
+                        profile.currency,
+                      ),
+                      buildSummaryRow(
+                        "SGST",
+                        invoice.totalSGST,
+                        profile.currency,
+                      ),
+                    ],
+                    if (invoice.discountAmount > 0)
+                      buildSummaryRow(
+                        "Discount",
+                        -invoice.discountAmount,
+                        profile.currency,
+                      ),
+                    pw.Divider(),
+                    buildSummaryRow(
+                      "Grand Total",
+                      invoice.grandTotal,
+                      profile.currency,
+                      isBold: true,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+            ],
+          ),
+          pw.SizedBox(height: 24),
+          pw.Text(
+            "Amount in words: ${numberToWords(invoice.grandTotal)}",
+            style: pw.TextStyle(
+              fontSize: 9,
+              fontStyle: pw.FontStyle.italic,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
 
-              pw.Spacer(),
-              pw.Divider(thickness: 0.5),
+          pw.SizedBox(height: 32),
 
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: [
-                  pw.Column(
+          // Footer (Bank + Sign)
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.end,
+            children: [
+              pw.Expanded(
+                child: pw.Container(
+                  padding: const pw.EdgeInsets.all(8),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.grey300),
+                    borderRadius: const pw.BorderRadius.all(
+                      pw.Radius.circular(4),
+                    ),
+                  ),
+                  child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text(
-                        "Terms & Conditions",
+                        "BANK DETAILS",
                         style: pw.TextStyle(
-                          fontSize: 9,
+                          fontSize: 8,
                           fontWeight: pw.FontWeight.bold,
                         ),
                       ),
-                      pw.Text(
-                        profile.termsAndConditions,
-                        style: const pw.TextStyle(
-                          fontSize: 8,
-                          color: PdfColors.grey600,
-                        ),
-                      ),
+                      pw.SizedBox(height: 4),
+                      pw.Text("Bank: ${profile.bankName}", style: const pw.TextStyle(fontSize: 8)),
+                      pw.Text("A/C: ${profile.accountNo}", style: const pw.TextStyle(fontSize: 8)),
+                      pw.Text("IFSC: ${profile.ifscCode}", style: const pw.TextStyle(fontSize: 8)),
+                      pw.Text("Branch: ${profile.branch}", style: const pw.TextStyle(fontSize: 8)),
                     ],
                   ),
-                  pw.Container(
-                    margin: const pw.EdgeInsets.symmetric(horizontal: 10),
-                    child: buildUpiQr(
-                      profile.upiId,
-                      profile.upiName,
-                      invoice,
-                      profile.currencySymbol,
-                    ),
-                  ),
-                  if ((profile.signaturePath != null &&
-                          File(profile.signaturePath!).existsSync()) ||
-                      (profile.stampPath != null &&
-                          File(profile.stampPath!).existsSync()))
-                    pw.Column(
+                ),
+              ),
+              pw.SizedBox(width: 64),
+              pw.Column(
+                children: [
+                  pw.SizedBox(
+                    width: 120,
+                    height: 60,
+                    child: pw.Stack(
+                      alignment: pw.Alignment.center,
                       children: [
-                        pw.Container(
-                          height: 60,
-                          width: 100,
-                          child: pw.Stack(
-                            alignment: pw.Alignment.center,
-                            children: [
-                              if (profile.stampPath != null &&
-                                  File(profile.stampPath!).existsSync())
-                                pw.Positioned(
-                                  left: profile.stampX * 100,
-                                  bottom: profile.stampY * 60,
-                                  child: pw.Opacity(
-                                    opacity: 0.6,
-                                    child: pw.Image(
-                                      pw.MemoryImage(
-                                        File(
-                                          profile.stampPath!,
-                                        ).readAsBytesSync(),
-                                      ),
-                                      width: 60,
-                                    ),
-                                  ),
-                                ),
-                              if (profile.signaturePath != null &&
-                                  File(profile.signaturePath!).existsSync())
-                                pw.Positioned(
-                                  left: profile.signatureX * 100,
-                                  bottom: profile.signatureY * 60,
-                                  child: pw.Image(
-                                    pw.MemoryImage(
-                                      File(
-                                        profile.signaturePath!,
-                                      ).readAsBytesSync(),
-                                    ),
-                                    height: 40,
-                                  ),
-                                ),
-                            ],
+                        if (profile.stampPath != null &&
+                            profile.stampPath!.isNotEmpty &&
+                            File(profile.stampPath!).existsSync())
+                          pw.Positioned(
+                            left: profile.stampX,
+                            top: profile.stampY,
+                            child: pw.Image(
+                              pw.MemoryImage(
+                                File(profile.stampPath!).readAsBytesSync(),
+                              ),
+                              height: 60,
+                              width: 60,
+                            ),
                           ),
-                        ),
-                        pw.Text(
-                          "Authorized Signatory",
-                          style: const pw.TextStyle(fontSize: 8),
-                        ),
+                        if (profile.signaturePath != null &&
+                            profile.signaturePath!.isNotEmpty &&
+                            File(profile.signaturePath!).existsSync())
+                          pw.Positioned(
+                            left: profile.signatureX,
+                            top: profile.signatureY,
+                            child: pw.Image(
+                              pw.MemoryImage(
+                                File(profile.signaturePath!).readAsBytesSync(),
+                              ),
+                              height: 40,
+                            ),
+                          ),
                       ],
                     ),
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    "Authorized Signatory",
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ],
-          );
-        },
+          ),
+        ],
       ),
     );
 

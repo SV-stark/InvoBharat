@@ -1,6 +1,6 @@
 // ignore_for_file: unawaited_futures
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:io';
@@ -15,6 +15,7 @@ import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/utils/constants.dart';
 import 'package:invobharat/utils/validators.dart';
 import 'package:invobharat/services/backup_service.dart';
+import 'package:gap/gap.dart';
 
 class FluentSettings extends ConsumerStatefulWidget {
   const FluentSettings({super.key});
@@ -59,7 +60,6 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
       header: const PageHeader(title: Text('Settings')),
       content: Column(
         children: [
-          // Horizontal Tab Bar using Cards
           Container(
             height: 110,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -87,7 +87,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(tab['icon'], size: 24, color: fgColor),
-                          const SizedBox(height: 8),
+                          const Gap(8),
                           Text(
                             tab['label'],
                             style: TextStyle(
@@ -153,7 +153,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text("Theme Mode", style: TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 10),
+        const Gap(10),
         ToggleSwitch(
           checked: themeMode == ThemeMode.dark,
           content: Text(themeMode == ThemeMode.dark ? "Dark" : "Light"),
@@ -163,17 +163,17 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 .setTheme(v ? ThemeMode.dark : ThemeMode.light);
           },
         ),
-        const SizedBox(height: 20),
+        const Gap(20),
         const Text(
           "Sidebar Behavior",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 10),
+        const Gap(10),
         ComboBox<PaneDisplayMode>(
           value: appConfig.paneDisplayMode,
           items: const [
             ComboBoxItem(
-              value: PaneDisplayMode.open,
+              value: PaneDisplayMode.expanded,
               child: Text("Always Open"),
             ),
             ComboBoxItem(
@@ -191,12 +191,12 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             }
           },
         ),
-        const SizedBox(height: 20),
+        const Gap(20),
         const Text(
           "Accent Color",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 10),
+        const Gap(10),
         Wrap(
           spacing: 10,
           runSpacing: 10,
@@ -210,7 +210,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
               ),
               onPressed: () {
                 ref
-                    .read(businessProfileNotifierProvider)
+                    .read(businessProfileListProvider.notifier)
                     .updateProfile(
                       profile.copyWith(colorValue: color.toARGB32()),
                     );
@@ -221,7 +221,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                       color: Colors.white,
                       size: 16,
                     )
-                  : const SizedBox(width: 16, height: 16),
+                  : const Gap(16),
             );
           }).toList(),
         ),
@@ -233,7 +233,6 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
     final profile = ref.watch(businessProfileProvider);
     return Column(
       children: [
-        // Logo Picker
         Row(
           children: [
             Container(
@@ -247,7 +246,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   ? Image.file(File(profile.logoPath!), fit: BoxFit.contain)
                   : const Center(child: Icon(FluentIcons.photo2, size: 30)),
             ),
-            const SizedBox(width: 20),
+            const Gap(20),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -260,20 +259,20 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                     );
                     if (image != null) {
                       ref
-                          .read(businessProfileNotifierProvider)
+                          .read(businessProfileListProvider.notifier)
                           .updateProfile(
                             profile.copyWith(logoPath: image.path),
                           );
                     }
                   },
                 ),
-                if (profile.logoPath != null) ...[
-                  const SizedBox(height: 10),
+                if (profile.logoPath != null && profile.logoPath!.isNotEmpty) ...[
+                  const Gap(10),
                   HyperlinkButton(
                     child: const Text("Remove Logo"),
                     onPressed: () {
                       ref
-                          .read(businessProfileNotifierProvider)
+                          .read(businessProfileListProvider.notifier)
                           .updateProfile(profile.copyWith(logoPath: ""));
                     },
                   ),
@@ -282,13 +281,11 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        const Gap(20),
 
-        // Signature & Stamp
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Signature Picker
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -296,7 +293,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   "Digital Signature",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 5),
+                const Gap(5),
                 Row(
                   children: [
                     Container(
@@ -319,7 +316,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                               child: Icon(FluentIcons.edit, size: 24),
                             ),
                     ),
-                    const SizedBox(width: 10),
+                    const Gap(10),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -332,7 +329,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                             );
                             if (image != null) {
                               ref
-                                  .read(businessProfileNotifierProvider)
+                                  .read(businessProfileListProvider.notifier)
                                   .updateProfile(
                                     profile.copyWith(
                                       signaturePath: image.path,
@@ -341,13 +338,13 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                             }
                           },
                         ),
-                        if (profile.signaturePath != null) ...[
-                          const SizedBox(height: 5),
+                        if (profile.signaturePath != null && profile.signaturePath!.isNotEmpty) ...[
+                          const Gap(5),
                           HyperlinkButton(
                             child: const Text("Remove"),
                             onPressed: () {
                               ref
-                                  .read(businessProfileNotifierProvider)
+                                  .read(businessProfileListProvider.notifier)
                                   .updateProfile(
                                     profile.copyWith(signaturePath: ""),
                                   );
@@ -360,8 +357,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 ),
               ],
             ),
-            const SizedBox(width: 30),
-            // Stamp Picker
+            const Gap(30),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -369,7 +365,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   "Business Stamp",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 5),
+                const Gap(5),
                 Row(
                   children: [
                     Container(
@@ -381,7 +377,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                         ),
                         borderRadius: BorderRadius.circular(
                           50,
-                        ), // Circular for stamp
+                        ),
                       ),
                       child:
                           (profile.stampPath != null &&
@@ -396,7 +392,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                               child: Icon(FluentIcons.tag, size: 24),
                             ),
                     ),
-                    const SizedBox(width: 10),
+                    const Gap(10),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -409,20 +405,20 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                             );
                             if (image != null) {
                               ref
-                                  .read(businessProfileNotifierProvider)
+                                  .read(businessProfileListProvider.notifier)
                                   .updateProfile(
                                     profile.copyWith(stampPath: image.path),
                                   );
                             }
                           },
                         ),
-                        if (profile.stampPath != null) ...[
-                          const SizedBox(height: 5),
+                        if (profile.stampPath != null && profile.stampPath!.isNotEmpty) ...[
+                          const Gap(5),
                           HyperlinkButton(
                             child: const Text("Remove"),
                             onPressed: () {
                               ref
-                                  .read(businessProfileNotifierProvider)
+                                  .read(businessProfileListProvider.notifier)
                                   .updateProfile(
                                     profile.copyWith(stampPath: ""),
                                   );
@@ -437,7 +433,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const Gap(10),
         const Padding(
           padding: EdgeInsets.only(top: 10),
           child: InfoBar(
@@ -447,17 +443,17 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             ),
           ),
         ),
-        const SizedBox(height: 20),
+        const Gap(20),
         InfoLabel(
           label: "Company Name",
           child: TextFormBox(
             initialValue: profile.companyName,
             onChanged: (final v) => ref
-                .read(businessProfileNotifierProvider)
+                .read(businessProfileListProvider.notifier)
                 .updateProfile(profile.copyWith(companyName: v)),
           ),
         ),
-        const SizedBox(height: 10),
+        const Gap(10),
         Row(
           children: [
             Expanded(
@@ -468,47 +464,47 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   validator: Validators.gstin,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   onChanged: (final v) => ref
-                      .read(businessProfileNotifierProvider)
+                      .read(businessProfileListProvider.notifier)
                       .updateProfile(profile.copyWith(gstin: v)),
                 ),
               ),
             ),
-            const SizedBox(width: 10),
+            const Gap(10),
             Expanded(
               child: InfoLabel(
                 label: "Phone",
                 child: TextFormBox(
                   initialValue: profile.phone,
                   onChanged: (final v) => ref
-                      .read(businessProfileNotifierProvider)
+                      .read(businessProfileListProvider.notifier)
                       .updateProfile(profile.copyWith(phone: v)),
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const Gap(10),
         InfoLabel(
           label: "Email",
           child: TextFormBox(
             initialValue: profile.email,
             onChanged: (final v) => ref
-                .read(businessProfileNotifierProvider)
+                .read(businessProfileListProvider.notifier)
                 .updateProfile(profile.copyWith(email: v)),
           ),
         ),
-        const SizedBox(height: 10),
+        const Gap(10),
         InfoLabel(
           label: "Address",
           child: TextFormBox(
             initialValue: profile.address,
             maxLines: 3,
             onChanged: (final v) => ref
-                .read(businessProfileNotifierProvider)
+                .read(businessProfileListProvider.notifier)
                 .updateProfile(profile.copyWith(address: v)),
           ),
         ),
-        const SizedBox(height: 10),
+        const Gap(10),
         InfoLabel(
           label: "State",
           child: AutoSuggestBox<String>(
@@ -520,13 +516,13 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 .toList(),
             onSelected: (final item) {
               ref
-                  .read(businessProfileNotifierProvider)
+                  .read(businessProfileListProvider.notifier)
                   .updateProfile(profile.copyWith(state: item.value!));
             },
             onChanged: (final text, final reason) {
               if (reason == TextChangedReason.userInput) {
                 ref
-                    .read(businessProfileNotifierProvider)
+                    .read(businessProfileListProvider.notifier)
                     .updateProfile(profile.copyWith(state: text));
               }
             },
@@ -550,12 +546,12 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 child: TextFormBox(
                   initialValue: profile.invoiceSeries,
                   onChanged: (final v) => ref
-                      .read(businessProfileNotifierProvider)
+                      .read(businessProfileListProvider.notifier)
                       .updateProfile(profile.copyWith(invoiceSeries: v)),
                 ),
               ),
             ),
-            const SizedBox(width: 10),
+            const Gap(10),
             Expanded(
               child: InfoLabel(
                 label: "Current Sequence No",
@@ -564,7 +560,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   onChanged: (final v) {
                     if (v != null) {
                       ref
-                          .read(businessProfileNotifierProvider)
+                          .read(businessProfileListProvider.notifier)
                           .updateProfile(profile.copyWith(invoiceSequence: v));
                     }
                   },
@@ -573,11 +569,11 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const Gap(10),
         InfoLabel(
           label: "Currency Symbol",
           child: ComboBox<String>(
-            value: profile.currencySymbol,
+            value: profile.currency,
             items: [
               '₹',
               '\$',
@@ -588,20 +584,20 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             onChanged: (final val) {
               if (val != null) {
                 ref
-                    .read(businessProfileNotifierProvider)
-                    .updateProfile(profile.copyWith(currencySymbol: val));
+                    .read(businessProfileListProvider.notifier)
+                    .updateProfile(profile.copyWith(currency: val));
               }
             },
           ),
         ),
-        const SizedBox(height: 10),
+        const Gap(10),
         InfoLabel(
           label: "Terms & Conditions",
           child: TextFormBox(
             initialValue: profile.termsAndConditions,
             maxLines: 3,
             onChanged: (final v) => ref
-                .read(businessProfileNotifierProvider)
+                .read(businessProfileListProvider.notifier)
                 .updateProfile(profile.copyWith(termsAndConditions: v)),
           ),
         ),
@@ -618,49 +614,49 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           child: TextFormBox(
             initialValue: profile.bankName,
             onChanged: (final v) => ref
-                .read(businessProfileNotifierProvider)
+                .read(businessProfileListProvider.notifier)
                 .updateProfile(profile.copyWith(bankName: v)),
           ),
         ),
-        const SizedBox(height: 10),
+        const Gap(10),
         Row(
           children: [
             Expanded(
               child: InfoLabel(
                 label: "Account Number",
                 child: TextFormBox(
-                  initialValue: profile.accountNumber,
+                  initialValue: profile.accountNo,
                   onChanged: (final v) => ref
-                      .read(businessProfileNotifierProvider)
-                      .updateProfile(profile.copyWith(accountNumber: v)),
+                      .read(businessProfileListProvider.notifier)
+                      .updateProfile(profile.copyWith(accountNo: v)),
                 ),
               ),
             ),
-            const SizedBox(width: 10),
+            const Gap(10),
             Expanded(
               child: InfoLabel(
                 label: "IFSC Code",
                 child: TextFormBox(
                   initialValue: profile.ifscCode,
                   onChanged: (final v) => ref
-                      .read(businessProfileNotifierProvider)
+                      .read(businessProfileListProvider.notifier)
                       .updateProfile(profile.copyWith(ifscCode: v)),
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const Gap(10),
         InfoLabel(
           label: "Branch Name",
           child: TextFormBox(
-            initialValue: profile.branchName,
+            initialValue: profile.branch,
             onChanged: (final v) => ref
-                .read(businessProfileNotifierProvider)
-                .updateProfile(profile.copyWith(branchName: v)),
+                .read(businessProfileListProvider.notifier)
+                .updateProfile(profile.copyWith(branch: v)),
           ),
         ),
-        const SizedBox(height: 10),
+        const Gap(10),
         Row(
           children: [
             Expanded(
@@ -670,12 +666,12 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   initialValue: profile.upiId,
                   placeholder: "e.g. name@bank",
                   onChanged: (final v) => ref
-                      .read(businessProfileNotifierProvider)
+                      .read(businessProfileListProvider.notifier)
                       .updateProfile(profile.copyWith(upiId: v)),
                 ),
               ),
             ),
-            const SizedBox(width: 10),
+            const Gap(10),
             Expanded(
               child: InfoLabel(
                 label: "UPI Name",
@@ -683,7 +679,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   initialValue: profile.upiName,
                   placeholder: "e.g. Business Name",
                   onChanged: (final v) => ref
-                      .read(businessProfileNotifierProvider)
+                      .read(businessProfileListProvider.notifier)
                       .updateProfile(profile.copyWith(upiName: v)),
                 ),
               ),
@@ -697,7 +693,6 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
   Widget _buildDataSection() {
     return Column(
       children: [
-        // Stats Dashboard
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -709,7 +704,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 FluentIcons.invoice,
               ),
             ),
-            const SizedBox(width: 8),
+            const Gap(8),
             Expanded(
               child: _buildClientDataCard(
                 context,
@@ -720,7 +715,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const Gap(8),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -732,7 +727,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 FluentIcons.document_set,
               ),
             ),
-            const SizedBox(width: 8),
+            const Gap(8),
             Expanded(
               child: _buildDataCard(
                 context,
@@ -743,18 +738,17 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        const Gap(20),
         const Divider(),
-        const SizedBox(height: 20),
+        const Gap(20),
 
-        // Backup Actions
         InfoLabel(
           label: "Backup & Restore",
           child: const Text(
             "Export your data to a CSV file or restore from a previous backup. Note: Logos and images are not included in the backup file.",
           ),
         ),
-        const SizedBox(height: 15),
+        const Gap(15),
         Row(
           children: [
             Expanded(
@@ -799,13 +793,13 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(FluentIcons.encryption),
-                    SizedBox(width: 8),
+                    Gap(8),
                     Text("Export Backup (ZIP)"),
                   ],
                 ),
               ),
             ),
-            const SizedBox(width: 10),
+            const Gap(10),
             Expanded(
               child: Button(
                 onPressed: () async {
@@ -848,7 +842,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(FluentIcons.upload),
-                    SizedBox(width: 8),
+                    Gap(8),
                     Text("Restore Backup (ZIP)"),
                   ],
                 ),
@@ -856,15 +850,14 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             ),
           ],
         ),
-        const SizedBox(height: 10),
-        // Danger Zone
+        const Gap(10),
         Expander(
           header: Text("Danger Zone", style: TextStyle(color: Colors.red)),
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text("Irreversible actions. Proceed with caution."),
-              const SizedBox(height: 10),
+              const Gap(10),
               Button(
                 style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all(Colors.red),
@@ -1004,7 +997,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                               .selectProfile(p.id);
                         },
                       ),
-                    const SizedBox(width: 8),
+                    const Gap(8),
                     if (profiles.length > 1)
                       IconButton(
                         icon: const Icon(FluentIcons.delete),
@@ -1062,7 +1055,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             ),
           );
         }),
-        const SizedBox(height: 10),
+        const Gap(10),
         Button(
           child: const Text("Create New Profile"),
           onPressed: () {
@@ -1120,11 +1113,11 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           Row(
             children: [
               Icon(icon, size: 16, color: FluentTheme.of(context).accentColor),
-              const SizedBox(width: 8),
+              const Gap(8),
               Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
-          const SizedBox(height: 8),
+          const Gap(8),
           asyncValue.when(
             data: (final data) => Text(
               "${data.length} Items",
@@ -1152,11 +1145,11 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           Row(
             children: [
               Icon(icon, size: 16, color: FluentTheme.of(context).accentColor),
-              const SizedBox(width: 8),
+              const Gap(8),
               Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
-          const SizedBox(height: 8),
+          const Gap(8),
           Text(
             "${data.length} Items",
             style: FluentTheme.of(context).typography.bodyLarge,

@@ -3,6 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:csv/csv.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/payment_transaction.dart';
+import 'package:file_saver/file_saver.dart';
+import 'package:path/path.dart' as p;
+import 'dart:typed_data';
 
 class CsvExportService {
   // Ordered columns as per request + required fields for restoration
@@ -42,6 +45,23 @@ class CsvExportService {
 
   Future<String> generateInvoiceCsv(final List<Invoice> invoices) async {
     return Isolate.run(() => _generateInvoiceCsvSync(invoices));
+  }
+
+  /// Saves the generated CSV using native file saver
+  Future<String?> saveInvoiceCsv(
+    final String csvContent,
+    final String fileName,
+  ) async {
+    final bytes = Uint8List.fromList(csvContent.codeUnits);
+    final extension = p.extension(fileName).replaceAll('.', '');
+    final nameOnly = p.basenameWithoutExtension(fileName);
+    
+    return FileSaver.instance.saveFile(
+      name: nameOnly,
+      bytes: bytes,
+      fileExtension: extension.isEmpty ? 'csv' : extension,
+      mimeType: MimeType.csv,
+    );
   }
 
   static String _generateInvoiceCsvSync(final List<Invoice> invoices) {

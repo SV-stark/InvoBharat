@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:invobharat/utils/constants.dart';
+import 'package:gap/gap.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/providers/invoice_provider.dart';
@@ -42,7 +44,7 @@ class SectionCard extends StatelessWidget {
                 Row(
                   children: [
                     Icon(icon, size: 20, color: Theme.of(context).primaryColor),
-                    const SizedBox(width: 8),
+                    const Gap(8),
                     Text(
                       title,
                       style: const TextStyle(
@@ -52,7 +54,7 @@ class SectionCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (action != null) action!,
+                ?action,
               ],
             ),
             const Divider(height: 24),
@@ -97,7 +99,7 @@ class InvoiceHeaderSection extends ConsumerWidget {
           onChanged: (final val) =>
               ref.read(invoiceProvider.notifier).updateStyle(val!),
         ),
-        const SizedBox(height: 16),
+        const Gap(16),
         Row(
           children: [
             Expanded(
@@ -110,7 +112,7 @@ class InvoiceHeaderSection extends ConsumerWidget {
                     val == null || val.isEmpty ? "Required" : null,
               ),
             ),
-            const SizedBox(width: 16),
+            const Gap(16),
             Expanded(
               child: _buildDateField(
                 context: context,
@@ -122,7 +124,7 @@ class InvoiceHeaderSection extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const Gap(16),
         Row(
           children: [
             Expanded(
@@ -149,7 +151,7 @@ class InvoiceHeaderSection extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            const Gap(16),
             SizedBox(
               width: 120,
               child: _buildDropdownField(
@@ -160,7 +162,7 @@ class InvoiceHeaderSection extends ConsumerWidget {
                     ref.read(invoiceProvider.notifier).updateCurrency(val!),
               ),
             ),
-            const SizedBox(width: 16),
+            const Gap(16),
             SizedBox(
               width: 120,
               child: _buildDropdownField(
@@ -176,7 +178,7 @@ class InvoiceHeaderSection extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const Gap(16),
         _buildDateField(
           context: context,
           label: "Due Date",
@@ -184,7 +186,7 @@ class InvoiceHeaderSection extends ConsumerWidget {
           onDateSelected: (final val) =>
               ref.read(invoiceProvider.notifier).updateDueDate(val),
         ),
-        const SizedBox(height: 16),
+        const Gap(16),
         AppTextInput(
           controller: paymentTermsCtrl,
           label: "Payment Terms",
@@ -300,12 +302,12 @@ class ClientDetailsSection extends ConsumerWidget {
           validator: (final val) =>
               val == null || val.isEmpty ? "Required" : null,
         ),
-        const SizedBox(height: 16),
+        const Gap(16),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(child: gstinField),
-            const SizedBox(width: 16),
+            const Gap(16),
             Expanded(
               child: fluent.InfoLabel(
                 label: "State",
@@ -332,7 +334,7 @@ class ClientDetailsSection extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const Gap(16),
         AppTextInput(
           controller: receiverAddressCtrl,
           label: "Billing Address",
@@ -387,7 +389,7 @@ class InvoiceItemsSection extends ConsumerWidget {
               return itemBuilder(context, index, item);
             },
           ),
-        const SizedBox(height: 16),
+        const Gap(16),
         Row(
           children: [
             Expanded(
@@ -403,7 +405,7 @@ class InvoiceItemsSection extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            const Gap(16),
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: onAddFromTemplate,
@@ -425,75 +427,79 @@ class InvoiceItemsSection extends ConsumerWidget {
 }
 
 class InvoiceSummarySection extends ConsumerWidget {
-  const InvoiceSummarySection({super.key});
+  final bool isLoading;
+  const InvoiceSummarySection({super.key, this.isLoading = false});
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final invoice = ref.watch(invoiceProvider);
     final theme = Theme.of(context);
 
-    return Card(
-      elevation: 0,
-      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.1),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                const Text(
-                  "Discount (Flat ₹): ",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 120,
-                  child: TextFormField(
-                    key: ValueKey(invoice.discountAmount),
-                    initialValue: invoice.discountAmount == 0.0
-                        ? ''
-                        : invoice.discountAmount.toStringAsFixed(2),
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: const InputDecoration(
-                      labelText: "Amount",
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 8,
+    return Skeletonizer(
+      enabled: isLoading,
+      child: Card(
+        elevation: 0,
+        color: theme.colorScheme.primaryContainer.withValues(alpha: 0.1),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const Text(
+                    "Discount (Flat ₹): ",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const Gap(8),
+                  SizedBox(
+                    width: 120,
+                    child: TextFormField(
+                      key: ValueKey(invoice.discountAmount),
+                      initialValue: invoice.discountAmount == 0.0
+                          ? ''
+                          : invoice.discountAmount.toStringAsFixed(2),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
                       ),
+                      decoration: const InputDecoration(
+                        labelText: "Amount",
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 8,
+                        ),
+                      ),
+                      onChanged: (final val) => ref
+                          .read(invoiceProvider.notifier)
+                          .updateDiscountAmount(val),
                     ),
-                    onChanged: (final val) => ref
-                        .read(invoiceProvider.notifier)
-                        .updateDiscountAmount(val),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const Divider(),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Grand Total",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  "₹${invoice.grandTotal.toStringAsFixed(2)}",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary,
+                ],
+              ),
+              const Gap(8),
+              const Divider(),
+              const Gap(8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Grand Total",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  Text(
+                    "₹${invoice.grandTotal.toStringAsFixed(2)}",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

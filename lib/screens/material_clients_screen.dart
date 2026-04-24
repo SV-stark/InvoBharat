@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/client_provider.dart';
 import 'package:invobharat/widgets/material_client_form.dart';
-import 'package:invobharat/screens/client_ledger_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class MaterialClientsScreen extends ConsumerStatefulWidget {
   const MaterialClientsScreen({super.key});
@@ -111,13 +111,7 @@ class _MaterialClientsScreenState extends ConsumerState<MaterialClientsScreen> {
                             Icons.receipt_long,
                             color: Colors.teal,
                           ),
-                          onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  ClientLedgerScreen(client: client),
-                            ),
-                          ),
+                          onPressed: () => context.push('/client-ledger', extra: client),
                         ),
                         IconButton(
                           icon: const Icon(Icons.edit, color: Colors.blue),

@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:invobharat/models/invoice.dart';
 
 import 'package:invobharat/providers/invoice_repository_provider.dart';

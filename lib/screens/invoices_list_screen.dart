@@ -1,12 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/models/invoice.dart';
-import 'package:invobharat/screens/invoice_detail_screen.dart';
-import 'package:invobharat/screens/invoice_form.dart';
-import 'package:invobharat/screens/windows/fluent_invoice_wizard.dart';
+import 'package:go_router/go_router.dart';
 
 class InvoicesListScreen extends ConsumerStatefulWidget {
   const InvoicesListScreen({super.key});
@@ -114,12 +112,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
       payments: [],
     );
 
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => FluentInvoiceWizard(invoiceToEdit: duplicated),
-      ),
-    );
+    await context.push('/invoice-form', extra: duplicated);
     ref.invalidate(invoiceListProvider);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -198,10 +191,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const InvoiceFormScreen()),
-        ).then((_) => ref.refresh(invoiceListProvider)),
+        onPressed: () => context.push('/invoice-form').then((_) => ref.refresh(invoiceListProvider)),
         child: const Icon(Icons.add),
       ),
       body: invoiceListAsync.when(
@@ -348,12 +338,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => InvoiceDetailScreen(invoice: invoice),
-                        ),
-                      ).then((_) => ref.refresh(invoiceListProvider));
+                      context.push('/invoice-detail', extra: invoice).then((_) => ref.refresh(invoiceListProvider));
                     },
                     leading: CircleAvatar(
                       backgroundColor: theme.colorScheme.primaryContainer

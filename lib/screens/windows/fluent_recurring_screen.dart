@@ -1,10 +1,10 @@
 // ignore_for_file: unawaited_futures
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import 'package:invobharat/providers/recurring_provider.dart';
-import 'package:invobharat/screens/windows/fluent_recurring_form.dart';
+import 'package:go_router/go_router.dart';
 
 class FluentRecurringScreen extends ConsumerWidget {
   const FluentRecurringScreen({super.key});
@@ -30,12 +30,7 @@ class FluentRecurringScreen extends ConsumerWidget {
               icon: const Icon(FluentIcons.add),
               label: const Text('New Recurring'),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  FluentPageRoute(
-                    builder: (final context) => const FluentRecurringForm(),
-                  ),
-                );
+                context.push('/recurring-form');
               },
             ),
           ],

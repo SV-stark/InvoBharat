@@ -1,6 +1,6 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
@@ -16,10 +16,10 @@ import 'package:invobharat/providers/recurring_provider.dart'; // New
 
 import 'package:printing/printing.dart';
 import 'package:invobharat/services/email_service.dart'; // NEW
-import 'package:invobharat/screens/settings_screen.dart'; // For settings navigation
+// For settings navigation
 
-import 'package:invobharat/screens/windows/fluent_invoice_wizard.dart';
 import 'package:invobharat/utils/pdf_generator.dart';
+import 'package:go_router/go_router.dart';
 
 class InvoiceDetailScreen extends ConsumerStatefulWidget {
   final Invoice invoice;
@@ -97,12 +97,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => FluentInvoiceWizard(invoiceToEdit: _invoice),
-                ),
-              );
+              await context.push('/invoice-form', extra: {'invoice': _invoice});
               _refreshInvoice();
             },
           ),
@@ -356,12 +351,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       payments: [],
     );
 
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => FluentInvoiceWizard(invoiceToEdit: duplicated),
-      ),
-    );
+    await context.push('/invoice-form', extra: {'invoice': duplicated});
     _refreshInvoice();
     ref.invalidate(invoiceListProvider);
     if (mounted) {
@@ -573,10 +563,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       );
 
       if (configNow == true && mounted) {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SettingsScreen()),
-        );
+        await context.push('/settings');
         if (mounted) await _sendEmail();
       }
       return;
@@ -654,7 +641,7 @@ class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
 
   @override
   Widget build(final BuildContext context) {
-    final currency = ref.watch(businessProfileProvider).currencySymbol; // NEW
+    final currency = ref.watch(businessProfileProvider).currency; // NEW
     return AlertDialog(
       title: const Text("Record Payment"),
       content: SingleChildScrollView(

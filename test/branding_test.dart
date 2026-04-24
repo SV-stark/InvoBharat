@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:invobharat/screens/dashboard_screen.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 void main() {
   testWidgets('DashboardScreen displays App Logo and InvoBharat text',
@@ -15,7 +15,7 @@ void main() {
       ),
     );
 
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     // Verify "InvoBharat" title is present
     expect(find.text('InvoBharat'), findsAtLeastNWidgets(1));

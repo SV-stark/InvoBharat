@@ -10,6 +10,8 @@ import 'package:invobharat/utils/pdf/templates/minimal_template.dart';
 import 'package:invobharat/utils/pdf/templates/classic_template.dart';
 import 'package:invobharat/utils/pdf/templates/corporate_template.dart';
 import 'package:invobharat/utils/pdf/templates/creative_template.dart';
+import 'package:file_saver/file_saver.dart';
+import 'package:path/path.dart' as p;
 
 // ── Font warm-up flag ──────────────────────────────────────────────────────
 bool _fontsWarmedUp = false;
@@ -27,11 +29,6 @@ class PdfGeneratorParams {
 }
 
 // ── Isolate worker ────────────────────────────────────────────────────────
-// NOTE: Fonts are loaded inside the isolate because pw.Font objects cannot
-// cross isolate boundaries. The performance improvement comes from the main
-// isolate's font cache signalling "fonts available" via the title field, while
-// the isolate itself re-downloads from the printing package's in-process cache
-// (which is disk-backed after the first download, so subsequent calls are fast).
 Future<Uint8List> _generatePdfInIsolate(final PdfGeneratorParams params) async {
   pw.Font font;
   pw.Font fontBold;
@@ -94,12 +91,6 @@ Future<Uint8List> _generatePdfInIsolate(final PdfGeneratorParams params) async {
 }
 
 // ── Public API ─────────────────────────────────────────────────────────────
-/// Generates a PDF invoice using an isolate for UI responsiveness.
-///
-/// Font warm-up: the first call triggers a font download (or disk cache read).
-/// Subsequent calls re-use the isolate's in-process disk cache and are fast.
-/// To ensure the first user-visible PDF is not slow, call [warmUpFonts] at
-/// app startup.
 Future<Uint8List> generateInvoicePdf(
   final Invoice invoice,
   final BusinessProfile profile, {
@@ -114,11 +105,26 @@ Future<Uint8List> generateInvoicePdf(
   return Isolate.run(() => _generatePdfInIsolate(params));
 }
 
+/// Saves the generated PDF using native file saver
+Future<String?> saveInvoicePdf(
+  final Uint8List bytes,
+  final String fileName,
+) async {
+  final extension = p.extension(fileName).replaceAll('.', '');
+  final nameOnly = p.basenameWithoutExtension(fileName);
+  
+  return FileSaver.instance.saveFile(
+    name: nameOnly,
+    bytes: bytes,
+    fileExtension: extension.isEmpty ? 'pdf' : extension,
+    mimeType: MimeType.pdf,
+  );
+}
+
 Future<void> warmUpFonts() async {
   if (_fontsWarmedUp) return;
   _fontsWarmedUp = true;
   try {
-    // Load to memory early
     await rootBundle.load('fonts/NotoSans-Regular.ttf');
   } catch (_) {
     _fontsWarmedUp = false;

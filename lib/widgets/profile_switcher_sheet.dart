@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:gap/gap.dart';
 
 void showProfileSwitcherSheet(final BuildContext context, final WidgetRef ref) {
   showModalBottomSheet(
@@ -32,7 +33,7 @@ class ProfileSwitcherSheet extends ConsumerWidget {
             "Select Business Profile",
             style: Theme.of(context).textTheme.titleLarge,
           ),
-          const SizedBox(height: 16),
+          const Gap(16),
           if (isDefaultProfile && profiles.isEmpty)
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -42,9 +43,9 @@ class ProfileSwitcherSheet extends ConsumerWidget {
                   size: 48,
                   color: Colors.grey,
                 ),
-                const SizedBox(height: 8),
+                const Gap(8),
                 const Text("No business profiles configured"),
-                const SizedBox(height: 4),
+                const Gap(4),
                 Text(
                   "Please set up your business profile in Settings first.",
                   style: Theme.of(context).textTheme.bodySmall,
@@ -64,7 +65,7 @@ class ProfileSwitcherSheet extends ConsumerWidget {
                   final isActive = p.id == activeId;
                   return ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: p.color,
+                      backgroundColor: Color(p.colorValue),
                       child: Text(
                         p.companyName.isNotEmpty
                             ? p.companyName[0].toUpperCase()

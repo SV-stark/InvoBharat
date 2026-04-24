@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path_provider/path_provider.dart';
@@ -10,44 +9,20 @@ import 'package:invobharat/data/business_profile_repository.dart';
 import 'package:invobharat/data/sql_business_profile_repository.dart';
 import 'package:invobharat/providers/database_provider.dart';
 
-// --- Providers ---
+part 'business_profile_provider.g.dart';
 
-final businessProfileRepositoryProvider = Provider<BusinessProfileRepository>((
-  final ref,
-) {
+@riverpod
+BusinessProfileRepository businessProfileRepository(final Ref ref) {
   final db = ref.watch(databaseProvider);
   return SqlBusinessProfileRepository(db);
-});
+}
 
-final businessProfileListProvider =
-    NotifierProvider<BusinessProfileListNotifier, List<BusinessProfile>>(
-      BusinessProfileListNotifier.new,
-    );
-
-final activeProfileIdProvider =
-    NotifierProvider<ActiveProfileIdNotifier, String>(
-      ActiveProfileIdNotifier.new,
-    );
-
-final businessProfileProvider = Provider<BusinessProfile>((final ref) {
-  final profiles = ref.watch(businessProfileListProvider);
-  final activeId = ref.watch(activeProfileIdProvider);
-
-  if (profiles.isEmpty) return BusinessProfile.defaults();
-
-  return profiles.firstWhere(
-    (final p) => p.id == activeId,
-    orElse: () => profiles.first,
-  );
-});
-
-// --- Notifiers ---
-
-class BusinessProfileListNotifier extends Notifier<List<BusinessProfile>> {
+@riverpod
+class BusinessProfileList extends _$BusinessProfileList {
   @override
   List<BusinessProfile> build() {
     _init();
-    return []; // Start empty, async _init will populate
+    return [];
   }
 
   Future<void> _init() async {
@@ -57,7 +32,6 @@ class BusinessProfileListNotifier extends Notifier<List<BusinessProfile>> {
     if (profiles.isNotEmpty) {
       state = profiles;
     } else {
-      // Check for migration or first run
       await _handleMigrationOrFirstRun();
     }
   }
@@ -66,7 +40,6 @@ class BusinessProfileListNotifier extends Notifier<List<BusinessProfile>> {
     final prefs = await SharedPreferences.getInstance();
     final repository = ref.read(businessProfileRepositoryProvider);
 
-    // 1. Check for legacy SharedPreferences multi-profile format
     final List<String>? profilesJson = prefs.getStringList(
       'business_profiles_list',
     );
@@ -80,24 +53,19 @@ class BusinessProfileListNotifier extends Notifier<List<BusinessProfile>> {
         await repository.saveProfile(profile);
       }
       state = profiles;
-      // Clear legacy storage
       await prefs.remove('business_profiles_list');
     } else {
-      // 2. Check for legacy single profile (even older)
       final String? legacyJson = prefs.getString('business_profile');
       if (legacyJson != null) {
-        final legacyProfile = BusinessProfile.fromJson(jsonDecode(legacyJson));
+        var legacyProfile = BusinessProfile.fromJson(jsonDecode(legacyJson));
         if (legacyProfile.id == 'default' || legacyProfile.id.isEmpty) {
-          legacyProfile.id = const Uuid().v4();
+          legacyProfile = legacyProfile.copyWith(id: const Uuid().v4());
         }
-        // Move invoices if they were in old flat format
         await _migrateLegacyInvoices(legacyProfile.id);
-
         await repository.saveProfile(legacyProfile);
         state = [legacyProfile];
         await prefs.remove('business_profile');
       } else {
-        // 3. First run ever
         final String newId = const Uuid().v4();
         final defaultProfile = BusinessProfile.defaults().copyWith(id: newId);
         await repository.saveProfile(defaultProfile);
@@ -110,8 +78,7 @@ class BusinessProfileListNotifier extends Notifier<List<BusinessProfile>> {
     try {
       final directory = await getApplicationDocumentsDirectory();
       final oldPath = '${directory.path}/InvoBharat/invoices';
-      final newPath =
-          '${directory.path}/InvoBharat/profiles/$newProfileId/invoices';
+      final newPath = '${directory.path}/InvoBharat/profiles/$newProfileId/invoices';
 
       final oldDir = Directory(oldPath);
       if (await oldDir.exists()) {
@@ -127,11 +94,8 @@ class BusinessProfileListNotifier extends Notifier<List<BusinessProfile>> {
             await file.rename('${newDir.path}/$filename');
           }
         }
-        debugPrint("Migrated invoices to profile $newProfileId");
       }
-    } catch (e) {
-      debugPrint("Migration Error: $e");
-    }
+    } catch (_) {}
   }
 
   Future<void> addProfile(final BusinessProfile profile) async {
@@ -155,13 +119,28 @@ class BusinessProfileListNotifier extends Notifier<List<BusinessProfile>> {
     await repository.deleteProfile(id);
     state = state.where((final p) => p.id != id).toList();
   }
+
+  Future<void> updateColor(final int color) async {
+    final activeId = ref.read(activeProfileIdProvider);
+    final current = state.firstWhere((final p) => p.id == activeId);
+    await updateProfile(current.copyWith(colorValue: color));
+  }
+
+  Future<void> incrementInvoiceSequence() async {
+    final activeId = ref.read(activeProfileIdProvider);
+    final current = state.firstWhere((final p) => p.id == activeId);
+    final newSeq = current.invoiceSequence + 1;
+    final newProfile = current.copyWith(invoiceSequence: newSeq);
+    await updateProfile(newProfile);
+  }
 }
 
-class ActiveProfileIdNotifier extends Notifier<String> {
+@riverpod
+class ActiveProfileId extends _$ActiveProfileId {
   @override
   String build() {
     _loadActiveId();
-    return ""; // Will update on load
+    return "";
   }
 
   Future<void> _loadActiveId() async {
@@ -171,9 +150,6 @@ class ActiveProfileIdNotifier extends Notifier<String> {
     if (storedId != null) {
       state = storedId;
     } else {
-      // Wait for list to load effectively
-      // We can just rely on the provider reading the list to default to first
-      // But let's check list provider:
       final profiles = ref.read(businessProfileListProvider);
       if (profiles.isNotEmpty) {
         state = profiles.first.id;
@@ -186,42 +162,18 @@ class ActiveProfileIdNotifier extends Notifier<String> {
     state = id;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('active_profile_id', id);
-
-    // Refresh dependent providers
-    // We can't directly read other providers here easily without a Ref in the method or passing it in.
-    // However, since `clientRepositoryProvider` watches `businessProfileProvider`,
-    // and `businessProfileProvider` watches `activeProfileIdProvider`,
-    // the repository will automatically rebuild with the new profileId.
-    // The `clientListNotifier` needs to be told to reload though, OR it should watch the repository properly.
-    // But `ClientListNotifier` does `ref.read(clientRepositoryProvider)` in `_loadClients`.
-    // Let's make `ClientListNotifier` watch the repository or profile change.
-    // Actually, simply watching the profile in the provider definition is enough for the Repo,
-    // but the ListNotifier state needs to restart.
   }
 }
 
-// Helper access for updating currently active profile
-final businessProfileNotifierProvider = Provider((final ref) {
-  return BusinessProfileNotifierProxy(ref);
-});
+@riverpod
+BusinessProfile businessProfile(final Ref ref) {
+  final profiles = ref.watch(businessProfileListProvider);
+  final activeId = ref.watch(activeProfileIdProvider);
 
-class BusinessProfileNotifierProxy {
-  final Ref ref;
-  BusinessProfileNotifierProxy(this.ref);
+  if (profiles.isEmpty) return BusinessProfile.defaults();
 
-  Future<void> updateProfile(final BusinessProfile p) async {
-    await ref.read(businessProfileListProvider.notifier).updateProfile(p);
-  }
-
-  Future<void> updateColor(final int color) async {
-    final current = ref.read(businessProfileProvider);
-    await updateProfile(current.copyWith(colorValue: color));
-  }
-
-  Future<void> incrementInvoiceSequence() async {
-    final current = ref.read(businessProfileProvider);
-    final newSeq = current.invoiceSequence + 1;
-    final newProfile = current.copyWith(invoiceSequence: newSeq);
-    await updateProfile(newProfile);
-  }
+  return profiles.firstWhere(
+    (final p) => p.id == activeId,
+    orElse: () => profiles.first,
+  );
 }

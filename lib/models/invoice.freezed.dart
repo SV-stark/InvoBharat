@@ -15,12 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Invoice {
 
- String? get id; String get style; Supplier get supplier; Receiver get receiver; String get invoiceNo; DateTime get invoiceDate; DateTime? get dueDate; String get placeOfSupply; String get reverseCharge; String get paymentTerms; List<InvoiceItem> get items; List<PaymentTransaction> get payments; String get comments; String get bankName; String get accountNo; String get ifscCode; String get branch; String? get deliveryAddress; bool get isArchived;// Phase 4
- String get currency;// Phase 4
- double get discountAmount;// NEW: Invoice level discount
- InvoiceType get type;// NEW: Delivery Challan Support
-// Credit/Debit Note Fields
- String? get originalInvoiceNumber; DateTime? get originalInvoiceDate;
+ String? get id; String get style; Supplier get supplier; Receiver get receiver; String get invoiceNo; DateTime get invoiceDate; DateTime? get dueDate; String get placeOfSupply; String get reverseCharge; String get paymentTerms; List<InvoiceItem> get items; List<PaymentTransaction> get payments; String get comments; String get bankName; String get accountNo; String get ifscCode; String get branch; String? get deliveryAddress; bool get isArchived; String get currency; double get discountAmount; InvoiceType get type; String? get originalInvoiceNumber; DateTime? get originalInvoiceDate;
 /// Create a copy of Invoice
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -289,14 +284,9 @@ class _Invoice extends Invoice {
 @override@JsonKey() final  String branch;
 @override final  String? deliveryAddress;
 @override@JsonKey() final  bool isArchived;
-// Phase 4
 @override@JsonKey() final  String currency;
-// Phase 4
 @override@JsonKey() final  double discountAmount;
-// NEW: Invoice level discount
 @override@JsonKey() final  InvoiceType type;
-// NEW: Delivery Challan Support
-// Credit/Debit Note Fields
 @override final  String? originalInvoiceNumber;
 @override final  DateTime? originalInvoiceDate;
 
@@ -967,19 +957,7 @@ as String,
 /// @nodoc
 mixin _$InvoiceItem {
 
- String? get id;// Will be generated in factory constructor if null? No, freezed doesn't support logic in constructor easily.
-// We'll handle ID generation in the code that creates the item, or use @Default(Uuid().v4())?
-// Default values must be const. Uuid().v4() is not const.
-// We'll make it nullable and handle it.
-// OR we'll use a custom factory?
-// Let's make it nullable here, but commonly generated.
-// In original code: id = id ?? const Uuid().v4();
-// In freezed, if we pass null, it stays null.
-// We can't have logic.
-// Best Practice: Accept null in constructor, but ensure it's set before saving?
-// Or better: Let's assume it's optional string. If null, we treat as new.
- String get description; String get sacCode; String get codeType; String get year;// e.g. "F.Y. 2025-26"
- double get amount; double get discount; double get quantity; String get unit; double get gstRate;
+ String? get id; String get description; String get sacCode; String get codeType; String get year; double get amount; double get discount; double get quantity; String get unit; double get gstRate;
 /// Create a copy of InvoiceItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1186,22 +1164,10 @@ class _InvoiceItem extends InvoiceItem {
   factory _InvoiceItem.fromJson(Map<String, dynamic> json) => _$InvoiceItemFromJson(json);
 
 @override final  String? id;
-// Will be generated in factory constructor if null? No, freezed doesn't support logic in constructor easily.
-// We'll handle ID generation in the code that creates the item, or use @Default(Uuid().v4())?
-// Default values must be const. Uuid().v4() is not const.
-// We'll make it nullable and handle it.
-// OR we'll use a custom factory?
-// Let's make it nullable here, but commonly generated.
-// In original code: id = id ?? const Uuid().v4();
-// In freezed, if we pass null, it stays null.
-// We can't have logic.
-// Best Practice: Accept null in constructor, but ensure it's set before saving?
-// Or better: Let's assume it's optional string. If null, we treat as new.
 @override@JsonKey() final  String description;
 @override@JsonKey() final  String sacCode;
 @override@JsonKey() final  String codeType;
 @override@JsonKey() final  String year;
-// e.g. "F.Y. 2025-26"
 @override@JsonKey() final  double amount;
 @override@JsonKey() final  double discount;
 @override@JsonKey() final  double quantity;

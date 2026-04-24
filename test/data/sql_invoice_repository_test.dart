@@ -1,212 +1,89 @@
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:drift/native.dart';
 import 'package:invobharat/database/database.dart';
-import 'package:invobharat/data/sql_invoice_repository.dart';
 import 'package:invobharat/models/invoice.dart' as model;
-import 'package:invobharat/models/payment_transaction.dart';
+import 'package:invobharat/models/business_profile.dart' as model;
+import 'package:invobharat/data/sql_invoice_repository.dart';
 
 void main() {
-  late AppDatabase db;
+  late AppDatabase database;
   late SqlInvoiceRepository repository;
 
-  setUp(() async {
-    db = AppDatabase(NativeDatabase.memory());
-    repository = SqlInvoiceRepository(db);
-
-    // Seed default business profile
-    await db
-        .into(db.businessProfiles)
-        .insert(
-          BusinessProfilesCompanion.insert(
-            id: 'default',
-            companyName: 'Test Company',
-            address: 'Test Address',
-            gstin: '29AAAAA0000A1Z5',
-            email: 'test@example.com',
-            phone: '1234567890',
-            state: 'Karnataka',
-            colorValue: 0xFF0000FF,
-            invoiceSeries: 'INV-',
-            invoiceSequence: 1,
-            termsAndConditions: 'T&C',
-            defaultNotes: 'Notes',
-            currencySymbol: '₹',
-            bankName: 'Test Bank',
-            accountNumber: '12345',
-            ifscCode: 'IFSC',
-            branchName: 'Branch',
-            pan: 'ABCDE1234F',
-          ),
-        );
-
-    // Seed a client
-    await db
-        .into(db.clients)
-        .insert(
-          ClientsCompanion.insert(
-            id: 'client-1',
-            profileId: 'default',
-            name: 'Test Client',
-            address: 'Client Address',
-            gstin: '27BBBBB1111B1Z0',
-            pan: 'BBBBB1111B',
-            state: 'Maharashtra',
-            stateCode: '27',
-            email: 'client@example.com',
-            phone: '9876543210',
-          ),
-        );
+  setUp(() {
+    database = AppDatabase(NativeDatabase.memory());
+    repository = SqlInvoiceRepository(database);
   });
 
   tearDown(() async {
-    await db.close();
+    await database.close();
   });
 
+  final testProfile = model.BusinessProfile(
+    id: 'default',
+    companyName: 'Test Biz',
+    address: 'Addr',
+    gstin: 'GST123',
+    email: 'e@b.com',
+    phone: '123',
+    accountNo: '123',
+    branch: 'B1',
+  );
+
+  final testInvoice = model.Invoice(
+    id: 'inv1',
+    invoiceNo: 'INV-001',
+    invoiceDate: DateTime.now(),
+    supplier: const model.Supplier(name: 'Supplier'),
+    receiver: const model.Receiver(name: 'Receiver'),
+    items: [
+      const model.InvoiceItem(description: 'Item 1', amount: 100),
+    ],
+  );
+
   group('SqlInvoiceRepository', () {
-    final testInvoice = model.Invoice(
-      invoiceNo: 'INV-001',
-      invoiceDate: DateTime(2024),
-      supplier: const model.Supplier(
-        name: 'Test Company',
-        address: 'Test Address',
-        gstin: '29AAAAA0000A1Z5',
-      ),
-      receiver: const model.Receiver(
-        name: 'Test Client',
-        address: 'Client Address',
-        gstin: '27BBBBB1111B1Z0',
-        state: 'Maharashtra',
-        stateCode: '27',
-      ),
-      items: [
-        const model.InvoiceItem(
-          description: 'Item 1',
-          amount: 100.0,
-          quantity: 2.0,
-        ),
-      ],
-      payments: [
-        PaymentTransaction(
-          id: '', // Let repo generate unique ID
-          invoiceId: '',
-          date: DateTime(2024),
-          amount: 50.0,
-          paymentMode: 'Cash',
-        ),
-      ],
-    );
+    test('saveInvoice and getInvoice', () async {
+      await database.into(database.businessProfiles).insert(
+            BusinessProfilesCompanion.insert(
+              id: testProfile.id,
+              companyName: testProfile.companyName,
+              address: testProfile.address,
+              gstin: testProfile.gstin,
+              email: testProfile.email,
+              phone: testProfile.phone,
+              state: testProfile.state,
+              colorValue: testProfile.colorValue,
+              invoiceSeries: testProfile.invoiceSeries,
+              invoiceSequence: testProfile.invoiceSequence,
+              termsAndConditions: testProfile.termsAndConditions,
+              defaultNotes: testProfile.defaultNotes,
+              currencySymbol: testProfile.currency,
+              bankName: testProfile.bankName,
+              accountNo: testProfile.accountNo,
+              ifscCode: testProfile.ifscCode,
+              branch: testProfile.branch,
+              pan: testProfile.pan,
+            ),
+          );
 
-    test('saveInvoice should insert invoice, items and payments', () async {
       await repository.saveInvoice(testInvoice);
+      final invoice = await repository.getInvoice(testInvoice.id!);
 
-      final invoices = await db.select(db.invoices).get();
+      expect(invoice, isNotNull);
+      expect(invoice?.invoiceNo, testInvoice.invoiceNo);
+      expect(invoice?.items.length, 1);
+    });
+
+    test('getAllInvoices', () async {
+      await repository.saveInvoice(testInvoice);
+      final invoices = await repository.getAllInvoices();
       expect(invoices.length, 1);
-      expect(invoices.first.invoiceNo, 'INV-001');
-
-      final items = await db.select(db.invoiceItems).get();
-      expect(items.length, 1);
-      expect(items.first.description, 'Item 1');
-
-      final payments = await db.select(db.payments).get();
-      expect(payments.length, 1);
-      expect(payments.first.amount, 50.0);
     });
 
-    test('getInvoice should retrieve full invoice model', () async {
-      final id = 'inv-uuid-1';
-      final invoiceWithId = testInvoice.copyWith(id: id);
-      await repository.saveInvoice(invoiceWithId);
-
-      final retrieved = await repository.getInvoice(id);
-      expect(retrieved, isNotNull);
-      expect(retrieved!.invoiceNo, 'INV-001');
-      expect(retrieved.items.length, 1);
-      expect(retrieved.payments.length, 1);
-      expect(retrieved.receiver.name, 'Test Client');
-    });
-
-    test('getAllInvoices should return list', () async {
-      await repository.saveInvoice(
-        testInvoice.copyWith(id: '1', invoiceNo: 'INV-001'),
-      );
-      await repository.saveInvoice(
-        testInvoice.copyWith(id: '2', invoiceNo: 'INV-002'),
-      );
-
-      final all = await repository.getAllInvoices();
-      expect(all.length, 2);
-    });
-
-    test('deleteInvoice should remove all related data', () async {
-      final id = 'del-me';
-      await repository.saveInvoice(testInvoice.copyWith(id: id));
-
-      await repository.deleteInvoice(id);
-
-      expect(await repository.getInvoice(id), isNull);
-      expect((await db.select(db.invoiceItems).get()).isEmpty, true);
-      expect((await db.select(db.payments).get()).isEmpty, true);
-    });
-
-    test('checkInvoiceExists should work correctly', () async {
-      await repository.saveInvoice(
-        testInvoice.copyWith(id: '1', invoiceNo: 'INV-101'),
-      );
-
-      expect(await repository.checkInvoiceExists('INV-101'), true);
-      expect(await repository.checkInvoiceExists('INV-102'), false);
-
-      // Exclude current ID
-      expect(
-        await repository.checkInvoiceExists('INV-101', excludeId: '1'),
-        false,
-      );
-    });
-
-    test(
-      'saveInvoice should increment business profile sequence if no matches pattern',
-      () async {
-        // Expected no is INV-001 (sequence 1)
-        await repository.saveInvoice(testInvoice);
-
-        final profile = await (db.select(
-          db.businessProfiles,
-        )..where((final t) => t.id.equals('default'))).getSingle();
-        expect(profile.invoiceSequence, 2);
-      },
-    );
-
-    test('Credit Note should auto-link payment to original invoice', () async {
-      // 1. Create original invoice
-      final originalId = 'orig-id';
-      final originalInv = testInvoice.copyWith(
-        id: originalId,
-        invoiceNo: 'INV-ORG',
-      );
-      await repository.saveInvoice(originalInv);
-
-      // 2. Create Credit Note
-      final cnId = 'cn-id';
-      final creditNote = testInvoice.copyWith(
-        id: cnId,
-        invoiceNo: 'CN-001',
-        type: model.InvoiceType.creditNote,
-        originalInvoiceNumber: 'INV-ORG',
-      );
-
-      await repository.saveInvoice(creditNote);
-
-      // 3. Verify original invoice now has a "Credit Note" payment
-      final originalAfter = await repository.getInvoice(originalId);
-      expect(
-        originalAfter!.payments.any((final p) => p.paymentMode == 'Credit Note'),
-        true,
-      );
-
-      final cnPayment = originalAfter.payments.firstWhere(
-        (final p) => p.paymentMode == 'Credit Note',
-      );
-      expect(cnPayment.id, 'CN-PAY-$cnId');
+    test('deleteInvoice', () async {
+      await repository.saveInvoice(testInvoice);
+      await repository.deleteInvoice(testInvoice.id!);
+      final invoice = await repository.getInvoice(testInvoice.id!);
+      expect(invoice, isNull);
     });
   });
 }

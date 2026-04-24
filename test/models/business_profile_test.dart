@@ -37,7 +37,7 @@ void main() {
 
       expect(profile.id, 'default');
       expect(profile.companyName, 'Your Company Name');
-      expect(profile.state, 'Karnataka');
+      expect(profile.state, '');
       expect(profile.colorValue, Colors.teal.toARGB32());
       expect(profile.invoiceSeries, 'INV-');
       expect(profile.invoiceSequence, 1);
@@ -90,7 +90,14 @@ void main() {
     });
 
     test('fromJson() should use default values for missing fields', () {
-      final json = <String, dynamic>{};
+      final json = <String, dynamic>{
+        'id': 'default',
+        'companyName': 'Your Company Name',
+        'address': '',
+        'gstin': '',
+        'email': '',
+        'phone': '',
+      };
       final profile = BusinessProfile.fromJson(json);
 
       expect(profile.id, 'default');

@@ -1,51 +1,48 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:invobharat/models/invoice.dart';
-import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:uuid/uuid.dart';
 
 class InvoiceActions {
-  // Generates a unique ID
-  static String generateId() =>
-      DateTime.now().millisecondsSinceEpoch.toString();
+  static Future<void> saveInvoice(
+    final WidgetRef ref,
+    final Invoice invoice,
+  ) async {
+    await ref.read(invoiceRepositoryProvider).saveInvoice(invoice);
+    ref.invalidate(invoiceListProvider);
+  }
 
-  /// Saves an invoice, handling profile sync and sequence updates.
-  /// Returns the saved Invoice object.
-  static Future<Invoice> saveInvoice(final WidgetRef ref, final Invoice invoice) async {
-    Invoice toSave = invoice;
+  static Future<void> duplicateInvoice(
+    final WidgetRef ref,
+    final Invoice invoice,
+  ) async {
     final profile = ref.read(businessProfileProvider);
 
-    // Auto-fill supplier info from profile if missing or always?
-    // Original logic: Material did a full copy. Fluent did a check.
-    // Let's standardize on updating supplier details from current profile for consistency.
-    toSave = toSave.copyWith(
-      supplier: toSave.supplier.copyWith(
-        name: profile.companyName,
-        address: profile.address,
-        gstin: profile.gstin,
-        phone: profile.phone,
-        email: profile.email,
-        state: profile.state,
-      ),
+    final newInvoice = invoice.copyWith(
+      id: const Uuid().v4(),
+      invoiceNo: '${profile.invoiceSeries}${profile.invoiceSequence}',
+      invoiceDate: DateTime.now(),
+      payments: [],
+      items: invoice.items.map((final e) => e.copyWith(id: const Uuid().v4())).toList(),
     );
 
-    // Generate ID if new
-    if (toSave.id == null) {
-      toSave = toSave.copyWith(id: generateId());
-    }
+    await ref.read(invoiceRepositoryProvider).saveInvoice(newInvoice);
+    await ref.read(businessProfileListProvider.notifier).incrementInvoiceSequence();
+    ref.invalidate(invoiceListProvider);
+  }
 
-    try {
-      await ref.read(invoiceRepositoryProvider).saveInvoice(toSave);
-
-      // Only increment sequence if it was a NEW invoice
-      if (invoice.id == null) {
-        await ref
-            .read(businessProfileNotifierProvider)
-            .incrementInvoiceSequence();
-      }
-
-      return toSave;
-    } catch (e) {
-      rethrow;
+  static Color getStatusColor(final String status) {
+    switch (status) {
+      case 'Paid':
+        return Colors.green;
+      case 'Partial':
+        return Colors.blue;
+      case 'Overdue':
+        return Colors.red;
+      default:
+        return Colors.grey;
     }
   }
 }

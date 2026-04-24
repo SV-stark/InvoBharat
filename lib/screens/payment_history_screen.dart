@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
-import 'package:invobharat/screens/invoice_detail_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class PaymentHistoryScreen extends ConsumerWidget {
   const PaymentHistoryScreen({super.key});
@@ -11,7 +11,7 @@ class PaymentHistoryScreen extends ConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final invoiceListAsync = ref.watch(invoiceListProvider);
-    final currencySymbol = ref.watch(businessProfileProvider).currencySymbol;
+    final currencySymbol = ref.watch(businessProfileProvider).currency;
 
     return Scaffold(
       appBar: AppBar(title: const Text("Payment History")),
@@ -55,12 +55,7 @@ class PaymentHistoryScreen extends ConsumerWidget {
 
               return ListTile(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => InvoiceDetailScreen(invoice: invoice),
-                    ),
-                  );
+                  context.push('/invoice-detail', extra: invoice);
                 },
                 leading: CircleAvatar(
                   backgroundColor: Colors.green.shade100,

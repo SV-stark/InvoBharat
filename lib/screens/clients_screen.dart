@@ -1,9 +1,9 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/client_provider.dart';
 import 'package:invobharat/widgets/client_form.dart';
-import 'package:invobharat/screens/client_ledger_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class ClientsScreen extends StatefulWidget {
   const ClientsScreen({super.key});
@@ -124,13 +124,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                             children: [
                               IconButton(
                                 icon: const Icon(FluentIcons.history),
-                                onPressed: () => Navigator.push(
-                                  context,
-                                  FluentPageRoute(
-                                    builder: (final context) =>
-                                        ClientLedgerScreen(client: client),
-                                  ),
-                                ),
+                                onPressed: () => context.push('/client-ledger', extra: client),
                               ),
                               IconButton(
                                 icon: const Icon(FluentIcons.edit),

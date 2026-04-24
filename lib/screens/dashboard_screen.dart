@@ -2,17 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:invobharat/widgets/profile_switcher_sheet.dart';
 import 'package:invobharat/widgets/error_view.dart';
 import 'package:invobharat/widgets/empty_state.dart';
-import 'package:invobharat/widgets/skeleton_widgets.dart';
 import 'package:invobharat/widgets/gst_pie_chart.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:invobharat/screens/invoice_form.dart';
-import 'package:invobharat/screens/invoice_detail_screen.dart';
-import 'package:invobharat/screens/recurring_invoices_screen.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 
-import 'package:invobharat/screens/settings_screen.dart';
-import 'package:invobharat/screens/payment_history_screen.dart';
-import 'package:invobharat/screens/audit_report_screen.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 
 import 'package:invobharat/providers/invoice_repository_provider.dart';
@@ -24,8 +20,6 @@ import 'package:invobharat/services/gstr_service.dart';
 import 'package:invobharat/services/gstr3b_service.dart';
 import 'package:invobharat/services/dashboard_actions.dart';
 import 'package:invobharat/screens/widgets/dashboard_widgets.dart';
-import 'package:invobharat/screens/material_clients_screen.dart';
-import 'package:invobharat/screens/invoices_list_screen.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -101,7 +95,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         title: Row(
           children: [
             Image.asset('logo.png', height: 32, width: 32),
-            const SizedBox(width: 12),
+            const Gap(12),
             const Text(
               "InvoBharat",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
@@ -115,10 +109,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SettingsScreen()),
-            ),
+            onPressed: () => context.push('/settings'),
           ),
         ],
       ),
@@ -127,63 +118,48 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         tooltip: "Switch Profile",
         child: const Icon(Icons.switch_account),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _DashboardHeader(
-              profile: profile,
-              selectedFilter: _selectedFilter,
-              onFilterSelected: _updateDateRange,
-            ),
-            const SizedBox(height: 24),
-            invoiceListAsync.when(
-              loading: () => const SkeletonDashboard(),
-              error: (final err, final stack) => ErrorView(
-                message: err.toString(),
-                onRetry: () => ref.refresh(invoiceListProvider),
-              ),
-              data: (final invoices) {
-                final filteredInvoices = _dateRange == null
-                    ? invoices
-                    : invoices.where((final i) {
-                        return i.invoiceDate.isAfter(
-                              _dateRange!.start.subtract(
-                                const Duration(seconds: 1),
-                              ),
-                            ) &&
-                            i.invoiceDate.isBefore(
-                              _dateRange!.end.add(const Duration(days: 1)),
-                            );
-                      }).toList();
-
-                final previousPeriodInvoices = _getPreviousPeriodInvoices(
-                  invoices,
-                );
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _DashboardStats(
-                      invoices: filteredInvoices,
-                      previousInvoices: previousPeriodInvoices,
-                      selectedFilter: _selectedFilter,
-                      profile: profile,
-                    ),
-                    const SizedBox(height: 32),
-                    _DashboardQuickActions(
-                      invoices: filteredInvoices,
-                      selectedFilter: _selectedFilter,
-                    ),
-                    const SizedBox(height: 32),
-                    _DashboardRecentActivity(invoices: invoices),
-                  ],
-                );
-              },
-            ),
-          ],
+      body: invoiceListAsync.when(
+        loading: () => Skeletonizer(
+          child: _DashboardContent(
+            profile: profile,
+            invoices: const [],
+            previousInvoices: const [],
+            selectedFilter: _selectedFilter,
+            onFilterSelected: _updateDateRange,
+            dateRange: _dateRange,
+          ),
         ),
+        error: (final err, final stack) => ErrorView(
+          message: err.toString(),
+          onRetry: () => ref.refresh(invoiceListProvider),
+        ),
+        data: (final invoices) {
+          final filteredInvoices = _dateRange == null
+              ? invoices
+              : invoices.where((final i) {
+                  return i.invoiceDate.isAfter(
+                        _dateRange!.start.subtract(
+                          const Duration(seconds: 1),
+                        ),
+                      ) &&
+                      i.invoiceDate.isBefore(
+                        _dateRange!.end.add(const Duration(days: 1)),
+                      );
+                }).toList();
+
+          final previousPeriodInvoices = _getPreviousPeriodInvoices(
+            invoices,
+          );
+
+          return _DashboardContent(
+            profile: profile,
+            invoices: filteredInvoices,
+            previousInvoices: previousPeriodInvoices,
+            selectedFilter: _selectedFilter,
+            onFilterSelected: _updateDateRange,
+            dateRange: _dateRange,
+          );
+        },
       ),
     );
   }
@@ -205,6 +181,55 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   void _showProfileSwitcher(final BuildContext context, final WidgetRef ref) {
     showProfileSwitcherSheet(context, ref);
+  }
+}
+
+class _DashboardContent extends StatelessWidget {
+  final BusinessProfile profile;
+  final List<Invoice> invoices;
+  final List<Invoice> previousInvoices;
+  final String selectedFilter;
+  final Function(String) onFilterSelected;
+  final DateTimeRange? dateRange;
+
+  const _DashboardContent({
+    required this.profile,
+    required this.invoices,
+    required this.previousInvoices,
+    required this.selectedFilter,
+    required this.onFilterSelected,
+    this.dateRange,
+  });
+
+  @override
+  Widget build(final BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _DashboardHeader(
+            profile: profile,
+            selectedFilter: selectedFilter,
+            onFilterSelected: onFilterSelected,
+          ),
+          const Gap(24),
+          _DashboardStats(
+            invoices: invoices,
+            previousInvoices: previousInvoices,
+            selectedFilter: selectedFilter,
+            profile: profile,
+          ),
+          const Gap(32),
+          _DashboardQuickActions(
+            invoices: invoices,
+            selectedFilter: selectedFilter,
+          ),
+          const Gap(32),
+          _DashboardRecentActivity(invoices: invoices),
+        ],
+      ),
+    );
   }
 }
 
@@ -316,10 +341,7 @@ class _DashboardStats extends StatelessWidget {
           children: [
             Expanded(
               child: DashboardStatCard(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const InvoicesListScreen()),
-                ),
+                onTap: () => context.push('/invoices'),
                 title: "Revenue ($selectedFilter)",
                 value: currency.format(totalRevenue),
                 icon: Icons.currency_rupee,
@@ -327,13 +349,10 @@ class _DashboardStats extends StatelessWidget {
                 trend: revenueTrend,
               ),
             ),
-            const SizedBox(width: 16),
+            const Gap(16),
             Expanded(
               child: DashboardStatCard(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const InvoicesListScreen()),
-                ),
+                onTap: () => context.push('/invoices'),
                 title: "Invoices",
                 value: "${invoices.length}",
                 icon: Icons.description,
@@ -343,7 +362,7 @@ class _DashboardStats extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 32),
+        const Gap(32),
         DashboardStatCard(
           onTap: () => showDialog(
             context: context,
@@ -361,7 +380,7 @@ class _DashboardStats extends StatelessWidget {
           trend: gstTrend,
         ),
         if (totalGst > 0) ...[
-          const SizedBox(height: 32),
+          const Gap(32),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -374,7 +393,7 @@ class _DashboardStats extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const Gap(16),
                   GstPieChart(
                     cgst: totalCGST,
                     sgst: totalSGST,
@@ -413,74 +432,55 @@ class _DashboardQuickActions extends ConsumerWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 16),
+        const Gap(16),
         Row(
           children: [
             DashboardActionButton(
               label: "New Invoice",
               icon: Icons.add,
               bgColor: theme.colorScheme.primaryContainer,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const InvoiceFormScreen()),
-              ).then((_) => ref.refresh(invoiceListProvider)),
+              onTap: () => context.push('/invoice-form').then((_) => ref.refresh(invoiceListProvider)),
             ),
-            const SizedBox(width: 16),
+            const Gap(16),
             DashboardActionButton(
               label: "Payments",
               icon: Icons.payment,
               bgColor: Colors.green.shade100,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const PaymentHistoryScreen()),
-              ),
+              onTap: () => context.push('/payments'),
             ),
-            const SizedBox(width: 16),
+            const Gap(16),
             DashboardActionButton(
               label: "Clients",
               icon: Icons.contacts,
               bgColor: Colors.blue.shade100,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const MaterialClientsScreen(),
-                ),
-              ),
+              onTap: () => context.push('/clients'),
             ),
-            const SizedBox(width: 16),
+            const Gap(16),
             DashboardActionButton(
               label: "Audit",
               icon: Icons.warning_amber,
               bgColor: Colors.orange.shade100,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AuditReportScreen()),
-              ),
+              onTap: () => context.push('/audit'),
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const Gap(16),
         Row(
           children: [
             DashboardActionButton(
               label: "Recurring",
               icon: Icons.autorenew,
               bgColor: Colors.purple.shade100,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const RecurringInvoicesScreen(),
-                ),
-              ),
+              onTap: () => context.push('/recurring'),
             ),
-            const SizedBox(width: 16),
+            const Gap(16),
             DashboardActionButton(
               label: "Export GSTR-1",
               icon: Icons.table_chart,
               bgColor: theme.colorScheme.tertiaryContainer,
               onTap: () async => _exportGstr1(context, invoices),
             ),
-            const SizedBox(width: 16),
+            const Gap(16),
             DashboardActionButton(
               label: "Export GSTR-3B",
               icon: Icons.summarize,
@@ -598,24 +598,18 @@ class _DashboardRecentActivity extends ConsumerWidget {
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             TextButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const InvoicesListScreen()),
-              ),
+              onPressed: () => context.push('/invoices'),
               child: const Text("View All"),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const Gap(8),
         if (invoices.isEmpty)
           EmptyStateIllustration(
             title: "No invoices yet",
             message: "Create your first invoice to get started",
             actionLabel: "Create Invoice",
-            onAction: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const InvoiceFormScreen()),
-            ).then((_) => ref.refresh(invoiceListProvider)),
+            onAction: () => context.push('/invoice-form').then((_) => ref.refresh(invoiceListProvider)),
           )
         else
           ...invoices
@@ -624,12 +618,7 @@ class _DashboardRecentActivity extends ConsumerWidget {
                 (final inv) => Card(
                   child: ListTile(
                     onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => InvoiceDetailScreen(invoice: inv),
-                        ),
-                      );
+                      await context.push('/invoice-detail', extra: inv);
                       ref.invalidate(invoiceListProvider);
                     },
                     leading: CircleAvatar(
@@ -649,7 +638,7 @@ class _DashboardRecentActivity extends ConsumerWidget {
                     title: Row(
                       children: [
                         Text(inv.receiver.name),
-                        const SizedBox(width: 8),
+                        const Gap(8),
                         DashboardStatusBadge(status: inv.paymentStatus),
                       ],
                     ),

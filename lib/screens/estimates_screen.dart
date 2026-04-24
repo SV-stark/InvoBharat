@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import 'package:invobharat/providers/estimate_provider.dart';
-import 'package:invobharat/screens/estimate_form.dart';
+import 'package:go_router/go_router.dart';
 
 class EstimatesScreen extends ConsumerWidget {
   const EstimatesScreen({super.key});
@@ -33,11 +33,7 @@ class EstimatesScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   FilledButton.icon(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (final context) => const EstimateForm()),
-                      );
+                      context.push('/estimate-form');
                     },
                     icon: const Icon(Icons.add),
                     label: const Text("Create Estimate"),
@@ -76,13 +72,7 @@ class EstimatesScreen extends ConsumerWidget {
                     ],
                   ),
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (final context) =>
-                            EstimateForm(estimateId: estimate.id),
-                      ),
-                    );
+                    context.push('/estimate-form', extra: estimate.id);
                   },
                 ),
               );
@@ -94,10 +84,7 @@ class EstimatesScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (final context) => const EstimateForm()),
-          );
+          context.push('/estimate-form');
         },
         child: const Icon(Icons.add),
       ),

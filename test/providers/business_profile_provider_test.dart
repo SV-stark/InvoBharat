@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +10,8 @@ class MockBusinessProfileRepository extends Mock
     implements BusinessProfileRepository {}
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   setUpAll(() {
     registerFallbackValue(BusinessProfile.defaults());
   });
@@ -21,6 +23,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       mockRepository = MockBusinessProfileRepository();
       when(() => mockRepository.getAllProfiles()).thenAnswer((_) async => []);
+      when(() => mockRepository.saveProfile(any())).thenAnswer((_) async {});
     });
 
     test(
@@ -43,6 +46,9 @@ void main() {
         );
         addTearDown(container.dispose);
 
+        final sub = container.listen(businessProfileListProvider, (final prev, final next) {});
+        addTearDown(sub.close);
+
         container.read(businessProfileListProvider);
         // Wait for the async _init to complete
         await Future.delayed(const Duration(milliseconds: 100));
@@ -61,6 +67,11 @@ void main() {
       );
       addTearDown(container.dispose);
 
+      final subList = container.listen(businessProfileListProvider, (final prev, final next) {});
+      final sub = container.listen(activeProfileIdProvider, (final prev, final next) {});
+      addTearDown(subList.close);
+      addTearDown(sub.close);
+
       container.read(activeProfileIdProvider);
       // Wait for the async _loadActiveId to complete
       await Future.delayed(const Duration(milliseconds: 100));
@@ -73,6 +84,7 @@ void main() {
         id: 'p1',
         invoiceSequence: 10,
       );
+      SharedPreferences.setMockInitialValues({'active_profile_id': 'p1'});
       when(
         () => mockRepository.getAllProfiles(),
       ).thenAnswer((_) async => [profile]);
@@ -85,11 +97,16 @@ void main() {
       );
       addTearDown(container.dispose);
 
+      final subList = container.listen(businessProfileListProvider, (final prev, final next) {});
+      final subActive = container.listen(activeProfileIdProvider, (final prev, final next) {});
+      addTearDown(subList.close);
+      addTearDown(subActive.close);
+
       container.read(businessProfileListProvider);
       container.read(activeProfileIdProvider);
       await Future.delayed(const Duration(milliseconds: 100));
 
-      final proxy = container.read(businessProfileNotifierProvider);
+      final proxy = container.read(businessProfileListProvider.notifier);
       await proxy.incrementInvoiceSequence();
 
       verify(

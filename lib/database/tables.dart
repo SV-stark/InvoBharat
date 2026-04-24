@@ -18,12 +18,16 @@ class BusinessProfiles extends Table {
   TextColumn get defaultNotes => text()();
   TextColumn get currencySymbol => text()();
   TextColumn get bankName => text()();
-  TextColumn get accountNumber => text()();
+  TextColumn get accountNo => text()();
   TextColumn get ifscCode => text()();
-  TextColumn get branchName => text()();
+  TextColumn get branch => text()();
   TextColumn get upiId => text().nullable()();
   TextColumn get upiName => text().nullable()();
   TextColumn get pan => text()();
+  RealColumn get stampX => real().withDefault(const Constant(0.0))();
+  RealColumn get stampY => real().withDefault(const Constant(0.0))();
+  RealColumn get signatureX => real().withDefault(const Constant(0.0))();
+  RealColumn get signatureY => real().withDefault(const Constant(0.0))();
 
   @override
   Set<Column> get primaryKey => {id};

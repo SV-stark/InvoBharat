@@ -1,6 +1,6 @@
 // ignore_for_file: unawaited_futures
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 import 'package:flutter/services.dart';
@@ -987,7 +987,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
           invoiceSequence: currentProfile.invoiceSequence + 1,
         );
         await ref
-            .read(businessProfileNotifierProvider)
+            .read(businessProfileListProvider.notifier)
             .updateProfile(updatedProfile);
       }
 

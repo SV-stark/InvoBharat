@@ -38,8 +38,9 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
         },
       },
       child: NavigationView(
-        appBar: NavigationAppBar(
-          title: Row(
+        titleBar: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
             children: [
               Image.asset('logo.png', width: 24, height: 24),
               const SizedBox(width: 10),
@@ -47,40 +48,33 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                 'InvoBharat',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
+              const Spacer(),
+              Tooltip(
+                message: 'New Invoice',
+                child: IconButton(
+                  icon: const Icon(FluentIcons.add),
+                  onPressed: () => setState(() => topIndex = 1),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Tooltip(
+                message: 'New Client',
+                child: IconButton(
+                  icon: const Icon(FluentIcons.contact),
+                  onPressed: () => setState(() => topIndex = 5),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Tooltip(
+                message: 'Refresh',
+                child: IconButton(
+                  icon: const Icon(FluentIcons.refresh),
+                  onPressed: () {
+                    // Global refresh logic if needed
+                  },
+                ),
+              ),
             ],
-          ),
-          actions: Padding(
-            padding: const EdgeInsets.only(right: 12.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Tooltip(
-                  message: 'New Invoice',
-                  child: IconButton(
-                    icon: const Icon(FluentIcons.add),
-                    onPressed: () => setState(() => topIndex = 1),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Tooltip(
-                  message: 'New Client',
-                  child: IconButton(
-                    icon: const Icon(FluentIcons.contact),
-                    onPressed: () => setState(() => topIndex = 5),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Tooltip(
-                  message: 'Refresh',
-                  child: IconButton(
-                    icon: const Icon(FluentIcons.refresh),
-                    onPressed: () {
-                      // Global refresh logic if needed
-                    },
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
         pane: NavigationPane(

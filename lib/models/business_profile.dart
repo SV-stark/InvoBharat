@@ -1,210 +1,59 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:flutter/material.dart';
 
-class BusinessProfile {
-  String id;
-  String companyName;
-  String address;
-  String gstin;
-  String email;
-  String phone;
-  String state;
-  String pan;
-  int colorValue; // Store Color as int
-  String? logoPath;
-  String invoiceSeries;
-  int invoiceSequence;
-  String? signaturePath;
-  String? stampPath;
-  double signatureX;
-  double signatureY;
-  double stampX;
-  double stampY;
-  String termsAndConditions;
-  String defaultNotes;
-  String currencySymbol;
+part 'business_profile.freezed.dart';
+part 'business_profile.g.dart';
 
-  // Bank Details
-  String bankName;
-  String accountNumber;
-  String ifscCode;
-  String branchName;
+@unfreezed
+abstract class BusinessProfile with _$BusinessProfile {
+  factory BusinessProfile({
+    required final String id,
+    required final String companyName,
+    required final String address,
+    required final String gstin,
+    required final String email,
+    required final String phone,
+    @Default('') final String state,
+    @Default('') final String pan,
+    @Default('INV-') final String invoiceSeries,
+    @Default(1) final int invoiceSequence,
+    @Default('₹') final String currency,
+    @Default('') final String termsAndConditions,
+    @Default('') final String defaultNotes,
+    @Default('') final String bankName,
+    @Default('') final String accountNo,
+    @Default('') final String ifscCode,
+    @Default('') final String branch,
+    @Default('') final String upiId,
+    @Default('') final String upiName,
+    @Default('') final String? logoPath,
+    @Default('') final String? signaturePath,
+    @Default('') final String? stampPath,
+    @Default(0.0) final double stampX,
+    @Default(0.0) final double stampY,
+    @Default(0.0) final double signatureX,
+    @Default(0.0) final double signatureY,
+    @Default(0xFF009688) final int colorValue,
+  }) = _BusinessProfile;
 
-  // UPI
-  String? upiId;
-  String? upiName;
+  factory BusinessProfile.fromJson(final Map<String, dynamic> json) =>
+      _$BusinessProfileFromJson(json);
 
-  BusinessProfile({
-    required this.id,
-    required this.companyName,
-    required this.address,
-    required this.gstin,
-    required this.email,
-    required this.phone,
-    required this.state,
-    required this.pan,
-    required this.colorValue,
-    this.logoPath,
-    this.invoiceSeries = 'INV-',
-    this.invoiceSequence = 1,
-    this.signaturePath,
-    this.stampPath,
-    this.signatureX = 0.7,
-    this.signatureY = 0.85,
-    this.stampX = 0.55,
-    this.stampY = 0.85,
-    this.termsAndConditions = '',
-    this.defaultNotes = '',
-    this.currencySymbol = '₹',
-    this.bankName = '',
-    this.accountNumber = '',
-    this.ifscCode = '',
-    this.branchName = '',
-    this.upiId,
-    this.upiName,
-  });
+  factory BusinessProfile.defaults() => BusinessProfile(
+        id: 'default',
+        companyName: 'Your Company Name',
+        address: '',
+        gstin: '',
+        email: '',
+        phone: '',
+        colorValue: Colors.teal.toARGB32(),
+      );
+}
 
+extension BusinessProfileExt on BusinessProfile {
   Color get color => Color(colorValue);
-
-  factory BusinessProfile.defaults() {
-    return BusinessProfile(
-      id: "default",
-      companyName: "Your Company Name",
-      address: "",
-      gstin: "",
-      email: "",
-      phone: "",
-      state: "Karnataka",
-      pan: "",
-      colorValue: Colors.teal.toARGB32(),
-      termsAndConditions:
-          "1. All disputes are subject to local jurisdiction.\n2. Interest @ 18% p.a. will be charged on delayed payment.",
-      defaultNotes: "Thank you for your business!",
-      upiId: "",
-      upiName: "",
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'companyName': companyName,
-      'address': address,
-      'gstin': gstin,
-      'email': email,
-      'phone': phone,
-      'state': state,
-      'pan': pan,
-      'colorValue': colorValue,
-      'logoPath': logoPath,
-      'invoiceSeries': invoiceSeries,
-      'invoiceSequence': invoiceSequence,
-      'signaturePath': signaturePath,
-      'stampPath': stampPath,
-      'signatureX': signatureX,
-      'signatureY': signatureY,
-      'stampX': stampX,
-      'stampY': stampY,
-      'termsAndConditions': termsAndConditions,
-      'defaultNotes': defaultNotes,
-      'currencySymbol': currencySymbol,
-      'bankName': bankName,
-      'accountNumber': accountNumber,
-      'ifscCode': ifscCode,
-      'branchName': branchName,
-      'upiId': upiId,
-      'upiName': upiName,
-    };
-  }
-
-  factory BusinessProfile.fromJson(final Map<String, dynamic> json) {
-    return BusinessProfile(
-      id: json['id'] ?? 'default', // Backward compatibility
-      companyName: json['companyName'] ?? '',
-      address: json['address'] ?? '',
-      gstin: json['gstin'] ?? '',
-      email: json['email'] ?? '',
-      phone: json['phone'] ?? '',
-      state: json['state'] ?? '',
-      pan: json['pan'] ?? '',
-      colorValue: json['colorValue'] ?? Colors.teal.toARGB32(),
-      logoPath: json['logoPath'],
-      invoiceSeries: json['invoiceSeries'] ?? 'INV-',
-      invoiceSequence: json['invoiceSequence'] ?? 1,
-      signaturePath: json['signaturePath'],
-      stampPath: json['stampPath'],
-      signatureX: json['signatureX'] ?? 0.7,
-      signatureY: json['signatureY'] ?? 0.85,
-      stampX: json['stampX'] ?? 0.55,
-      stampY: json['stampY'] ?? 0.85,
-      termsAndConditions: json['termsAndConditions'] ?? '',
-      defaultNotes: json['defaultNotes'] ?? '',
-      currencySymbol: json['currencySymbol'] ?? '₹',
-      bankName: json['bankName'] ?? '',
-      accountNumber: json['accountNumber'] ?? '',
-      ifscCode: json['ifscCode'] ?? '',
-      branchName: json['branchName'] ?? '',
-      upiId: json['upiId'],
-      upiName: json['upiName'],
-    );
-  }
-
-  BusinessProfile copyWith({
-    final String? id,
-    final String? companyName,
-    final String? address,
-    final String? gstin,
-    final String? email,
-    final String? phone,
-    final String? state,
-    final String? pan,
-    final int? colorValue,
-    final String? logoPath,
-    final String? invoiceSeries,
-    final int? invoiceSequence,
-    final String? signaturePath,
-    final String? stampPath,
-    final double? signatureX,
-    final double? signatureY,
-    final double? stampX,
-    final double? stampY,
-    final String? termsAndConditions,
-    final String? defaultNotes,
-    final String? currencySymbol,
-    final String? bankName,
-    final String? accountNumber,
-    final String? ifscCode,
-    final String? branchName,
-    final String? upiId,
-    final String? upiName,
-  }) {
-    return BusinessProfile(
-      id: id ?? this.id,
-      companyName: companyName ?? this.companyName,
-      address: address ?? this.address,
-      gstin: gstin ?? this.gstin,
-      email: email ?? this.email,
-      phone: phone ?? this.phone,
-      state: state ?? this.state,
-      pan: pan ?? this.pan,
-      colorValue: colorValue ?? this.colorValue,
-      logoPath: logoPath ?? this.logoPath,
-      invoiceSeries: invoiceSeries ?? this.invoiceSeries,
-      invoiceSequence: invoiceSequence ?? this.invoiceSequence,
-      signaturePath: signaturePath ?? this.signaturePath,
-      stampPath: stampPath ?? this.stampPath,
-      signatureX: signatureX ?? this.signatureX,
-      signatureY: signatureY ?? this.signatureY,
-      stampX: stampX ?? this.stampX,
-      stampY: stampY ?? this.stampY,
-      termsAndConditions: termsAndConditions ?? this.termsAndConditions,
-      defaultNotes: defaultNotes ?? this.defaultNotes,
-      currencySymbol: currencySymbol ?? this.currencySymbol,
-      bankName: bankName ?? this.bankName,
-      accountNumber: accountNumber ?? this.accountNumber,
-      ifscCode: ifscCode ?? this.ifscCode,
-      branchName: branchName ?? this.branchName,
-      upiId: upiId ?? this.upiId,
-      upiName: upiName ?? this.upiName,
-    );
-  }
+  String get currencySymbol => currency;
+  // Aliases for compatibility
+  String get accountNumber => accountNo;
+  String get branchName => branch;
 }

@@ -1,7 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:drift/native.dart';
@@ -17,7 +17,7 @@ import 'package:invobharat/providers/database_provider.dart';
 import 'package:invobharat/data/invoice_repository.dart';
 import 'package:invobharat/data/client_repository.dart';
 import 'package:invobharat/data/business_profile_repository.dart';
-import 'package:invobharat/database/database.dart' hide Client, Invoice, BusinessProfile, InvoiceItem, PaymentTransaction, AppSetting;
+import 'package:invobharat/database/database.dart' hide Client, Invoice, BusinessProfile, InvoiceItem, AppSetting;
 
 class MockInvoiceRepository extends Mock implements InvoiceRepository {}
 
@@ -94,7 +94,7 @@ void main() {
     final testClient = const Client(
       id: '1',
       name: 'Test Client',
-      gstin: '27AAAAA0000A1Z5',
+      gstin: '27AAPFU0939F1ZV',
       address: 'Mumbai, Maharashtra',
       state: 'Maharashtra',
     );
@@ -106,22 +106,18 @@ void main() {
     await tester.pumpWidget(createTestWidget());
     await tester.pumpAndSettle();
 
-    // Find the "Select Client" button specifically (it's a TextButton.icon)
     final selectButton = find.widgetWithText(TextButton, 'Select Client');
     await tester.tap(selectButton);
     await tester.pumpAndSettle();
 
-    // Verify dialog title and client list
     expect(find.text('Select Client'), findsAtLeastNWidgets(1));
     expect(find.text('Test Client'), findsOneWidget);
 
-    // Tap on the client in the list
     await tester.tap(find.text('Test Client'));
     await tester.pumpAndSettle();
 
-    // Verify form is updated
     expect(find.text('Test Client'), findsOneWidget);
-    expect(find.text('27AAAAA0000A1Z5'), findsOneWidget);
+    expect(find.text('27AAPFU0939F1ZV'), findsOneWidget);
     expect(find.text('Maharashtra'), findsOneWidget);
   });
 
@@ -129,10 +125,8 @@ void main() {
     await tester.pumpWidget(createTestWidget());
     await tester.pumpAndSettle();
 
-    // Initial state has 1 empty item
     expect(find.text('GST%'), findsOneWidget);
 
-    // Tap "Add New Item"
     final addItemButton = find.text('Add New Item');
     await tester.ensureVisible(addItemButton);
     await tester.tap(addItemButton);
@@ -140,7 +134,6 @@ void main() {
 
     expect(find.text('GST%'), findsNWidgets(2));
 
-    // Tap delete on the first item
     final deleteButton = find.byIcon(Icons.delete).first;
     await tester.ensureVisible(deleteButton);
     await tester.tap(deleteButton);

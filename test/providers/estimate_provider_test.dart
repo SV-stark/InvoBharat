@@ -1,106 +1,102 @@
-import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
-import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:invobharat/providers/estimate_provider.dart';
 import 'package:invobharat/models/estimate.dart';
 import 'package:invobharat/models/invoice.dart';
-import 'package:invobharat/providers/estimate_provider.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/models/business_profile.dart';
 
-class MockPathProviderPlatform extends Mock
-    with MockPlatformInterfaceMixin
-    implements PathProviderPlatform {}
+class MockEstimateRepository extends Mock implements EstimateRepository {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('EstimateRepository', () {
-    late EstimateRepository repository;
-    late Directory tempDir;
+  late MockEstimateRepository mockRepo;
+  late BusinessProfile testProfile;
 
-    setUp(() async {
-      tempDir = await Directory.systemTemp.createTemp('estimate_test');
-      final mockPathProvider = MockPathProviderPlatform();
-      PathProviderPlatform.instance = mockPathProvider;
-      when(
-        () => mockPathProvider.getApplicationDocumentsPath(),
-      ).thenAnswer((_) async => tempDir.path);
-
-      repository = EstimateRepository(profileId: 'biz-1');
-    });
-
-    tearDown(() async {
-      if (await tempDir.exists()) {
-        await tempDir.delete(recursive: true);
-      }
-    });
-
-    final testEstimate = Estimate(
-      id: 'est-1',
-      estimateNo: 'EST-001',
-      date: DateTime(2024),
-      expiryDate: DateTime(2024, 1, 10),
-      supplier: const Supplier(name: 'S', address: 'A', gstin: 'G'),
-      receiver: const Receiver(name: 'R', address: 'A', gstin: 'G'),
-      items: [],
+  setUpAll(() {
+    registerFallbackValue(
+      Estimate(
+        id: '',
+        date: DateTime.now(),
+        supplier: const Supplier(),
+        receiver: const Receiver(),
+        items: [],
+      ),
     );
-
-    test('saveEstimate and getAllEstimates should work', () async {
-      await repository.saveEstimate(testEstimate);
-
-      final estimates = await repository.getAllEstimates();
-      expect(estimates.length, 1);
-      expect(estimates.first.estimateNo, 'EST-001');
-    });
-
-    test('deleteEstimate should remove file', () async {
-      await repository.saveEstimate(testEstimate);
-      await repository.deleteEstimate('est-1');
-
-      final estimates = await repository.getAllEstimates();
-      expect(estimates.isEmpty, true);
-    });
   });
 
-  group('EstimateListNotifier', () {
-    late ProviderContainer container;
-    late Directory tempDir;
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    mockRepo = MockEstimateRepository();
+    testProfile = BusinessProfile.defaults().copyWith(id: 'test-profile');
 
-    setUp(() async {
-      tempDir = await Directory.systemTemp.createTemp('estimate_notifier_test');
-      final mockPathProvider = MockPathProviderPlatform();
-      PathProviderPlatform.instance = mockPathProvider;
-      when(
-        () => mockPathProvider.getApplicationDocumentsPath(),
-      ).thenAnswer((_) async => tempDir.path);
+    when(() => mockRepo.getAllEstimates()).thenAnswer((_) async => []);
+  });
 
-      container = ProviderContainer(
-        overrides: [
-          activeProfileIdProvider.overrideWith(
-            () => FakeActiveProfileIdNotifier('biz-1'),
-          ),
-        ],
+  ProviderContainer createContainer({
+    final List<dynamic> overrides = const [],
+  }) {
+    final container = ProviderContainer(
+      overrides: [
+        estimateRepositoryProvider.overrideWithValue(mockRepo),
+        businessProfileProvider.overrideWithValue(testProfile),
+        ...overrides,
+      ],
+    );
+    addTearDown(container.dispose);
+    return container;
+  }
+
+  group('EstimateProvider', () {
+    test('initial state should be empty', () async {
+      final container = createContainer();
+      final estimates = await container.read(estimateListProvider.future);
+      expect(estimates, isEmpty);
+    });
+
+    test('addEstimate should update state', () async {
+      final container = createContainer();
+      final estimate = Estimate(
+        id: 'est1',
+        estimateNo: 'EST-001',
+        date: DateTime.now(),
+        supplier: const Supplier(),
+        receiver: const Receiver(),
+        items: [],
       );
+
+      when(() => mockRepo.saveEstimate(any())).thenAnswer((_) async => Future.value());
+
+      await container.read(estimateListProvider.notifier).saveEstimate(estimate);
+      final estimates = await container.read(estimateListProvider.future);
+
+      expect(estimates, contains(estimate));
+      verify(() => mockRepo.saveEstimate(estimate)).called(1);
     });
 
-    tearDown(() async {
-      if (await tempDir.exists()) {
-        await tempDir.delete(recursive: true);
-      }
-    });
+    test('deleteEstimate should remove from state', () async {
+      final estimate = Estimate(
+        id: 'est1',
+        estimateNo: 'EST-001',
+        date: DateTime.now(),
+        supplier: const Supplier(),
+        receiver: const Receiver(),
+        items: [],
+      );
 
-    test('initial state should be empty then load', () async {
-      final state = await container.read(estimateListProvider.future);
-      expect(state, isEmpty);
+      when(() => mockRepo.getAllEstimates()).thenAnswer((_) async => [estimate]);
+      when(() => mockRepo.deleteEstimate(any())).thenAnswer((_) async => Future.value());
+
+      final container = createContainer();
+      
+      await container.read(estimateListProvider.notifier).deleteEstimate('est1');
+      final estimates = await container.read(estimateListProvider.future);
+
+      expect(estimates, isEmpty);
+      verify(() => mockRepo.deleteEstimate('est1')).called(1);
     });
   });
-}
-
-class FakeActiveProfileIdNotifier extends ActiveProfileIdNotifier {
-  final String initial;
-  FakeActiveProfileIdNotifier(this.initial);
-  @override
-  String build() => initial;
 }

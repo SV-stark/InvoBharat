@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:printing/printing.dart';
 import 'package:uuid/uuid.dart';
 
@@ -156,9 +156,9 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
       items: existingEstimate!.items,
       comments: existingEstimate!.notes,
       bankName: profile.bankName,
-      accountNo: profile.accountNumber,
+      accountNo: profile.accountNo,
       ifscCode: profile.ifscCode,
-      branch: profile.branchName,
+      branch: profile.branch,
     );
 
     await ref.read(invoiceRepositoryProvider).saveInvoice(newInvoice);
@@ -168,7 +168,7 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     await ref.read(estimateListProvider.notifier).saveEstimate(updatedEstimate);
 
     // Increment sequence
-    await ref.read(businessProfileNotifierProvider).incrementInvoiceSequence();
+    await ref.read(businessProfileListProvider.notifier).incrementInvoiceSequence();
 
     return invoiceNo;
   }
@@ -189,9 +189,9 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
       items: existingEstimate!.items,
       comments: existingEstimate!.notes,
       bankName: profile.bankName,
-      accountNo: profile.accountNumber,
+      accountNo: profile.accountNo,
       ifscCode: profile.ifscCode,
-      branch: profile.branchName,
+      branch: profile.branch,
     );
 
     await Printing.layoutPdf(

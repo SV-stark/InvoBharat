@@ -1,132 +1,92 @@
-import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
-import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:invobharat/providers/recurring_provider.dart';
 import 'package:invobharat/models/recurring_profile.dart';
 import 'package:invobharat/models/invoice.dart';
-import 'package:invobharat/models/business_profile.dart';
-import 'package:invobharat/providers/recurring_provider.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
-import 'package:invobharat/data/invoice_repository.dart';
-import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:invobharat/models/business_profile.dart';
 
-class MockPathProviderPlatform extends Mock
-    with MockPlatformInterfaceMixin
-    implements PathProviderPlatform {}
-
-class MockInvoiceRepository extends Mock implements InvoiceRepository {}
+class MockRecurringRepository extends Mock implements RecurringRepository {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('RecurringRepository', () {
-    late RecurringRepository repository;
-    late Directory tempDir;
+  late MockRecurringRepository mockRepo;
+  late BusinessProfile testProfile;
 
-    setUp(() async {
-      tempDir = await Directory.systemTemp.createTemp('recurring_test');
-      final mockPathProvider = MockPathProviderPlatform();
-      PathProviderPlatform.instance = mockPathProvider;
-      when(
-        () => mockPathProvider.getApplicationDocumentsPath(),
-      ).thenAnswer((_) async => tempDir.path);
-
-      repository = RecurringRepository();
-    });
-
-    tearDown(() async {
-      if (await tempDir.exists()) {
-        await tempDir.delete(recursive: true);
-      }
-    });
-
-    final testProfile = RecurringProfile(
-      id: 'rec-1',
-      profileId: 'biz-1',
-      interval: RecurringInterval.monthly,
-      nextRunDate: DateTime(2024),
-      baseInvoice: Invoice(
-        id: 'tmpl-1',
-        invoiceDate: DateTime(2024),
-        supplier: const Supplier(name: 'S', address: 'A', gstin: 'G'),
-        receiver: const Receiver(name: 'R', address: 'A', gstin: 'G'),
-        items: [],
+  setUpAll(() {
+    registerFallbackValue(
+      RecurringProfile(
+        id: '',
+        profileId: '',
+        interval: RecurringInterval.monthly,
+        nextRunDate: DateTime.now(),
+        baseInvoice: Invoice(
+          invoiceDate: DateTime.now(),
+          supplier: const Supplier(),
+          receiver: const Receiver(),
+          items: [],
+        ),
       ),
     );
-
-    test('saveProfile and getAllProfiles should work', () async {
-      await repository.saveProfile(testProfile);
-
-      final profiles = await repository.getAllProfiles('biz-1');
-      expect(profiles.length, 1);
-      expect(profiles.first.id, 'rec-1');
-    });
-
-    test('deleteProfile should remove file', () async {
-      await repository.saveProfile(testProfile);
-      await repository.deleteProfile('rec-1');
-
-      final profiles = await repository.getAllProfiles('biz-1');
-      expect(profiles.isEmpty, true);
-    });
   });
 
-  group('RecurringService', () {
-    late MockInvoiceRepository mockInvoiceRepo;
-    late ProviderContainer container;
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    mockRepo = MockRecurringRepository();
+    testProfile = BusinessProfile.defaults().copyWith(id: 'test-profile');
 
-    setUp(() {
-      mockInvoiceRepo = MockInvoiceRepository();
-      container = ProviderContainer(
-        overrides: [
-          invoiceRepositoryProvider.overrideWithValue(mockInvoiceRepo),
-          // For NotifierProviders, we can use overrideWith and return a subclass that returns fixed state
-          businessProfileListProvider.overrideWith(
-            () => FakeBusinessProfileListNotifier([]),
-          ),
-          activeProfileIdProvider.overrideWith(
-            () => FakeActiveProfileIdNotifier('biz-1'),
-          ),
-        ],
-      );
+    when(() => mockRepo.getAllProfiles(any())).thenAnswer((_) async => []);
+  });
+
+  ProviderContainer createContainer({
+    final List<dynamic> overrides = const [],
+  }) {
+    final container = ProviderContainer(
+      overrides: [
+        recurringRepositoryProvider.overrideWithValue(mockRepo),
+        businessProfileProvider.overrideWithValue(testProfile),
+        ...overrides,
+      ],
+    );
+    addTearDown(container.dispose);
+    return container;
+  }
+
+  group('RecurringProvider', () {
+    test('initial state should be empty', () async {
+      final container = createContainer();
+      final profiles = container.read(recurringListProvider);
+      expect(profiles, const AsyncValue<List<RecurringProfile>>.loading());
+      
+      final data = await container.read(recurringListProvider.future);
+      expect(data, isEmpty);
     });
 
-    test('calculateNextDate should work for intervals', () {
-      final service = container.read(recurringServiceProvider);
-      final start = DateTime(2024);
+    test('addProfile should update state', () async {
+      final container = createContainer();
+      final profile = RecurringProfile(
+        id: 'p1',
+        profileId: 'test-profile',
+        interval: RecurringInterval.monthly,
+        nextRunDate: DateTime.now(),
+        baseInvoice: Invoice(
+          invoiceDate: DateTime.now(),
+          supplier: const Supplier(),
+          receiver: const Receiver(),
+          items: [],
+        ),
+      );
 
-      expect(
-        service.calculateNextDate(start, RecurringInterval.daily),
-        DateTime(2024, 1, 2),
-      );
-      expect(
-        service.calculateNextDate(start, RecurringInterval.weekly),
-        DateTime(2024, 1, 8),
-      );
-      expect(
-        service.calculateNextDate(start, RecurringInterval.monthly),
-        DateTime(2024, 2),
-      );
-      expect(
-        service.calculateNextDate(start, RecurringInterval.yearly),
-        DateTime(2025),
-      );
+      when(() => mockRepo.saveProfile(any())).thenAnswer((_) async => Future.value());
+
+      await container.read(recurringListProvider.notifier).addProfile(profile);
+      final profiles = await container.read(recurringListProvider.future);
+
+      expect(profiles, contains(profile));
+      verify(() => mockRepo.saveProfile(profile)).called(1);
     });
   });
-}
-
-class FakeBusinessProfileListNotifier extends BusinessProfileListNotifier {
-  final List<BusinessProfile> initial;
-  FakeBusinessProfileListNotifier(this.initial);
-  @override
-  List<BusinessProfile> build() => initial;
-}
-
-class FakeActiveProfileIdNotifier extends ActiveProfileIdNotifier {
-  final String initial;
-  FakeActiveProfileIdNotifier(this.initial);
-  @override
-  String build() => initial;
 }

@@ -1,18 +1,22 @@
 import 'dart:io';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:talker_flutter/talker_flutter.dart';
+import 'package:gap/gap.dart';
 
-import 'package:invobharat/providers/database_provider.dart'; // New
+import 'package:invobharat/providers/database_provider.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/theme_provider.dart';
-import 'package:invobharat/screens/dashboard_screen.dart';
-import 'package:invobharat/screens/windows/fluent_home.dart';
+import 'package:invobharat/utils/app_router.dart';
+import 'package:invobharat/services/logger_service.dart';
 
 void main() {
-  // Ensure errors are shown even in release mode
+  final talker = TalkerFlutter.init();
+  
   // Ensure errors are shown even in release mode
   ErrorWidget.builder = (final FlutterErrorDetails details) {
+    talker.handle(details.exception, details.stack, 'Flutter Error');
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Container(
@@ -23,7 +27,6 @@ void main() {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Use minimal Text widget with explicit style to avoid Theme dependency
               const Text(
                 "Critical Application Error",
                 style: TextStyle(
@@ -34,7 +37,7 @@ void main() {
                 ),
                 textDirection: TextDirection.ltr,
               ),
-              const SizedBox(height: 10),
+              const Gap(10),
               Text(
                 details.exceptionAsString(),
                 style: const TextStyle(
@@ -45,8 +48,7 @@ void main() {
                 textAlign: TextAlign.center,
                 textDirection: TextDirection.ltr,
               ),
-              const SizedBox(height: 20),
-              // Stack Trace
+              const Gap(20),
               Text(
                 details.stack.toString(),
                 style: const TextStyle(
@@ -63,7 +65,16 @@ void main() {
       ),
     );
   };
-  runApp(const ProviderScope(child: InvoBharatApp()));
+
+  runApp(
+    ProviderScope(
+      observers: [RiverpodTalkerObserver(talker: talker)],
+      overrides: [
+        talkerProvider.overrideWithValue(talker),
+      ],
+      child: const InvoBharatApp(),
+    ),
+  );
 }
 
 class InvoBharatApp extends ConsumerWidget {
@@ -72,15 +83,14 @@ class InvoBharatApp extends ConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final profile = ref.watch(businessProfileProvider);
-
     final appInit = ref.watch(appInitializationProvider);
 
     return appInit.when(
       data: (_) {
+        final profileColor = Color(profile.colorValue);
         if (Platform.isWindows || Platform.isLinux) {
-          final accentColor = _getAccentColor(profile.color);
-          // Return FluentApp for Windows and Linux
-          return fluent.FluentApp(
+          final accentColor = _getAccentColor(profileColor);
+          return fluent.FluentApp.router(
             title: 'InvoBharat',
             debugShowCheckedModeBanner: false,
             themeMode: _getFluentThemeMode(ref.watch(themeProvider)),
@@ -96,21 +106,20 @@ class InvoBharatApp extends ConsumerWidget {
               shadowColor: fluent.Colors.black,
               accentColor: accentColor,
             ),
-            home: const FluentHome(),
+            routerConfig: appRouter,
           );
         }
 
-        // Return MaterialApp for Android/Other
         final themeMode = ref.watch(themeProvider);
 
-        return MaterialApp(
+        return MaterialApp.router(
           title: 'InvoBharat',
           debugShowCheckedModeBanner: false,
           themeMode: themeMode,
           theme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.light,
-            colorScheme: ColorScheme.fromSeed(seedColor: profile.color),
+            colorScheme: ColorScheme.fromSeed(seedColor: profileColor),
             textTheme: ThemeData.light().textTheme.apply(
               fontFamily: 'NotoSans',
             ),
@@ -119,12 +128,12 @@ class InvoBharatApp extends ConsumerWidget {
             useMaterial3: true,
             brightness: Brightness.dark,
             colorScheme: ColorScheme.fromSeed(
-              seedColor: profile.color,
+              seedColor: profileColor,
               brightness: Brightness.dark,
             ),
             textTheme: ThemeData.dark().textTheme.apply(fontFamily: 'NotoSans'),
           ),
-          home: const DashboardScreen(),
+          routerConfig: appRouter,
         );
       },
       loading: () {
@@ -136,7 +145,7 @@ class InvoBharatApp extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const fluent.ProgressRing(),
-                    const SizedBox(height: 20),
+                    const Gap(20),
                     Consumer(
                       builder: (final context, final ref, _) {
                         final status = ref.watch(migrationStatusProvider);
@@ -159,8 +168,7 @@ class InvoBharatApp extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const CircularProgressIndicator(),
-                  const SizedBox(height: 20),
-                  // Watch status
+                  const Gap(20),
                   Consumer(
                     builder: (final context, final ref, _) {
                       final status = ref.watch(migrationStatusProvider);

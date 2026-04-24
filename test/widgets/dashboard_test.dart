@@ -1,7 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:drift/native.dart';
@@ -17,7 +17,7 @@ import 'package:invobharat/providers/client_provider.dart';
 import 'package:invobharat/data/client_repository.dart';
 import 'package:invobharat/data/invoice_repository.dart';
 import 'package:invobharat/data/business_profile_repository.dart';
-import 'package:invobharat/database/database.dart' hide Client, Invoice, BusinessProfile, InvoiceItem, PaymentTransaction, AppSetting;
+import 'package:invobharat/database/database.dart' hide Client, Invoice, BusinessProfile, InvoiceItem, AppSetting;
 
 class MockInvoiceRepository extends Mock implements InvoiceRepository {}
 
@@ -29,7 +29,7 @@ class MockClientRepository extends Mock implements ClientRepository {}
 void main() {
   late MockInvoiceRepository mockInvoiceRepo;
   late MockBusinessProfileRepository mockProfileRepo;
-  late MockClientRepository mockClientRepo; // Added late variable
+  late MockClientRepository mockClientRepo;
   late BusinessProfile testProfile;
 
   setUpAll(() {
@@ -41,28 +41,27 @@ void main() {
         invoiceDate: DateTime.now(),
       ),
     );
-    registerFallbackValue(const Client(id: '', name: '')); // Added fallback
+    registerFallbackValue(const Client(id: '', name: ''));
     registerFallbackValue(BusinessProfile.defaults());
   });
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     mockInvoiceRepo = MockInvoiceRepository();
-    mockClientRepo = MockClientRepository(); // Initialized mockClientRepo
+    mockClientRepo = MockClientRepository();
     mockProfileRepo = MockBusinessProfileRepository();
     testProfile = BusinessProfile.defaults().copyWith(
       id: 'test-profile',
       companyName: 'Test Corp',
     );
 
-    // Default stubbing
     when(() => mockInvoiceRepo.getAllInvoices()).thenAnswer((_) async => []);
     when(
       () => mockProfileRepo.getAllProfiles(),
     ).thenAnswer((_) async => [testProfile]);
     when(
       () => mockClientRepo.getAllClients(),
-    ).thenAnswer((_) async => []); // Added stubbing
+    ).thenAnswer((_) async => []);
   });
 
   Widget createTestWidget() {
@@ -72,7 +71,7 @@ void main() {
         businessProfileRepositoryProvider.overrideWithValue(mockProfileRepo),
         clientRepositoryProvider.overrideWithValue(
           mockClientRepo,
-        ), // Added override
+        ),
         businessProfileProvider.overrideWithValue(testProfile),
         databaseProvider.overrideWithValue(AppDatabase(NativeDatabase.memory())),
       ],
@@ -95,7 +94,7 @@ void main() {
       expect(find.text('InvoBharat'), findsOneWidget);
       expect(find.text('Welcome back,'), findsOneWidget);
       expect(find.text('Test Corp'), findsOneWidget);
-      expect(find.textContaining('Revenue'), findsOneWidget); // Modified finder
+      expect(find.textContaining('Revenue'), findsOneWidget);
       expect(find.text('Invoices'), findsOneWidget);
     });
 

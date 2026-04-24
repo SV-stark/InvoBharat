@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:async';
+import 'package:gap/gap.dart';
 
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/services/backup_service.dart';
 import 'package:invobharat/widgets/profile_switcher_sheet.dart';
 import 'package:invobharat/widgets/about_tab.dart';
-import 'package:invobharat/services/email_service.dart'; // NEW
-import 'package:invobharat/screens/item_templates_screen.dart'; // NEW import
+import 'package:invobharat/services/email_service.dart';
+import 'package:go_router/go_router.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -65,22 +66,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
     _termsController = TextEditingController(text: profile.termsAndConditions);
     _notesController = TextEditingController(text: profile.defaultNotes);
-    _currencyController = TextEditingController(text: profile.currencySymbol);
+    _currencyController = TextEditingController(text: profile.currency);
     _bankNameController = TextEditingController(text: profile.bankName);
     _accountNumberController = TextEditingController(
-      text: profile.accountNumber,
+      text: profile.accountNo,
     );
     _ifscCodeController = TextEditingController(text: profile.ifscCode);
-    _branchNameController = TextEditingController(text: profile.branchName);
-    _upiIdController = TextEditingController(text: profile.upiId ?? '');
-    _upiNameController = TextEditingController(text: profile.upiName ?? '');
+    _branchNameController = TextEditingController(text: profile.branch);
+    _upiIdController = TextEditingController(text: profile.upiId);
+    _upiNameController = TextEditingController(text: profile.upiName);
     _panController = TextEditingController(text: profile.pan);
   }
-
-  // Method to reload controllers when profile switches (if we stayed on screen,
-  // but usually we might pop? Actually if user switches profile in this screen via tab 2,
-  // tab 1 should update).
-  // We can listen to changes in build.
 
   @override
   void dispose() {
@@ -119,16 +115,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         invoiceSequence: int.tryParse(_sequenceController.text) ?? 1,
         termsAndConditions: _termsController.text,
         defaultNotes: _notesController.text,
-        currencySymbol: _currencyController.text,
+        currency: _currencyController.text,
         bankName: _bankNameController.text,
-        accountNumber: _accountNumberController.text,
+        accountNo: _accountNumberController.text,
         ifscCode: _ifscCodeController.text,
-        branchName: _branchNameController.text,
+        branch: _branchNameController.text,
         upiId: _upiIdController.text,
         upiName: _upiNameController.text,
         pan: _panController.text,
       );
-      await ref.read(businessProfileNotifierProvider).updateProfile(newProfile);
+      await ref.read(businessProfileListProvider.notifier).updateProfile(newProfile);
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -144,7 +140,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (pickedFile != null) {
       final currentProfile = ref.read(businessProfileProvider);
       final newProfile = currentProfile.copyWith(logoPath: pickedFile.path);
-      await ref.read(businessProfileNotifierProvider).updateProfile(newProfile);
+      await ref.read(businessProfileListProvider.notifier).updateProfile(newProfile);
+      setState(() {});
     }
   }
 
@@ -157,17 +154,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final newProfile = currentProfile.copyWith(
         signaturePath: pickedFile.path,
       );
-      await ref.read(businessProfileNotifierProvider).updateProfile(newProfile);
+      await ref.read(businessProfileListProvider.notifier).updateProfile(newProfile);
+      setState(() {});
     }
   }
 
   @override
   Widget build(final BuildContext context) {
-    // Watch profile changes to update controllers if needed?
-    // Doing strict sync might be annoying if user is typing.
-    // But if profile changes externally (switcher), we should reload.
-    // For now, let's assume one active profile edit at a time.
-
     return DefaultTabController(
       length: 5,
       child: Scaffold(
@@ -178,7 +171,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Tab(text: "General", icon: Icon(Icons.settings)),
               Tab(text: "Profiles", icon: Icon(Icons.business)),
               Tab(text: "Backup", icon: Icon(Icons.backup)),
-              Tab(text: "Email", icon: Icon(Icons.email)), // NEW
+              Tab(text: "Email", icon: Icon(Icons.email)),
               Tab(text: "About", icon: Icon(Icons.info_outline)),
             ],
           ),
@@ -188,7 +181,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildGeneralSettings(),
             _buildProfileSettings(),
             _buildBackupSettings(),
-            const _EmailSettingsTab(), // NEW
+            const _EmailSettingsTab(),
             const AboutTab(),
           ],
         ),
@@ -234,9 +227,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 },
               ),
             ),
-            const SizedBox(height: 8),
+            const Gap(8),
             const Text("Primary Color"),
-            const SizedBox(height: 8),
+            const Gap(8),
             Wrap(
               spacing: 12,
               children: [
@@ -248,16 +241,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _buildColorOption(Colors.black),
               ],
             ),
-            const SizedBox(height: 24),
+            const Gap(24),
             _buildSectionHeader("Invoice Configuration"),
             _buildTextField("Prefix (e.g. INV-)", _seriesController),
-            const SizedBox(height: 16),
+            const Gap(16),
             Row(
               children: [
                 Expanded(
                   child: _buildTextField("Next Number", _sequenceController),
                 ),
-                const SizedBox(width: 16),
+                const Gap(16),
                 Expanded(
                   child: _buildTextField(
                     "Suffix (e.g. -FY25)",
@@ -266,27 +259,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const Gap(8),
             const Text(
               "Invoice number format: Prefix + Number + Suffix (e.g. INV-001-FY25)",
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
-            const SizedBox(height: 16),
+            const Gap(16),
             _buildTextField("Default Terms", _termsController, maxLines: 4),
             _buildTextField("Default Notes", _notesController, maxLines: 2),
-            const SizedBox(height: 24),
+            const Gap(24),
             _buildSectionHeader("Payment Details"),
             _buildTextField("Bank Name", _bankNameController),
             _buildTextField("Account Number", _accountNumberController),
             _buildTextField("IFSC Code", _ifscCodeController),
             _buildTextField("Branch Name", _branchNameController),
-            const SizedBox(height: 24),
+            const Gap(24),
             _buildSectionHeader("UPI Details"),
             _buildTextField("UPI ID (VPA)", _upiIdController),
             _buildTextField("UPI Name", _upiNameController),
             _buildTextField("Business PAN", _panController),
-            const SizedBox(height: 24),
-            _buildSectionHeader("Branding"), // KEEP
+            const Gap(24),
+            _buildSectionHeader("Branding"),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Text(
@@ -302,13 +295,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               leading: const Icon(Icons.copy_all),
               title: const Text("Item Templates"),
               subtitle: const Text("Manage frequently used items"),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ItemTemplatesScreen()),
-              ),
+              onTap: () => context.push('/item-templates'),
             ),
-            const Divider(), // Added Divider
-            // ... existing ...
+            const Divider(),
             Row(
               children: [
                 Expanded(
@@ -318,15 +307,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         "Logo",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 8),
+                      const Gap(8),
                       GestureDetector(
                         onTap: _pickLogo,
                         child: CircleAvatar(
                           radius: 40,
-                          backgroundImage: profile.logoPath != null
+                          backgroundImage: profile.logoPath != null && profile.logoPath!.isNotEmpty
                               ? FileImage(File(profile.logoPath!))
                               : null,
-                          child: profile.logoPath == null
+                          child: profile.logoPath == null || profile.logoPath!.isEmpty
                               ? const Icon(Icons.add_a_photo, size: 30)
                               : null,
                         ),
@@ -341,16 +330,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         "Signature",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 8),
+                      const Gap(8),
                       GestureDetector(
                         onTap: _pickSignature,
                         child: CircleAvatar(
                           radius: 40,
                           backgroundColor: Colors.grey.shade200,
-                          backgroundImage: profile.signaturePath != null
+                          backgroundImage: profile.signaturePath != null && profile.signaturePath!.isNotEmpty
                               ? FileImage(File(profile.signaturePath!))
                               : null,
-                          child: profile.signaturePath == null
+                          child: profile.signaturePath == null || profile.signaturePath!.isEmpty
                               ? const Icon(Icons.edit, size: 30)
                               : null,
                         ),
@@ -360,7 +349,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const Gap(24),
             _buildSectionHeader("Business Profile"),
             _buildTextField("Company Name", _nameController),
             _buildTextField("Address", _addressController, maxLines: 3),
@@ -368,7 +357,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildTextField("Email", _emailController),
             _buildTextField("Phone", _phoneController),
             _buildTextField("State", _stateController),
-            const SizedBox(height: 32),
+            const Gap(32),
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
@@ -377,7 +366,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 label: const Text("Save Settings"),
               ),
             ),
-            const SizedBox(height: 20),
+            const Gap(20),
           ],
         ),
       ),
@@ -421,9 +410,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ref
                             .read(activeProfileIdProvider.notifier)
                             .selectProfile(p.id);
-                        // Reload controllers for the newly active profile
-                        // But we are in a tab view, wait for rebuild?
-                        // setState to trigger rebuild of other tab?
                         Future.delayed(Duration.zero, () {
                           if (mounted) {
                             _loadProfileData();
@@ -450,7 +436,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           );
         }),
-        const SizedBox(height: 16),
+        const Gap(16),
         FilledButton.icon(
           onPressed: () => showProfileSwitcherSheet(context, ref),
           icon: const Icon(Icons.add),
@@ -489,18 +475,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildBackupSettings() {
-    // We can use a simpler UI here
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.cloud_upload, size: 64, color: Colors.grey),
-          const SizedBox(height: 16),
+          const Gap(16),
           const Text(
             "Backup & Restore",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 32),
+          const Gap(32),
           SizedBox(
             width: 250,
             child: ElevatedButton.icon(
@@ -537,7 +522,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               label: const Text("Export Full Backup (ZIP)"),
             ),
           ),
-          const SizedBox(height: 16),
+          const Gap(16),
           SizedBox(
             width: 250,
             child: OutlinedButton.icon(
@@ -576,7 +561,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               label: const Text("Restore Data (ZIP)"),
             ),
           ),
-          const SizedBox(height: 32),
+          const Gap(32),
           const Text(
             "Supports backing up all profiles and invoices.",
             style: TextStyle(color: Colors.grey),
@@ -614,8 +599,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           border: const OutlineInputBorder(),
         ),
         validator: (final value) =>
-            // Only validate required fields if necessary.
-            // For now, let's keep it loose or validate specific ones like Company Name.
             label == "Company Name" && (value == null || value.isEmpty)
             ? 'Required'
             : null,
@@ -629,7 +612,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return GestureDetector(
       onTap: () {
-        ref.read(businessProfileNotifierProvider).updateColor(color.toARGB32());
+        ref.read(businessProfileListProvider.notifier).updateColor(color.toARGB32());
       },
       child: Container(
         width: 40,
@@ -645,7 +628,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 }
 
-// NEW EMAIL TAB
 class _EmailSettingsTab extends StatefulWidget {
   const _EmailSettingsTab();
 
@@ -718,11 +700,11 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
               "SMTP Configuration",
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 8),
+            const Gap(8),
             const Text(
               "Configure your email provider to send invoices directly from the app.",
             ),
-            const SizedBox(height: 24),
+            const Gap(24),
             TextFormField(
               controller: _hostController,
               decoration: const InputDecoration(
@@ -732,7 +714,7 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
               validator: (final v) =>
                   v == null || v.isEmpty ? "Host is required" : null,
             ),
-            const SizedBox(height: 16),
+            const Gap(16),
             TextFormField(
               controller: _portController,
               decoration: const InputDecoration(
@@ -743,7 +725,7 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
               validator: (final v) =>
                   v == null || v.isEmpty ? "Port is required" : null,
             ),
-            const SizedBox(height: 16),
+            const Gap(16),
             CheckboxListTile(
               title: const Text("Use SSL/TLS (Secure)"),
               value: _isSecure,
@@ -751,7 +733,7 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
               controlAffinity: ListTileControlAffinity.leading,
               contentPadding: EdgeInsets.zero,
             ),
-            const SizedBox(height: 16),
+            const Gap(16),
             TextFormField(
               controller: _emailController,
               decoration: const InputDecoration(
@@ -761,7 +743,7 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
               validator: (final v) =>
                   v == null || v.isEmpty ? "Email is required" : null,
             ),
-            const SizedBox(height: 16),
+            const Gap(16),
             TextFormField(
               controller: _usernameController,
               decoration: const InputDecoration(
@@ -771,7 +753,7 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
               validator: (final v) =>
                   v == null || v.isEmpty ? "Username is required" : null,
             ),
-            const SizedBox(height: 16),
+            const Gap(16),
             TextFormField(
               controller: _passwordController,
               decoration: InputDecoration(
@@ -785,9 +767,8 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
                 ),
               ),
               obscureText: _obscurePassword,
-              // Password optional (though usually required)
             ),
-            const SizedBox(height: 32),
+            const Gap(32),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -796,7 +777,7 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
                 label: const Text("Save Configuration"),
               ),
             ),
-            const SizedBox(height: 16),
+            const Gap(16),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
@@ -807,7 +788,7 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
                 child: const Text("Clear Settings"),
               ),
             ),
-            const SizedBox(height: 64),
+            const Gap(64),
           ],
         ),
       ),
