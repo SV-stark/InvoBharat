@@ -63,7 +63,11 @@ void main() {
       invoiceRepositoryProvider.overrideWithValue(mockInvoiceRepo),
       clientRepositoryProvider.overrideWithValue(mockClientRepo),
       businessProfileRepositoryProvider.overrideWithValue(mockProfileRepo),
-      databaseProvider.overrideWithValue(AppDatabase(NativeDatabase.memory())),
+      databaseProvider.overrideWith((final ref) {
+        final db = AppDatabase(NativeDatabase.memory());
+        ref.onDispose(db.close);
+        return db;
+      }),
     ];
 
     return ProviderScope(

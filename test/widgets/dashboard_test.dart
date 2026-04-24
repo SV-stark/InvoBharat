@@ -73,7 +73,11 @@ void main() {
           mockClientRepo,
         ),
         businessProfileProvider.overrideWithValue(testProfile),
-        databaseProvider.overrideWithValue(AppDatabase(NativeDatabase.memory())),
+        databaseProvider.overrideWith((final ref) {
+          final db = AppDatabase(NativeDatabase.memory());
+          ref.onDispose(db.close);
+          return db;
+        }),
       ],
       child: fluent.FluentApp(
         theme: fluent.FluentThemeData(),

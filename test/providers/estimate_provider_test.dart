@@ -7,8 +7,18 @@ import 'package:invobharat/models/estimate.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/models/business_profile.dart';
+import 'package:drift/native.dart';
+import 'package:invobharat/providers/database_provider.dart';
+import 'package:invobharat/database/database.dart'
+    hide Invoice, BusinessProfile, Client, AppSetting, InvoiceItem;
 
 class MockEstimateRepository extends Mock implements EstimateRepository {}
+class FakeActiveProfileId extends ActiveProfileId {
+  @override
+  String build() => 'test-profile';
+  @override
+  Future<void> selectProfile(final String id) async {}
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -43,6 +53,12 @@ void main() {
       overrides: [
         estimateRepositoryProvider.overrideWithValue(mockRepo),
         businessProfileProvider.overrideWithValue(testProfile),
+        activeProfileIdProvider.overrideWith(FakeActiveProfileId.new),
+        databaseProvider.overrideWith((final ref) {
+          final db = AppDatabase(NativeDatabase.memory());
+          ref.onDispose(db.close);
+          return db;
+        }),
         ...overrides,
       ],
     );
@@ -69,6 +85,7 @@ void main() {
       );
 
       when(() => mockRepo.saveEstimate(any())).thenAnswer((_) async => Future.value());
+      when(() => mockRepo.getAllEstimates()).thenAnswer((_) async => [estimate]);
 
       await container.read(estimateListProvider.notifier).saveEstimate(estimate);
       final estimates = await container.read(estimateListProvider.future);
@@ -89,6 +106,11 @@ void main() {
 
       when(() => mockRepo.getAllEstimates()).thenAnswer((_) async => [estimate]);
       when(() => mockRepo.deleteEstimate(any())).thenAnswer((_) async => Future.value());
+      // After deletion, it should return empty
+      when(() => mockRepo.deleteEstimate('est1')).thenAnswer((_) async {
+        when(() => mockRepo.getAllEstimates()).thenAnswer((_) async => []);
+        return Future.value();
+      });
 
       final container = createContainer();
       

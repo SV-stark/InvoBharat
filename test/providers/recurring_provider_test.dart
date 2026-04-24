@@ -7,8 +7,18 @@ import 'package:invobharat/models/recurring_profile.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/models/business_profile.dart';
+import 'package:drift/native.dart';
+import 'package:invobharat/providers/database_provider.dart';
+import 'package:invobharat/database/database.dart'
+    hide Invoice, BusinessProfile, Client, AppSetting, InvoiceItem;
 
 class MockRecurringRepository extends Mock implements RecurringRepository {}
+class FakeActiveProfileId extends ActiveProfileId {
+  @override
+  String build() => 'test-profile';
+  @override
+  Future<void> selectProfile(final String id) async {}
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -48,6 +58,12 @@ void main() {
       overrides: [
         recurringRepositoryProvider.overrideWithValue(mockRepo),
         businessProfileProvider.overrideWithValue(testProfile),
+        activeProfileIdProvider.overrideWith(FakeActiveProfileId.new),
+        databaseProvider.overrideWith((final ref) {
+          final db = AppDatabase(NativeDatabase.memory());
+          ref.onDispose(db.close);
+          return db;
+        }),
         ...overrides,
       ],
     );
@@ -81,6 +97,7 @@ void main() {
       );
 
       when(() => mockRepo.saveProfile(any())).thenAnswer((_) async => Future.value());
+      when(() => mockRepo.getAllProfiles(any())).thenAnswer((_) async => [profile]);
 
       await container.read(recurringListProvider.notifier).addProfile(profile);
       final profiles = await container.read(recurringListProvider.future);

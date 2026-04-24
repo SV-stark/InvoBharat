@@ -7,6 +7,10 @@ import 'package:invobharat/data/invoice_repository.dart';
 
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 
+import 'package:invobharat/providers/database_provider.dart';
+import 'package:invobharat/database/database.dart' hide Invoice;
+import 'package:drift/native.dart';
+
 class FakeInvoiceRepository implements InvoiceRepository {
   String get profileId => 'test_profile';
 
@@ -40,6 +44,11 @@ void main() {
       ProviderScope(
         overrides: [
           invoiceRepositoryProvider.overrideWithValue(FakeInvoiceRepository()),
+          databaseProvider.overrideWith((final ref) {
+            final db = AppDatabase(NativeDatabase.memory());
+            ref.onDispose(db.close);
+            return db;
+          }),
         ],
         child: const InvoBharatApp(),
       ),

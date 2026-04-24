@@ -38,7 +38,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          databaseProvider.overrideWithValue(AppDatabase(NativeDatabase.memory())),
+          databaseProvider.overrideWith((final ref) {
+            final db = AppDatabase(NativeDatabase.memory());
+            ref.onDispose(db.close);
+            return db;
+          }),
         ],
         child: const MaterialApp(home: TestInvoiceWidget()),
       ),
