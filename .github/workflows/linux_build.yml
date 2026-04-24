@@ -45,6 +45,9 @@ jobs:
       - name: Install Project Dependencies
         run: flutter pub get
 
+      - name: Run Build Runner
+        run: dart run build_runner build --delete-conflicting-outputs
+
       - name: Run Analyzer
         run: flutter analyze
 
