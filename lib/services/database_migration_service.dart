@@ -112,7 +112,7 @@ class DatabaseMigrationService {
     final String profileId,
     final Function(String) onProgress,
   ) async {
-    final sqlRepo = SqlInvoiceRepository(database);
+    final sqlRepo = SqlInvoiceRepository(database, profileId);
 
     onProgress("Starting Invoice Migration...");
 

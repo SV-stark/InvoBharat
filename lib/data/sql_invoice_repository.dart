@@ -9,8 +9,9 @@ import 'package:invobharat/data/invoice_repository.dart';
 
 class SqlInvoiceRepository implements InvoiceRepository {
   final AppDatabase database;
+  final String profileId;
 
-  SqlInvoiceRepository(this.database);
+  SqlInvoiceRepository(this.database, this.profileId);
 
   @override
   Future<void> saveInvoice(final model.Invoice invoice) async {
@@ -62,7 +63,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
       if (invoice.id == null || invoice.id!.isEmpty) {
         final profile = await (database.select(
           database.businessProfiles,
-        )..where((final t) => t.id.equals('default'))).getSingle();
+        )..where((final t) => t.id.equals(profileId))).getSingle();
 
         final expectedNo =
             "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}";
@@ -70,7 +71,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
         if (finalInvoiceNo == expectedNo) {
           await (database.update(
             database.businessProfiles,
-          )..where((final t) => t.id.equals('default'))).write(
+          )..where((final t) => t.id.equals(profileId))).write(
             BusinessProfilesCompanion(
               invoiceSequence: Value(profile.invoiceSequence + 1),
             ),
@@ -83,7 +84,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
           .insertOnConflictUpdate(
             InvoicesCompanion(
               id: Value(invoiceId),
-              profileId: const Value("default"),
+              profileId: Value(profileId),
               clientId: Value(client?.id),
               invoiceNo: Value(finalInvoiceNo),
               invoiceDate: Value(invoice.invoiceDate),
@@ -142,7 +143,8 @@ class SqlInvoiceRepository implements InvoiceRepository {
   Future<model.Invoice?> getInvoice(final String id) async {
     final invoiceRow = await (database.select(
       database.invoices,
-    )..where((final t) => t.id.equals(id))).getSingleOrNull();
+    )..where((final t) => t.id.equals(id) & t.profileId.equals(profileId)))
+        .getSingleOrNull();
     if (invoiceRow == null) return null;
 
     final itemsRows = await (database.select(
@@ -245,7 +247,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
   @override
   Future<List<model.Invoice>> getAllInvoices() async {
-    final invoiceRows = await database.select(database.invoices).get();
+    final invoiceRows = await (database.select(database.invoices)
+          ..where((final t) => t.profileId.equals(profileId)))
+        .get();
     if (invoiceRows.isEmpty) return [];
     final allItems = await database.select(database.invoiceItems).get();
     final allPayments = await database.select(database.payments).get();
@@ -258,6 +262,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
     required final int offset,
   }) async {
     final invoiceRows = await (database.select(database.invoices)
+          ..where((final t) => t.profileId.equals(profileId))
           ..orderBy([
             (final t) => OrderingTerm(
                   expression: t.invoiceDate,
@@ -279,10 +284,11 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
   @override
   Future<int> getInvoiceCount() async {
-    final result = await database
-        .customSelect('SELECT COUNT(*) as cnt FROM invoices')
+    final result = await (database.selectOnly(database.invoices)
+          ..addColumns([database.invoices.id.count()])
+          ..where(database.invoices.profileId.equals(profileId)))
         .getSingle();
-    return result.read<int>('cnt');
+    return result.read<int>(database.invoices.id.count()) ?? 0;
   }
 
   List<model.Invoice> _mapInvoices(
@@ -373,14 +379,16 @@ class SqlInvoiceRepository implements InvoiceRepository {
     await (database.delete(database.payments)
           ..where((final t) => t.invoiceId.equals(id)))
         .go();
-    await (database.delete(database.invoices)..where((final t) => t.id.equals(id)))
+    await (database.delete(database.invoices)
+          ..where((final t) => t.id.equals(id) & t.profileId.equals(profileId)))
         .go();
   }
 
   @override
   Future<void> deleteAll() async {
-    await database.delete(database.invoiceItems).go();
-    await database.delete(database.invoices).go();
+    await (database.delete(database.invoices)
+          ..where((final t) => t.profileId.equals(profileId)))
+        .go();
   }
 
   @override
@@ -389,7 +397,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
     final String? excludeId,
   }) async {
     final query = database.select(database.invoices)
-      ..where((final tbl) => tbl.invoiceNo.equals(invoiceNumber));
+      ..where((final tbl) =>
+          tbl.invoiceNo.equals(invoiceNumber) &
+          tbl.profileId.equals(profileId));
 
     if (excludeId != null) {
       query.where((final tbl) => tbl.id.isNotValue(excludeId));

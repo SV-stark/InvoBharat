@@ -3,12 +3,14 @@ import 'package:invobharat/data/sql_invoice_repository.dart';
 import 'package:invobharat/data/invoice_repository.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/providers/database_provider.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
 
 const _pageSize = 50;
 
 final invoiceRepositoryProvider = Provider<InvoiceRepository>((final ref) {
   final db = ref.watch(databaseProvider);
-  return SqlInvoiceRepository(db);
+  final profileId = ref.watch(activeProfileIdProvider);
+  return SqlInvoiceRepository(db, profileId);
 });
 
 final invoiceListProvider = FutureProvider<List<Invoice>>((final ref) async {

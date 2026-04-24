@@ -19,7 +19,7 @@ void main() {
     database = AppDatabase(NativeDatabase.memory());
     clientRepo = SqlClientRepository(database);
     profileRepo = SqlBusinessProfileRepository(database);
-    invoiceRepo = SqlInvoiceRepository(database);
+    invoiceRepo = SqlInvoiceRepository(database, 'default');
   });
 
   tearDown(() async {
