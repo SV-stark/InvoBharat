@@ -1,4 +1,4 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/database/database.dart';
 import 'package:invobharat/services/database_migration_service.dart';
 import 'dart:async';

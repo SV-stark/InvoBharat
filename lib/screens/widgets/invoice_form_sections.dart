@@ -4,11 +4,12 @@ import 'package:invobharat/utils/constants.dart';
 import 'package:gap/gap.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/providers/invoice_provider.dart';
 import 'package:invobharat/widgets/adaptive_widgets.dart';
+import 'package:indian_formatters/indian_formatters.dart';
 
 class SectionCard extends StatelessWidget {
   final String title;
@@ -489,7 +490,7 @@ class InvoiceSummarySection extends ConsumerWidget {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    "₹${invoice.grandTotal.toStringAsFixed(2)}",
+                    IndianCurrencyFormatter.format(invoice.grandTotal),
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,

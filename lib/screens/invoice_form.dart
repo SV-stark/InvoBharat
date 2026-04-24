@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
@@ -12,6 +12,7 @@ import 'package:invobharat/providers/invoice_provider.dart';
 import 'package:invobharat/providers/item_template_provider.dart';
 import 'package:invobharat/mixins/invoice_form_mixin.dart';
 import 'package:invobharat/screens/widgets/invoice_form_sections.dart';
+import 'package:invobharat/utils/formatters.dart';
 
 // Generates a unique ID
 
@@ -677,6 +678,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
           children: [
             TextFormField(
               controller: receiverGstinCtrl,
+              inputFormatters: [GSTNumberFormatter()],
               decoration: InputDecoration(
                 labelText: "GSTIN",
                 border: const OutlineInputBorder(),

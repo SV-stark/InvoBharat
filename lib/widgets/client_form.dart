@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/client_form_provider.dart';
 import 'package:invobharat/widgets/adaptive_widgets.dart';
 import 'package:invobharat/utils/validators.dart';
+import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
 
 class ClientFormDialog extends ConsumerStatefulWidget {
   final Client? client;
@@ -150,6 +152,13 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
                 label: 'GSTIN',
                 controller: _gstinController,
                 placeholder: 'e.g. 29ABCDE1234F1Z5',
+                inputFormatters: [GSTNumberFormatter()],
+                onChanged: (final val) {
+                  final state = IndianValidators.getGSTState(val);
+                  if (state != null) {
+                    _stateController.text = state;
+                  }
+                },
               ),
               const SizedBox(height: 8),
               AppTextInput(
@@ -180,6 +189,7 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
                       label: 'Phone',
                       controller: _phoneController,
                       validator: Validators.phone,
+                      inputFormatters: [MobileNumberFormatter()],
                     ),
                   ),
                 ],

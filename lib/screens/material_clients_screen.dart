@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/client_provider.dart';
 import 'package:invobharat/widgets/material_client_form.dart';

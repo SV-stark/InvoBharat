@@ -1,6 +1,6 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
@@ -12,6 +12,7 @@ import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/payment_transaction.dart';
 import 'package:invobharat/models/recurring_profile.dart'; // New
 import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:indian_formatters/indian_formatters.dart';
 import 'package:invobharat/providers/recurring_provider.dart'; // New
 
 import 'package:printing/printing.dart';
@@ -78,10 +79,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
   @override
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
-    final currency = NumberFormat.simpleCurrency(
-      name: _invoice.currency,
-      decimalDigits: 2,
-    );
+    // Use IndianCurrencyFormatter directly
 
     return Scaffold(
       appBar: AppBar(
@@ -166,7 +164,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                   children: [
                     Text("Total Amount", style: theme.textTheme.bodyMedium),
                     Text(
-                      currency.format(_invoice.grandTotal),
+                      IndianCurrencyFormatter.format(_invoice.grandTotal),
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -210,7 +208,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                   return ListTile(
                     title: Text(item.description),
                     subtitle: Text("${item.quantity} x ${item.amount}"),
-                    trailing: Text(currency.format(item.totalAmount)),
+                    trailing: Text(IndianCurrencyFormatter.format(item.totalAmount)),
                   );
                 },
               ),
@@ -267,7 +265,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                             Icons.payment,
                             color: Colors.green,
                           ),
-                          title: Text(currency.format(p.amount)),
+                          title: Text(IndianCurrencyFormatter.format(p.amount)),
                           subtitle: Text(
                             "${DateFormat('dd MMM yyyy').format(p.date)} • ${p.paymentMode}",
                           ),
@@ -297,7 +295,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                       ),
                     ),
                     Text(
-                      currency.format(_invoice.balanceDue),
+                      IndianCurrencyFormatter.format(_invoice.balanceDue),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.red,

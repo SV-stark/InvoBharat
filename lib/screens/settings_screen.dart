@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:async';
@@ -12,6 +12,9 @@ import 'package:invobharat/widgets/profile_switcher_sheet.dart';
 import 'package:invobharat/widgets/about_tab.dart';
 import 'package:invobharat/services/email_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
+import 'package:flutter/services.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -277,7 +280,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildSectionHeader("UPI Details"),
             _buildTextField("UPI ID (VPA)", _upiIdController),
             _buildTextField("UPI Name", _upiNameController),
-            _buildTextField("Business PAN", _panController),
+            _buildTextField(
+              "Business PAN",
+              _panController,
+              formatters: [PANNumberFormatter()],
+            ),
             const Gap(24),
             _buildSectionHeader("Branding"),
             const Padding(
@@ -353,9 +360,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildSectionHeader("Business Profile"),
             _buildTextField("Company Name", _nameController),
             _buildTextField("Address", _addressController, maxLines: 3),
-            _buildTextField("GSTIN", _gstinController),
+            _buildTextField(
+              "GSTIN",
+              _gstinController,
+              formatters: [GSTNumberFormatter()],
+              onChanged: (final val) {
+                final state = IndianValidators.getGSTState(val);
+                if (state != null) {
+                  _stateController.text = state;
+                }
+              },
+            ),
             _buildTextField("Email", _emailController),
-            _buildTextField("Phone", _phoneController),
+            _buildTextField(
+              "Phone",
+              _phoneController,
+              formatters: [MobileNumberFormatter()],
+            ),
             _buildTextField("State", _stateController),
             const Gap(32),
             SizedBox(
@@ -588,12 +609,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final String label,
     final TextEditingController controller, {
     final int maxLines = 1,
+    final List<TextInputFormatter>? formatters,
+    final Function(String)? onChanged,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
         controller: controller,
         maxLines: maxLines,
+        inputFormatters: formatters,
+        onChanged: onChanged,
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),

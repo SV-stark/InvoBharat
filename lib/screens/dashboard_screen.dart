@@ -3,7 +3,7 @@ import 'package:invobharat/widgets/profile_switcher_sheet.dart';
 import 'package:invobharat/widgets/error_view.dart';
 import 'package:invobharat/widgets/empty_state.dart';
 import 'package:invobharat/widgets/gst_pie_chart.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:gap/gap.dart';
@@ -20,6 +20,7 @@ import 'package:invobharat/services/gstr_service.dart';
 import 'package:invobharat/services/gstr3b_service.dart';
 import 'package:invobharat/services/dashboard_actions.dart';
 import 'package:invobharat/screens/widgets/dashboard_widgets.dart';
+import 'package:indian_formatters/indian_formatters.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -330,11 +331,6 @@ class _DashboardStats extends StatelessWidget {
         : 0.0;
     final gstTrend = prevGst > 0 ? ((totalGst - prevGst) / prevGst) * 100 : 0.0;
 
-    final currency = NumberFormat.simpleCurrency(
-      locale: 'en_IN',
-      decimalDigits: 0,
-    );
-
     return Column(
       children: [
         Row(
@@ -343,7 +339,7 @@ class _DashboardStats extends StatelessWidget {
               child: DashboardStatCard(
                 onTap: () => context.push('/invoices'),
                 title: "Revenue ($selectedFilter)",
-                value: currency.format(totalRevenue),
+                value: IndianCurrencyFormatter.formatCompact(totalRevenue),
                 icon: Icons.currency_rupee,
                 color: Colors.green,
                 trend: revenueTrend,
@@ -374,7 +370,7 @@ class _DashboardStats extends StatelessWidget {
             ),
           ),
           title: "GST Output ($selectedFilter)",
-          value: currency.format(totalGst),
+          value: IndianCurrencyFormatter.formatCompact(totalGst),
           icon: Icons.percent,
           color: Colors.purple,
           trend: gstTrend,
@@ -581,11 +577,6 @@ class _DashboardRecentActivity extends ConsumerWidget {
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
-    final currency = NumberFormat.simpleCurrency(
-      locale: 'en_IN',
-      decimalDigits: 0,
-    );
-
     return Column(
       children: [
         Row(
@@ -646,7 +637,7 @@ class _DashboardRecentActivity extends ConsumerWidget {
                       "${inv.invoiceNo} • ${DateFormat('dd MMM').format(inv.invoiceDate)}",
                     ),
                     trailing: Text(
-                      currency.format(inv.grandTotal),
+                      IndianCurrencyFormatter.format(inv.grandTotal),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),

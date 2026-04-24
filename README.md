@@ -36,8 +36,23 @@ Generates beautiful, professional PDFs in seconds. No internet required. No subs
 | **📦 Product Library** | Manage products/services with predefined tax slabs. **HSN/SAC Lookup** with auto-fill for 100+ common codes. |
 | **📉 Aging Reports** | Visual breakdown of **Receivables** (Overdue Invoices) by aging buckets (30/60/90 days). |
 | **💾 Secure Backups** | Full **Database Backup (ZIP)** and restore functionality to keep your data pixel-perfect. |
-| **🇮🇳 India Ready** | **Number-to-Words** conversion (e.g., "Rupees One Thousand Only"). **GSTR-1** compatible CSV exports for easy filing. |
+| **🇮🇳 India Ready** | **Number-to-Words** conversion (e.g., "Rupees One Thousand Only"). **GSTR-1 & GSTR-3B** compatible CSV exports for easy filing. |
+| **📝 Audit Logs** | Track all changes to invoices and profiles for better financial accountability and compliance. |
 | **🖨️ Professional Output** | High-resolution A4 PDFs with your brand logo. Full-screen print preview and layout customization. |
+
+---
+
+## 📁 Project Structure
+
+InvoBharat follows a clean, feature-organized structure:
+
+- **`lib/data`**: Sqlite repository implementations and Drift database definitions.
+- **`lib/models`**: Domain models (Freezed) for Invoices, Clients, Profiles, etc.
+- **`lib/providers`**: Riverpod state management and business logic.
+- **`lib/screens`**: UI screens and page layouts.
+- **`lib/services`**: External integrations (PDF, GSTR, Email, Backup).
+- **`lib/utils`**: Formatting utilities, validators, and helper constants.
+- **`lib/widgets`**: Reusable UI components and shared widgets.
 
 ---
 
@@ -61,8 +76,6 @@ We provide an **AppImage** that runs on most Linux distributions (Ubuntu, Fedora
 2. Right-click > Properties > Allow executing file as program.
 3. Double-click to run!
 
-> **Note**: This project is under active development. Nightly builds may contain experimental features.
-
 ---
 
 ## 🛠️ Built With
@@ -81,8 +94,6 @@ InvoBharat is built using **Flutter**, leveraging the power of Dart for high-per
 
 ## 👨‍💻 Local Development
 
-Want to contribute or build from source?
-
 ### Prerequisites
 - [Flutter SDK](https://docs.flutter.dev/get-started/install) (3.0.0+)
 - **Linux**: `clang`, `cmake`, `ninja-build`, `pkg-config`, `libgtk-3-dev`, `liblzma-dev`, `libsecret-1-dev`, `libjsoncpp-dev`
@@ -99,7 +110,7 @@ cd InvoBharat
 flutter pub get
 
 # 3. Generate required code (freezed, drift, json_serializable)
-dart run build_runner build -d
+dart run build_runner build --delete-conflicting-outputs
 
 # 4. Run the app
 flutter run -d windows # or linux
@@ -113,9 +124,14 @@ We welcome contributions! Whether it's fixing bugs, improving documentation, or 
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+3. Ensure your code passes all checks:
+   ```bash
+   flutter analyze
+   flutter test
+   ```
+4. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+5. Push to the Branch (`git push origin feature/AmazingFeature`)
+6. Open a Pull Request
 
 ## 📄 License
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 
 class AdaptiveButton extends StatelessWidget {
@@ -38,6 +39,7 @@ class AppTextInput extends StatelessWidget {
   final String? Function(String?)? validator;
   final int maxLines;
   final bool readOnly;
+  final List<TextInputFormatter>? inputFormatters;
 
   const AppTextInput({
     super.key,
@@ -50,6 +52,7 @@ class AppTextInput extends StatelessWidget {
     this.validator,
     this.maxLines = 1,
     this.readOnly = false,
+    this.inputFormatters,
   });
 
   @override
@@ -68,6 +71,7 @@ class AppTextInput extends StatelessWidget {
           validator: validator,
           maxLines: maxLines,
           readOnly: readOnly,
+          inputFormatters: inputFormatters,
           autovalidateMode: fluent.AutovalidateMode.onUserInteraction,
         ),
       );
@@ -85,6 +89,7 @@ class AppTextInput extends StatelessWidget {
       validator: validator,
       maxLines: maxLines,
       readOnly: readOnly,
+      inputFormatters: inputFormatters,
     );
   }
 }

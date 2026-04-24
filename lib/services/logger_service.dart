@@ -1,5 +1,5 @@
 import 'package:talker_flutter/talker_flutter.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final talkerProvider = Provider<Talker>((final ref) => TalkerFlutter.init());
 
