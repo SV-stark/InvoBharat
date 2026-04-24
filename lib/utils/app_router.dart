@@ -48,10 +48,7 @@ final appRouter = GoRouter(
         return InvoiceFormScreen(invoiceToEdit: state.extra as Invoice?);
       },
     ),
-    GoRoute(
-      path: '/settings',
-      builder: (final context, final state) => const SettingsScreen(),
-    ),
+
     GoRoute(
       path: '/payments',
       builder: (final context, final state) => const PaymentHistoryScreen(),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:gap/gap.dart';
+import 'package:invobharat/models/business_profile.dart';
+import 'package:uuid/uuid.dart';
 
 void showProfileSwitcherSheet(final BuildContext context, final WidgetRef ref) {
   showModalBottomSheet(
@@ -88,8 +90,73 @@ class ProfileSwitcherSheet extends ConsumerWidget {
                 },
               ),
             ),
+          const Divider(),
+          const Gap(8),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () => _showCreateProfileDialog(context, ref),
+              icon: const Icon(Icons.add),
+              label: const Text("Create New Profile"),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _showCreateProfileDialog(
+    final BuildContext context,
+    final WidgetRef ref,
+  ) async {
+    final TextEditingController nameCtrl = TextEditingController();
+    final name = await showDialog<String>(
+      context: context,
+      builder: (final context) => AlertDialog(
+        title: const Text("New Business Profile"),
+        content: TextField(
+          controller: nameCtrl,
+          decoration: const InputDecoration(
+            labelText: "Company Name",
+            hintText: "Enter company name",
+            border: OutlineInputBorder(),
+          ),
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, nameCtrl.text),
+            child: const Text("Create"),
+          ),
+        ],
+      ),
+    );
+
+    if (name != null && name.trim().isNotEmpty) {
+      final newProfile = BusinessProfile.defaults().copyWith(
+        id: const Uuid().v4(),
+        companyName: name.trim(),
+      );
+      await ref
+          .read(businessProfileListProvider.notifier)
+          .addProfile(newProfile);
+      
+      // Auto-select the new profile
+      await ref
+          .read(activeProfileIdProvider.notifier)
+          .selectProfile(newProfile.id);
+      
+      if (context.mounted) {
+        Navigator.pop(context); // Close the sheet
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Profile '$name' created")),
+        );
+      }
+    }
   }
 }

@@ -4,11 +4,13 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:gap/gap.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/services/backup_service.dart';
-import 'package:invobharat/widgets/profile_switcher_sheet.dart';
+
 import 'package:invobharat/widgets/about_tab.dart';
 import 'package:invobharat/services/email_service.dart';
 import 'package:go_router/go_router.dart';
@@ -238,10 +240,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: [
                 _buildColorOption(Colors.teal),
                 _buildColorOption(Colors.blue),
-                _buildColorOption(Colors.purple),
                 _buildColorOption(Colors.indigo),
+                _buildColorOption(Colors.purple),
+                _buildColorOption(Colors.pink),
+                _buildColorOption(Colors.red),
                 _buildColorOption(Colors.deepOrange),
-                _buildColorOption(Colors.black),
+                _buildColorOption(Colors.orange),
+                _buildColorOption(Colors.green),
               ],
             ),
             const Gap(24),
@@ -459,12 +464,66 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         }),
         const Gap(16),
         FilledButton.icon(
-          onPressed: () => showProfileSwitcherSheet(context, ref),
+          onPressed: _createNewProfile,
           icon: const Icon(Icons.add),
-          label: const Text("Add New Profile"),
+          label: const Text("Create New Profile"),
         ),
       ],
     );
+  }
+
+  Future<void> _createNewProfile() async {
+    final TextEditingController nameCtrl = TextEditingController();
+    final name = await showDialog<String>(
+      context: context,
+      builder: (final context) => AlertDialog(
+        title: const Text("New Business Profile"),
+        content: TextField(
+          controller: nameCtrl,
+          decoration: const InputDecoration(
+            labelText: "Company Name",
+            hintText: "Enter company name",
+            border: OutlineInputBorder(),
+          ),
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, nameCtrl.text),
+            child: const Text("Create"),
+          ),
+        ],
+      ),
+    );
+
+    if (name != null && name.trim().isNotEmpty) {
+      final newProfile = BusinessProfile.defaults().copyWith(
+        id: const Uuid().v4(),
+        companyName: name.trim(),
+      );
+      await ref
+          .read(businessProfileListProvider.notifier)
+          .addProfile(newProfile);
+      
+      // Auto-select the new profile
+      await ref
+          .read(activeProfileIdProvider.notifier)
+          .selectProfile(newProfile.id);
+      
+      _loadProfileData();
+      setState(() {});
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Profile '$name' created")),
+        );
+      }
+    }
   }
 
   Future<void> _confirmDeleteProfile(final dynamic profile) async {

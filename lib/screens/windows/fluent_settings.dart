@@ -139,14 +139,15 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
     final appConfig = ref.watch(appConfigProvider);
     final profile = ref.watch(businessProfileProvider);
     final List<Color> accentColors = [
-      Colors.teal,
-      Colors.blue,
-      Colors.red,
-      Colors.orange,
-      Colors.green,
-      Colors.purple,
-      Colors.magenta,
-      Colors.yellow,
+      const Color(0xFF009688), // Teal
+      const Color(0xFF2196F3), // Blue
+      const Color(0xFF3F51B5), // Indigo
+      const Color(0xFF9C27B0), // Purple
+      const Color(0xFFE91E63), // Pink
+      const Color(0xFFF44336), // Red
+      const Color(0xFFFF5722), // DeepOrange
+      const Color(0xFFFF9800), // Orange
+      const Color(0xFF4CAF50), // Green
     ];
 
     return Column(

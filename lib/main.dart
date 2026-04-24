@@ -215,6 +215,17 @@ class InvoBharatApp extends ConsumerWidget {
       fluent.Colors.purple.toARGB32(): fluent.Colors.purple,
       fluent.Colors.magenta.toARGB32(): fluent.Colors.magenta,
       fluent.Colors.yellow.toARGB32(): fluent.Colors.yellow,
+      Colors.teal.toARGB32(): fluent.Colors.teal,
+      Colors.blue.toARGB32(): fluent.Colors.blue,
+      Colors.indigo.toARGB32(): fluent.Colors.blue,
+      Colors.purple.toARGB32(): fluent.Colors.purple,
+      Colors.pink.toARGB32(): fluent.Colors.magenta,
+      Colors.red.toARGB32(): fluent.Colors.red,
+      Colors.deepOrange.toARGB32(): fluent.Colors.orange,
+      Colors.orange.toARGB32(): fluent.Colors.orange,
+      Colors.amber.toARGB32(): fluent.Colors.yellow,
+      Colors.yellow.toARGB32(): fluent.Colors.yellow,
+      Colors.green.toARGB32(): fluent.Colors.green,
     };
 
     if (colorMap.containsKey(color.toARGB32())) {
