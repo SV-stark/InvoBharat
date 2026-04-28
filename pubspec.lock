@@ -689,10 +689,10 @@ packages:
     dependency: "direct main"
     description:
       name: indian_formatters
-      sha256: "01b73160c70e8efe204fecd5f7d1da02818a43f711f433b35faa957248983a17"
+      sha256: "8b26db44b0d4d61b632827eaa3fcae07b32a0df81a5d56c22f2780db83ef1b68"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.1"
+    version: "0.0.2"
   intl:
     dependency: "direct main"
     description:
