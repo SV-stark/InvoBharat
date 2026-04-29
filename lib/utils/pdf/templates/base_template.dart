@@ -5,6 +5,7 @@ import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/utils/invoice_template.dart';
 import 'package:indian_formatters/indian_formatters.dart';
+import 'package:intl/intl.dart';
 
 abstract class BasePdfTemplate implements InvoiceTemplate {
   @override
@@ -52,7 +53,7 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
       if (includeIndex) row.add((e.key + 1).toString());
 
       row.add(item.description);
-      row.add(item.sacCode);
+      row.add(item.cleanSacCode);
       row.add("${item.quantity} ${item.unit}");
       row.add(IndianNumberFormatter.format(item.amount));
       row.add(IndianNumberFormatter.format(taxableValue));
@@ -119,7 +120,7 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
   pw.Widget buildSummaryRow(
     final String label,
     final double value,
-    final String symbol, {
+    final String? symbol, {
     final bool isBold = false,
   }) {
     return pw.Padding(
@@ -135,7 +136,9 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
             ),
           ),
           pw.Text(
-            "$symbol ${IndianNumberFormatter.format(value)}",
+            symbol != null
+                ? "$symbol ${IndianNumberFormatter.format(value)}"
+                : IndianNumberFormatter.format(value),
             style: pw.TextStyle(
               fontSize: 9,
               fontWeight: isBold ? pw.FontWeight.bold : null,
@@ -176,6 +179,80 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
               amount.toChequeFormat(),
               style: pw.TextStyle(fontSize: 9, fontStyle: pw.FontStyle.italic),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget buildPaymentQRCode(
+    final String upiId,
+    final String name,
+    final double amount,
+  ) {
+    if (upiId.isEmpty) return pw.SizedBox();
+
+    // Standard UPI deep link format
+    final upiUrl =
+        "upi://pay?pa=$upiId&pn=${Uri.encodeComponent(name)}&am=${amount.toStringAsFixed(2)}&cu=INR";
+
+    return pw.Column(
+      children: [
+        pw.Container(
+          width: 80,
+          height: 80,
+          padding: const pw.EdgeInsets.all(4),
+          decoration: pw.BoxDecoration(
+            border: pw.Border.all(color: PdfColors.grey300),
+            borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+          ),
+          child: pw.BarcodeWidget(
+            barcode: pw.Barcode.qrCode(),
+            data: upiUrl,
+            drawText: false,
+          ),
+        ),
+        pw.SizedBox(height: 4),
+        pw.Text("Scan to Pay", style: const pw.TextStyle(fontSize: 7)),
+      ],
+    );
+  }
+
+  pw.Widget buildOriginalInvoiceInfo(final Invoice invoice) {
+    if (invoice.type != InvoiceType.creditNote &&
+        invoice.type != InvoiceType.debitNote) {
+      return pw.SizedBox();
+    }
+
+    if (invoice.originalInvoiceNumber == null ||
+        invoice.originalInvoiceNumber!.isEmpty) {
+      return pw.SizedBox();
+    }
+
+    return pw.Container(
+      margin: const pw.EdgeInsets.only(top: 8),
+      padding: const pw.EdgeInsets.all(8),
+      decoration: const pw.BoxDecoration(
+        color: PdfColors.grey100,
+        borderRadius: pw.BorderRadius.all(pw.Radius.circular(4)),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            "Original Invoice Reference",
+            style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.Row(
+            children: [
+              pw.Text("Inv No: ${invoice.originalInvoiceNumber}",
+                  style: const pw.TextStyle(fontSize: 9)),
+              pw.SizedBox(width: 16),
+              if (invoice.originalInvoiceDate != null)
+                pw.Text(
+                    "Date: ${DateFormat('dd/MM/yyyy').format(invoice.originalInvoiceDate!)}",
+                    style: const pw.TextStyle(fontSize: 9)),
+            ],
           ),
         ],
       ),

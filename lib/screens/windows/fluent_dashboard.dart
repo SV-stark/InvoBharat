@@ -23,6 +23,7 @@ import 'package:uuid/uuid.dart';
 import 'package:invobharat/screens/windows/invoice_quick_actions.dart';
 import 'package:invobharat/services/dashboard_actions.dart';
 import 'package:invobharat/services/gstr_import_service.dart';
+import 'package:indian_formatters/indian_formatters.dart';
 import 'package:invobharat/models/recurring_profile.dart';
 import 'package:invobharat/providers/recurring_provider.dart';
 import 'package:invobharat/widgets/dialogs/payment_dialog.dart';
@@ -229,10 +230,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
               (final sum, final inv) => sum + inv.balanceDue,
             );
 
-            final currency = NumberFormat.currency(
-              symbol: profile.currency,
-              decimalDigits: 2,
-            );
+
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,7 +298,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                         child: _buildHeroStatCard(
                           context,
                           "Total Revenue",
-                          currency.format(totalRevenue),
+                          IndianCurrencyFormatter.format(totalRevenue),
                           FluentIcons.money,
                           theme.accentColor,
                         ),
@@ -322,7 +320,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                         child: _buildStatCard(
                           context,
                           "Received",
-                          currency.format(paymentsReceived),
+                          IndianCurrencyFormatter.format(paymentsReceived),
                           FluentIcons.check_mark,
                           Colors.green,
                         ),
@@ -333,7 +331,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                       child: _buildStatCard(
                         context,
                         "Due",
-                        currency.format(paymentsDue),
+                        IndianCurrencyFormatter.format(paymentsDue),
                         FluentIcons.warning,
                         Colors.orange,
                       ),
@@ -356,7 +354,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                         child: _buildStatCard(
                           context,
                           "GST Liability",
-                          currency.format(totalCGST + totalSGST + totalIGST),
+                          IndianCurrencyFormatter.format(totalCGST + totalSGST + totalIGST),
                           FluentIcons.bank,
                           Colors.purple,
                         ),
@@ -485,7 +483,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
                                       Text(
-                                        currency.format(inv.grandTotal),
+                                        IndianCurrencyFormatter.format(inv.grandTotal),
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 14,
@@ -924,10 +922,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
       children: [
         Text(label, style: style),
         Text(
-          NumberFormat.currency(
-            symbol: symbol,
-            decimalDigits: 2,
-          ).format(amount),
+          IndianCurrencyFormatter.format(amount),
           style: style,
         ),
       ],
@@ -1182,7 +1177,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         filename: filename,
         subject: "Invoice ${invoice.invoiceNo} from ${profile.companyName}",
         body:
-            "Dear ${invoice.receiver.name},\n\nPlease find attached invoice ${invoice.invoiceNo}.\n\nTotal Amount: ${profile.currency} ${invoice.grandTotal.toStringAsFixed(2)}\nDue Date: ${invoice.dueDate != null ? DateFormat('dd MMM yyyy').format(invoice.dueDate!) : 'N/A'}\n\nThank you for your business.",
+            "Dear ${invoice.receiver.name},\n\nPlease find attached invoice ${invoice.invoiceNo}.\n\nTotal Amount: ${IndianCurrencyFormatter.format(invoice.grandTotal)}\nDue Date: ${invoice.dueDate != null ? DateFormat('dd MMM yyyy').format(invoice.dueDate!) : 'N/A'}\n\nThank you for your business.",
       );
     } catch (e) {
       if (context.mounted) {

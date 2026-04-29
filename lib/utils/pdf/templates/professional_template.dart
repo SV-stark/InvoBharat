@@ -122,6 +122,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
               ),
             ],
           ),
+          buildOriginalInvoiceInfo(invoice),
           pw.SizedBox(height: 32),
 
           // Client and Payment Summary
@@ -313,7 +314,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                     pw.Text("Account No: ${profile.accountNo}", style: const pw.TextStyle(fontSize: 8)),
                     pw.Text("IFSC Code: ${profile.ifscCode}", style: const pw.TextStyle(fontSize: 8)),
                     pw.Text("Branch: ${profile.branch}", style: const pw.TextStyle(fontSize: 8)),
-                    if (profile.upiId.isNotEmpty)
+                    if (profile.upiId.isNotEmpty) ...[
                       pw.Text(
                         "UPI ID: ${profile.upiId}",
                         style: pw.TextStyle(
@@ -321,6 +322,13 @@ class ProfessionalTemplate extends BasePdfTemplate {
                           fontWeight: pw.FontWeight.bold,
                         ),
                       ),
+                      pw.SizedBox(height: 8),
+                      buildPaymentQRCode(
+                        profile.upiId,
+                        profile.companyName,
+                        invoice.grandTotal,
+                      ),
+                    ],
                   ],
                 ),
               ),

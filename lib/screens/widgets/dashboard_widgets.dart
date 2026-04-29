@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+
+import 'package:indian_formatters/indian_formatters.dart';
 
 class DashboardStatCard extends StatelessWidget {
   final String title;
@@ -265,10 +266,7 @@ class _GstRow extends StatelessWidget {
       children: [
         Text(label, style: style),
         Text(
-          NumberFormat.currency(
-            symbol: symbol,
-            decimalDigits: 2,
-          ).format(amount),
+          IndianCurrencyFormatter.format(amount),
           style: style,
         ),
       ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:indian_formatters/indian_formatters.dart';
 
 import 'package:invobharat/providers/estimate_provider.dart';
 import 'package:go_router/go_router.dart';
@@ -64,7 +65,7 @@ class EstimatesScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '₹${estimate.totalAmount.toStringAsFixed(2)}',
+                        IndianCurrencyFormatter.format(estimate.totalAmount),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),

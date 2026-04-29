@@ -167,6 +167,9 @@ abstract class InvoiceItem with _$InvoiceItem {
 
   double get netAmount => (amount * quantity) - discount;
 
+  String get cleanSacCode => sacCode.split(' - ').first.trim();
+
+
   Money get netAmountMoney => Money.fromNumWithCurrency(netAmount, _currency);
 
   double get cgstRate => gstRate / 2;

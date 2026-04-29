@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:indian_formatters/indian_formatters.dart';
 
 import 'package:invobharat/providers/recurring_provider.dart';
 
@@ -87,7 +88,7 @@ class RecurringInvoicesScreen extends ConsumerWidget {
                     ),
                     title: Text(profile.baseInvoice.receiver.name),
                     subtitle: Text(
-                        "${profile.interval.name.toUpperCase()} • Next: ${DateFormat('dd MMM').format(profile.nextRunDate)} • ₹${profile.baseInvoice.grandTotal}"),
+                        "${profile.interval.name.toUpperCase()} • Next: ${DateFormat('dd MMM').format(profile.nextRunDate)} • ${IndianCurrencyFormatter.format(profile.baseInvoice.grandTotal)}"),
                     trailing: Switch(
                         value: profile.isActive,
                         onChanged: (final val) {

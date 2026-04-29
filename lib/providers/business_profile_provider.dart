@@ -121,14 +121,22 @@ class BusinessProfileList extends _$BusinessProfileList {
   }
 
   Future<void> updateColor(final int color) async {
+    if (state.isEmpty) return;
     final activeId = ref.read(activeProfileIdProvider);
-    final current = state.firstWhere((final p) => p.id == activeId);
+    final current = state.firstWhere(
+      (final p) => p.id == activeId,
+      orElse: () => state.first,
+    );
     await updateProfile(current.copyWith(colorValue: color));
   }
 
   Future<void> incrementInvoiceSequence() async {
+    if (state.isEmpty) return;
     final activeId = ref.read(activeProfileIdProvider);
-    final current = state.firstWhere((final p) => p.id == activeId);
+    final current = state.firstWhere(
+      (final p) => p.id == activeId,
+      orElse: () => state.first,
+    );
     final newSeq = current.invoiceSequence + 1;
     final newProfile = current.copyWith(invoiceSequence: newSeq);
     await updateProfile(newProfile);

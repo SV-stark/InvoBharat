@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
-import 'package:invobharat/providers/business_profile_provider.dart';
+
+import 'package:indian_formatters/indian_formatters.dart';
 import 'package:go_router/go_router.dart';
 
 class PaymentHistoryScreen extends ConsumerWidget {
@@ -11,7 +12,7 @@ class PaymentHistoryScreen extends ConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final invoiceListAsync = ref.watch(invoiceListProvider);
-    final currencySymbol = ref.watch(businessProfileProvider).currency;
+
 
     return Scaffold(
       appBar: AppBar(title: const Text("Payment History")),
@@ -66,9 +67,7 @@ class PaymentHistoryScreen extends ConsumerWidget {
                   "${DateFormat('dd MMM yyyy').format(payment.date)} • ${payment.paymentMode}\nInvoice #${invoice.invoiceNo}",
                 ),
                 trailing: Text(
-                  NumberFormat.currency(
-                    symbol: currencySymbol,
-                  ).format(payment.amount),
+                  IndianCurrencyFormatter.format(payment.amount),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,

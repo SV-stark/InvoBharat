@@ -207,7 +207,9 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                   final item = _invoice.items[index];
                   return ListTile(
                     title: Text(item.description),
-                    subtitle: Text("${item.quantity} x ${item.amount}"),
+                    subtitle: Text(
+                      "${item.quantity} x ${IndianCurrencyFormatter.format(item.amount)}",
+                    ),
                     trailing: Text(IndianCurrencyFormatter.format(item.totalAmount)),
                   );
                 },

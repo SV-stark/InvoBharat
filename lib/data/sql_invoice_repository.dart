@@ -63,19 +63,21 @@ class SqlInvoiceRepository implements InvoiceRepository {
       if (invoice.id == null || invoice.id!.isEmpty) {
         final profile = await (database.select(
           database.businessProfiles,
-        )..where((final t) => t.id.equals(profileId))).getSingle();
+        )..where((final t) => t.id.equals(profileId))).getSingleOrNull();
 
-        final expectedNo =
-            "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}";
+        if (profile != null) {
+          final expectedNo =
+              "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}";
 
-        if (finalInvoiceNo == expectedNo) {
-          await (database.update(
-            database.businessProfiles,
-          )..where((final t) => t.id.equals(profileId))).write(
-            BusinessProfilesCompanion(
-              invoiceSequence: Value(profile.invoiceSequence + 1),
-            ),
-          );
+          if (finalInvoiceNo == expectedNo) {
+            await (database.update(
+              database.businessProfiles,
+            )..where((final t) => t.id.equals(profileId))).write(
+              BusinessProfilesCompanion(
+                invoiceSequence: Value(profile.invoiceSequence + 1),
+              ),
+            );
+          }
         }
       }
 

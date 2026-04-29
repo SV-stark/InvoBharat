@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:indian_formatters/indian_formatters.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:go_router/go_router.dart';
@@ -264,7 +265,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                     "${invoice.invoiceNo} • ${DateFormat('dd MMM yyyy').format(invoice.invoiceDate)}",
                   ),
                   secondary: Text(
-                    "₹${invoice.grandTotal.toStringAsFixed(2)}",
+                    IndianCurrencyFormatter.format(invoice.grandTotal),
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 );
@@ -374,7 +375,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          "₹${invoice.grandTotal.toStringAsFixed(2)}",
+                          IndianCurrencyFormatter.format(invoice.grandTotal),
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,

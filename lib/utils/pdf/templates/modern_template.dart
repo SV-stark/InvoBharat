@@ -175,10 +175,14 @@ class ModernTemplate extends BasePdfTemplate {
                     const pw.TextStyle(fontSize: 9),
                     const pw.TextStyle(fontSize: 9),
                   ),
+                  if (invoice.reverseCharge == 'Y')
+                    pw.Text("Reverse Charge: YES",
+                        style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
                 ],
               ),
             ],
           ),
+          buildOriginalInvoiceInfo(invoice),
           pw.SizedBox(height: 32),
 
           // Items
@@ -195,8 +199,24 @@ class ModernTemplate extends BasePdfTemplate {
 
           // Summary
           pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Spacer(flex: 2),
+              pw.Expanded(
+                  flex: 2,
+                  child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+                    if (profile.termsAndConditions.isNotEmpty) ...[
+                      pw.Text("Terms & Conditions",
+                          style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: themeColor)),
+                      pw.Text(profile.termsAndConditions, style: const pw.TextStyle(fontSize: 8)),
+                      pw.SizedBox(height: 10),
+                    ],
+                    if (invoice.comments.isNotEmpty) ...[
+                      pw.Text("Notes",
+                          style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: themeColor)),
+                      pw.Text(invoice.comments, style: const pw.TextStyle(fontSize: 8)),
+                    ],
+                  ])),
+              pw.SizedBox(width: 20),
               pw.Expanded(
                 child: pw.Column(
                   children: [
@@ -268,7 +288,7 @@ class ModernTemplate extends BasePdfTemplate {
                     pw.Text("A/C: ${profile.accountNo}", style: const pw.TextStyle(fontSize: 8)),
                     pw.Text("IFSC: ${profile.ifscCode}", style: const pw.TextStyle(fontSize: 8)),
                     pw.Text("Branch: ${profile.branch}", style: const pw.TextStyle(fontSize: 8)),
-                    if (profile.upiId.isNotEmpty)
+                    if (profile.upiId.isNotEmpty) ...[
                       pw.Text(
                         "UPI ID: ${profile.upiId}",
                         style: pw.TextStyle(
@@ -276,6 +296,13 @@ class ModernTemplate extends BasePdfTemplate {
                           fontWeight: pw.FontWeight.bold,
                         ),
                       ),
+                      pw.SizedBox(height: 8),
+                      buildPaymentQRCode(
+                        profile.upiId,
+                        profile.companyName,
+                        invoice.grandTotal,
+                      ),
+                    ],
                   ],
                 ),
               ),
