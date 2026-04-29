@@ -10,7 +10,7 @@ void main() {
       invoiceDate: DateTime(2025, 4),
       supplier: const Supplier(state: 'Karnataka'),
       receiver: const Receiver(
-          name: 'John Doe', state: 'Karnataka', gstin: '29ABCDE1234F1Z5'),
+          name: 'John Doe', state: 'Karnataka', gstin: '29ABCDE1234F1Z3'),
       items: [
         const InvoiceItem(
           description: 'Item 1',
@@ -32,6 +32,6 @@ void main() {
     expect(
         csv,
         contains(
-            '29ABCDE1234F1Z5,John Doe,INV-001,01-04-2025,2360.00,18.00,2000.00,0.00,Karnataka,N,Item 1'));
+            '29ABCDE1234F1Z3,John Doe,INV-001,01-04-2025,2360.00,18.00,2000.00,0.00,Karnataka,N,Item 1'));
   });
 }

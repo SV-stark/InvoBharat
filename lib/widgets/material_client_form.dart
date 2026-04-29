@@ -138,7 +138,7 @@ class _MaterialClientFormDialogState
               AppTextInput(
                 controller: _gstinController,
                 label: 'GSTIN',
-                placeholder: 'e.g. 29ABCDE1234F1Z5',
+                placeholder: 'e.g. 29ABCDE1234F1Z3',
               ),
               const SizedBox(height: 16),
               AppTextInput(

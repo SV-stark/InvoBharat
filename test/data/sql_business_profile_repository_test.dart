@@ -22,7 +22,7 @@ void main() {
       id: 'prof-1',
       companyName: 'Company 1',
       address: 'Addr 1',
-      gstin: '29AAAAA0000A1Z5',
+      gstin: '29AAAAA0000A1Z4',
       email: 'a@b.com',
       phone: '123',
       state: 'State',

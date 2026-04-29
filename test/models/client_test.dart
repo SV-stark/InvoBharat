@@ -17,24 +17,24 @@ void main() {
       const client = Client(
         id: 'c1',
         name: 'John Doe',
-        gstin: '29ABCDE1234F1Z5',
+        gstin: '29ABCDE1234F1Z3',
       );
 
       final json = client.toJson();
 
       expect(json['id'], 'c1');
       expect(json['name'], 'John Doe');
-      expect(json['gstin'], '29ABCDE1234F1Z5');
+      expect(json['gstin'], '29ABCDE1234F1Z3');
     });
 
     test('fromJson() should create a client from a valid map', () {
-      final json = {'id': 'c1', 'name': 'John Doe', 'gstin': '29ABCDE1234F1Z5'};
+      final json = {'id': 'c1', 'name': 'John Doe', 'gstin': '29ABCDE1234F1Z3'};
 
       final client = Client.fromJson(json);
 
       expect(client.id, 'c1');
       expect(client.name, 'John Doe');
-      expect(client.gstin, '29ABCDE1234F1Z5');
+      expect(client.gstin, '29ABCDE1234F1Z3');
     });
 
     test('copyWith() should return a new instance with updated fields', () {

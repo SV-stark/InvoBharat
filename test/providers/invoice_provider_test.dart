@@ -10,7 +10,7 @@ void main() {
     final mockProfile = BusinessProfile.defaults().copyWith(
       companyName: 'Mock Corp',
       address: 'Mock Street',
-      gstin: '29AAAAA0000A1Z5',
+      gstin: '29AAAAA0000A1Z4',
       state: 'Karnataka',
     );
 
@@ -45,10 +45,10 @@ void main() {
       // 27 is Maharashtra
       container
           .read(invoiceProvider.notifier)
-          .updateReceiverGstin('27AAAAA0000A1Z5');
+          .updateReceiverGstin('27AAAAA0000A1Z6');
 
       final invoice = container.read(invoiceProvider);
-      expect(invoice.receiver.gstin, '27AAAAA0000A1Z5');
+      expect(invoice.receiver.gstin, '27AAAAA0000A1Z6');
       expect(invoice.receiver.state, 'Maharashtra');
     });
 

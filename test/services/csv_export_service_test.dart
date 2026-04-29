@@ -15,8 +15,8 @@ void main() {
       id: 'inv1',
       invoiceNo: 'INV-001',
       invoiceDate: now,
-      supplier: const Supplier(name: 'My Biz', gstin: '27AAAAA0000A1Z5'),
-      receiver: const Receiver(name: 'Client A', gstin: '27BBBBB0000B1Z5'),
+      supplier: const Supplier(name: 'My Biz', gstin: '27AAAAA0000A1Z6'),
+      receiver: const Receiver(name: 'Client A', gstin: '27BBBBB0000B1ZX'),
       items: [
         const InvoiceItem(description: 'Item 1', amount: 100, quantity: 2),
       ],
@@ -29,7 +29,7 @@ void main() {
       expect(
         csv,
         contains(
-          '27AAAAA0000A1Z5,My Biz,INV-001,27-10-2023,236.00,18.0,200.00',
+          '27AAAAA0000A1Z6,My Biz,INV-001,27-10-2023,236.00,18.0,200.00',
         ),
       );
     });

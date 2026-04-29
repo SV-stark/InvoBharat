@@ -151,7 +151,7 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
               AppTextInput(
                 label: 'GSTIN',
                 controller: _gstinController,
-                placeholder: 'e.g. 29ABCDE1234F1Z5',
+                placeholder: 'e.g. 29ABCDE1234F1Z3',
                 inputFormatters: [GSTNumberFormatter()],
                 onChanged: (final val) {
                   final state = IndianValidators.getGSTState(val);

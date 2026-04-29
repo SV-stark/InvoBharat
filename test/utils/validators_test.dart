@@ -41,8 +41,8 @@ void main() {
     test('gstin should validate GSTIN formats correctly', () {
       expect(Validators.gstin(null), null);
       expect(Validators.gstin(''), null);
-      // Valid Maharashtra GSTIN
-      expect(Validators.gstin('27AAPFU0939F1ZV'), null);
+      // Valid Maharashtra GSTIN (with correct checksum T)
+      expect(Validators.gstin('27AAPFU0939F1ZT'), null);
 
       expect(
         Validators.gstin('123'),
@@ -69,7 +69,7 @@ void main() {
     test('pan should validate PAN formats correctly', () {
       expect(Validators.pan(null), null);
       expect(Validators.pan(''), null);
-      expect(Validators.pan('ABCDE1234F'), null);
+      expect(Validators.pan('ABCDE1234O'), null);
 
       expect(
         Validators.pan('12345ABCDE'),

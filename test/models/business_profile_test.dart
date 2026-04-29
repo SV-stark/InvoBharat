@@ -9,7 +9,7 @@ void main() {
         id: '123',
         companyName: 'Test Company',
         address: 'Test Address',
-        gstin: '29AAAAA0000A1Z5',
+        gstin: '29AAAAA0000A1Z4',
         email: 'test@example.com',
         phone: '1234567890',
         state: 'Karnataka',
@@ -20,7 +20,7 @@ void main() {
       expect(profile.id, '123');
       expect(profile.companyName, 'Test Company');
       expect(profile.address, 'Test Address');
-      expect(profile.gstin, '29AAAAA0000A1Z5');
+      expect(profile.gstin, '29AAAAA0000A1Z4');
       expect(profile.email, 'test@example.com');
       expect(profile.phone, '1234567890');
       expect(profile.state, 'Karnataka');
