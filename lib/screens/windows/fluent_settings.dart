@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:io';
 import 'package:invobharat/models/business_profile.dart';
+import 'package:indian_formatters/indian_formatters.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/providers/app_config_provider.dart';
@@ -639,9 +640,19 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 label: "IFSC Code",
                 child: TextFormBox(
                   initialValue: profile.ifscCode,
-                  onChanged: (final v) => ref
-                      .read(businessProfileListProvider.notifier)
-                      .updateProfile(profile.copyWith(ifscCode: v)),
+                  onChanged: (final v) {
+                    ref
+                        .read(businessProfileListProvider.notifier)
+                        .updateProfile(profile.copyWith(ifscCode: v));
+                    if (v.length >= 4) {
+                      final bank = IndianValidators.getBankFromIFSC(v);
+                      if (bank != null) {
+                        ref
+                            .read(businessProfileListProvider.notifier)
+                            .updateProfile(profile.copyWith(bankName: bank));
+                      }
+                    }
+                  },
                 ),
               ),
             ),

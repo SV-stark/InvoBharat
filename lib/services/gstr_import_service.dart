@@ -2,6 +2,7 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/services/audit_service.dart';
+import 'package:indian_formatters/indian_formatters.dart';
 
 class GstrImportResult {
   final List<Invoice> invoices;
@@ -50,9 +51,9 @@ class GstrImportService {
       final tradeName = parts[1];
       final invoiceNo = parts[2];
       final dateStr = parts[3];
-      // final invoiceValue = double.tryParse(parts[4]) ?? 0; // Not stored directly on Invoice, derived
-      final gstRate = double.tryParse(parts[5]) ?? 0;
-      final taxableValue = double.tryParse(parts[6]) ?? 0;
+      // final invoiceValue = parts[4].parseIndianNumber()?.toDouble() ?? 0;
+      final gstRate = parts[5].parseIndianNumber()?.toDouble() ?? 0;
+      final taxableValue = parts[6].parseIndianNumber()?.toDouble() ?? 0;
       // final cess = parts[7];
       final placeOfSupply = parts[8];
       // final rcm = parts[9];

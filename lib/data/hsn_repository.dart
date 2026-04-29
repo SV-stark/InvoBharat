@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:invobharat/models/hsn_code.dart';
 
 class HsnRepository {
+  static List<HsnCode>? _cachedJsonCodes;
+
   static const List<HsnCode> commonCodes = [
     // --- SAC CODES (Services) ---
     // Professional Services
@@ -320,11 +324,38 @@ class HsnRepository {
 
   Future<List<HsnCode>> search(final String query) async {
     if (query.isEmpty) return [];
+    
+    // Load JSON if not cached
+    if (_cachedJsonCodes == null) {
+      try {
+        final String jsonString = await rootBundle.loadString('assets/data/hsn_sac.json');
+        final List<dynamic> jsonList = json.decode(jsonString);
+        _cachedJsonCodes = jsonList.map((final e) => HsnCode.fromJson(e as Map<String, dynamic>)).toList();
+      } catch (e) {
+        _cachedJsonCodes = []; // Fallback to empty if file missing/error
+      }
+    }
+
     final lower = query.toLowerCase();
-    return commonCodes
-        .where((final e) =>
-            e.code.toLowerCase().startsWith(lower) ||
-            e.description.toLowerCase().contains(lower))
-        .toList();
+    
+    // Combine hardcoded and JSON codes
+    final List<HsnCode> allCodes = [...commonCodes, ...?_cachedJsonCodes];
+    
+    // Use a set to avoid duplicates by code
+    final Map<String, HsnCode> resultsMap = {};
+    
+    for (final e in allCodes) {
+      if (e.code.toLowerCase().startsWith(lower) || 
+          e.description.toLowerCase().contains(lower)) {
+        // Prefer commonCodes (they come first in the spread)
+        if (!resultsMap.containsKey(e.code)) {
+          resultsMap[e.code] = e;
+        }
+      }
+      // Limit results for performance
+      if (resultsMap.length >= 50) break;
+    }
+
+    return resultsMap.values.toList();
   }
 }

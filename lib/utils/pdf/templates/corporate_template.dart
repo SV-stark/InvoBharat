@@ -172,6 +172,7 @@ class CorporateTemplate extends BasePdfTemplate {
                             pw.BorderSide(color: PdfColors.grey100),
                       ),
                     ),
+                    buildAmountInWords(invoice.grandTotal),
                     pw.SizedBox(height: 20),
 
                     // Totals & Bank

@@ -265,6 +265,13 @@ class _DashboardHeader extends StatelessWidget {
                 context,
               ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
+            Text(
+              "${DateTime.now().fiscalYear()} • ${DateTime.now().financialQuarter()}",
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
           ],
         ),
         PopupMenuButton<String>(

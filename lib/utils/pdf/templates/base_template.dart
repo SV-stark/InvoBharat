@@ -160,4 +160,25 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
       ],
     );
   }
+
+  pw.Widget buildAmountInWords(final double amount) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 4),
+      child: pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            "Amount in words: ",
+            style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.Expanded(
+            child: pw.Text(
+              amount.toChequeFormat(),
+              style: pw.TextStyle(fontSize: 9, fontStyle: pw.FontStyle.italic),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

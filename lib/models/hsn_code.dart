@@ -8,4 +8,11 @@ class HsnCode {
     required this.description,
     this.rate = 18.0,
   });
+
+  factory HsnCode.fromJson(final Map<String, dynamic> json) {
+    return HsnCode(
+      code: json['code'] as String,
+      description: json['description'] as String,
+    );
+  }
 }

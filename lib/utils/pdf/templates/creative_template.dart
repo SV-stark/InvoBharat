@@ -174,7 +174,7 @@ class CreativeTemplate extends BasePdfTemplate {
                             color: themeColor,
                             fontSize: 9),
                       ),
-
+                      buildAmountInWords(invoice.grandTotal),
                       pw.SizedBox(height: 30),
 
                       // Footer & Calculation

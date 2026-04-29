@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/utils/pdf/templates/base_template.dart';
-import 'package:invobharat/utils/number_to_words.dart';
 import 'dart:io';
 
 class ModernTemplate extends BasePdfTemplate {
@@ -244,14 +243,7 @@ class ModernTemplate extends BasePdfTemplate {
           ),
 
           pw.SizedBox(height: 24),
-          pw.Text(
-            "Amount in words: ${numberToWords(invoice.grandTotal)}",
-            style: pw.TextStyle(
-              fontSize: 10,
-              fontStyle: pw.FontStyle.italic,
-              fontWeight: pw.FontWeight.bold,
-            ),
-          ),
+          buildAmountInWords(invoice.grandTotal),
 
           pw.SizedBox(height: 32),
 

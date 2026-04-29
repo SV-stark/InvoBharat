@@ -279,7 +279,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildSectionHeader("Payment Details"),
             _buildTextField("Bank Name", _bankNameController),
             _buildTextField("Account Number", _accountNumberController),
-            _buildTextField("IFSC Code", _ifscCodeController),
+            _buildTextField(
+              "IFSC Code",
+              _ifscCodeController,
+              onChanged: (final val) {
+                if (val.length >= 4) {
+                  final bank = IndianValidators.getBankFromIFSC(val);
+                  if (bank != null) {
+                    _bankNameController.text = bank;
+                  }
+                }
+              },
+            ),
             _buildTextField("Branch Name", _branchNameController),
             const Gap(24),
             _buildSectionHeader("UPI Details"),

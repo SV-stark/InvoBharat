@@ -154,6 +154,8 @@ class ClassicTemplate extends BasePdfTemplate {
                     const pw.BoxDecoration(color: PdfColors.grey200),
               ),
 
+              buildAmountInWords(invoice.grandTotal),
+
               pw.SizedBox(height: 10),
 
               // Footer Section

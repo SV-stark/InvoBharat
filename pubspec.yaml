@@ -73,6 +73,7 @@ flutter:
   uses-material-design: true
   assets: 
     - logo.png
+    - assets/data/hsn_sac.json
     - fonts/NotoSans-Regular.ttf
     - fonts/Inter-Regular.ttf
     - fonts/Inter-Bold.ttf
