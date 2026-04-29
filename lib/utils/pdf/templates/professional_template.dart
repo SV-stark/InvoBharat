@@ -31,80 +31,95 @@ class ProfessionalTemplate extends BasePdfTemplate {
           // Header (Business Name and Invoice Title)
           pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  if (profile.logoPath != null &&
-                      profile.logoPath!.isNotEmpty &&
-                      File(profile.logoPath!).existsSync())
-                    pw.Image(
-                      pw.MemoryImage(
-                        File(profile.logoPath!).readAsBytesSync(),
+              pw.Expanded(
+                flex: 3,
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    if (profile.logoPath != null &&
+                        profile.logoPath!.isNotEmpty &&
+                        File(profile.logoPath!).existsSync())
+                      pw.Image(
+                        pw.MemoryImage(
+                          File(profile.logoPath!).readAsBytesSync(),
+                        ),
+                        height: 60,
+                      )
+                    else
+                      pw.Text(
+                        profile.companyName,
+                        style: pw.TextStyle(
+                          fontSize: 22,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
                       ),
-                      height: 60,
-                    )
-                  else
+                    pw.SizedBox(height: 4),
                     pw.Text(
-                      profile.companyName,
+                      profile.address,
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
+                    pw.Text(
+                      "GSTIN: ${profile.gstin}",
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
+                    pw.Text(
+                      "Email: ${profile.email}",
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
+                    pw.Text(
+                      "Phone: ${profile.phone}",
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
+                  ],
+                ),
+              ),
+              pw.SizedBox(width: 20),
+              pw.Expanded(
+                flex: 2,
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  children: [
+                    pw.Text(
+                      title ?? "TAX INVOICE",
                       style: pw.TextStyle(
                         fontSize: 22,
                         fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.blueGrey800,
                       ),
                     ),
-                  pw.SizedBox(height: 4),
-                  pw.Text(profile.address, style: const pw.TextStyle(fontSize: 9)),
-                  pw.Text(
-                    "GSTIN: ${profile.gstin}",
-                    style: const pw.TextStyle(fontSize: 9),
-                  ),
-                  pw.Text("Email: ${profile.email}", style: const pw.TextStyle(fontSize: 9)),
-                  pw.Text("Phone: ${profile.phone}", style: const pw.TextStyle(fontSize: 9)),
-                ],
-              ),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: [
-                  pw.Text(
-                    title ?? "TAX INVOICE",
-                    style: pw.TextStyle(
-                      fontSize: 26,
-                      fontWeight: pw.FontWeight.bold,
-                      color: PdfColors.blueGrey800,
-                    ),
-                  ),
-                  pw.SizedBox(height: 8),
-                  buildField(
-                    "Invoice No",
-                    invoice.invoiceNo,
-                    const pw.TextStyle(fontSize: 10),
-                    pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
-                  ),
-                  buildField(
-                    "Invoice Date",
-                    DateFormat('dd MMM yyyy').format(invoice.invoiceDate),
-                    const pw.TextStyle(fontSize: 10),
-                    const pw.TextStyle(fontSize: 10),
-                  ),
-                  if (invoice.dueDate != null)
+                    pw.SizedBox(height: 8),
                     buildField(
-                      "Due Date",
-                      DateFormat('dd MMM yyyy').format(invoice.dueDate!),
+                      "Invoice No",
+                      invoice.invoiceNo,
                       const pw.TextStyle(fontSize: 10),
-                      pw.TextStyle(
-                        fontSize: 10,
-                        fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.red700,
-                      ),
+                      pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
                     ),
-                  buildField(
-                    "Place of Supply",
-                    invoice.placeOfSupply,
-                    const pw.TextStyle(fontSize: 10),
-                    const pw.TextStyle(fontSize: 10),
-                  ),
-                ],
+                    buildField(
+                      "Invoice Date",
+                      DateFormat('dd MMM yyyy').format(invoice.invoiceDate),
+                      const pw.TextStyle(fontSize: 10),
+                      const pw.TextStyle(fontSize: 10),
+                    ),
+                    if (invoice.dueDate != null)
+                      buildField(
+                        "Due Date",
+                        DateFormat('dd MMM yyyy').format(invoice.dueDate!),
+                        const pw.TextStyle(fontSize: 10),
+                        pw.TextStyle(
+                          fontSize: 10,
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColors.red700,
+                        ),
+                      ),
+                    buildField(
+                      "Place of Supply",
+                      invoice.placeOfSupply,
+                      const pw.TextStyle(fontSize: 10),
+                      const pw.TextStyle(fontSize: 10),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

@@ -2,7 +2,6 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
-import 'package:printing/printing.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/utils/pdf/templates/base_template.dart';
@@ -15,21 +14,10 @@ class ClassicTemplate extends BasePdfTemplate {
   Future<Uint8List> generate(
       final Invoice invoice, final BusinessProfile profile, final pw.Font font, final pw.Font fontBold,
       {final String? title}) async {
-    // Try to load a serif font for the classic look
-    pw.Font serifFont;
-    pw.Font serifBold;
-    try {
-      serifFont = await PdfGoogleFonts.tinosRegular();
-      serifBold = await PdfGoogleFonts.tinosBold();
-    } catch (e) {
-      serifFont = pw.Font.times();
-      serifBold = pw.Font.timesBold();
-    }
-
     final pdf = pw.Document(
       theme: pw.ThemeData.withFont(
-        base: serifFont,
-        bold: serifBold,
+        base: font,
+        bold: fontBold,
       ),
     );
 

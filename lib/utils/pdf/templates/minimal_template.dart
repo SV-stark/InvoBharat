@@ -31,61 +31,68 @@ class MinimalTemplate extends BasePdfTemplate {
           // Header
           pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  if (profile.logoPath != null &&
-                      profile.logoPath!.isNotEmpty &&
-                      File(profile.logoPath!).existsSync())
-                    pw.Image(
-                      pw.MemoryImage(
-                        File(profile.logoPath!).readAsBytesSync(),
+              pw.Expanded(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    if (profile.logoPath != null &&
+                        profile.logoPath!.isNotEmpty &&
+                        File(profile.logoPath!).existsSync())
+                      pw.Image(
+                        pw.MemoryImage(
+                          File(profile.logoPath!).readAsBytesSync(),
+                        ),
+                        height: 50,
+                      )
+                    else
+                      pw.Text(
+                        profile.companyName,
+                        style: pw.TextStyle(
+                          fontSize: 24,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
                       ),
-                      height: 50,
-                    )
-                  else
+                    pw.SizedBox(height: 8),
                     pw.Text(
-                      profile.companyName,
+                      profile.address,
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
+                    pw.Text(
+                      "GSTIN: ${profile.gstin}",
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
+                  ],
+                ),
+              ),
+              pw.SizedBox(width: 16),
+              pw.Expanded(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  children: [
+                    pw.Text(
+                      title ?? "INVOICE",
                       style: pw.TextStyle(
                         fontSize: 24,
                         fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.grey700,
                       ),
                     ),
-                  pw.SizedBox(height: 8),
-                  pw.Text(profile.address, style: const pw.TextStyle(fontSize: 9)),
-                  pw.Text(
-                    "GSTIN: ${profile.gstin}",
-                    style: const pw.TextStyle(fontSize: 9),
-                  ),
-                ],
-              ),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: [
-                  pw.Text(
-                    title ?? "INVOICE",
-                    style: pw.TextStyle(
-                      fontSize: 32,
-                      fontWeight: pw.FontWeight.bold,
-                      color: PdfColors.grey700,
+                    pw.SizedBox(height: 8),
+                    buildField(
+                      "No",
+                      invoice.invoiceNo,
+                      const pw.TextStyle(fontSize: 10),
+                      pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
                     ),
-                  ),
-                  pw.SizedBox(height: 8),
-                  buildField(
-                    "No",
-                    invoice.invoiceNo,
-                    const pw.TextStyle(fontSize: 10),
-                    pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
-                  ),
-                  buildField(
-                    "Date",
-                    DateFormat('dd MMM yyyy').format(invoice.invoiceDate),
-                    const pw.TextStyle(fontSize: 10),
-                    const pw.TextStyle(fontSize: 10),
-                  ),
-                ],
+                    buildField(
+                      "Date",
+                      DateFormat('dd MMM yyyy').format(invoice.invoiceDate),
+                      const pw.TextStyle(fontSize: 10),
+                      const pw.TextStyle(fontSize: 10),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

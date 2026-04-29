@@ -20,28 +20,22 @@ class PdfGeneratorParams {
   final Invoice invoice;
   final BusinessProfile profile;
   final String? title;
+  final ByteData regularFont;
+  final ByteData boldFont;
 
   PdfGeneratorParams({
     required this.invoice,
     required this.profile,
+    required this.regularFont,
+    required this.boldFont,
     this.title,
   });
 }
 
 // ── Isolate worker ────────────────────────────────────────────────────────
 Future<Uint8List> _generatePdfInIsolate(final PdfGeneratorParams params) async {
-  pw.Font font;
-  pw.Font fontBold;
-  try {
-    final regularData = await rootBundle.load('fonts/NotoSans-Regular.ttf');
-    font = pw.Font.ttf(regularData.buffer.asByteData());
-
-    final boldData = await rootBundle.load('fonts/NotoSans-Bold.ttf');
-    fontBold = pw.Font.ttf(boldData.buffer.asByteData());
-  } catch (_) {
-    font = pw.Font.helvetica();
-    fontBold = pw.Font.helveticaBold();
-  }
+  final font = pw.Font.ttf(params.regularFont);
+  final fontBold = pw.Font.ttf(params.boldFont);
 
   InvoiceTemplate template;
   switch (params.invoice.style) {
@@ -96,10 +90,16 @@ Future<Uint8List> generateInvoicePdf(
   final BusinessProfile profile, {
   final String? title,
 }) async {
+  // Load fonts in the main thread where rootBundle is guaranteed to work
+  final regularData = await rootBundle.load('fonts/Inter-Regular.ttf');
+  final boldData = await rootBundle.load('fonts/Inter-Bold.ttf');
+
   final params = PdfGeneratorParams(
     invoice: invoice,
     profile: profile,
     title: title,
+    regularFont: regularData,
+    boldFont: boldData,
   );
 
   return Isolate.run(() => _generatePdfInIsolate(params));

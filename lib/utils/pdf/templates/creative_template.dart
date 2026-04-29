@@ -111,25 +111,37 @@ class CreativeTemplate extends BasePdfTemplate {
                       pw.Row(
                         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                         children: [
-                          pw.Text(supplyType.toUpperCase(),
+                          pw.Expanded(
+                            child: pw.Text(
+                              supplyType.toUpperCase(),
                               style: pw.TextStyle(
-                                  color: themeColor,
-                                  fontSize: 24,
-                                  fontWeight: pw.FontWeight.bold)),
+                                color: themeColor,
+                                fontSize: 24,
+                                fontWeight: pw.FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          pw.SizedBox(width: 10),
                           pw.Column(
-                              crossAxisAlignment: pw.CrossAxisAlignment.end,
-                              children: [
-                                pw.Text("# ${invoice.invoiceNo}",
-                                    style: pw.TextStyle(
-                                        fontWeight: pw.FontWeight.bold,
-                                        fontSize: 12)),
-                                pw.Text(
-                                    DateFormat('MMM dd, yyyy')
-                                        .format(invoice.invoiceDate),
-                                    style: const pw.TextStyle(
-                                        fontSize: 10,
-                                        color: PdfColors.grey600)),
-                              ])
+                            crossAxisAlignment: pw.CrossAxisAlignment.end,
+                            children: [
+                              pw.Text(
+                                "# ${invoice.invoiceNo}",
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              pw.Text(
+                                DateFormat('MMM dd, yyyy')
+                                    .format(invoice.invoiceDate),
+                                style: const pw.TextStyle(
+                                  fontSize: 10,
+                                  color: PdfColors.grey600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                       pw.Divider(color: themeColor, thickness: 2),

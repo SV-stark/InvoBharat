@@ -49,42 +49,56 @@ class CorporateTemplate extends BasePdfTemplate {
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        if (hasLogo)
-                          pw.Container(
-                            height: 60,
-                            margin: const pw.EdgeInsets.only(bottom: 10),
-                            child: pw.Image(
+                    pw.Expanded(
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          if (hasLogo)
+                            pw.Container(
+                              height: 60,
+                              margin: const pw.EdgeInsets.only(bottom: 10),
+                              child: pw.Image(
                                 pw.MemoryImage(
-                                    File(logoPath).readAsBytesSync())),
-                          )
-                        else
-                          pw.Text(
-                            profile.companyName,
-                            style: pw.TextStyle(
+                                  File(logoPath).readAsBytesSync(),
+                                ),
+                              ),
+                            )
+                          else
+                            pw.Text(
+                              profile.companyName,
+                              style: pw.TextStyle(
                                 color: white,
                                 fontSize: 24,
-                                fontWeight: pw.FontWeight.bold),
-                          ),
-                      ],
+                                fontWeight: pw.FontWeight.bold,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                    pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.end,
-                      children: [
-                        pw.Text(supplyType,
+                    pw.SizedBox(width: 20),
+                    pw.Expanded(
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.end,
+                        children: [
+                          pw.Text(
+                            supplyType,
                             style: pw.TextStyle(
-                                color: white,
-                                fontSize: 22,
-                                fontWeight: pw.FontWeight.bold)),
-                        pw.SizedBox(height: 5),
-                        pw.Text("Invoice #: ${invoice.invoiceNo}",
-                            style: pw.TextStyle(color: white, fontSize: 10)),
-                        pw.Text(
+                              color: white,
+                              fontSize: 22,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                          pw.SizedBox(height: 5),
+                          pw.Text(
+                            "Invoice #: ${invoice.invoiceNo}",
+                            style: pw.TextStyle(color: white, fontSize: 10),
+                          ),
+                          pw.Text(
                             "Date: ${DateFormat('dd MMM yyyy').format(invoice.invoiceDate)}",
-                            style: pw.TextStyle(color: white, fontSize: 10)),
-                      ],
+                            style: pw.TextStyle(color: white, fontSize: 10),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

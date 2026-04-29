@@ -40,45 +40,50 @@ class ModernTemplate extends BasePdfTemplate {
             child: pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    if (profile.logoPath != null &&
-                        profile.logoPath!.isNotEmpty &&
-                        File(profile.logoPath!).existsSync())
-                      pw.Image(
-                        pw.MemoryImage(
-                          File(profile.logoPath!).readAsBytesSync(),
+                pw.Expanded(
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      if (profile.logoPath != null &&
+                          profile.logoPath!.isNotEmpty &&
+                          File(profile.logoPath!).existsSync())
+                        pw.Image(
+                          pw.MemoryImage(
+                            File(profile.logoPath!).readAsBytesSync(),
+                          ),
+                          height: 50,
+                        )
+                      else
+                        pw.Text(
+                          profile.companyName,
+                          style: pw.TextStyle(
+                            fontSize: 20,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.white,
+                          ),
                         ),
-                        height: 50,
-                      )
-                    else
+                    ],
+                  ),
+                ),
+                pw.SizedBox(width: 16),
+                pw.Expanded(
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.end,
+                    children: [
                       pw.Text(
-                        profile.companyName,
+                        title ?? "INVOICE",
                         style: pw.TextStyle(
                           fontSize: 20,
                           fontWeight: pw.FontWeight.bold,
                           color: PdfColors.white,
                         ),
                       ),
-                  ],
-                ),
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.end,
-                  children: [
-                    pw.Text(
-                      title ?? "INVOICE",
-                      style: pw.TextStyle(
-                        fontSize: 24,
-                        fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.white,
+                      pw.Text(
+                        "No: ${invoice.invoiceNo}",
+                        style: const pw.TextStyle(color: PdfColors.white, fontSize: 10),
                       ),
-                    ),
-                    pw.Text(
-                      "No: ${invoice.invoiceNo}",
-                      style: const pw.TextStyle(color: PdfColors.white),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
