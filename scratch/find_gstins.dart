@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'package:indian_formatters/indian_formatters.dart';
 
 void main() {
@@ -19,7 +20,7 @@ void main() {
   for (final entry in states.entries) {
     final stateCode = entry.key;
     final stateName = entry.value;
-    final partial = '${stateCode}${pan}1Z';
+    final partial = '$stateCode${pan}1Z';
     
     String? validGstin;
     for (int i = 0; i < 36; i++) {
