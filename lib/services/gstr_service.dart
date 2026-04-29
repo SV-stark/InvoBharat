@@ -76,6 +76,6 @@ class GstrService {
       }
     }
 
-    return const ListToCsvConverter().convert(rows);
+    return Csv().encode(rows);
   }
 }

@@ -43,7 +43,7 @@ class DefaultFilePickerWrapper implements FilePickerWrapper {
     final List<String>? allowedExtensions,
     final FileType type = FileType.any,
   }) {
-    return FilePicker.platform.saveFile(
+    return FilePicker.saveFile(
       dialogTitle: dialogTitle,
       fileName: fileName,
       allowedExtensions: allowedExtensions,
@@ -57,7 +57,7 @@ class DefaultFilePickerWrapper implements FilePickerWrapper {
     final FileType type = FileType.any,
     final List<String>? allowedExtensions,
   }) {
-    return FilePicker.platform.pickFiles(
+    return FilePicker.pickFiles(
       dialogTitle: dialogTitle,
       type: type,
       allowedExtensions: allowedExtensions,

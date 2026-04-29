@@ -91,6 +91,6 @@ class Gstr3bService {
       ]);
     }
 
-    return const ListToCsvConverter().convert(rows);
+    return Csv().encode(rows);
   }
 }

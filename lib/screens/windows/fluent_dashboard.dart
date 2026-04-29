@@ -646,7 +646,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
 
       final csvData = await GstrService().generateGstr1CsvAsync(filteredInvoices);
 
-      String? outputFile = await FilePicker.platform.saveFile(
+      String? outputFile = await FilePicker.saveFile(
         dialogTitle: 'Save GSTR-1 CSV',
         fileName: 'GSTR1_${_selectedPeriod.replaceAll(" ", "_")}.csv',
         allowedExtensions: ['csv'],
@@ -685,7 +685,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
 
   Future<void> _importGstr1(final BuildContext context) async {
     try {
-      final result = await FilePicker.platform.pickFiles(
+      final result = await FilePicker.pickFiles(
         dialogTitle: 'Select GSTR-1 CSV',
         allowedExtensions: ['csv'],
         type: FileType.custom,
@@ -784,7 +784,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
   Future<void> _downloadImportTemplate(final BuildContext context) async {
     try {
       final csvData = GstrImportService().getTemplateCsv();
-      String? outputFile = await FilePicker.platform.saveFile(
+      String? outputFile = await FilePicker.saveFile(
         dialogTitle: 'Save Import Template',
         fileName: 'GSTR1_Import_Template.csv',
         allowedExtensions: ['csv'],
@@ -835,7 +835,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         buffer.writeln(num);
       }
 
-      final String? outputFile = await FilePicker.platform.saveFile(
+      final String? outputFile = await FilePicker.saveFile(
         dialogTitle: 'Save Missing Invoices Report',
         fileName: 'Missing_Invoices_Report.csv',
         allowedExtensions: ['csv', 'txt'],

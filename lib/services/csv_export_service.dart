@@ -110,7 +110,7 @@ class CsvExportService {
       }
     }
 
-    return const ListToCsvConverter().convert(rows);
+    return Csv().encode(rows);
   }
 
   /// Parses CSV string back into List of Invoice objects
@@ -119,7 +119,7 @@ class CsvExportService {
   }
 
   static List<Invoice> _parseInvoiceCsvSync(final String csvContent) {
-    final rows = const CsvToListConverter().convert(csvContent);
+    final rows = Csv().decode(csvContent);
     if (rows.isEmpty) return [];
 
     final headerRow = rows.first;
