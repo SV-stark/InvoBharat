@@ -64,7 +64,7 @@ class Validators {
     if (value == null || value.trim().isEmpty) {
       return const ValidationResult.empty();
     }
-    final error = IndianValidators.validateGST(value.trim().toUpperCase());
+    final error = IndianValidators.validateGST(value.trim().toUpperCase(), verifyChecksum: false);
     if (error != null) {
       return ValidationResult.invalid(error);
     }
@@ -88,7 +88,7 @@ class Validators {
     if (value == null || value.trim().isEmpty) {
       return const ValidationResult.empty();
     }
-    final error = IndianValidators.validatePAN(value.trim().toUpperCase());
+    final error = IndianValidators.validatePAN(value.trim().toUpperCase(), verifyChecksum: false);
     if (error != null) {
       return ValidationResult.invalid(error);
     }
