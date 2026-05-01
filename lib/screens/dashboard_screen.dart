@@ -22,6 +22,7 @@ import 'package:invobharat/services/dashboard_actions.dart';
 import 'package:invobharat/screens/widgets/dashboard_widgets.dart';
 import 'package:indian_formatters/indian_formatters.dart';
 import 'package:invobharat/services/invoice_actions.dart';
+import 'package:invobharat/services/invoice_import_service.dart';
 import 'package:invobharat/utils/pdf_generator.dart';
 import 'package:printing/printing.dart';
 
@@ -521,6 +522,13 @@ class _DashboardQuickActions extends ConsumerWidget {
               bgColor: theme.colorScheme.secondaryContainer,
               onTap: () async => _exportGstr3b(context, invoices),
             ),
+            const Gap(16),
+            DashboardActionButton(
+              label: "Import Invoices",
+              icon: Icons.upload_file,
+              bgColor: theme.colorScheme.primaryContainer,
+              onTap: () async => _importInvoices(context, ref),
+            ),
           ],
         ),
       ],
@@ -564,6 +572,48 @@ class _DashboardQuickActions extends ConsumerWidget {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
+
+  Future<void> _importInvoices(final BuildContext context, final WidgetRef ref) async {
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (final context) => AlertDialog(
+        title: const Text("Import Invoices"),
+        content: const Text("Would you like to import a CSV file or download a sample template?"),
+        actions: [
+          TextButton.icon(
+            onPressed: () => Navigator.pop(context, "template"),
+            icon: const Icon(Icons.download),
+            label: const Text("Template"),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(context, "import"),
+            icon: const Icon(Icons.file_upload),
+            label: const Text("Import CSV"),
+          ),
+        ],
+      ),
+    );
+
+    if (choice == "template") {
+      await InvoiceImportService.downloadImportTemplate();
+      return;
+    }
+
+    if (choice == "import") {
+      final repository = ref.read(invoiceRepositoryProvider);
+      final result = await InvoiceImportService.importInvoices(repository);
+      
+      if (!context.mounted) return;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.message)),
+      );
+      
+      if (result.successCount > 0) {
+        ref.invalidate(invoiceListProvider);
+      }
     }
   }
 

@@ -11,10 +11,11 @@ import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/widgets/profile_switcher_sheet.dart';
 import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/services/gstr_service.dart';
+import 'package:invobharat/services/invoice_import_service.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 
-import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/services/invoice_actions.dart';
 
 import 'package:invobharat/models/invoice.dart';
@@ -252,6 +253,16 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                       label: const Text('Export GSTR-1'),
                       icon: const Icon(FluentIcons.download),
                       onPressed: () => _exportGstr1(context, allInvoices),
+                    ),
+                    CommandBarButton(
+                      label: const Text('Import Invoices'),
+                      icon: const Icon(FluentIcons.upload),
+                      onPressed: () => _importInvoices(context),
+                    ),
+                    CommandBarButton(
+                      label: const Text('CSV Template'),
+                      icon: const Icon(FluentIcons.file_template),
+                      onPressed: () => InvoiceImportService.downloadImportTemplate(),
                     ),
                   ],
                   secondaryItems: [
@@ -1057,6 +1068,38 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
       setState(() {
         _selectedIds.clear();
       });
+      ref.invalidate(invoiceListProvider);
+    }
+  }
+
+  Future<void> _importInvoices(final BuildContext context) async {
+    final repository = ref.read(invoiceRepositoryProvider);
+    final result = await InvoiceImportService.importInvoices(repository);
+
+    if (!context.mounted) return;
+
+    await showDialog(
+      context: context,
+      builder: (final context) => ContentDialog(
+        title: const Text('Import Invoices'),
+        content: Text(result.message),
+        actions: [
+          Button(
+            child: const Text('Close'),
+            onPressed: () => Navigator.pop(context),
+          ),
+          Button(
+            child: const Text('Download Template'),
+            onPressed: () {
+              Navigator.pop(context);
+              InvoiceImportService.downloadImportTemplate();
+            },
+          ),
+        ],
+      ),
+    );
+
+    if (result.successCount > 0) {
       ref.invalidate(invoiceListProvider);
     }
   }
