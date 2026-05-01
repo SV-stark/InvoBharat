@@ -261,7 +261,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const Gap(16),
                 Expanded(
                   child: _buildTextField(
-                    "Suffix (e.g. -FY25)",
+                    "Currency Symbol (e.g. ₹)",
                     _currencyController,
                   ),
                 ),
@@ -269,7 +269,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const Gap(8),
             const Text(
-              "Invoice number format: Prefix + Number + Suffix (e.g. INV-001-FY25)",
+              "Invoice number format: Prefix + Number (e.g. INV-001)",
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
             const Gap(16),
