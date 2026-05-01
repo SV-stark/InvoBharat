@@ -78,9 +78,6 @@ void main() {
           DefaultMaterialLocalizations.delegate,
           DefaultWidgetsLocalizations.delegate,
         ],
-        supportedLocales: const [
-          Locale('en', 'US'),
-        ],
         home: fluent.FluentTheme(
           data: fluent.FluentThemeData(),
           child: const Material(

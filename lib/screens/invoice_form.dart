@@ -75,7 +75,6 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
   Widget build(final BuildContext context) {
     final invoice = ref.watch(invoiceProvider);
     final profile = ref.watch(businessProfileProvider);
-    final clients = ref.watch(clientListProvider);
 
     ref.listen<Invoice>(invoiceProvider, (final previous, final next) {
       if (previous?.receiver != next.receiver) {

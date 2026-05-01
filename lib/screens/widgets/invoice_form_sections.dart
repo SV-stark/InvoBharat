@@ -55,7 +55,7 @@ class SectionCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (action != null) action!,
+                action ?? const SizedBox.shrink(),
               ],
             ),
             const Divider(height: 24),
