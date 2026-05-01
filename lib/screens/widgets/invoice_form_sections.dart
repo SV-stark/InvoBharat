@@ -55,7 +55,7 @@ class SectionCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                ?action,
+                if (action != null) action!,
               ],
             ),
             const Divider(height: 24),

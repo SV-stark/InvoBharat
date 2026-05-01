@@ -77,10 +77,11 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
     final profile = ref.watch(businessProfileProvider);
     final clients = ref.watch(clientListProvider);
 
-    // Listen to provider changes to sync controllers if needed
-    // Best practice: only sync if external change (not our own typing)
-    // But detecting valid external change is hard.
-    // For now, we rely on manual sync when needed (shortcuts, load).
+    ref.listen<Invoice>(invoiceProvider, (final previous, final next) {
+      if (previous?.receiver != next.receiver) {
+        syncInvoiceControllers(next);
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -126,7 +127,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
                 receiverNameCtrl: receiverNameCtrl,
                 receiverStateCtrl: receiverStateCtrl,
                 receiverAddressCtrl: receiverAddressCtrl,
-                onSelectClient: () => _showClientSelector(context, clients),
+                onSelectClient: () => _showClientSelector(context),
                 gstinField: _buildGstinField(),
               ),
               const SizedBox(height: 16),
@@ -170,190 +171,14 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
     }
   }
 
-  void _showClientSelector(
-    final BuildContext context,
-    final List<Client> clients,
-  ) {
+  void _showClientSelector(final BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (final context) {
-        final searchController = TextEditingController();
-        String searchQuery = '';
-        return StatefulBuilder(
-          builder: (final context, final setState) {
-
-            // Sort clients: recent first (alphabetically for now, can be enhanced)
-            final sortedClients = List<Client>.from(clients)
-              ..sort(
-                (final a, final b) =>
-                    a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-              );
-
-            // Filter clients based on search
-            final filteredClients = searchQuery.isEmpty
-                ? sortedClients
-                : sortedClients
-                      .where(
-                        (final c) =>
-                            c.name.toLowerCase().contains(
-                              searchQuery.toLowerCase(),
-                            ) ||
-                            c.gstin.toLowerCase().contains(
-                              searchQuery.toLowerCase(),
-                            ) ||
-                            c.address.toLowerCase().contains(
-                              searchQuery.toLowerCase(),
-                            ),
-                      )
-                      .toList();
-
-            return Container(
-              padding: const EdgeInsets.all(16),
-              height: MediaQuery.of(context).size.height * 0.7,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Select Client",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      TextButton.icon(
-                        onPressed: () {
-                          // Sort toggle or filter options can go here
-                        },
-                        icon: const Icon(Icons.sort, size: 18),
-                        label: Text("${clients.length} total"),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // Search Bar
-                  TextField(
-                    controller: searchController,
-                    decoration: InputDecoration(
-                      hintText: "Search by name, GSTIN, or address...",
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                searchController.clear();
-                                setState(() => searchQuery = '');
-                              },
-                            )
-                          : null,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                    ),
-                    onChanged: (final value) =>
-                        setState(() => searchQuery = value),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: filteredClients.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.search_off,
-                                  size: 48,
-                                  color: Colors.grey[400],
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  "No clients found",
-                                  style: TextStyle(color: Colors.grey[600]),
-                                ),
-                                if (searchQuery.isNotEmpty)
-                                  TextButton(
-                                    onPressed: () {
-                                      searchController.clear();
-                                      setState(() => searchQuery = '');
-                                    },
-                                    child: const Text("Clear search"),
-                                  ),
-                              ],
-                            ),
-                          )
-                        : ListView.separated(
-                            itemCount: filteredClients.length,
-                            separatorBuilder: (_, _) =>
-                                const Divider(height: 1),
-                            itemBuilder: (final context, final index) {
-                              final client = filteredClients[index];
-                              final initial = client.name.isNotEmpty
-                                  ? client.name[0].toUpperCase()
-                                  : "?";
-                              return ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).colorScheme.primaryContainer,
-                                  child: Text(
-                                    initial,
-                                    style: TextStyle(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onPrimaryContainer,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                title: Text(client.name),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (client.gstin.isNotEmpty)
-                                      Text(
-                                        "GST: ${client.gstin}",
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[600],
-                                        ),
-                                      ),
-                                    if (client.address.isNotEmpty)
-                                      Text(
-                                        client.address,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[500],
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                                trailing: const Icon(Icons.chevron_right),
-                                onTap: () {
-                                  onClientSelected(client);
-                                  Navigator.pop(context);
-                                },
-                              );
-                            },
-                          ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+      builder: (final context) => const _ClientSelectorSheet(),
     );
   }
 
@@ -724,6 +549,193 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
           ],
         );
       },
+    );
+  }
+}
+
+class _ClientSelectorSheet extends ConsumerStatefulWidget {
+  const _ClientSelectorSheet();
+
+  @override
+  ConsumerState<_ClientSelectorSheet> createState() => _ClientSelectorSheetState();
+}
+
+class _ClientSelectorSheetState extends ConsumerState<_ClientSelectorSheet> {
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(final BuildContext context) {
+    final clients = ref.watch(clientListProvider);
+
+    // Sort clients: recent first
+    final sortedClients = List<Client>.from(clients)
+      ..sort(
+        (final a, final b) =>
+            a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+      );
+
+    // Filter clients based on search
+    final filteredClients = _searchQuery.isEmpty
+        ? sortedClients
+        : sortedClients
+            .where(
+              (final c) =>
+                  c.name.toLowerCase().contains(
+                        _searchQuery.toLowerCase(),
+                      ) ||
+                  c.gstin.toLowerCase().contains(
+                        _searchQuery.toLowerCase(),
+                      ) ||
+                  c.address.toLowerCase().contains(
+                        _searchQuery.toLowerCase(),
+                      ),
+            )
+            .toList();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      height: MediaQuery.of(context).size.height * 0.7,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Select Client",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.sort, size: 18),
+                label: Text("${clients.length} total"),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Search Bar
+          TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              hintText: "Search by name, GSTIN, or address...",
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() => _searchQuery = '');
+                      },
+                    )
+                  : null,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+            ),
+            onChanged: (final value) => setState(() => _searchQuery = value),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: filteredClients.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          size: 48,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "No clients found",
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                        if (_searchQuery.isNotEmpty)
+                          TextButton(
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                            child: const Text("Clear search"),
+                          ),
+                      ],
+                    ),
+                  )
+                : ListView.separated(
+                    itemCount: filteredClients.length,
+                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    itemBuilder: (final context, final index) {
+                      final client = filteredClients[index];
+                      final initial = client.name.isNotEmpty
+                          ? client.name[0].toUpperCase()
+                          : "?";
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primaryContainer,
+                          child: Text(
+                            initial,
+                            style: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onPrimaryContainer,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        title: Text(client.name),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (client.gstin.isNotEmpty)
+                              Text(
+                                "GST: ${client.gstin}",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            if (client.address.isNotEmpty)
+                              Text(
+                                client.address,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[500],
+                                ),
+                              ),
+                          ],
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () {
+                          ref
+                              .read(invoiceProvider.notifier)
+                              .setReceiver(client);
+                          Navigator.pop(context);
+                        },
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

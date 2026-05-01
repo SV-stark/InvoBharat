@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/utils/gst_utils.dart';
+import 'package:invobharat/models/client.dart';
 
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/models/business_profile.dart';
@@ -107,6 +108,18 @@ class InvoiceNotifier extends Notifier<Invoice> {
 
   void updateSupplierGstin(final String val) {
     state = state.copyWith(supplier: state.supplier.copyWith(gstin: val));
+  }
+
+  void setReceiver(final Client client) {
+    state = state.copyWith(
+      receiver: state.receiver.copyWith(
+        name: client.name,
+        address: client.address,
+        gstin: client.gstin,
+        email: client.email,
+        state: client.state,
+      ),
+    );
   }
 
   void updateReceiverName(final String val) {

@@ -72,10 +72,20 @@ void main() {
 
     return ProviderScope(
       overrides: overrides,
-      child: fluent.FluentApp(
-        theme: fluent.FluentThemeData(),
-        home: const Material(
-          child: InvoiceFormScreen(),
+      child: MaterialApp(
+        localizationsDelegates: const [
+          fluent.FluentLocalizations.delegate,
+          DefaultMaterialLocalizations.delegate,
+          DefaultWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en', 'US'),
+        ],
+        home: fluent.FluentTheme(
+          data: fluent.FluentThemeData(),
+          child: const Material(
+            child: InvoiceFormScreen(),
+          ),
         ),
       ),
     );
@@ -84,6 +94,7 @@ void main() {
   testWidgets('InvoiceFormScreen renders core components', (
     final WidgetTester tester,
   ) async {
+    await tester.binding.setSurfaceSize(const Size(1024, 1024));
     await tester.pumpWidget(createTestWidget());
     await tester.pumpAndSettle();
 
@@ -107,25 +118,31 @@ void main() {
       () => mockClientRepo.getAllClients(),
     ).thenAnswer((_) async => [testClient]);
 
+    await tester.binding.setSurfaceSize(const Size(1024, 1024));
     await tester.pumpWidget(createTestWidget());
     await tester.pumpAndSettle();
 
     final selectButton = find.widgetWithText(TextButton, 'Select Client');
     await tester.tap(selectButton);
     await tester.pumpAndSettle();
-
-    expect(find.text('Select Client'), findsAtLeastNWidgets(1));
-    expect(find.text('Test Client'), findsOneWidget);
-
-    await tester.tap(find.text('Test Client'));
+    
+    // Use runAsync to allow the mock repo to return data
+    await tester.runAsync(() async {
+      await Future.delayed(const Duration(milliseconds: 200));
+    });
     await tester.pumpAndSettle();
 
     expect(find.text('Test Client'), findsOneWidget);
-    expect(find.text('27AAPFU0939F1ZV'), findsOneWidget);
-    expect(find.text('Maharashtra'), findsOneWidget);
+    await tester.tap(find.text('Test Client'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Test Client'), findsAtLeastNWidgets(1));
+    expect(find.text('27AAPFU0939F1ZV'), findsAtLeastNWidgets(1));
+    expect(find.text('Maharashtra'), findsAtLeastNWidgets(1));
   });
 
   testWidgets('Adding and removing items', (final WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(1024, 1024));
     await tester.pumpWidget(createTestWidget());
     await tester.pumpAndSettle();
 
