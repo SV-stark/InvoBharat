@@ -195,7 +195,7 @@ class CorporateTemplate extends BasePdfTemplate {
                                           color: themeColor)),
                                   pw.SizedBox(height: 5),
                                   buildPaymentQRCode(
-                                      profile.upiId, profile.companyName, invoice.grandTotal),
+                                      profile.upiId, profile.companyName, invoice.grandTotal, invoice.invoiceNo),
                                 ],
                                 if (profile.termsAndConditions.isNotEmpty) ...[
                                   pw.SizedBox(height: 10),

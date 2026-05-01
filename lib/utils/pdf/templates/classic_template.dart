@@ -192,7 +192,7 @@ class ClassicTemplate extends BasePdfTemplate {
                         pw.Text("UPI ID: ${profile.upiId}",
                             style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9)),
                         pw.SizedBox(height: 5),
-                        buildPaymentQRCode(profile.upiId, profile.companyName, invoice.grandTotal),
+                        buildPaymentQRCode(profile.upiId, profile.companyName, invoice.grandTotal, invoice.invoiceNo),
                       ],
                       pw.SizedBox(height: 10),
                       if (profile.termsAndConditions.isNotEmpty) ...[

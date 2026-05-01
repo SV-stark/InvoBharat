@@ -122,6 +122,16 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     // Or simpler: Reuse the logic.
   }) async {
     try {
+      final repository = ref.read(invoiceRepositoryProvider);
+      final exists = await repository.checkInvoiceExists(
+        invoice.invoiceNo,
+        excludeId: invoice.id,
+      );
+      
+      if (exists) {
+        throw Exception("Invoice number '${invoice.invoiceNo}' already exists.");
+      }
+
       await InvoiceActions.saveInvoice(ref, invoice);
 
       if (estimateIdToMarkConverted != null) {

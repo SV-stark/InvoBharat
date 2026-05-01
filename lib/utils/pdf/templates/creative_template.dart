@@ -100,7 +100,7 @@ class CreativeTemplate extends BasePdfTemplate {
                                     color: white,
                                     borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4))),
                                 child: buildPaymentQRCode(
-                                    profile.upiId, profile.companyName, invoice.grandTotal)),
+                                    profile.upiId, profile.companyName, invoice.grandTotal, invoice.invoiceNo)),
                           ],
                         ],
                       ),

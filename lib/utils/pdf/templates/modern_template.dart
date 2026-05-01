@@ -301,6 +301,7 @@ class ModernTemplate extends BasePdfTemplate {
                         profile.upiId,
                         profile.companyName,
                         invoice.grandTotal,
+                        invoice.invoiceNo,
                       ),
                     ],
                   ],
