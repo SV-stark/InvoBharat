@@ -19,18 +19,63 @@ class ClientLedgerScreen extends ConsumerStatefulWidget {
 }
 
 class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
+  DateTime _startDate = DateTime(DateTime.now().year - 1, DateTime.now().month, DateTime.now().day);
+  DateTime _endDate = DateTime.now();
+  String _selectedRange = 'Last 12 Months';
+
+  final List<String> _dateRanges = [
+    'Last 30 Days',
+    'Last 6 Months',
+    'Last 12 Months',
+    'This Financial Year',
+    'Last Financial Year',
+    'All Time',
+  ];
+
+  void _updateDateRange(String range) {
+    final now = DateTime.now();
+    setState(() {
+      _selectedRange = range;
+      switch (range) {
+        case 'Last 30 Days':
+          _startDate = now.subtract(const Duration(days: 30));
+          _endDate = now;
+          break;
+        case 'Last 6 Months':
+          _startDate = DateTime(now.year, now.month - 6, now.day);
+          _endDate = now;
+          break;
+        case 'Last 12 Months':
+          _startDate = DateTime(now.year - 1, now.month, now.day);
+          _endDate = now;
+          break;
+        case 'This Financial Year':
+          final startYear = now.month < 4 ? now.year - 1 : now.year;
+          _startDate = DateTime(startYear, 4, 1);
+          _endDate = now;
+          break;
+        case 'Last Financial Year':
+          final startYear = now.month < 4 ? now.year - 2 : now.year - 1;
+          _startDate = DateTime(startYear, 4, 1);
+          _endDate = DateTime(startYear + 1, 3, 31);
+          break;
+        case 'All Time':
+          _startDate = DateTime(2000);
+          _endDate = now;
+          break;
+      }
+    });
+  }
+
   Future<void> _printStatement() async {
     final profile = ref.read(businessProfileProvider);
     final invoices = await ref.read(invoiceRepositoryProvider).getAllInvoices();
-
-    final now = DateTime.now();
-    final oneYearAgo = DateTime(now.year - 1, now.month, now.day);
 
     final params = ClientStatementParams(
       client: widget.client,
       profile: profile,
       invoices: invoices,
-      dateRange: material.DateTimeRange(start: oneYearAgo, end: now),
+      dateRange: material.DateTimeRange(start: _startDate, end: _endDate),
     );
 
     final pdfBytes = await generateClientStatement(params);
@@ -49,6 +94,23 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
         title: Text('Ledger: ${widget.client.name}'),
         commandBar: CommandBar(
           primaryItems: [
+            CommandBarBuilderItem(
+              builder: (context, mode, w) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                child: ComboBox<String>(
+                  value: _selectedRange,
+                  items: _dateRanges.map((range) {
+                    return ComboBoxItem(
+                      value: range,
+                      child: Text(range),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) _updateDateRange(value);
+                  },
+                ),
+              ),
+            ),
             CommandBarButton(
               icon: const Icon(FluentIcons.print),
               label: const Text('Print Statement'),
@@ -58,10 +120,16 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
         ),
       ),
       content: ledgerAsync.when(
-        data: (final entries) {
+        data: (final allEntries) {
+          // Filter entries by date range
+          final entries = allEntries.where((e) => 
+            e.date.isAfter(_startDate.subtract(const Duration(days: 1))) && 
+            e.date.isBefore(_endDate.add(const Duration(days: 1)))
+          ).toList();
+
           if (entries.isEmpty) {
             return const Center(
-              child: Text("No transactions found for this client."),
+              child: Text("No transactions found for this date range."),
             );
           }
 
@@ -73,6 +141,8 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
             0.0,
             (final sum, final e) => sum + e.credit,
           );
+          // Balance logic should ideally be calculated over filtered entries or keeping original running balance.
+          // Since it's a ledger, keeping the original running balance from the entry is correct.
           final closingBalance = entries.last.balance;
 
           return Padding(
