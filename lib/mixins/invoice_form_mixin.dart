@@ -21,6 +21,7 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   late TextEditingController receiverGstinCtrl;
   late TextEditingController receiverEmailCtrl; // NEW
   late TextEditingController receiverStateCtrl;
+  late TextEditingController poNumberCtrl;
   late TextEditingController
       receiverAddressCtrl; // Note: In some forms this might be delivery address too?
   // Checking Material form: has _receiverAddressCtrl (billing)
@@ -40,6 +41,7 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     receiverStateCtrl = TextEditingController(text: invoice?.receiver.state);
     receiverAddressCtrl =
         TextEditingController(text: invoice?.receiver.address);
+    poNumberCtrl = TextEditingController(text: invoice?.poNumber);
     deliveryAddressCtrl = TextEditingController(text: invoice?.deliveryAddress);
     paymentTermsCtrl = TextEditingController(text: invoice?.paymentTerms);
     originalInvoiceNoCtrl =
@@ -54,6 +56,7 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     receiverEmailCtrl.dispose(); // NEW
     receiverStateCtrl.dispose();
     receiverAddressCtrl.dispose();
+    poNumberCtrl.dispose();
     deliveryAddressCtrl.dispose();
     paymentTermsCtrl.dispose();
     originalInvoiceNoCtrl.dispose();
@@ -82,6 +85,9 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     }
     if (receiverAddressCtrl.text != invoice.receiver.address) {
       receiverAddressCtrl.text = invoice.receiver.address;
+    }
+    if (poNumberCtrl.text != (invoice.poNumber ?? '')) {
+      poNumberCtrl.text = invoice.poNumber ?? '';
     }
     if (deliveryAddressCtrl.text != (invoice.deliveryAddress ?? '')) {
       deliveryAddressCtrl.text = invoice.deliveryAddress ?? '';

@@ -95,20 +95,25 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
         commandBar: CommandBar(
           primaryItems: [
             CommandBarBuilderItem(
-              builder: (context, mode, w) => Padding(
+              builder: (final context, final mode, final w) => Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 child: ComboBox<String>(
                   value: _selectedRange,
-                  items: _dateRanges.map((range) {
+                  items: _dateRanges.map((final range) {
                     return ComboBoxItem(
                       value: range,
                       child: Text(range),
                     );
                   }).toList(),
-                  onChanged: (value) {
+                  onChanged: (final value) {
                     if (value != null) _updateDateRange(value);
                   },
                 ),
+              ),
+              wrappedItem: CommandBarButton(
+                icon: const SizedBox.shrink(),
+                label: const Text('Range'),
+                onPressed: () {},
               ),
             ),
             CommandBarButton(

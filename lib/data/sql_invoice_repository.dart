@@ -118,6 +118,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
               originalInvoiceNumber: Value(invoice.originalInvoiceNumber),
               originalInvoiceDate: Value(invoice.originalInvoiceDate),
+              poNumber: Value(invoice.poNumber),
+              status: Value(invoice.status),
+              sentAt: Value(invoice.sentAt),
             ),
           );
 
@@ -244,6 +247,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
           : const model.Supplier(name: "My Company"),
       originalInvoiceNumber: invoiceRow.originalInvoiceNumber,
       originalInvoiceDate: invoiceRow.originalInvoiceDate,
+      poNumber: invoiceRow.poNumber,
+      status: invoiceRow.status,
+      sentAt: invoiceRow.sentAt,
     );
   }
 

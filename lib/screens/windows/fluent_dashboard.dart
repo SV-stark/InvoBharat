@@ -15,6 +15,7 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 
 import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:invobharat/services/invoice_actions.dart';
 
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/payment_transaction.dart';
@@ -22,6 +23,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:invobharat/screens/windows/invoice_quick_actions.dart';
 import 'package:invobharat/services/dashboard_actions.dart';
+import 'package:invobharat/services/invoice_actions.dart';
 
 import 'package:indian_formatters/indian_formatters.dart';
 import 'package:invobharat/models/recurring_profile.dart';
@@ -251,16 +253,6 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                       label: const Text('Export GSTR-1'),
                       icon: const Icon(FluentIcons.download),
                       onPressed: () => _exportGstr1(context, allInvoices),
-                    ),
-                    CommandBarButton(
-                      label: const Text('Quick Import'),
-                      icon: const Icon(FluentIcons.upload),
-                      onPressed: () => _importGstr1(context),
-                    ),
-                    CommandBarButton(
-                      label: const Text('Template'),
-                      icon: const Icon(FluentIcons.page_list),
-                      onPressed: () => _downloadImportTemplate(context),
                     ),
                   ],
                   secondaryItems: [
@@ -504,6 +496,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                                       onRecurring: _setupRecurring,
                                       onDuplicate: _duplicateInvoice,
                                       onEmail: _emailInvoice,
+                                      onMarkSent: _markAsSent,
                                     ),
                                   ),
                                 ],
@@ -525,23 +518,31 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
   }
 
   Widget _buildStatusBadge(final dynamic invoice) {
-    final status = invoice.paymentStatus;
+    final lifecycleStatus = invoice.status; // Draft, Sent, Viewed, Paid
+    final paymentStatus = invoice.paymentStatus; // Unpaid, Partial, Overdue, Paid
 
-    String text = "No Due Date";
-    if (invoice.dueDate != null) {
-      text = "Due on ${DateFormat('MMM dd').format(invoice.dueDate!)}";
+    String text = lifecycleStatus;
+    Color color = Colors.grey;
+
+    if (lifecycleStatus == 'Draft') {
+      text = "Draft";
+      color = Colors.grey;
+    } else if (lifecycleStatus == 'Sent' || lifecycleStatus == 'Viewed') {
+      text = lifecycleStatus;
+      color = Colors.blue;
+      if (paymentStatus == 'Overdue') {
+        text = "$lifecycleStatus (Overdue)";
+        color = Colors.orange;
+      }
     }
-    Color color = Colors.orange;
-
-    if (status == 'Paid') {
+    
+    // Payment status overrides lifecycle for Paid/Partial
+    if (paymentStatus == 'Paid') {
       text = "Paid";
       color = Colors.green;
-    } else if (status == 'Partial') {
-      text = "Partial";
-      color = Colors.blue;
-    } else if (status == 'Overdue') {
-      text = "Overdue";
-      color = Colors.red;
+    } else if (paymentStatus == 'Partial') {
+      text = "Partial Paid";
+      color = Colors.teal;
     }
 
     return Container(
@@ -807,6 +808,21 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
           ],
         );
       },
+    );
+  }
+
+  void _markAsSent(BuildContext _, final Invoice invoice) async {
+    if (!mounted) return;
+    await InvoiceActions.markAsSent(ref, invoice);
+    if (!mounted) return;
+    displayInfoBar(
+      context,
+      builder: (final context, final close) => InfoBar(
+        title: const Text("Success"),
+        content: Text("Invoice ${invoice.invoiceNo} marked as sent"),
+        severity: InfoBarSeverity.success,
+        onClose: close,
+      ),
     );
   }
 

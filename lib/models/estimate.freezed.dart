@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Estimate {
 
- String get id; String get estimateNo; DateTime get date; DateTime? get expiryDate; Supplier get supplier; Receiver get receiver; List<InvoiceItem> get items; String get notes; String get terms; String? get status;
+ String get id; String get estimateNo; DateTime get date; DateTime? get expiryDate; Supplier get supplier; Receiver get receiver; List<InvoiceItem> get items; String get notes; String get terms; String? get status;// Draft, Sent, Accepted, Rejected, Converted
+ String? get poNumber;
 /// Create a copy of Estimate
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $EstimateCopyWith<Estimate> get copyWith => _$EstimateCopyWithImpl<Estimate>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Estimate&&(identical(other.id, id) || other.id == id)&&(identical(other.estimateNo, estimateNo) || other.estimateNo == estimateNo)&&(identical(other.date, date) || other.date == date)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.receiver, receiver) || other.receiver == receiver)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.terms, terms) || other.terms == terms)&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Estimate&&(identical(other.id, id) || other.id == id)&&(identical(other.estimateNo, estimateNo) || other.estimateNo == estimateNo)&&(identical(other.date, date) || other.date == date)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.receiver, receiver) || other.receiver == receiver)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.terms, terms) || other.terms == terms)&&(identical(other.status, status) || other.status == status)&&(identical(other.poNumber, poNumber) || other.poNumber == poNumber));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,estimateNo,date,expiryDate,supplier,receiver,const DeepCollectionEquality().hash(items),notes,terms,status);
+int get hashCode => Object.hash(runtimeType,id,estimateNo,date,expiryDate,supplier,receiver,const DeepCollectionEquality().hash(items),notes,terms,status,poNumber);
 
 @override
 String toString() {
-  return 'Estimate(id: $id, estimateNo: $estimateNo, date: $date, expiryDate: $expiryDate, supplier: $supplier, receiver: $receiver, items: $items, notes: $notes, terms: $terms, status: $status)';
+  return 'Estimate(id: $id, estimateNo: $estimateNo, date: $date, expiryDate: $expiryDate, supplier: $supplier, receiver: $receiver, items: $items, notes: $notes, terms: $terms, status: $status, poNumber: $poNumber)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $EstimateCopyWith<$Res>  {
   factory $EstimateCopyWith(Estimate value, $Res Function(Estimate) _then) = _$EstimateCopyWithImpl;
 @useResult
 $Res call({
- String id, String estimateNo, DateTime date, DateTime? expiryDate, Supplier supplier, Receiver receiver, List<InvoiceItem> items, String notes, String terms, String? status
+ String id, String estimateNo, DateTime date, DateTime? expiryDate, Supplier supplier, Receiver receiver, List<InvoiceItem> items, String notes, String terms, String? status, String? poNumber
 });
 
 
@@ -65,7 +66,7 @@ class _$EstimateCopyWithImpl<$Res>
 
 /// Create a copy of Estimate
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? estimateNo = null,Object? date = null,Object? expiryDate = freezed,Object? supplier = null,Object? receiver = null,Object? items = null,Object? notes = null,Object? terms = null,Object? status = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? estimateNo = null,Object? date = null,Object? expiryDate = freezed,Object? supplier = null,Object? receiver = null,Object? items = null,Object? notes = null,Object? terms = null,Object? status = freezed,Object? poNumber = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,estimateNo: null == estimateNo ? _self.estimateNo : estimateNo // ignore: cast_nullable_to_non_nullable
@@ -77,6 +78,7 @@ as Receiver,items: null == items ? _self.items : items // ignore: cast_nullable_
 as List<InvoiceItem>,notes: null == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String,terms: null == terms ? _self.terms : terms // ignore: cast_nullable_to_non_nullable
 as String,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,poNumber: freezed == poNumber ? _self.poNumber : poNumber // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -180,10 +182,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String estimateNo,  DateTime date,  DateTime? expiryDate,  Supplier supplier,  Receiver receiver,  List<InvoiceItem> items,  String notes,  String terms,  String? status)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String estimateNo,  DateTime date,  DateTime? expiryDate,  Supplier supplier,  Receiver receiver,  List<InvoiceItem> items,  String notes,  String terms,  String? status,  String? poNumber)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Estimate() when $default != null:
-return $default(_that.id,_that.estimateNo,_that.date,_that.expiryDate,_that.supplier,_that.receiver,_that.items,_that.notes,_that.terms,_that.status);case _:
+return $default(_that.id,_that.estimateNo,_that.date,_that.expiryDate,_that.supplier,_that.receiver,_that.items,_that.notes,_that.terms,_that.status,_that.poNumber);case _:
   return orElse();
 
 }
@@ -201,10 +203,10 @@ return $default(_that.id,_that.estimateNo,_that.date,_that.expiryDate,_that.supp
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String estimateNo,  DateTime date,  DateTime? expiryDate,  Supplier supplier,  Receiver receiver,  List<InvoiceItem> items,  String notes,  String terms,  String? status)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String estimateNo,  DateTime date,  DateTime? expiryDate,  Supplier supplier,  Receiver receiver,  List<InvoiceItem> items,  String notes,  String terms,  String? status,  String? poNumber)  $default,) {final _that = this;
 switch (_that) {
 case _Estimate():
-return $default(_that.id,_that.estimateNo,_that.date,_that.expiryDate,_that.supplier,_that.receiver,_that.items,_that.notes,_that.terms,_that.status);case _:
+return $default(_that.id,_that.estimateNo,_that.date,_that.expiryDate,_that.supplier,_that.receiver,_that.items,_that.notes,_that.terms,_that.status,_that.poNumber);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -221,10 +223,10 @@ return $default(_that.id,_that.estimateNo,_that.date,_that.expiryDate,_that.supp
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String estimateNo,  DateTime date,  DateTime? expiryDate,  Supplier supplier,  Receiver receiver,  List<InvoiceItem> items,  String notes,  String terms,  String? status)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String estimateNo,  DateTime date,  DateTime? expiryDate,  Supplier supplier,  Receiver receiver,  List<InvoiceItem> items,  String notes,  String terms,  String? status,  String? poNumber)?  $default,) {final _that = this;
 switch (_that) {
 case _Estimate() when $default != null:
-return $default(_that.id,_that.estimateNo,_that.date,_that.expiryDate,_that.supplier,_that.receiver,_that.items,_that.notes,_that.terms,_that.status);case _:
+return $default(_that.id,_that.estimateNo,_that.date,_that.expiryDate,_that.supplier,_that.receiver,_that.items,_that.notes,_that.terms,_that.status,_that.poNumber);case _:
   return null;
 
 }
@@ -236,7 +238,7 @@ return $default(_that.id,_that.estimateNo,_that.date,_that.expiryDate,_that.supp
 @JsonSerializable()
 
 class _Estimate extends Estimate {
-  const _Estimate({required this.id, this.estimateNo = '', required this.date, this.expiryDate, required this.supplier, required this.receiver, final  List<InvoiceItem> items = const [], this.notes = '', this.terms = '', this.status = 'Draft'}): _items = items,super._();
+  const _Estimate({required this.id, this.estimateNo = '', required this.date, this.expiryDate, required this.supplier, required this.receiver, final  List<InvoiceItem> items = const [], this.notes = '', this.terms = '', this.status = 'Draft', this.poNumber}): _items = items,super._();
   factory _Estimate.fromJson(Map<String, dynamic> json) => _$EstimateFromJson(json);
 
 @override final  String id;
@@ -255,6 +257,8 @@ class _Estimate extends Estimate {
 @override@JsonKey() final  String notes;
 @override@JsonKey() final  String terms;
 @override@JsonKey() final  String? status;
+// Draft, Sent, Accepted, Rejected, Converted
+@override final  String? poNumber;
 
 /// Create a copy of Estimate
 /// with the given fields replaced by the non-null parameter values.
@@ -269,16 +273,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Estimate&&(identical(other.id, id) || other.id == id)&&(identical(other.estimateNo, estimateNo) || other.estimateNo == estimateNo)&&(identical(other.date, date) || other.date == date)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.receiver, receiver) || other.receiver == receiver)&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.terms, terms) || other.terms == terms)&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Estimate&&(identical(other.id, id) || other.id == id)&&(identical(other.estimateNo, estimateNo) || other.estimateNo == estimateNo)&&(identical(other.date, date) || other.date == date)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.receiver, receiver) || other.receiver == receiver)&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.terms, terms) || other.terms == terms)&&(identical(other.status, status) || other.status == status)&&(identical(other.poNumber, poNumber) || other.poNumber == poNumber));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,estimateNo,date,expiryDate,supplier,receiver,const DeepCollectionEquality().hash(_items),notes,terms,status);
+int get hashCode => Object.hash(runtimeType,id,estimateNo,date,expiryDate,supplier,receiver,const DeepCollectionEquality().hash(_items),notes,terms,status,poNumber);
 
 @override
 String toString() {
-  return 'Estimate(id: $id, estimateNo: $estimateNo, date: $date, expiryDate: $expiryDate, supplier: $supplier, receiver: $receiver, items: $items, notes: $notes, terms: $terms, status: $status)';
+  return 'Estimate(id: $id, estimateNo: $estimateNo, date: $date, expiryDate: $expiryDate, supplier: $supplier, receiver: $receiver, items: $items, notes: $notes, terms: $terms, status: $status, poNumber: $poNumber)';
 }
 
 
@@ -289,7 +293,7 @@ abstract mixin class _$EstimateCopyWith<$Res> implements $EstimateCopyWith<$Res>
   factory _$EstimateCopyWith(_Estimate value, $Res Function(_Estimate) _then) = __$EstimateCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String estimateNo, DateTime date, DateTime? expiryDate, Supplier supplier, Receiver receiver, List<InvoiceItem> items, String notes, String terms, String? status
+ String id, String estimateNo, DateTime date, DateTime? expiryDate, Supplier supplier, Receiver receiver, List<InvoiceItem> items, String notes, String terms, String? status, String? poNumber
 });
 
 
@@ -306,7 +310,7 @@ class __$EstimateCopyWithImpl<$Res>
 
 /// Create a copy of Estimate
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? estimateNo = null,Object? date = null,Object? expiryDate = freezed,Object? supplier = null,Object? receiver = null,Object? items = null,Object? notes = null,Object? terms = null,Object? status = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? estimateNo = null,Object? date = null,Object? expiryDate = freezed,Object? supplier = null,Object? receiver = null,Object? items = null,Object? notes = null,Object? terms = null,Object? status = freezed,Object? poNumber = freezed,}) {
   return _then(_Estimate(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,estimateNo: null == estimateNo ? _self.estimateNo : estimateNo // ignore: cast_nullable_to_non_nullable
@@ -318,6 +322,7 @@ as Receiver,items: null == items ? _self._items : items // ignore: cast_nullable
 as List<InvoiceItem>,notes: null == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String,terms: null == terms ? _self.terms : terms // ignore: cast_nullable_to_non_nullable
 as String,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String?,poNumber: freezed == poNumber ? _self.poNumber : poNumber // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

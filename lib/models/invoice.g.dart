@@ -45,6 +45,11 @@ _Invoice _$InvoiceFromJson(Map<String, dynamic> json) => _Invoice(
   originalInvoiceDate: json['originalInvoiceDate'] == null
       ? null
       : DateTime.parse(json['originalInvoiceDate'] as String),
+  poNumber: json['poNumber'] as String?,
+  status: json['status'] as String? ?? 'Draft',
+  sentAt: json['sentAt'] == null
+      ? null
+      : DateTime.parse(json['sentAt'] as String),
 );
 
 Map<String, dynamic> _$InvoiceToJson(_Invoice instance) => <String, dynamic>{
@@ -72,6 +77,9 @@ Map<String, dynamic> _$InvoiceToJson(_Invoice instance) => <String, dynamic>{
   'type': _$InvoiceTypeEnumMap[instance.type]!,
   'originalInvoiceNumber': instance.originalInvoiceNumber,
   'originalInvoiceDate': instance.originalInvoiceDate?.toIso8601String(),
+  'poNumber': instance.poNumber,
+  'status': instance.status,
+  'sentAt': instance.sentAt?.toIso8601String(),
 };
 
 const _$InvoiceTypeEnumMap = {

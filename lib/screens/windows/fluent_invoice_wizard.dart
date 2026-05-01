@@ -282,6 +282,15 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
               ),
               const SizedBox(height: 10),
               InfoLabel(
+                label: "PO Number",
+                child: TextBox(
+                  placeholder: "e.g. PO-9981",
+                  controller: poNumberCtrl,
+                  onChanged: (final v) => notifier.updatePoNumber(v),
+                ),
+              ),
+              const SizedBox(height: 10),
+              InfoLabel(
                 label: "Invoice Date",
                 child: DatePicker(
                   selected: invoice.invoiceDate,

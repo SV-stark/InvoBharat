@@ -2387,6 +2387,36 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
         type: DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _poNumberMeta = const VerificationMeta(
+    'poNumber',
+  );
+  @override
+  late final GeneratedColumn<String> poNumber = GeneratedColumn<String>(
+    'po_number',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('Draft'),
+  );
+  static const VerificationMeta _sentAtMeta = const VerificationMeta('sentAt');
+  @override
+  late final GeneratedColumn<DateTime> sentAt = GeneratedColumn<DateTime>(
+    'sent_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2419,6 +2449,9 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
     receiverEmail,
     originalInvoiceNumber,
     originalInvoiceDate,
+    poNumber,
+    status,
+    sentAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2685,6 +2718,24 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
         ),
       );
     }
+    if (data.containsKey('po_number')) {
+      context.handle(
+        _poNumberMeta,
+        poNumber.isAcceptableOrUnknown(data['po_number']!, _poNumberMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('sent_at')) {
+      context.handle(
+        _sentAtMeta,
+        sentAt.isAcceptableOrUnknown(data['sent_at']!, _sentAtMeta),
+      );
+    }
     return context;
   }
 
@@ -2814,6 +2865,18 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}original_invoice_date'],
       ),
+      poNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}po_number'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      sentAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}sent_at'],
+      ),
     );
   }
 
@@ -2854,6 +2917,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
   final String? receiverEmail;
   final String? originalInvoiceNumber;
   final DateTime? originalInvoiceDate;
+  final String? poNumber;
+  final String status;
+  final DateTime? sentAt;
   const Invoice({
     required this.id,
     required this.profileId,
@@ -2885,6 +2951,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     this.receiverEmail,
     this.originalInvoiceNumber,
     this.originalInvoiceDate,
+    this.poNumber,
+    required this.status,
+    this.sentAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2950,6 +3019,13 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     }
     if (!nullToAbsent || originalInvoiceDate != null) {
       map['original_invoice_date'] = Variable<DateTime>(originalInvoiceDate);
+    }
+    if (!nullToAbsent || poNumber != null) {
+      map['po_number'] = Variable<String>(poNumber);
+    }
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || sentAt != null) {
+      map['sent_at'] = Variable<DateTime>(sentAt);
     }
     return map;
   }
@@ -3018,6 +3094,13 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       originalInvoiceDate: originalInvoiceDate == null && nullToAbsent
           ? const Value.absent()
           : Value(originalInvoiceDate),
+      poNumber: poNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(poNumber),
+      status: Value(status),
+      sentAt: sentAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sentAt),
     );
   }
 
@@ -3063,6 +3146,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       originalInvoiceDate: serializer.fromJson<DateTime?>(
         json['originalInvoiceDate'],
       ),
+      poNumber: serializer.fromJson<String?>(json['poNumber']),
+      status: serializer.fromJson<String>(json['status']),
+      sentAt: serializer.fromJson<DateTime?>(json['sentAt']),
     );
   }
   @override
@@ -3101,6 +3187,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
         originalInvoiceNumber,
       ),
       'originalInvoiceDate': serializer.toJson<DateTime?>(originalInvoiceDate),
+      'poNumber': serializer.toJson<String?>(poNumber),
+      'status': serializer.toJson<String>(status),
+      'sentAt': serializer.toJson<DateTime?>(sentAt),
     };
   }
 
@@ -3135,6 +3224,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     Value<String?> receiverEmail = const Value.absent(),
     Value<String?> originalInvoiceNumber = const Value.absent(),
     Value<DateTime?> originalInvoiceDate = const Value.absent(),
+    Value<String?> poNumber = const Value.absent(),
+    String? status,
+    Value<DateTime?> sentAt = const Value.absent(),
   }) => Invoice(
     id: id ?? this.id,
     profileId: profileId ?? this.profileId,
@@ -3188,6 +3280,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     originalInvoiceDate: originalInvoiceDate.present
         ? originalInvoiceDate.value
         : this.originalInvoiceDate,
+    poNumber: poNumber.present ? poNumber.value : this.poNumber,
+    status: status ?? this.status,
+    sentAt: sentAt.present ? sentAt.value : this.sentAt,
   );
   Invoice copyWithCompanion(InvoicesCompanion data) {
     return Invoice(
@@ -3257,6 +3352,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       originalInvoiceDate: data.originalInvoiceDate.present
           ? data.originalInvoiceDate.value
           : this.originalInvoiceDate,
+      poNumber: data.poNumber.present ? data.poNumber.value : this.poNumber,
+      status: data.status.present ? data.status.value : this.status,
+      sentAt: data.sentAt.present ? data.sentAt.value : this.sentAt,
     );
   }
 
@@ -3292,7 +3390,10 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           ..write('receiverStateCode: $receiverStateCode, ')
           ..write('receiverEmail: $receiverEmail, ')
           ..write('originalInvoiceNumber: $originalInvoiceNumber, ')
-          ..write('originalInvoiceDate: $originalInvoiceDate')
+          ..write('originalInvoiceDate: $originalInvoiceDate, ')
+          ..write('poNumber: $poNumber, ')
+          ..write('status: $status, ')
+          ..write('sentAt: $sentAt')
           ..write(')'))
         .toString();
   }
@@ -3329,6 +3430,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     receiverEmail,
     originalInvoiceNumber,
     originalInvoiceDate,
+    poNumber,
+    status,
+    sentAt,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -3363,7 +3467,10 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           other.receiverStateCode == this.receiverStateCode &&
           other.receiverEmail == this.receiverEmail &&
           other.originalInvoiceNumber == this.originalInvoiceNumber &&
-          other.originalInvoiceDate == this.originalInvoiceDate);
+          other.originalInvoiceDate == this.originalInvoiceDate &&
+          other.poNumber == this.poNumber &&
+          other.status == this.status &&
+          other.sentAt == this.sentAt);
 }
 
 class InvoicesCompanion extends UpdateCompanion<Invoice> {
@@ -3397,6 +3504,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
   final Value<String?> receiverEmail;
   final Value<String?> originalInvoiceNumber;
   final Value<DateTime?> originalInvoiceDate;
+  final Value<String?> poNumber;
+  final Value<String> status;
+  final Value<DateTime?> sentAt;
   final Value<int> rowid;
   const InvoicesCompanion({
     this.id = const Value.absent(),
@@ -3429,6 +3539,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     this.receiverEmail = const Value.absent(),
     this.originalInvoiceNumber = const Value.absent(),
     this.originalInvoiceDate = const Value.absent(),
+    this.poNumber = const Value.absent(),
+    this.status = const Value.absent(),
+    this.sentAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   InvoicesCompanion.insert({
@@ -3462,6 +3575,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     this.receiverEmail = const Value.absent(),
     this.originalInvoiceNumber = const Value.absent(),
     this.originalInvoiceDate = const Value.absent(),
+    this.poNumber = const Value.absent(),
+    this.status = const Value.absent(),
+    this.sentAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        profileId = Value(profileId),
@@ -3505,6 +3621,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     Expression<String>? receiverEmail,
     Expression<String>? originalInvoiceNumber,
     Expression<DateTime>? originalInvoiceDate,
+    Expression<String>? poNumber,
+    Expression<String>? status,
+    Expression<DateTime>? sentAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3540,6 +3659,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
         'original_invoice_number': originalInvoiceNumber,
       if (originalInvoiceDate != null)
         'original_invoice_date': originalInvoiceDate,
+      if (poNumber != null) 'po_number': poNumber,
+      if (status != null) 'status': status,
+      if (sentAt != null) 'sent_at': sentAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3575,6 +3697,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     Value<String?>? receiverEmail,
     Value<String?>? originalInvoiceNumber,
     Value<DateTime?>? originalInvoiceDate,
+    Value<String?>? poNumber,
+    Value<String>? status,
+    Value<DateTime?>? sentAt,
     Value<int>? rowid,
   }) {
     return InvoicesCompanion(
@@ -3609,6 +3734,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
       originalInvoiceNumber:
           originalInvoiceNumber ?? this.originalInvoiceNumber,
       originalInvoiceDate: originalInvoiceDate ?? this.originalInvoiceDate,
+      poNumber: poNumber ?? this.poNumber,
+      status: status ?? this.status,
+      sentAt: sentAt ?? this.sentAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3710,6 +3838,15 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
         originalInvoiceDate.value,
       );
     }
+    if (poNumber.present) {
+      map['po_number'] = Variable<String>(poNumber.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (sentAt.present) {
+      map['sent_at'] = Variable<DateTime>(sentAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3749,6 +3886,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
           ..write('receiverEmail: $receiverEmail, ')
           ..write('originalInvoiceNumber: $originalInvoiceNumber, ')
           ..write('originalInvoiceDate: $originalInvoiceDate, ')
+          ..write('poNumber: $poNumber, ')
+          ..write('status: $status, ')
+          ..write('sentAt: $sentAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -6459,6 +6599,9 @@ typedef $$InvoicesTableCreateCompanionBuilder =
       Value<String?> receiverEmail,
       Value<String?> originalInvoiceNumber,
       Value<DateTime?> originalInvoiceDate,
+      Value<String?> poNumber,
+      Value<String> status,
+      Value<DateTime?> sentAt,
       Value<int> rowid,
     });
 typedef $$InvoicesTableUpdateCompanionBuilder =
@@ -6493,6 +6636,9 @@ typedef $$InvoicesTableUpdateCompanionBuilder =
       Value<String?> receiverEmail,
       Value<String?> originalInvoiceNumber,
       Value<DateTime?> originalInvoiceDate,
+      Value<String?> poNumber,
+      Value<String> status,
+      Value<DateTime?> sentAt,
       Value<int> rowid,
     });
 
@@ -6720,6 +6866,21 @@ class $$InvoicesTableFilterComposer
 
   ColumnFilters<DateTime> get originalInvoiceDate => $composableBuilder(
     column: $table.originalInvoiceDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get poNumber => $composableBuilder(
+    column: $table.poNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get sentAt => $composableBuilder(
+    column: $table.sentAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6969,6 +7130,21 @@ class $$InvoicesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get poNumber => $composableBuilder(
+    column: $table.poNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get sentAt => $composableBuilder(
+    column: $table.sentAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$BusinessProfilesTableOrderingComposer get profileId {
     final $$BusinessProfilesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -7145,6 +7321,15 @@ class $$InvoicesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get poNumber =>
+      $composableBuilder(column: $table.poNumber, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get sentAt =>
+      $composableBuilder(column: $table.sentAt, builder: (column) => column);
+
   $$BusinessProfilesTableAnnotationComposer get profileId {
     final $$BusinessProfilesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -7305,6 +7490,9 @@ class $$InvoicesTableTableManager
                 Value<String?> receiverEmail = const Value.absent(),
                 Value<String?> originalInvoiceNumber = const Value.absent(),
                 Value<DateTime?> originalInvoiceDate = const Value.absent(),
+                Value<String?> poNumber = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime?> sentAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => InvoicesCompanion(
                 id: id,
@@ -7337,6 +7525,9 @@ class $$InvoicesTableTableManager
                 receiverEmail: receiverEmail,
                 originalInvoiceNumber: originalInvoiceNumber,
                 originalInvoiceDate: originalInvoiceDate,
+                poNumber: poNumber,
+                status: status,
+                sentAt: sentAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -7371,6 +7562,9 @@ class $$InvoicesTableTableManager
                 Value<String?> receiverEmail = const Value.absent(),
                 Value<String?> originalInvoiceNumber = const Value.absent(),
                 Value<DateTime?> originalInvoiceDate = const Value.absent(),
+                Value<String?> poNumber = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime?> sentAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => InvoicesCompanion.insert(
                 id: id,
@@ -7403,6 +7597,9 @@ class $$InvoicesTableTableManager
                 receiverEmail: receiverEmail,
                 originalInvoiceNumber: originalInvoiceNumber,
                 originalInvoiceDate: originalInvoiceDate,
+                poNumber: poNumber,
+                status: status,
+                sentAt: sentAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

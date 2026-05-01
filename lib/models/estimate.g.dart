@@ -23,6 +23,7 @@ _Estimate _$EstimateFromJson(Map<String, dynamic> json) => _Estimate(
   notes: json['notes'] as String? ?? '',
   terms: json['terms'] as String? ?? '',
   status: json['status'] as String? ?? 'Draft',
+  poNumber: json['poNumber'] as String?,
 );
 
 Map<String, dynamic> _$EstimateToJson(_Estimate instance) => <String, dynamic>{
@@ -36,4 +37,5 @@ Map<String, dynamic> _$EstimateToJson(_Estimate instance) => <String, dynamic>{
   'notes': instance.notes,
   'terms': instance.terms,
   'status': instance.status,
+  'poNumber': instance.poNumber,
 };

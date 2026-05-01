@@ -8,6 +8,7 @@ class InvoiceQuickActions extends StatefulWidget {
   final Function(BuildContext, Invoice) onRecurring;
   final Function(BuildContext, Invoice) onDuplicate; // New
   final Function(BuildContext, Invoice) onEmail; // New
+  final Function(BuildContext, Invoice) onMarkSent; // New
 
   const InvoiceQuickActions({
     super.key,
@@ -17,6 +18,7 @@ class InvoiceQuickActions extends StatefulWidget {
     required this.onRecurring,
     required this.onDuplicate, // New
     required this.onEmail, // New
+    required this.onMarkSent, // New
   });
 
   @override
@@ -46,6 +48,16 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
             builder: (final flyoutContext) {
               return MenuFlyout(
                 items: [
+                  MenuFlyoutItem(
+                    text: const Text('Mark Sent'),
+                    leading: const Icon(FluentIcons.send),
+                    onPressed: widget.invoice.status == 'Sent'
+                        ? null
+                        : () {
+                            Flyout.of(flyoutContext).close();
+                            widget.onMarkSent(context, widget.invoice);
+                          },
+                  ),
                   MenuFlyoutItem(
                     text: const Text('Mark Paid'),
                     leading: Icon(FluentIcons.money, color: Colors.green),

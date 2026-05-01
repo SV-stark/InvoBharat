@@ -33,6 +33,17 @@ class InvoiceActions {
     ref.invalidate(invoiceListProvider);
   }
 
+  static Future<void> markAsSent(
+    final WidgetRef ref,
+    final Invoice invoice,
+  ) async {
+    final updated = invoice.copyWith(
+      status: 'Sent',
+      sentAt: DateTime.now(),
+    );
+    await saveInvoice(ref, updated);
+  }
+
   static Color getStatusColor(final String status) {
     switch (status) {
       case 'Paid':

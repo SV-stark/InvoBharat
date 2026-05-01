@@ -21,6 +21,7 @@ abstract class Estimate with _$Estimate {
     @Default('') final String terms,
     @Default('Draft')
     final String? status, // Draft, Sent, Accepted, Rejected, Converted
+    final String? poNumber,
   }) = _Estimate;
 
   factory Estimate.create({

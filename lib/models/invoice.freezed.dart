@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Invoice {
 
- String? get id; String get style; Supplier get supplier; Receiver get receiver; String get invoiceNo; DateTime get invoiceDate; DateTime? get dueDate; String get placeOfSupply; String get reverseCharge; String get paymentTerms; List<InvoiceItem> get items; List<PaymentTransaction> get payments; String get comments; String get bankName; String get accountNo; String get ifscCode; String get branch; String? get deliveryAddress; bool get isArchived; String get currency; double get discountAmount; InvoiceType get type; String? get originalInvoiceNumber; DateTime? get originalInvoiceDate;
+ String? get id; String get style; Supplier get supplier; Receiver get receiver; String get invoiceNo; DateTime get invoiceDate; DateTime? get dueDate; String get placeOfSupply; String get reverseCharge; String get paymentTerms; List<InvoiceItem> get items; List<PaymentTransaction> get payments; String get comments; String get bankName; String get accountNo; String get ifscCode; String get branch; String? get deliveryAddress; bool get isArchived; String get currency; double get discountAmount; InvoiceType get type; String? get originalInvoiceNumber; DateTime? get originalInvoiceDate; String? get poNumber; String get status; DateTime? get sentAt;
 /// Create a copy of Invoice
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $InvoiceCopyWith<Invoice> get copyWith => _$InvoiceCopyWithImpl<Invoice>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Invoice&&(identical(other.id, id) || other.id == id)&&(identical(other.style, style) || other.style == style)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.receiver, receiver) || other.receiver == receiver)&&(identical(other.invoiceNo, invoiceNo) || other.invoiceNo == invoiceNo)&&(identical(other.invoiceDate, invoiceDate) || other.invoiceDate == invoiceDate)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.placeOfSupply, placeOfSupply) || other.placeOfSupply == placeOfSupply)&&(identical(other.reverseCharge, reverseCharge) || other.reverseCharge == reverseCharge)&&(identical(other.paymentTerms, paymentTerms) || other.paymentTerms == paymentTerms)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.payments, payments)&&(identical(other.comments, comments) || other.comments == comments)&&(identical(other.bankName, bankName) || other.bankName == bankName)&&(identical(other.accountNo, accountNo) || other.accountNo == accountNo)&&(identical(other.ifscCode, ifscCode) || other.ifscCode == ifscCode)&&(identical(other.branch, branch) || other.branch == branch)&&(identical(other.deliveryAddress, deliveryAddress) || other.deliveryAddress == deliveryAddress)&&(identical(other.isArchived, isArchived) || other.isArchived == isArchived)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.discountAmount, discountAmount) || other.discountAmount == discountAmount)&&(identical(other.type, type) || other.type == type)&&(identical(other.originalInvoiceNumber, originalInvoiceNumber) || other.originalInvoiceNumber == originalInvoiceNumber)&&(identical(other.originalInvoiceDate, originalInvoiceDate) || other.originalInvoiceDate == originalInvoiceDate));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Invoice&&(identical(other.id, id) || other.id == id)&&(identical(other.style, style) || other.style == style)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.receiver, receiver) || other.receiver == receiver)&&(identical(other.invoiceNo, invoiceNo) || other.invoiceNo == invoiceNo)&&(identical(other.invoiceDate, invoiceDate) || other.invoiceDate == invoiceDate)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.placeOfSupply, placeOfSupply) || other.placeOfSupply == placeOfSupply)&&(identical(other.reverseCharge, reverseCharge) || other.reverseCharge == reverseCharge)&&(identical(other.paymentTerms, paymentTerms) || other.paymentTerms == paymentTerms)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.payments, payments)&&(identical(other.comments, comments) || other.comments == comments)&&(identical(other.bankName, bankName) || other.bankName == bankName)&&(identical(other.accountNo, accountNo) || other.accountNo == accountNo)&&(identical(other.ifscCode, ifscCode) || other.ifscCode == ifscCode)&&(identical(other.branch, branch) || other.branch == branch)&&(identical(other.deliveryAddress, deliveryAddress) || other.deliveryAddress == deliveryAddress)&&(identical(other.isArchived, isArchived) || other.isArchived == isArchived)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.discountAmount, discountAmount) || other.discountAmount == discountAmount)&&(identical(other.type, type) || other.type == type)&&(identical(other.originalInvoiceNumber, originalInvoiceNumber) || other.originalInvoiceNumber == originalInvoiceNumber)&&(identical(other.originalInvoiceDate, originalInvoiceDate) || other.originalInvoiceDate == originalInvoiceDate)&&(identical(other.poNumber, poNumber) || other.poNumber == poNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,style,supplier,receiver,invoiceNo,invoiceDate,dueDate,placeOfSupply,reverseCharge,paymentTerms,const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(payments),comments,bankName,accountNo,ifscCode,branch,deliveryAddress,isArchived,currency,discountAmount,type,originalInvoiceNumber,originalInvoiceDate]);
+int get hashCode => Object.hashAll([runtimeType,id,style,supplier,receiver,invoiceNo,invoiceDate,dueDate,placeOfSupply,reverseCharge,paymentTerms,const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(payments),comments,bankName,accountNo,ifscCode,branch,deliveryAddress,isArchived,currency,discountAmount,type,originalInvoiceNumber,originalInvoiceDate,poNumber,status,sentAt]);
 
 @override
 String toString() {
-  return 'Invoice(id: $id, style: $style, supplier: $supplier, receiver: $receiver, invoiceNo: $invoiceNo, invoiceDate: $invoiceDate, dueDate: $dueDate, placeOfSupply: $placeOfSupply, reverseCharge: $reverseCharge, paymentTerms: $paymentTerms, items: $items, payments: $payments, comments: $comments, bankName: $bankName, accountNo: $accountNo, ifscCode: $ifscCode, branch: $branch, deliveryAddress: $deliveryAddress, isArchived: $isArchived, currency: $currency, discountAmount: $discountAmount, type: $type, originalInvoiceNumber: $originalInvoiceNumber, originalInvoiceDate: $originalInvoiceDate)';
+  return 'Invoice(id: $id, style: $style, supplier: $supplier, receiver: $receiver, invoiceNo: $invoiceNo, invoiceDate: $invoiceDate, dueDate: $dueDate, placeOfSupply: $placeOfSupply, reverseCharge: $reverseCharge, paymentTerms: $paymentTerms, items: $items, payments: $payments, comments: $comments, bankName: $bankName, accountNo: $accountNo, ifscCode: $ifscCode, branch: $branch, deliveryAddress: $deliveryAddress, isArchived: $isArchived, currency: $currency, discountAmount: $discountAmount, type: $type, originalInvoiceNumber: $originalInvoiceNumber, originalInvoiceDate: $originalInvoiceDate, poNumber: $poNumber, status: $status, sentAt: $sentAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $InvoiceCopyWith<$Res>  {
   factory $InvoiceCopyWith(Invoice value, $Res Function(Invoice) _then) = _$InvoiceCopyWithImpl;
 @useResult
 $Res call({
- String? id, String style, Supplier supplier, Receiver receiver, String invoiceNo, DateTime invoiceDate, DateTime? dueDate, String placeOfSupply, String reverseCharge, String paymentTerms, List<InvoiceItem> items, List<PaymentTransaction> payments, String comments, String bankName, String accountNo, String ifscCode, String branch, String? deliveryAddress, bool isArchived, String currency, double discountAmount, InvoiceType type, String? originalInvoiceNumber, DateTime? originalInvoiceDate
+ String? id, String style, Supplier supplier, Receiver receiver, String invoiceNo, DateTime invoiceDate, DateTime? dueDate, String placeOfSupply, String reverseCharge, String paymentTerms, List<InvoiceItem> items, List<PaymentTransaction> payments, String comments, String bankName, String accountNo, String ifscCode, String branch, String? deliveryAddress, bool isArchived, String currency, double discountAmount, InvoiceType type, String? originalInvoiceNumber, DateTime? originalInvoiceDate, String? poNumber, String status, DateTime? sentAt
 });
 
 
@@ -65,7 +65,7 @@ class _$InvoiceCopyWithImpl<$Res>
 
 /// Create a copy of Invoice
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? style = null,Object? supplier = null,Object? receiver = null,Object? invoiceNo = null,Object? invoiceDate = null,Object? dueDate = freezed,Object? placeOfSupply = null,Object? reverseCharge = null,Object? paymentTerms = null,Object? items = null,Object? payments = null,Object? comments = null,Object? bankName = null,Object? accountNo = null,Object? ifscCode = null,Object? branch = null,Object? deliveryAddress = freezed,Object? isArchived = null,Object? currency = null,Object? discountAmount = null,Object? type = null,Object? originalInvoiceNumber = freezed,Object? originalInvoiceDate = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? style = null,Object? supplier = null,Object? receiver = null,Object? invoiceNo = null,Object? invoiceDate = null,Object? dueDate = freezed,Object? placeOfSupply = null,Object? reverseCharge = null,Object? paymentTerms = null,Object? items = null,Object? payments = null,Object? comments = null,Object? bankName = null,Object? accountNo = null,Object? ifscCode = null,Object? branch = null,Object? deliveryAddress = freezed,Object? isArchived = null,Object? currency = null,Object? discountAmount = null,Object? type = null,Object? originalInvoiceNumber = freezed,Object? originalInvoiceDate = freezed,Object? poNumber = freezed,Object? status = null,Object? sentAt = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,style: null == style ? _self.style : style // ignore: cast_nullable_to_non_nullable
@@ -91,6 +91,9 @@ as String,discountAmount: null == discountAmount ? _self.discountAmount : discou
 as double,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as InvoiceType,originalInvoiceNumber: freezed == originalInvoiceNumber ? _self.originalInvoiceNumber : originalInvoiceNumber // ignore: cast_nullable_to_non_nullable
 as String?,originalInvoiceDate: freezed == originalInvoiceDate ? _self.originalInvoiceDate : originalInvoiceDate // ignore: cast_nullable_to_non_nullable
+as DateTime?,poNumber: freezed == poNumber ? _self.poNumber : poNumber // ignore: cast_nullable_to_non_nullable
+as String?,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,sentAt: freezed == sentAt ? _self.sentAt : sentAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
 }
@@ -194,10 +197,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String style,  Supplier supplier,  Receiver receiver,  String invoiceNo,  DateTime invoiceDate,  DateTime? dueDate,  String placeOfSupply,  String reverseCharge,  String paymentTerms,  List<InvoiceItem> items,  List<PaymentTransaction> payments,  String comments,  String bankName,  String accountNo,  String ifscCode,  String branch,  String? deliveryAddress,  bool isArchived,  String currency,  double discountAmount,  InvoiceType type,  String? originalInvoiceNumber,  DateTime? originalInvoiceDate)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String style,  Supplier supplier,  Receiver receiver,  String invoiceNo,  DateTime invoiceDate,  DateTime? dueDate,  String placeOfSupply,  String reverseCharge,  String paymentTerms,  List<InvoiceItem> items,  List<PaymentTransaction> payments,  String comments,  String bankName,  String accountNo,  String ifscCode,  String branch,  String? deliveryAddress,  bool isArchived,  String currency,  double discountAmount,  InvoiceType type,  String? originalInvoiceNumber,  DateTime? originalInvoiceDate,  String? poNumber,  String status,  DateTime? sentAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Invoice() when $default != null:
-return $default(_that.id,_that.style,_that.supplier,_that.receiver,_that.invoiceNo,_that.invoiceDate,_that.dueDate,_that.placeOfSupply,_that.reverseCharge,_that.paymentTerms,_that.items,_that.payments,_that.comments,_that.bankName,_that.accountNo,_that.ifscCode,_that.branch,_that.deliveryAddress,_that.isArchived,_that.currency,_that.discountAmount,_that.type,_that.originalInvoiceNumber,_that.originalInvoiceDate);case _:
+return $default(_that.id,_that.style,_that.supplier,_that.receiver,_that.invoiceNo,_that.invoiceDate,_that.dueDate,_that.placeOfSupply,_that.reverseCharge,_that.paymentTerms,_that.items,_that.payments,_that.comments,_that.bankName,_that.accountNo,_that.ifscCode,_that.branch,_that.deliveryAddress,_that.isArchived,_that.currency,_that.discountAmount,_that.type,_that.originalInvoiceNumber,_that.originalInvoiceDate,_that.poNumber,_that.status,_that.sentAt);case _:
   return orElse();
 
 }
@@ -215,10 +218,10 @@ return $default(_that.id,_that.style,_that.supplier,_that.receiver,_that.invoice
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String style,  Supplier supplier,  Receiver receiver,  String invoiceNo,  DateTime invoiceDate,  DateTime? dueDate,  String placeOfSupply,  String reverseCharge,  String paymentTerms,  List<InvoiceItem> items,  List<PaymentTransaction> payments,  String comments,  String bankName,  String accountNo,  String ifscCode,  String branch,  String? deliveryAddress,  bool isArchived,  String currency,  double discountAmount,  InvoiceType type,  String? originalInvoiceNumber,  DateTime? originalInvoiceDate)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String style,  Supplier supplier,  Receiver receiver,  String invoiceNo,  DateTime invoiceDate,  DateTime? dueDate,  String placeOfSupply,  String reverseCharge,  String paymentTerms,  List<InvoiceItem> items,  List<PaymentTransaction> payments,  String comments,  String bankName,  String accountNo,  String ifscCode,  String branch,  String? deliveryAddress,  bool isArchived,  String currency,  double discountAmount,  InvoiceType type,  String? originalInvoiceNumber,  DateTime? originalInvoiceDate,  String? poNumber,  String status,  DateTime? sentAt)  $default,) {final _that = this;
 switch (_that) {
 case _Invoice():
-return $default(_that.id,_that.style,_that.supplier,_that.receiver,_that.invoiceNo,_that.invoiceDate,_that.dueDate,_that.placeOfSupply,_that.reverseCharge,_that.paymentTerms,_that.items,_that.payments,_that.comments,_that.bankName,_that.accountNo,_that.ifscCode,_that.branch,_that.deliveryAddress,_that.isArchived,_that.currency,_that.discountAmount,_that.type,_that.originalInvoiceNumber,_that.originalInvoiceDate);case _:
+return $default(_that.id,_that.style,_that.supplier,_that.receiver,_that.invoiceNo,_that.invoiceDate,_that.dueDate,_that.placeOfSupply,_that.reverseCharge,_that.paymentTerms,_that.items,_that.payments,_that.comments,_that.bankName,_that.accountNo,_that.ifscCode,_that.branch,_that.deliveryAddress,_that.isArchived,_that.currency,_that.discountAmount,_that.type,_that.originalInvoiceNumber,_that.originalInvoiceDate,_that.poNumber,_that.status,_that.sentAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -235,10 +238,10 @@ return $default(_that.id,_that.style,_that.supplier,_that.receiver,_that.invoice
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String style,  Supplier supplier,  Receiver receiver,  String invoiceNo,  DateTime invoiceDate,  DateTime? dueDate,  String placeOfSupply,  String reverseCharge,  String paymentTerms,  List<InvoiceItem> items,  List<PaymentTransaction> payments,  String comments,  String bankName,  String accountNo,  String ifscCode,  String branch,  String? deliveryAddress,  bool isArchived,  String currency,  double discountAmount,  InvoiceType type,  String? originalInvoiceNumber,  DateTime? originalInvoiceDate)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String style,  Supplier supplier,  Receiver receiver,  String invoiceNo,  DateTime invoiceDate,  DateTime? dueDate,  String placeOfSupply,  String reverseCharge,  String paymentTerms,  List<InvoiceItem> items,  List<PaymentTransaction> payments,  String comments,  String bankName,  String accountNo,  String ifscCode,  String branch,  String? deliveryAddress,  bool isArchived,  String currency,  double discountAmount,  InvoiceType type,  String? originalInvoiceNumber,  DateTime? originalInvoiceDate,  String? poNumber,  String status,  DateTime? sentAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Invoice() when $default != null:
-return $default(_that.id,_that.style,_that.supplier,_that.receiver,_that.invoiceNo,_that.invoiceDate,_that.dueDate,_that.placeOfSupply,_that.reverseCharge,_that.paymentTerms,_that.items,_that.payments,_that.comments,_that.bankName,_that.accountNo,_that.ifscCode,_that.branch,_that.deliveryAddress,_that.isArchived,_that.currency,_that.discountAmount,_that.type,_that.originalInvoiceNumber,_that.originalInvoiceDate);case _:
+return $default(_that.id,_that.style,_that.supplier,_that.receiver,_that.invoiceNo,_that.invoiceDate,_that.dueDate,_that.placeOfSupply,_that.reverseCharge,_that.paymentTerms,_that.items,_that.payments,_that.comments,_that.bankName,_that.accountNo,_that.ifscCode,_that.branch,_that.deliveryAddress,_that.isArchived,_that.currency,_that.discountAmount,_that.type,_that.originalInvoiceNumber,_that.originalInvoiceDate,_that.poNumber,_that.status,_that.sentAt);case _:
   return null;
 
 }
@@ -250,7 +253,7 @@ return $default(_that.id,_that.style,_that.supplier,_that.receiver,_that.invoice
 @JsonSerializable()
 
 class _Invoice extends Invoice {
-  const _Invoice({this.id, this.style = 'Modern', required this.supplier, required this.receiver, this.invoiceNo = '', required this.invoiceDate, this.dueDate, this.placeOfSupply = '', this.reverseCharge = 'N', this.paymentTerms = '', final  List<InvoiceItem> items = const [], final  List<PaymentTransaction> payments = const [], this.comments = '', this.bankName = '', this.accountNo = '', this.ifscCode = '', this.branch = '', this.deliveryAddress, this.isArchived = false, this.currency = 'INR', this.discountAmount = 0.0, this.type = InvoiceType.invoice, this.originalInvoiceNumber, this.originalInvoiceDate}): _items = items,_payments = payments,super._();
+  const _Invoice({this.id, this.style = 'Modern', required this.supplier, required this.receiver, this.invoiceNo = '', required this.invoiceDate, this.dueDate, this.placeOfSupply = '', this.reverseCharge = 'N', this.paymentTerms = '', final  List<InvoiceItem> items = const [], final  List<PaymentTransaction> payments = const [], this.comments = '', this.bankName = '', this.accountNo = '', this.ifscCode = '', this.branch = '', this.deliveryAddress, this.isArchived = false, this.currency = 'INR', this.discountAmount = 0.0, this.type = InvoiceType.invoice, this.originalInvoiceNumber, this.originalInvoiceDate, this.poNumber, this.status = 'Draft', this.sentAt}): _items = items,_payments = payments,super._();
   factory _Invoice.fromJson(Map<String, dynamic> json) => _$InvoiceFromJson(json);
 
 @override final  String? id;
@@ -289,6 +292,9 @@ class _Invoice extends Invoice {
 @override@JsonKey() final  InvoiceType type;
 @override final  String? originalInvoiceNumber;
 @override final  DateTime? originalInvoiceDate;
+@override final  String? poNumber;
+@override@JsonKey() final  String status;
+@override final  DateTime? sentAt;
 
 /// Create a copy of Invoice
 /// with the given fields replaced by the non-null parameter values.
@@ -303,16 +309,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Invoice&&(identical(other.id, id) || other.id == id)&&(identical(other.style, style) || other.style == style)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.receiver, receiver) || other.receiver == receiver)&&(identical(other.invoiceNo, invoiceNo) || other.invoiceNo == invoiceNo)&&(identical(other.invoiceDate, invoiceDate) || other.invoiceDate == invoiceDate)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.placeOfSupply, placeOfSupply) || other.placeOfSupply == placeOfSupply)&&(identical(other.reverseCharge, reverseCharge) || other.reverseCharge == reverseCharge)&&(identical(other.paymentTerms, paymentTerms) || other.paymentTerms == paymentTerms)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._payments, _payments)&&(identical(other.comments, comments) || other.comments == comments)&&(identical(other.bankName, bankName) || other.bankName == bankName)&&(identical(other.accountNo, accountNo) || other.accountNo == accountNo)&&(identical(other.ifscCode, ifscCode) || other.ifscCode == ifscCode)&&(identical(other.branch, branch) || other.branch == branch)&&(identical(other.deliveryAddress, deliveryAddress) || other.deliveryAddress == deliveryAddress)&&(identical(other.isArchived, isArchived) || other.isArchived == isArchived)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.discountAmount, discountAmount) || other.discountAmount == discountAmount)&&(identical(other.type, type) || other.type == type)&&(identical(other.originalInvoiceNumber, originalInvoiceNumber) || other.originalInvoiceNumber == originalInvoiceNumber)&&(identical(other.originalInvoiceDate, originalInvoiceDate) || other.originalInvoiceDate == originalInvoiceDate));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Invoice&&(identical(other.id, id) || other.id == id)&&(identical(other.style, style) || other.style == style)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.receiver, receiver) || other.receiver == receiver)&&(identical(other.invoiceNo, invoiceNo) || other.invoiceNo == invoiceNo)&&(identical(other.invoiceDate, invoiceDate) || other.invoiceDate == invoiceDate)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.placeOfSupply, placeOfSupply) || other.placeOfSupply == placeOfSupply)&&(identical(other.reverseCharge, reverseCharge) || other.reverseCharge == reverseCharge)&&(identical(other.paymentTerms, paymentTerms) || other.paymentTerms == paymentTerms)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._payments, _payments)&&(identical(other.comments, comments) || other.comments == comments)&&(identical(other.bankName, bankName) || other.bankName == bankName)&&(identical(other.accountNo, accountNo) || other.accountNo == accountNo)&&(identical(other.ifscCode, ifscCode) || other.ifscCode == ifscCode)&&(identical(other.branch, branch) || other.branch == branch)&&(identical(other.deliveryAddress, deliveryAddress) || other.deliveryAddress == deliveryAddress)&&(identical(other.isArchived, isArchived) || other.isArchived == isArchived)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.discountAmount, discountAmount) || other.discountAmount == discountAmount)&&(identical(other.type, type) || other.type == type)&&(identical(other.originalInvoiceNumber, originalInvoiceNumber) || other.originalInvoiceNumber == originalInvoiceNumber)&&(identical(other.originalInvoiceDate, originalInvoiceDate) || other.originalInvoiceDate == originalInvoiceDate)&&(identical(other.poNumber, poNumber) || other.poNumber == poNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,style,supplier,receiver,invoiceNo,invoiceDate,dueDate,placeOfSupply,reverseCharge,paymentTerms,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_payments),comments,bankName,accountNo,ifscCode,branch,deliveryAddress,isArchived,currency,discountAmount,type,originalInvoiceNumber,originalInvoiceDate]);
+int get hashCode => Object.hashAll([runtimeType,id,style,supplier,receiver,invoiceNo,invoiceDate,dueDate,placeOfSupply,reverseCharge,paymentTerms,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_payments),comments,bankName,accountNo,ifscCode,branch,deliveryAddress,isArchived,currency,discountAmount,type,originalInvoiceNumber,originalInvoiceDate,poNumber,status,sentAt]);
 
 @override
 String toString() {
-  return 'Invoice(id: $id, style: $style, supplier: $supplier, receiver: $receiver, invoiceNo: $invoiceNo, invoiceDate: $invoiceDate, dueDate: $dueDate, placeOfSupply: $placeOfSupply, reverseCharge: $reverseCharge, paymentTerms: $paymentTerms, items: $items, payments: $payments, comments: $comments, bankName: $bankName, accountNo: $accountNo, ifscCode: $ifscCode, branch: $branch, deliveryAddress: $deliveryAddress, isArchived: $isArchived, currency: $currency, discountAmount: $discountAmount, type: $type, originalInvoiceNumber: $originalInvoiceNumber, originalInvoiceDate: $originalInvoiceDate)';
+  return 'Invoice(id: $id, style: $style, supplier: $supplier, receiver: $receiver, invoiceNo: $invoiceNo, invoiceDate: $invoiceDate, dueDate: $dueDate, placeOfSupply: $placeOfSupply, reverseCharge: $reverseCharge, paymentTerms: $paymentTerms, items: $items, payments: $payments, comments: $comments, bankName: $bankName, accountNo: $accountNo, ifscCode: $ifscCode, branch: $branch, deliveryAddress: $deliveryAddress, isArchived: $isArchived, currency: $currency, discountAmount: $discountAmount, type: $type, originalInvoiceNumber: $originalInvoiceNumber, originalInvoiceDate: $originalInvoiceDate, poNumber: $poNumber, status: $status, sentAt: $sentAt)';
 }
 
 
@@ -323,7 +329,7 @@ abstract mixin class _$InvoiceCopyWith<$Res> implements $InvoiceCopyWith<$Res> {
   factory _$InvoiceCopyWith(_Invoice value, $Res Function(_Invoice) _then) = __$InvoiceCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String style, Supplier supplier, Receiver receiver, String invoiceNo, DateTime invoiceDate, DateTime? dueDate, String placeOfSupply, String reverseCharge, String paymentTerms, List<InvoiceItem> items, List<PaymentTransaction> payments, String comments, String bankName, String accountNo, String ifscCode, String branch, String? deliveryAddress, bool isArchived, String currency, double discountAmount, InvoiceType type, String? originalInvoiceNumber, DateTime? originalInvoiceDate
+ String? id, String style, Supplier supplier, Receiver receiver, String invoiceNo, DateTime invoiceDate, DateTime? dueDate, String placeOfSupply, String reverseCharge, String paymentTerms, List<InvoiceItem> items, List<PaymentTransaction> payments, String comments, String bankName, String accountNo, String ifscCode, String branch, String? deliveryAddress, bool isArchived, String currency, double discountAmount, InvoiceType type, String? originalInvoiceNumber, DateTime? originalInvoiceDate, String? poNumber, String status, DateTime? sentAt
 });
 
 
@@ -340,7 +346,7 @@ class __$InvoiceCopyWithImpl<$Res>
 
 /// Create a copy of Invoice
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? style = null,Object? supplier = null,Object? receiver = null,Object? invoiceNo = null,Object? invoiceDate = null,Object? dueDate = freezed,Object? placeOfSupply = null,Object? reverseCharge = null,Object? paymentTerms = null,Object? items = null,Object? payments = null,Object? comments = null,Object? bankName = null,Object? accountNo = null,Object? ifscCode = null,Object? branch = null,Object? deliveryAddress = freezed,Object? isArchived = null,Object? currency = null,Object? discountAmount = null,Object? type = null,Object? originalInvoiceNumber = freezed,Object? originalInvoiceDate = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? style = null,Object? supplier = null,Object? receiver = null,Object? invoiceNo = null,Object? invoiceDate = null,Object? dueDate = freezed,Object? placeOfSupply = null,Object? reverseCharge = null,Object? paymentTerms = null,Object? items = null,Object? payments = null,Object? comments = null,Object? bankName = null,Object? accountNo = null,Object? ifscCode = null,Object? branch = null,Object? deliveryAddress = freezed,Object? isArchived = null,Object? currency = null,Object? discountAmount = null,Object? type = null,Object? originalInvoiceNumber = freezed,Object? originalInvoiceDate = freezed,Object? poNumber = freezed,Object? status = null,Object? sentAt = freezed,}) {
   return _then(_Invoice(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,style: null == style ? _self.style : style // ignore: cast_nullable_to_non_nullable
@@ -366,6 +372,9 @@ as String,discountAmount: null == discountAmount ? _self.discountAmount : discou
 as double,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as InvoiceType,originalInvoiceNumber: freezed == originalInvoiceNumber ? _self.originalInvoiceNumber : originalInvoiceNumber // ignore: cast_nullable_to_non_nullable
 as String?,originalInvoiceDate: freezed == originalInvoiceDate ? _self.originalInvoiceDate : originalInvoiceDate // ignore: cast_nullable_to_non_nullable
+as DateTime?,poNumber: freezed == poNumber ? _self.poNumber : poNumber // ignore: cast_nullable_to_non_nullable
+as String?,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,sentAt: freezed == sentAt ? _self.sentAt : sentAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
 }

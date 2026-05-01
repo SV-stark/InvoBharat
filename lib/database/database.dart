@@ -22,7 +22,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration {
@@ -149,6 +149,11 @@ class AppDatabase extends _$AppDatabase {
               await m.database.customStatement('DROP TABLE `$tempName`');
             }
           });
+        }
+        if (from < 8) {
+          await m.addColumn(invoices, invoices.poNumber);
+          await m.addColumn(invoices, invoices.status);
+          await m.addColumn(invoices, invoices.sentAt);
         }
       },
       beforeOpen: (final details) async {

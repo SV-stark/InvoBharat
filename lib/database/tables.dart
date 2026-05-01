@@ -112,6 +112,11 @@ class Invoices extends Table {
   TextColumn get originalInvoiceNumber => text().nullable()();
   DateTimeColumn get originalInvoiceDate => dateTime().nullable()();
 
+  // Additional Fields (V8)
+  TextColumn get poNumber => text().nullable()();
+  TextColumn get status => text().withDefault(const Constant('Draft'))();
+  DateTimeColumn get sentAt => dateTime().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 

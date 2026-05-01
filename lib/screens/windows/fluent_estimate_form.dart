@@ -172,12 +172,35 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                         ),
                       ),
                     ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: InfoLabel(
+                        label: "Expiry Date",
+                        child: DatePicker(
+                          selected: expiryDate ?? date.add(const Duration(days: 30)),
+                          onChanged: (final d) => setState(() => expiryDate = d),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 10),
-                AppTextInput(
-                  label: "Client Name",
-                  controller: receiverNameCtrl,
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppTextInput(
+                        label: "Client Name",
+                        controller: receiverNameCtrl,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: AppTextInput(
+                        label: "PO Number",
+                        controller: poNumberCtrl,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 AppTextInput(label: "Address", controller: receiverAddressCtrl),

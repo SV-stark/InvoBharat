@@ -19,6 +19,7 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   late TextEditingController estimateNoCtrl;
   late TextEditingController notesCtrl;
   late TextEditingController termsCtrl;
+  late TextEditingController poNumberCtrl;
   late TextEditingController receiverNameCtrl;
   late TextEditingController receiverAddressCtrl;
   late TextEditingController receiverGstinCtrl;
@@ -35,6 +36,7 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     estimateNoCtrl = TextEditingController();
     notesCtrl = TextEditingController();
     termsCtrl = TextEditingController();
+    poNumberCtrl = TextEditingController();
     receiverNameCtrl = TextEditingController();
     receiverAddressCtrl = TextEditingController();
     receiverGstinCtrl = TextEditingController();
@@ -45,6 +47,7 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     estimateNoCtrl.dispose();
     notesCtrl.dispose();
     termsCtrl.dispose();
+    poNumberCtrl.dispose();
     receiverNameCtrl.dispose();
     receiverAddressCtrl.dispose();
     receiverGstinCtrl.dispose();
@@ -75,6 +78,7 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
         estimateNoCtrl.text = existingEstimate!.estimateNo;
         notesCtrl.text = existingEstimate!.notes;
         termsCtrl.text = existingEstimate!.terms;
+        poNumberCtrl.text = existingEstimate!.poNumber ?? '';
         receiverNameCtrl.text = existingEstimate!.receiver.name;
         receiverAddressCtrl.text = existingEstimate!.receiver.address;
         receiverGstinCtrl.text = existingEstimate!.receiver.gstin;
@@ -133,6 +137,7 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
       items: items,
       notes: notesCtrl.text,
       terms: termsCtrl.text,
+      poNumber: poNumberCtrl.text,
       status: existingEstimate?.status ?? 'Draft',
     );
 

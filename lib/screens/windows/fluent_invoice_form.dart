@@ -163,6 +163,16 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                       ),
                     ),
                   ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: AppTextInput(
+                      label: "PO Number",
+                      controller: poNumberCtrl,
+                      onChanged: (final val) => ref
+                          .read(invoiceProvider.notifier)
+                          .updatePoNumber(val),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
