@@ -73,7 +73,36 @@ class InvoiceImportService {
       'HSN Description',
     ];
     
-    final csvString = Csv().encode([headers]);
+    final sampleData = [
+      [
+        '27AAPFU0939F1ZV',
+        'Test Client Corp',
+        'INV-001',
+        '01-05-2024',
+        '1180.00',
+        '18.0',
+        '1000.00',
+        '0.00',
+        'Maharashtra',
+        'No',
+        'Consulting Services',
+      ],
+      [
+        '27AAPFU0939F1ZV',
+        'Test Client Corp',
+        'INV-002',
+        '02-05-2024',
+        '525.00',
+        '5.0',
+        '500.00',
+        '0.00',
+        'Maharashtra',
+        'No',
+        'Printing Services',
+      ],
+    ];
+
+    final csvString = Csv().encode([headers, ...sampleData]);
     
     final result = await FilePicker.saveFile(
       dialogTitle: 'Save Import Template',
