@@ -149,6 +149,15 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                     decoration: InputDecoration(
                       hintText: "Search Client / Invoice # / Amount",
                       prefixIcon: const Icon(Icons.search),
+                      suffixIcon: _searchCtrl.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchCtrl.clear();
+                                setState(() {});
+                              },
+                            )
+                          : null,
                       filled: true,
                       fillColor: theme.colorScheme.surfaceContainerHighest,
                       border: OutlineInputBorder(
@@ -421,7 +430,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                     items: const [
                       DropdownMenuItem(value: 'All', child: Text("All Active")),
                       DropdownMenuItem(value: 'Paid', child: Text("Paid")),
-                      DropdownMenuItem(value: 'Unpaid', child: Text("Unpaid")),
+                      DropdownMenuItem(value: 'Unpaid', child: Text("Unpaid & Partial")),
                       DropdownMenuItem(
                         value: 'Archived',
                         child: Text("Archived"),

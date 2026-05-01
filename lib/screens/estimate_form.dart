@@ -234,8 +234,6 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
                   label: "Notes",
                   controller: notesCtrl,
                   maxLines: 2,
-                  validator: (final val) =>
-                      val == null || val.isEmpty ? 'Required' : null,
                 ),
               ),
               Padding(
@@ -244,8 +242,6 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
                   label: "Terms",
                   controller: termsCtrl,
                   maxLines: 2,
-                  validator: (final val) =>
-                      val == null || val.isEmpty ? 'Required' : null,
                 ),
               ),
             ],

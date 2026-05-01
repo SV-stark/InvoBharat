@@ -191,9 +191,8 @@ abstract class InvoiceItem with _$InvoiceItem {
       isInterState ? igstAmount : 0;
 
   double get totalAmount {
-    // We don't know if it's interstate here, but for Indian GST:
-    // Total = Net + CGST + SGST OR Net + IGST.
     // Both sums should be identical if using Money.
-    return (netAmountMoney + igstMoney).toDouble();
+    // However, rounding differences can occur between IGST and CGST+SGST.
+    return (netAmountMoney + cgstMoney + sgstMoney).toDouble();
   }
 }

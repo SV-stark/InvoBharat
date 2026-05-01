@@ -180,10 +180,10 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (final context) {
+        final searchController = TextEditingController();
+        String searchQuery = '';
         return StatefulBuilder(
           builder: (final context, final setState) {
-            final searchController = TextEditingController();
-            String searchQuery = '';
 
             // Sort clients: recent first (alphabetically for now, can be enhanced)
             final sortedClients = List<Client>.from(clients)
@@ -702,11 +702,12 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
               onChanged: (final val) {
                 ref.read(invoiceProvider.notifier).updateReceiverGstin(val);
                 // Auto-update state if GSTIN is valid
-                if (validation.isValid && validation.stateName != null) {
-                  receiverStateCtrl.text = validation.stateName!;
+                final currentValidation = GstUtils.validate(val.toUpperCase());
+                if (currentValidation.isValid && currentValidation.stateName != null) {
+                  receiverStateCtrl.text = currentValidation.stateName!;
                   ref
                       .read(invoiceProvider.notifier)
-                      .updateReceiverState(validation.stateName!);
+                      .updateReceiverState(currentValidation.stateName!);
                 }
                 setState(() {});
               },

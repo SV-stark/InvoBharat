@@ -169,7 +169,7 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   /// Calculates due date based on payment terms
   DateTime? calculateDueDate(final DateTime invoiceDate, final String paymentTerms) {
     if (paymentTerms.isEmpty) {
-      return invoiceDate.add(const Duration(days: 30));
+      return null;
     }
     
     // Parse common payment terms

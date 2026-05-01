@@ -63,7 +63,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       case "This Quarter":
         final int quarter = (now.month - 1) ~/ 3 + 1;
         start = DateTime(now.year, (quarter - 1) * 3 + 1);
-        end = DateTime(now.year, quarter * 3 + 1, 0);
+        end = quarter == 4 
+            ? DateTime(now.year, 12, 31) 
+            : DateTime(now.year, quarter * 3 + 1, 0);
         setState(() {
           _selectedFilter = filter;
           _dateRange = DateTimeRange(start: start, end: end);

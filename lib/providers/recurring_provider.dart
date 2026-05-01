@@ -151,7 +151,7 @@ class RecurringService {
     final businessProfile = profiles[index];
 
     final invoiceNo =
-        "${businessProfile.invoiceSeries}${businessProfile.invoiceSequence}";
+        "${businessProfile.invoiceSeries}${businessProfile.invoiceSequence.toString().padLeft(3, '0')}";
 
     // Create Invoice
     final newInvoice = profile.baseInvoice.copyWith(

@@ -95,7 +95,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () async {
-              await context.push('/invoice-form', extra: {'invoice': _invoice});
+              await context.push('/invoice-form', extra: _invoice);
               _refreshInvoice();
             },
           ),
@@ -351,14 +351,14 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       payments: [],
     );
 
-    await context.push('/invoice-form', extra: {'invoice': duplicated});
-    _refreshInvoice();
-    ref.invalidate(invoiceListProvider);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Invoice duplicated for editing")),
       );
     }
+    await context.push('/invoice-form', extra: duplicated);
+    _refreshInvoice();
+    ref.invalidate(invoiceListProvider);
   }
 
   void _setupRecurring() async {
@@ -637,6 +637,13 @@ class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
   void initState() {
     super.initState();
     _amountCtrl.text = widget.balanceDue.toStringAsFixed(2);
+  }
+
+  @override
+  void dispose() {
+    _amountCtrl.dispose();
+    _notesCtrl.dispose();
+    super.dispose();
   }
 
   @override
