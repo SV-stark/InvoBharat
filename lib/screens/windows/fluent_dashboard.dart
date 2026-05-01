@@ -119,6 +119,8 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                           "All Time",
                           "This Month",
                           "Last Month",
+                          "This Financial Year",
+                          "Last Financial Year",
                           "Q1 (Apr-Jun)",
                           "Q2 (Jul-Sep)",
                           "Q3 (Oct-Dec)",

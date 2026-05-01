@@ -71,6 +71,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           _dateRange = DateTimeRange(start: start, end: end);
         });
         break;
+      case "This Financial Year":
+        final int startYear = now.month >= 4 ? now.year : now.year - 1;
+        start = DateTime(startYear, 4, 1);
+        end = DateTime(startYear + 1, 3, 31);
+        setState(() {
+          _selectedFilter = filter;
+          _dateRange = DateTimeRange(start: start, end: end);
+        });
+        break;
+      case "Last Financial Year":
+        final int startYear = now.month >= 4 ? now.year - 1 : now.year - 2;
+        start = DateTime(startYear, 4, 1);
+        end = DateTime(startYear + 1, 3, 31);
+        setState(() {
+          _selectedFilter = filter;
+          _dateRange = DateTimeRange(start: start, end: end);
+        });
+        break;
       case "Custom":
         final picked = await showDateRangePicker(
           context: context,
@@ -289,6 +307,14 @@ class _DashboardHeader extends StatelessWidget {
             const PopupMenuItem(
               value: "This Quarter",
               child: Text("This Quarter"),
+            ),
+            const PopupMenuItem(
+              value: "This Financial Year",
+              child: Text("This Financial Year"),
+            ),
+            const PopupMenuItem(
+              value: "Last Financial Year",
+              child: Text("Last Financial Year"),
             ),
             const PopupMenuItem(
               value: "Custom",
