@@ -65,11 +65,11 @@ class DashboardActions {
       end = DateTime(now.year, now.month, 0);
     } else if (period == "This Financial Year") {
       final int startYear = now.month >= 4 ? now.year : now.year - 1;
-      start = DateTime(startYear, 4, 1);
+      start = DateTime(startYear, 4);
       end = DateTime(startYear + 1, 3, 31);
     } else if (period == "Last Financial Year") {
       final int startYear = now.month >= 4 ? now.year - 1 : now.year - 2;
-      start = DateTime(startYear, 4, 1);
+      start = DateTime(startYear, 4);
       end = DateTime(startYear + 1, 3, 31);
     } else if (period.startsWith("Q")) {
       final quarter = int.tryParse(period.substring(1, 2));

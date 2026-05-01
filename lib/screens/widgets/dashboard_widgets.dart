@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:invobharat/models/invoice.dart';
 
 import 'package:indian_formatters/indian_formatters.dart';
 
@@ -168,19 +169,27 @@ Color getStatusColor(final String status) {
       return Colors.orange;
     case 'Overdue':
       return Colors.red;
+    case 'Sent':
+      return Colors.blue;
+    case 'Draft':
     default:
       return Colors.grey;
   }
 }
 
 class DashboardStatusBadge extends StatelessWidget {
-  final String status;
+  final Invoice invoice;
 
-  const DashboardStatusBadge({super.key, required this.status});
+  const DashboardStatusBadge({super.key, required this.invoice});
 
   @override
   Widget build(final BuildContext context) {
-    final color = getStatusColor(status);
+    String displayStatus = invoice.paymentStatus;
+    if (displayStatus == 'Unpaid') {
+      displayStatus = invoice.status;
+    }
+
+    final color = getStatusColor(displayStatus);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
@@ -189,7 +198,7 @@ class DashboardStatusBadge extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(
-        status,
+        displayStatus,
         style: TextStyle(
           color: color,
           fontSize: 10,

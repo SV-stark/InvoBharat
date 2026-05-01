@@ -21,6 +21,9 @@ import 'package:invobharat/services/gstr3b_service.dart';
 import 'package:invobharat/services/dashboard_actions.dart';
 import 'package:invobharat/screens/widgets/dashboard_widgets.dart';
 import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/services/invoice_actions.dart';
+import 'package:invobharat/utils/pdf_generator.dart';
+import 'package:printing/printing.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -73,7 +76,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         break;
       case "This Financial Year":
         final int startYear = now.month >= 4 ? now.year : now.year - 1;
-        start = DateTime(startYear, 4, 1);
+        start = DateTime(startYear, 4);
         end = DateTime(startYear + 1, 3, 31);
         setState(() {
           _selectedFilter = filter;
@@ -82,7 +85,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         break;
       case "Last Financial Year":
         final int startYear = now.month >= 4 ? now.year - 1 : now.year - 2;
-        start = DateTime(startYear, 4, 1);
+        start = DateTime(startYear, 4);
         end = DateTime(startYear + 1, 3, 31);
         setState(() {
           _selectedFilter = filter;
@@ -665,15 +668,43 @@ class _DashboardRecentActivity extends ConsumerWidget {
                       children: [
                         Text(inv.receiver.name),
                         const Gap(8),
-                        DashboardStatusBadge(status: inv.paymentStatus),
+                        DashboardStatusBadge(invoice: inv),
                       ],
                     ),
                     subtitle: Text(
                       "${inv.invoiceNo} • ${DateFormat('dd MMM').format(inv.invoiceDate)}",
                     ),
-                    trailing: Text(
-                      IndianCurrencyFormatter.format(inv.grandTotal),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          IndianCurrencyFormatter.format(inv.grandTotal),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        PopupMenuButton<String>(
+                          onSelected: (final value) async {
+                            if (value == 'mark_sent') {
+                              await InvoiceActions.markAsSent(ref, inv);
+                              ref.invalidate(invoiceListProvider);
+                            } else if (value == 'print') {
+                              final profile = ref.read(businessProfileProvider);
+                              final pdfBytes = await generateInvoicePdf(inv, profile);
+                              await Printing.layoutPdf(onLayout: (_) => pdfBytes);
+                            }
+                          },
+                          itemBuilder: (final context) => [
+                            if (inv.status != 'Sent' && inv.paymentStatus == 'Unpaid')
+                              const PopupMenuItem(
+                                value: 'mark_sent',
+                                child: Text('Mark as Sent'),
+                              ),
+                            const PopupMenuItem(
+                              value: 'print',
+                              child: Text('Print/Export'),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),

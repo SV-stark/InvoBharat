@@ -32,7 +32,7 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
     'All Time',
   ];
 
-  void _updateDateRange(String range) {
+  void _updateDateRange(final String range) {
     final now = DateTime.now();
     setState(() {
       _selectedRange = range;
@@ -51,12 +51,12 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
           break;
         case 'This Financial Year':
           final startYear = now.month < 4 ? now.year - 1 : now.year;
-          _startDate = DateTime(startYear, 4, 1);
+          _startDate = DateTime(startYear, 4);
           _endDate = now;
           break;
         case 'Last Financial Year':
           final startYear = now.month < 4 ? now.year - 2 : now.year - 1;
-          _startDate = DateTime(startYear, 4, 1);
+          _startDate = DateTime(startYear, 4);
           _endDate = DateTime(startYear + 1, 3, 31);
           break;
         case 'All Time':
@@ -127,7 +127,7 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
       content: ledgerAsync.when(
         data: (final allEntries) {
           // Filter entries by date range
-          final entries = allEntries.where((e) => 
+          final entries = allEntries.where((final e) => 
             e.date.isAfter(_startDate.subtract(const Duration(days: 1))) && 
             e.date.isBefore(_endDate.add(const Duration(days: 1)))
           ).toList();

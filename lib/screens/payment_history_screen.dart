@@ -31,7 +31,7 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
         return now.difference(date).inDays <= 180;
       case 'This Financial Year':
         final currentYear = now.month >= 4 ? now.year : now.year - 1;
-        final startOfFy = DateTime(currentYear, 4, 1);
+        final startOfFy = DateTime(currentYear, 4);
         return date.isAfter(startOfFy.subtract(const Duration(days: 1)));
       case 'All Time':
       default:

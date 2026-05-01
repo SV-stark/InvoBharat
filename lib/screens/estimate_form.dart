@@ -131,7 +131,17 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
                   Expanded(
                       child: _buildDatePicker(
                           "Date", date, (final d) => setState(() => date = d))),
+                  const SizedBox(width: 16),
+                  Expanded(
+                      child: _buildDatePicker(
+                          "Expiry Date", expiryDate ?? DateTime.now().add(const Duration(days: 30)), 
+                          (final d) => setState(() => expiryDate = d))),
                 ],
+              ),
+              const SizedBox(height: 16),
+              AppTextInput(
+                label: "PO Number (Optional)",
+                controller: poNumberCtrl,
               ),
               const SizedBox(height: 16),
               Row(

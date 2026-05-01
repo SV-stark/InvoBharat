@@ -71,12 +71,14 @@ class InvoiceHeaderSection extends ConsumerWidget {
   final TextEditingController invoiceNoCtrl;
   final TextEditingController posCtrl;
   final TextEditingController paymentTermsCtrl;
+  final TextEditingController poNumberCtrl;
 
   const InvoiceHeaderSection({
     super.key,
     required this.invoiceNoCtrl,
     required this.posCtrl,
     required this.paymentTermsCtrl,
+    required this.poNumberCtrl,
   });
 
   @override
@@ -193,6 +195,13 @@ class InvoiceHeaderSection extends ConsumerWidget {
           label: "Payment Terms",
           onChanged: (final val) =>
               ref.read(invoiceProvider.notifier).updatePaymentTerms(val),
+        ),
+        const Gap(16),
+        AppTextInput(
+          controller: poNumberCtrl,
+          label: "PO Number (Optional)",
+          onChanged: (final val) =>
+              ref.read(invoiceProvider.notifier).updatePoNumber(val),
         ),
       ],
     );

@@ -21,6 +21,7 @@ import 'package:invobharat/services/email_service.dart'; // NEW
 
 import 'package:invobharat/utils/pdf_generator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:invobharat/services/invoice_actions.dart';
 
 class InvoiceDetailScreen extends ConsumerStatefulWidget {
   final Invoice invoice;
@@ -116,6 +117,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
               if (val == 'recurring') _setupRecurring();
               if (val == 'duplicate') _duplicateInvoice();
               if (val == 'archive') _toggleArchive();
+              if (val == 'mark_sent') _markAsSent();
               if (val == 'delete') _deleteInvoice();
             },
             itemBuilder: (final context) => [
@@ -138,6 +140,10 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                 child: Text(
                   _invoice.isArchived ? "Unarchive" : "Archive Invoice",
                 ),
+              ),
+              const PopupMenuItem(
+                value: 'mark_sent',
+                child: Text("Mark as Sent"),
               ),
               const PopupMenuItem(
                 value: 'delete',
@@ -171,7 +177,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                     ),
                   ],
                 ),
-                _buildStatusBadge(_invoice.paymentStatus),
+                _buildStatusBadge(_invoice.paymentStatus == 'Unpaid' ? _invoice.status : _invoice.paymentStatus),
               ],
             ),
             const SizedBox(height: 24),
@@ -186,6 +192,12 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             Text(_invoice.receiver.address),
             if (_invoice.receiver.gstin.isNotEmpty)
               Text("GSTIN: ${_invoice.receiver.gstin}"),
+            if (_invoice.poNumber != null && _invoice.poNumber!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Text("PO Number: ${_invoice.poNumber}",
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+              ),
 
             const SizedBox(height: 24),
 
@@ -325,6 +337,10 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       case 'Overdue':
         color = Colors.red;
         break;
+      case 'Sent':
+        color = Colors.blue;
+        break;
+      case 'Draft':
       default:
         color = Colors.grey;
     }
@@ -479,6 +495,14 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
           ),
         ),
       );
+    }
+  }
+
+  void _markAsSent() async {
+    await InvoiceActions.markAsSent(ref, _invoice);
+    _refreshInvoice();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Invoice marked as Sent")));
     }
   }
 
