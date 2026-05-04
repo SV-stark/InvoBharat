@@ -11,7 +11,7 @@ abstract class PaymentTransaction with _$PaymentTransaction {
     required final DateTime date,
     required final double amount,
     required final String
-        paymentMode, // 'Cash', 'UPI', 'Bank Transfer', 'Cheque', 'Other'
+    paymentMode, // 'Cash', 'UPI', 'Bank Transfer', 'Cheque', 'Other'
     final String? notes,
   }) = _PaymentTransaction;
 

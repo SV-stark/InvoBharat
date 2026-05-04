@@ -55,7 +55,7 @@ class CsvExportService {
     final bytes = Uint8List.fromList(csvContent.codeUnits);
     final extension = p.extension(fileName).replaceAll('.', '');
     final nameOnly = p.basenameWithoutExtension(fileName);
-    
+
     return FileSaver.instance.saveFile(
       name: nameOnly,
       bytes: bytes,

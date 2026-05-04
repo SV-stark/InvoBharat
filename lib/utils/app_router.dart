@@ -117,7 +117,8 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/client-ledger',
-      builder: (final context, final state) => ClientLedgerScreen(client: state.extra as Client),
+      builder: (final context, final state) =>
+          ClientLedgerScreen(client: state.extra as Client),
     ),
     GoRoute(
       path: '/settings',
@@ -130,9 +131,8 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/invoice-detail',
-      builder: (final context, final state) => InvoiceDetailScreen(
-        invoice: state.extra as Invoice,
-      ),
+      builder: (final context, final state) =>
+          InvoiceDetailScreen(invoice: state.extra as Invoice),
     ),
   ],
 );

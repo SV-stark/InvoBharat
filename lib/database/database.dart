@@ -19,7 +19,7 @@ part 'database.g.dart';
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([final QueryExecutor? executor])
-      : super(executor ?? _openConnection());
+    : super(executor ?? _openConnection());
 
   @override
   int get schemaVersion => 8;
@@ -134,15 +134,19 @@ class AppDatabase extends _$AppDatabase {
               final tempName = '${tableName}_temp';
 
               // 1. Rename existing table to temp
-              await m.database.customStatement('ALTER TABLE `$tableName` RENAME TO `$tempName`');
+              await m.database.customStatement(
+                'ALTER TABLE `$tableName` RENAME TO `$tempName`',
+              );
 
               // 2. Create new table with updated constraints
               await m.createTable(table);
 
               // 3. Copy data from temp to new table
-              final columns = table.$columns.map((final c) => c.name).join(', ');
+              final columns = table.$columns
+                  .map((final c) => c.name)
+                  .join(', ');
               await m.database.customStatement(
-                'INSERT INTO `$tableName` ($columns) SELECT $columns FROM `$tempName`'
+                'INSERT INTO `$tableName` ($columns) SELECT $columns FROM `$tempName`',
               );
 
               // 4. Drop temp table

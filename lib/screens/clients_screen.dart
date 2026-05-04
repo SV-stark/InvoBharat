@@ -124,7 +124,10 @@ class _ClientsScreenState extends State<ClientsScreen> {
                             children: [
                               IconButton(
                                 icon: const Icon(FluentIcons.history),
-                                onPressed: () => context.push('/client-ledger', extra: client),
+                                onPressed: () => context.push(
+                                  '/client-ledger',
+                                  extra: client,
+                                ),
                               ),
                               IconButton(
                                 icon: const Icon(FluentIcons.edit),

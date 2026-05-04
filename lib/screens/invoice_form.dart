@@ -214,7 +214,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
                               return ListTile(
                                 title: Text(template.description),
                                 subtitle: Text(
-                                  "₹${template.amount} (GST: ${template.gstRate}%)",
+                                  "${template.amount.toIndianFormat(includeSymbol: true, symbol: ref.read(businessProfileProvider).currency)} (GST: ${template.gstRate}%)",
                                 ),
                                 onTap: () {
                                   // Add Item
@@ -443,7 +443,10 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        "₹${item.totalAmount.toStringAsFixed(2)}",
+                        item.totalAmount.toIndianFormat(
+                          includeSymbol: true,
+                          symbol: ref.read(businessProfileProvider).currency,
+                        ),
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.primary,
@@ -528,7 +531,8 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
                 ref.read(invoiceProvider.notifier).updateReceiverGstin(val);
                 // Auto-update state if GSTIN is valid
                 final currentValidation = GstUtils.validate(val.toUpperCase());
-                if (currentValidation.isValid && currentValidation.stateName != null) {
+                if (currentValidation.isValid &&
+                    currentValidation.stateName != null) {
                   receiverStateCtrl.text = currentValidation.stateName!;
                   ref
                       .read(invoiceProvider.notifier)
@@ -556,7 +560,8 @@ class _ClientSelectorSheet extends ConsumerStatefulWidget {
   const _ClientSelectorSheet();
 
   @override
-  ConsumerState<_ClientSelectorSheet> createState() => _ClientSelectorSheetState();
+  ConsumerState<_ClientSelectorSheet> createState() =>
+      _ClientSelectorSheetState();
 }
 
 class _ClientSelectorSheetState extends ConsumerState<_ClientSelectorSheet> {
@@ -584,19 +589,17 @@ class _ClientSelectorSheetState extends ConsumerState<_ClientSelectorSheet> {
     final filteredClients = _searchQuery.isEmpty
         ? sortedClients
         : sortedClients
-            .where(
-              (final c) =>
-                  c.name.toLowerCase().contains(
-                        _searchQuery.toLowerCase(),
-                      ) ||
-                  c.gstin.toLowerCase().contains(
-                        _searchQuery.toLowerCase(),
-                      ) ||
-                  c.address.toLowerCase().contains(
-                        _searchQuery.toLowerCase(),
-                      ),
-            )
-            .toList();
+              .where(
+                (final c) =>
+                    c.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                    c.gstin.toLowerCase().contains(
+                      _searchQuery.toLowerCase(),
+                    ) ||
+                    c.address.toLowerCase().contains(
+                      _searchQuery.toLowerCase(),
+                    ),
+              )
+              .toList();
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -609,10 +612,7 @@ class _ClientSelectorSheetState extends ConsumerState<_ClientSelectorSheet> {
             children: [
               const Text(
                 "Select Client",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               TextButton.icon(
                 onPressed: () {},

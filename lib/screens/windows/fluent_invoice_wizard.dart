@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 import 'package:flutter/services.dart';
-import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
 import 'dart:async';
 
 import 'package:invobharat/models/invoice.dart';
@@ -344,7 +344,6 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
   }
 
   Widget _buildItemsSection() {
-
     final invoice = ref.watch(invoiceProvider);
     final notifier = ref.read(invoiceProvider.notifier);
 
@@ -446,14 +445,20 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                     Expanded(
                       flex: 2,
                       child: Text(
-                        IndianCurrencyFormatter.format(item.amount),
+                        item.amount.toIndianFormat(
+                          includeSymbol: true,
+                          symbol: invoice.currency,
+                        ),
                       ),
                     ),
                     Expanded(child: Text("${item.gstRate}%")),
                     Expanded(
                       flex: 2,
                       child: Text(
-                        IndianCurrencyFormatter.format(item.totalAmount),
+                        item.totalAmount.toIndianFormat(
+                          includeSymbol: true,
+                          symbol: invoice.currency,
+                        ),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -516,15 +521,20 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                   children: [
                     _buildSummaryRow(
                       "Subtotal",
-                      IndianCurrencyFormatter.format(invoice.totalTaxableValue),
+                      invoice.totalTaxableValue.toIndianFormat(
+                        includeSymbol: true,
+                        symbol: invoice.currency,
+                      ),
                     ),
                     _buildSummaryRow(
                       "Total GST",
-                      IndianCurrencyFormatter.format(
-                        invoice.totalCGST +
-                            invoice.totalSGST +
-                            invoice.totalIGST,
-                      ),
+                      (invoice.totalCGST +
+                              invoice.totalSGST +
+                              invoice.totalIGST)
+                          .toIndianFormat(
+                            includeSymbol: true,
+                            symbol: invoice.currency,
+                          ),
                     ),
                     const Divider(),
                     Padding(
@@ -547,7 +557,10 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                     ),
                     _buildSummaryRow(
                       "Grand Total",
-                      IndianCurrencyFormatter.format(invoice.grandTotal),
+                      invoice.grandTotal.toIndianFormat(
+                        includeSymbol: true,
+                        symbol: invoice.currency,
+                      ),
                       isBold: true,
                     ),
                   ],
@@ -601,6 +614,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
           title: const Text("Select Template"),
           content: Consumer(
             builder: (final context, final ref, final child) {
+              final invoice = ref.watch(invoiceProvider);
               final templates = ref.watch(itemTemplateListProvider);
               if (templates.isEmpty) {
                 return const Text(
@@ -622,7 +636,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           subtitle: Text(
-                            "${IndianCurrencyFormatter.format(t.amount)} / ${t.unit} (Qty: ${t.quantity})",
+                            "${t.amount.toIndianFormat(includeSymbol: true, symbol: invoice.currency)} / ${t.unit} (Qty: ${t.quantity})",
                           ),
                           onPressed: () {
                             final newItem = InvoiceItem(
@@ -678,7 +692,6 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
 
   Widget _buildPaymentHistorySection() {
     final invoice = ref.watch(invoiceProvider);
-
 
     if (invoice.payments.isEmpty) return const SizedBox.shrink();
 
@@ -755,7 +768,14 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                           DateFormat('dd MMM yyyy').format(payment.date),
                         ),
                       ),
-                      Expanded(child: Text(IndianCurrencyFormatter.format(payment.amount))),
+                      Expanded(
+                        child: Text(
+                          payment.amount.toIndianFormat(
+                            includeSymbol: true,
+                            symbol: invoice.currency,
+                          ),
+                        ),
+                      ),
                       Expanded(child: Text(payment.paymentMode)),
                       Expanded(
                         flex: 2,

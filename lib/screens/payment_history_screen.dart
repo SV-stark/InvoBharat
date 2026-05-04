@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
 import 'dart:io';
 import 'package:go_router/go_router.dart';
 
@@ -12,15 +12,28 @@ class PaymentHistoryScreen extends ConsumerStatefulWidget {
   const PaymentHistoryScreen({super.key});
 
   @override
-  ConsumerState<PaymentHistoryScreen> createState() => _PaymentHistoryScreenState();
+  ConsumerState<PaymentHistoryScreen> createState() =>
+      _PaymentHistoryScreenState();
 }
 
 class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
   String _selectedDateRange = 'All Time';
   String _selectedMode = 'All Modes';
 
-  final List<String> _dateRanges = ['Last 30 Days', 'Last 6 Months', 'This Financial Year', 'All Time'];
-  final List<String> _modes = ['All Modes', 'Cash', 'Bank Transfer', 'UPI', 'Cheque', 'Other'];
+  final List<String> _dateRanges = [
+    'Last 30 Days',
+    'Last 6 Months',
+    'This Financial Year',
+    'All Time',
+  ];
+  final List<String> _modes = [
+    'All Modes',
+    'Cash',
+    'Bank Transfer',
+    'UPI',
+    'Cheque',
+    'Other',
+  ];
 
   bool _isWithinRange(final DateTime date, final String range) {
     final now = DateTime.now();
@@ -59,7 +72,8 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
     try {
       String? outputFile = await FilePicker.saveFile(
         dialogTitle: 'Save Payment History CSV',
-        fileName: 'Payment_History_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv',
+        fileName:
+            'Payment_History_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv',
         allowedExtensions: ['csv'],
         type: FileType.custom,
       );
@@ -70,16 +84,16 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
         }
         await File(outputFile).writeAsString(csvData);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Exported to $outputFile')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Exported to $outputFile')));
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Export failed: $e')));
       }
     }
   }
@@ -98,7 +112,9 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
               return IconButton(
                 icon: const Icon(Icons.download),
                 tooltip: "Export CSV",
-                onPressed: allPayments.isEmpty ? null : () => _exportToCsv(allPayments),
+                onPressed: allPayments.isEmpty
+                    ? null
+                    : () => _exportToCsv(allPayments),
               );
             },
             orElse: () => const SizedBox.shrink(),
@@ -115,8 +131,14 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
                   child: DropdownButton<String>(
                     isExpanded: true,
                     value: _selectedDateRange,
-                    items: _dateRanges.map((final e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                    onChanged: (final v) => setState(() => _selectedDateRange = v!),
+                    items: _dateRanges
+                        .map(
+                          (final e) =>
+                              DropdownMenuItem(value: e, child: Text(e)),
+                        )
+                        .toList(),
+                    onChanged: (final v) =>
+                        setState(() => _selectedDateRange = v!),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -124,7 +146,12 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
                   child: DropdownButton<String>(
                     isExpanded: true,
                     value: _selectedMode,
-                    items: _modes.map((final e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                    items: _modes
+                        .map(
+                          (final e) =>
+                              DropdownMenuItem(value: e, child: Text(e)),
+                        )
+                        .toList(),
                     onChanged: (final v) => setState(() => _selectedMode = v!),
                   ),
                 ),
@@ -134,7 +161,8 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
           Expanded(
             child: invoiceListAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (final err, final stack) => Center(child: Text("Error: $err")),
+              error: (final err, final stack) =>
+                  Center(child: Text("Error: $err")),
               data: (final invoices) {
                 final allPayments = _getFilteredPayments(invoices);
 
@@ -166,15 +194,25 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
                       },
                       leading: CircleAvatar(
                         backgroundColor: Colors.green.shade100,
-                        child: const Icon(Icons.check, color: Colors.green, size: 20),
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.green,
+                          size: 20,
+                        ),
                       ),
                       title: Text(invoice.receiver.name),
                       subtitle: Text(
                         "${DateFormat('dd MMM yyyy').format(payment.date)} • ${payment.paymentMode}\nInvoice #${invoice.invoiceNo}",
                       ),
                       trailing: Text(
-                        IndianCurrencyFormatter.format(payment.amount),
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        payment.amount.toIndianFormat(
+                          includeSymbol: true,
+                          symbol: ref.read(businessProfileProvider).currency,
+                        ),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     );
                   },
@@ -187,15 +225,20 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
     );
   }
 
-  List<Map<String, dynamic>> _getFilteredPayments(final List<dynamic> invoices) {
+  List<Map<String, dynamic>> _getFilteredPayments(
+    final List<dynamic> invoices,
+  ) {
     var allPayments = invoices.expand((final inv) {
-      return inv.payments.map((final p) => <String, dynamic>{'payment': p, 'invoice': inv});
+      return inv.payments.map(
+        (final p) => <String, dynamic>{'payment': p, 'invoice': inv},
+      );
     }).toList();
 
     allPayments = allPayments.where((final entry) {
       final payment = entry['payment'] as dynamic;
       final matchDate = _isWithinRange(payment.date, _selectedDateRange);
-      final matchMode = _selectedMode == 'All Modes' || payment.paymentMode == _selectedMode;
+      final matchMode =
+          _selectedMode == 'All Modes' || payment.paymentMode == _selectedMode;
       return matchDate && matchMode;
     }).toList();
 

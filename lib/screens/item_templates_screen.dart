@@ -12,14 +12,15 @@ class ItemTemplatesScreen extends ConsumerWidget {
     final templates = ref.watch(itemTemplateListProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Item Templates"),
-      ),
+      appBar: AppBar(title: const Text("Item Templates")),
       body: templates.isEmpty
           ? const Center(
-              child: Text("No templates yet.\nTap + to add one.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey)))
+              child: Text(
+                "No templates yet.\nTap + to add one.",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey),
+              ),
+            )
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: templates.length,
@@ -29,7 +30,8 @@ class ItemTemplatesScreen extends ConsumerWidget {
                   child: ListTile(
                     title: Text(template.description),
                     subtitle: Text(
-                        "₹${template.amount} / ${template.unit} (GST: ${template.gstRate}%) • Qty: ${template.quantity}"),
+                      "₹${template.amount} / ${template.unit} (GST: ${template.gstRate}%) • Qty: ${template.quantity}",
+                    ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -58,16 +60,22 @@ class ItemTemplatesScreen extends ConsumerWidget {
   }
 
   void _showEditDialog(
-      final BuildContext context, final WidgetRef ref, final ItemTemplate? template) {
+    final BuildContext context,
+    final WidgetRef ref,
+    final ItemTemplate? template,
+  ) {
     final descCtrl = TextEditingController(text: template?.description ?? '');
-    final amountCtrl =
-        TextEditingController(text: template?.amount.toString() ?? '0');
+    final amountCtrl = TextEditingController(
+      text: template?.amount.toString() ?? '0',
+    );
     final unitCtrl = TextEditingController(text: template?.unit ?? 'Nos');
-    final gstCtrl =
-        TextEditingController(text: template?.gstRate.toString() ?? '18');
+    final gstCtrl = TextEditingController(
+      text: template?.gstRate.toString() ?? '18',
+    );
     final sacCtrl = TextEditingController(text: template?.sacCode ?? '');
     final qtyCtrl = TextEditingController(
-        text: template?.quantity.toString() ?? '1'); // NEW
+      text: template?.quantity.toString() ?? '1',
+    ); // NEW
 
     String codeType = template?.codeType ?? 'SAC';
 
@@ -81,42 +89,48 @@ class ItemTemplatesScreen extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
-                    controller: descCtrl,
-                    decoration:
-                        const InputDecoration(labelText: "Description")),
+                  controller: descCtrl,
+                  decoration: const InputDecoration(labelText: "Description"),
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
-                        child: TextField(
-                            controller: amountCtrl,
-                            keyboardType: TextInputType.number,
-                            decoration:
-                                const InputDecoration(labelText: "Rate"))),
+                      child: TextField(
+                        controller: amountCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: "Rate"),
+                      ),
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
-                        child: TextField(
-                            controller: unitCtrl,
-                            decoration:
-                                const InputDecoration(labelText: "Unit"))),
+                      child: TextField(
+                        controller: unitCtrl,
+                        decoration: const InputDecoration(labelText: "Unit"),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
-                        child: TextField(
-                            controller: qtyCtrl,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                                labelText: "Default Qty"))),
+                      child: TextField(
+                        controller: qtyCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: "Default Qty",
+                        ),
+                      ),
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
-                        child: TextField(
-                            controller: gstCtrl,
-                            keyboardType: TextInputType.number,
-                            decoration:
-                                const InputDecoration(labelText: "GST %"))),
+                      child: TextField(
+                        controller: gstCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: "GST %"),
+                      ),
+                    ),
                     const SizedBox(width: 8),
                     DropdownButton<String>(
                       value: codeType,
@@ -130,42 +144,44 @@ class ItemTemplatesScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 TextField(
-                    controller: sacCtrl,
-                    decoration:
-                        const InputDecoration(labelText: "HSN/SAC Code")),
+                  controller: sacCtrl,
+                  decoration: const InputDecoration(labelText: "HSN/SAC Code"),
+                ),
               ],
             ),
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("Cancel")),
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
             FilledButton(
-                onPressed: () {
-                  if (descCtrl.text.isEmpty) return;
-                  final newTemplate = ItemTemplate(
-                    id: template?.id ?? const Uuid().v4(),
-                    description: descCtrl.text,
-                    amount: double.tryParse(amountCtrl.text) ?? 0,
-                    unit: unitCtrl.text,
-                    gstRate: double.tryParse(gstCtrl.text) ?? 18,
-                    codeType: codeType,
-                    sacCode: sacCtrl.text,
-                    quantity: double.tryParse(qtyCtrl.text) ?? 1,
-                  );
+              onPressed: () {
+                if (descCtrl.text.isEmpty) return;
+                final newTemplate = ItemTemplate(
+                  id: template?.id ?? const Uuid().v4(),
+                  description: descCtrl.text,
+                  amount: double.tryParse(amountCtrl.text) ?? 0,
+                  unit: unitCtrl.text,
+                  gstRate: double.tryParse(gstCtrl.text) ?? 18,
+                  codeType: codeType,
+                  sacCode: sacCtrl.text,
+                  quantity: double.tryParse(qtyCtrl.text) ?? 1,
+                );
 
-                  if (template == null) {
-                    ref
-                        .read(itemTemplateListProvider.notifier)
-                        .addTemplate(newTemplate);
-                  } else {
-                    ref
-                        .read(itemTemplateListProvider.notifier)
-                        .updateTemplate(newTemplate);
-                  }
-                  Navigator.pop(context);
-                },
-                child: const Text("Save")),
+                if (template == null) {
+                  ref
+                      .read(itemTemplateListProvider.notifier)
+                      .addTemplate(newTemplate);
+                } else {
+                  ref
+                      .read(itemTemplateListProvider.notifier)
+                      .updateTemplate(newTemplate);
+                }
+                Navigator.pop(context);
+              },
+              child: const Text("Save"),
+            ),
           ],
         ),
       ),

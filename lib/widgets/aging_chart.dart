@@ -9,7 +9,9 @@ class AgingChart extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     // Filter out zero values
-    final data = Map.fromEntries(agingData.entries.where((final e) => e.value > 0));
+    final data = Map.fromEntries(
+      agingData.entries.where((final e) => e.value > 0),
+    );
 
     if (data.isEmpty) {
       return const Center(child: Text("No aging data available"));
@@ -32,9 +34,10 @@ class AgingChart extends StatelessWidget {
                   title: "${percentage.toStringAsFixed(0)}%",
                   radius: 50,
                   titleStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 );
               }).toList(),
               sectionsSpace: 2,
@@ -59,8 +62,10 @@ class AgingChart extends StatelessWidget {
                       color: _getColorForKey(e.key),
                     ),
                     const SizedBox(width: 8),
-                    Text("${e.key}: ",
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      "${e.key}: ",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     Text(NumberFormat.currency(symbol: '₹').format(e.value)),
                   ],
                 ),

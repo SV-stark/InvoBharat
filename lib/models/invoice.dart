@@ -162,8 +162,8 @@ abstract class InvoiceItem with _$InvoiceItem {
   factory InvoiceItem.fromJson(final Map<String, dynamic> json) =>
       _$InvoiceItemFromJson(json);
 
-  // We assume default currency is INR for these internal calculations if not specified, 
-  // but models don't have currency. Invoice has it. 
+  // We assume default currency is INR for these internal calculations if not specified,
+  // but models don't have currency. Invoice has it.
   // For precise rounding, we should use the currency from the invoice.
   // Since InvoiceItem doesn't know its parent, we use INR as a safe default for precision (2 decimal).
   Currency get _currency => CommonCurrencies().inr;
@@ -171,7 +171,6 @@ abstract class InvoiceItem with _$InvoiceItem {
   double get netAmount => (amount * quantity) - discount;
 
   String get cleanSacCode => sacCode.split(' - ').first.trim();
-
 
   Money get netAmountMoney => Money.fromNumWithCurrency(netAmount, _currency);
 

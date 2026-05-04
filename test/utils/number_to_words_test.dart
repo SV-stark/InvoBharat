@@ -13,7 +13,10 @@ void main() {
     test('numberToWords should convert thousands correctly', () {
       expect(numberToWords(100), 'One Hundred Rupees Only');
       expect(numberToWords(1000), 'One Thousand Rupees Only');
-      expect(numberToWords(1234), 'One Thousand Two Hundred Thirty-Four Rupees Only');
+      expect(
+        numberToWords(1234),
+        'One Thousand Two Hundred Thirty-Four Rupees Only',
+      );
     });
 
     test('numberToWords should convert lakhs correctly', () {

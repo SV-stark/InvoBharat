@@ -17,8 +17,10 @@ class AuditService {
       if (match != null) {
         final numberStr = match.group(1)!;
         final number = int.parse(numberStr);
-        final prefix =
-            inv.invoiceNo.substring(0, inv.invoiceNo.length - numberStr.length);
+        final prefix = inv.invoiceNo.substring(
+          0,
+          inv.invoiceNo.length - numberStr.length,
+        );
 
         prefixMap.putIfAbsent(prefix, () => []).add(number);
       }

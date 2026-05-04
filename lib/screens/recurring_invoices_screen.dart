@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
 
 import 'package:invobharat/providers/recurring_provider.dart';
 
@@ -17,11 +18,12 @@ class RecurringInvoicesScreen extends ConsumerWidget {
         title: const Text("Recurring Invoices"),
         actions: [
           IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: () {
-                ref.read(recurringListProvider.notifier).runChecks();
-              },
-              tooltip: "Run Checks Now")
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              ref.read(recurringListProvider.notifier).runChecks();
+            },
+            tooltip: "Run Checks Now",
+          ),
         ],
       ),
       body: recurringListAsync.when(
@@ -35,8 +37,10 @@ class RecurringInvoicesScreen extends ConsumerWidget {
                   SizedBox(height: 16),
                   Text("No recurring profiles found."),
                   SizedBox(height: 8),
-                  Text("Open an invoice and select 'Make Recurring'",
-                      style: TextStyle(color: Colors.grey)),
+                  Text(
+                    "Open an invoice and select 'Make Recurring'",
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ],
               ),
             );
@@ -48,27 +52,32 @@ class RecurringInvoicesScreen extends ConsumerWidget {
               return Dismissible(
                 key: Key(profile.id),
                 background: Container(
-                    color: Colors.red,
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
-                    child: const Icon(Icons.delete, color: Colors.white)),
+                  color: Colors.red,
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
+                  child: const Icon(Icons.delete, color: Colors.white),
+                ),
                 direction: DismissDirection.endToStart,
                 confirmDismiss: (_) async {
                   return await showDialog(
-                      context: context,
-                      builder: (final ctx) => AlertDialog(
-                            title: const Text("Delete Profile?"),
-                            content: const Text(
-                                "This will stop future invoice generation."),
-                            actions: [
-                              TextButton(
-                                  onPressed: () => Navigator.pop(ctx, false),
-                                  child: const Text("Cancel")),
-                              TextButton(
-                                  onPressed: () => Navigator.pop(ctx, true),
-                                  child: const Text("Delete")),
-                            ],
-                          ));
+                    context: context,
+                    builder: (final ctx) => AlertDialog(
+                      title: const Text("Delete Profile?"),
+                      content: const Text(
+                        "This will stop future invoice generation.",
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: const Text("Cancel"),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: const Text("Delete"),
+                        ),
+                      ],
+                    ),
+                  );
                 },
                 onDismissed: (_) {
                   ref
@@ -76,26 +85,32 @@ class RecurringInvoicesScreen extends ConsumerWidget {
                       .deleteProfile(profile.id);
                 },
                 child: Card(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: profile.isActive
                           ? Colors.green.shade100
                           : Colors.grey.shade200,
-                      child: Icon(Icons.autorenew,
-                          color: profile.isActive ? Colors.green : Colors.grey),
+                      child: Icon(
+                        Icons.autorenew,
+                        color: profile.isActive ? Colors.green : Colors.grey,
+                      ),
                     ),
                     title: Text(profile.baseInvoice.receiver.name),
                     subtitle: Text(
-                        "${profile.interval.name.toUpperCase()} • Next: ${DateFormat('dd MMM').format(profile.nextRunDate)} • ${IndianCurrencyFormatter.format(profile.baseInvoice.grandTotal)}"),
+                      "${profile.interval.name.toUpperCase()} • Next: ${DateFormat('dd MMM').format(profile.nextRunDate)} • ${profile.baseInvoice.grandTotal.toIndianFormat(includeSymbol: true, symbol: ref.read(businessProfileProvider).currency)}",
+                    ),
                     trailing: Switch(
-                        value: profile.isActive,
-                        onChanged: (final val) {
-                          ref
-                              .read(recurringListProvider.notifier)
-                              .updateProfile(profile.copyWith(isActive: val));
-                        }),
+                      value: profile.isActive,
+                      onChanged: (final val) {
+                        ref
+                            .read(recurringListProvider.notifier)
+                            .updateProfile(profile.copyWith(isActive: val));
+                      },
+                    ),
                   ),
                 ),
               );

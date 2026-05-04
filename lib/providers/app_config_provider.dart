@@ -2,8 +2,9 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final appConfigProvider =
-    NotifierProvider<AppConfigNotifier, AppConfig>(AppConfigNotifier.new);
+final appConfigProvider = NotifierProvider<AppConfigNotifier, AppConfig>(
+  AppConfigNotifier.new,
+);
 
 class AppConfig {
   final PaneDisplayMode paneDisplayMode;
@@ -11,9 +12,7 @@ class AppConfig {
   AppConfig({this.paneDisplayMode = PaneDisplayMode.auto});
 
   AppConfig copyWith({final PaneDisplayMode? paneDisplayMode}) {
-    return AppConfig(
-      paneDisplayMode: paneDisplayMode ?? this.paneDisplayMode,
-    );
+    return AppConfig(paneDisplayMode: paneDisplayMode ?? this.paneDisplayMode);
   }
 }
 
@@ -32,8 +31,9 @@ class AppConfigNotifier extends Notifier<AppConfig> {
     if (paneIndex != null &&
         paneIndex >= 0 &&
         paneIndex < PaneDisplayMode.values.length) {
-      state =
-          state.copyWith(paneDisplayMode: PaneDisplayMode.values[paneIndex]);
+      state = state.copyWith(
+        paneDisplayMode: PaneDisplayMode.values[paneIndex],
+      );
     }
   }
 

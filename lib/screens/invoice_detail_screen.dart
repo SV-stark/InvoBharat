@@ -12,7 +12,7 @@ import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/payment_transaction.dart';
 import 'package:invobharat/models/recurring_profile.dart'; // New
 import 'package:invobharat/providers/invoice_repository_provider.dart';
-import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
 import 'package:invobharat/providers/recurring_provider.dart'; // New
 
 import 'package:printing/printing.dart';
@@ -79,8 +79,9 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
 
   @override
   Widget build(final BuildContext context) {
+    final profile = ref.watch(businessProfileProvider);
+    final currency = profile.currency;
     final theme = Theme.of(context);
-    // Use IndianCurrencyFormatter directly
 
     return Scaffold(
       appBar: AppBar(
@@ -170,14 +171,21 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                   children: [
                     Text("Total Amount", style: theme.textTheme.bodyMedium),
                     Text(
-                      IndianCurrencyFormatter.format(_invoice.grandTotal),
+                      _invoice.grandTotal.toIndianFormat(
+                        includeSymbol: true,
+                        symbol: currency,
+                      ),
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
-                _buildStatusBadge(_invoice.paymentStatus == 'Unpaid' ? _invoice.status : _invoice.paymentStatus),
+                _buildStatusBadge(
+                  _invoice.paymentStatus == 'Unpaid'
+                      ? _invoice.status
+                      : _invoice.paymentStatus,
+                ),
               ],
             ),
             const SizedBox(height: 24),
@@ -195,8 +203,10 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             if (_invoice.poNumber != null && _invoice.poNumber!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 4.0),
-                child: Text("PO Number: ${_invoice.poNumber}",
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(
+                  "PO Number: ${_invoice.poNumber}",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
 
             const SizedBox(height: 24),
@@ -220,9 +230,14 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                   return ListTile(
                     title: Text(item.description),
                     subtitle: Text(
-                      "${item.quantity} x ${IndianCurrencyFormatter.format(item.amount)}",
+                      "${item.quantity} x ${item.amount.toIndianFormat(includeSymbol: true, symbol: currency)}",
                     ),
-                    trailing: Text(IndianCurrencyFormatter.format(item.totalAmount)),
+                    trailing: Text(
+                      item.totalAmount.toIndianFormat(
+                        includeSymbol: true,
+                        symbol: currency,
+                      ),
+                    ),
                   );
                 },
               ),
@@ -279,7 +294,12 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                             Icons.payment,
                             color: Colors.green,
                           ),
-                          title: Text(IndianCurrencyFormatter.format(p.amount)),
+                          title: Text(
+                            p.amount.toIndianFormat(
+                              includeSymbol: true,
+                              symbol: currency,
+                            ),
+                          ),
                           subtitle: Text(
                             "${DateFormat('dd MMM yyyy').format(p.date)} • ${p.paymentMode}",
                           ),
@@ -309,7 +329,10 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                       ),
                     ),
                     Text(
-                      IndianCurrencyFormatter.format(_invoice.balanceDue),
+                      _invoice.balanceDue.toIndianFormat(
+                        includeSymbol: true,
+                        symbol: currency,
+                      ),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.red,
@@ -502,7 +525,9 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     await InvoiceActions.markAsSent(ref, _invoice);
     _refreshInvoice();
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Invoice marked as Sent")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Invoice marked as Sent")));
     }
   }
 

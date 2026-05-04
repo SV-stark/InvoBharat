@@ -40,7 +40,9 @@ void main() {
 
   group('SqlClientRepository', () {
     test('saveClient and getClient', () async {
-      await database.into(database.businessProfiles).insert(
+      await database
+          .into(database.businessProfiles)
+          .insert(
             BusinessProfilesCompanion.insert(
               id: testProfile.id,
               companyName: testProfile.companyName,
@@ -83,7 +85,7 @@ void main() {
       final client = await repository.getClient(testClient.id);
       expect(client, isNull);
     });
-   group('GSTR-1 Import gap detection', () {
+    group('GSTR-1 Import gap detection', () {
       test('should find missing numbers in simple sequence', () {
         // This was in GstrImportService test usually, if it's here, we check logic
       });

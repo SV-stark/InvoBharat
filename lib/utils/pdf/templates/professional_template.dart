@@ -38,14 +38,22 @@ class ProfessionalTemplate extends BasePdfTemplate {
                   children: [
                     if (profile.logoPath != null &&
                         profile.logoPath!.isNotEmpty &&
-                        File(profile.logoPath!).existsSync())
+                        File(profile.logoPath!).existsSync()) ...[
                       pw.Image(
                         pw.MemoryImage(
                           File(profile.logoPath!).readAsBytesSync(),
                         ),
                         height: 60,
-                      )
-                    else
+                      ),
+                      pw.SizedBox(height: 4),
+                      pw.Text(
+                        profile.companyName,
+                        style: pw.TextStyle(
+                          fontSize: 14,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    ] else
                       pw.Text(
                         profile.companyName,
                         style: pw.TextStyle(
@@ -92,7 +100,10 @@ class ProfessionalTemplate extends BasePdfTemplate {
                       "Invoice No",
                       invoice.invoiceNo,
                       const pw.TextStyle(fontSize: 10),
-                      pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+                      pw.TextStyle(
+                        fontSize: 10,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
                     ),
                     buildField(
                       "Invoice Date",
@@ -310,10 +321,22 @@ class ProfessionalTemplate extends BasePdfTemplate {
                       ),
                     ),
                     pw.SizedBox(height: 4),
-                    pw.Text("Bank Name: ${profile.bankName}", style: const pw.TextStyle(fontSize: 8)),
-                    pw.Text("Account No: ${profile.accountNo}", style: const pw.TextStyle(fontSize: 8)),
-                    pw.Text("IFSC Code: ${profile.ifscCode}", style: const pw.TextStyle(fontSize: 8)),
-                    pw.Text("Branch: ${profile.branch}", style: const pw.TextStyle(fontSize: 8)),
+                    pw.Text(
+                      "Bank Name: ${profile.bankName}",
+                      style: const pw.TextStyle(fontSize: 8),
+                    ),
+                    pw.Text(
+                      "Account No: ${profile.accountNo}",
+                      style: const pw.TextStyle(fontSize: 8),
+                    ),
+                    pw.Text(
+                      "IFSC Code: ${profile.ifscCode}",
+                      style: const pw.TextStyle(fontSize: 8),
+                    ),
+                    pw.Text(
+                      "Branch: ${profile.branch}",
+                      style: const pw.TextStyle(fontSize: 8),
+                    ),
                     if (profile.upiId.isNotEmpty) ...[
                       pw.Text(
                         "UPI ID: ${profile.upiId}",

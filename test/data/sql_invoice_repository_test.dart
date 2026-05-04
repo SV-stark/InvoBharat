@@ -35,14 +35,14 @@ void main() {
     invoiceDate: DateTime.now(),
     supplier: const model.Supplier(name: 'Supplier'),
     receiver: const model.Receiver(name: 'Receiver'),
-    items: [
-      const model.InvoiceItem(description: 'Item 1', amount: 100),
-    ],
+    items: [const model.InvoiceItem(description: 'Item 1', amount: 100)],
   );
 
   group('SqlInvoiceRepository', () {
     test('saveInvoice and getInvoice', () async {
-      await database.into(database.businessProfiles).insert(
+      await database
+          .into(database.businessProfiles)
+          .insert(
             BusinessProfilesCompanion.insert(
               id: testProfile.id,
               companyName: testProfile.companyName,

@@ -73,9 +73,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _notesController = TextEditingController(text: profile.defaultNotes);
     _currencyController = TextEditingController(text: profile.currency);
     _bankNameController = TextEditingController(text: profile.bankName);
-    _accountNumberController = TextEditingController(
-      text: profile.accountNo,
-    );
+    _accountNumberController = TextEditingController(text: profile.accountNo);
     _ifscCodeController = TextEditingController(text: profile.ifscCode);
     _branchNameController = TextEditingController(text: profile.branch);
     _upiIdController = TextEditingController(text: profile.upiId);
@@ -129,7 +127,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         upiName: _upiNameController.text,
         pan: _panController.text,
       );
-      await ref.read(businessProfileListProvider.notifier).updateProfile(newProfile);
+      await ref
+          .read(businessProfileListProvider.notifier)
+          .updateProfile(newProfile);
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -145,7 +145,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (pickedFile != null) {
       final currentProfile = ref.read(businessProfileProvider);
       final newProfile = currentProfile.copyWith(logoPath: pickedFile.path);
-      await ref.read(businessProfileListProvider.notifier).updateProfile(newProfile);
+      await ref
+          .read(businessProfileListProvider.notifier)
+          .updateProfile(newProfile);
       setState(() {});
     }
   }
@@ -159,7 +161,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final newProfile = currentProfile.copyWith(
         signaturePath: pickedFile.path,
       );
-      await ref.read(businessProfileListProvider.notifier).updateProfile(newProfile);
+      await ref
+          .read(businessProfileListProvider.notifier)
+          .updateProfile(newProfile);
       setState(() {});
     }
   }
@@ -335,10 +339,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         onTap: _pickLogo,
                         child: CircleAvatar(
                           radius: 40,
-                          backgroundImage: profile.logoPath != null && profile.logoPath!.isNotEmpty
+                          backgroundImage:
+                              profile.logoPath != null &&
+                                  profile.logoPath!.isNotEmpty
                               ? FileImage(File(profile.logoPath!))
                               : null,
-                          child: profile.logoPath == null || profile.logoPath!.isEmpty
+                          child:
+                              profile.logoPath == null ||
+                                  profile.logoPath!.isEmpty
                               ? const Icon(Icons.add_a_photo, size: 30)
                               : null,
                         ),
@@ -359,10 +367,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         child: CircleAvatar(
                           radius: 40,
                           backgroundColor: Colors.grey.shade200,
-                          backgroundImage: profile.signaturePath != null && profile.signaturePath!.isNotEmpty
+                          backgroundImage:
+                              profile.signaturePath != null &&
+                                  profile.signaturePath!.isNotEmpty
                               ? FileImage(File(profile.signaturePath!))
                               : null,
-                          child: profile.signaturePath == null || profile.signaturePath!.isEmpty
+                          child:
+                              profile.signaturePath == null ||
+                                  profile.signaturePath!.isEmpty
                               ? const Icon(Icons.edit, size: 30)
                               : null,
                         ),
@@ -520,19 +532,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       await ref
           .read(businessProfileListProvider.notifier)
           .addProfile(newProfile);
-      
+
       // Auto-select the new profile
       await ref
           .read(activeProfileIdProvider.notifier)
           .selectProfile(newProfile.id);
-      
+
       _loadProfileData();
       setState(() {});
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Profile '$name' created")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Profile '$name' created")));
       }
     }
   }
@@ -707,7 +719,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return GestureDetector(
       onTap: () {
-        ref.read(businessProfileListProvider.notifier).updateColor(color.toARGB32());
+        ref
+            .read(businessProfileListProvider.notifier)
+            .updateColor(color.toARGB32());
       },
       child: Container(
         width: 40,

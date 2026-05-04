@@ -3,6 +3,8 @@ import 'package:flutter/material.dart' as material;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:invobharat/providers/aging_report_provider.dart';
+import 'package:invobharat/utils/formatters.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
 
 class AgingReportScreen extends ConsumerWidget {
   const AgingReportScreen({super.key});
@@ -24,12 +26,14 @@ class AgingReportScreen extends ConsumerWidget {
           // Pie Chart Data
           final sections = data.buckets
               .where((final b) => b.amount > 0)
-              .map((final b) => PieChartSectionData(
-                    color: b.color,
-                    value: b.amount,
-                    title: '', // Tooltips or Legend instead
-                    radius: 50,
-                  ))
+              .map(
+                (final b) => PieChartSectionData(
+                  color: b.color,
+                  value: b.amount,
+                  title: '', // Tooltips or Legend instead
+                  radius: 50,
+                ),
+              )
               .toList();
 
           return Padding(
@@ -42,8 +46,9 @@ class AgingReportScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                        "Total Outstanding: ₹${data.totalReceivable.toStringAsFixed(2)}",
-                        style: FluentTheme.of(context).typography.title),
+                      "Total Outstanding: ${data.totalReceivable.toIndianFormat(includeSymbol: true, symbol: ref.read(businessProfileProvider).currency)}",
+                      style: FluentTheme.of(context).typography.title,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -69,8 +74,9 @@ class AgingReportScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: data.buckets.map((final b) {
                             return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 4.0),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 4.0,
+                              ),
                               child: Row(
                                 children: [
                                   Container(
@@ -80,7 +86,8 @@ class AgingReportScreen extends ConsumerWidget {
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                      "${b.label}: ₹${b.amount.toStringAsFixed(2)} (${b.count} inv)"),
+                                    "${b.label}: ${b.amount.toIndianFormat(includeSymbol: true, symbol: ref.read(businessProfileProvider).currency)} (${b.count} inv)",
+                                  ),
                                 ],
                               ),
                             );
@@ -92,9 +99,10 @@ class AgingReportScreen extends ConsumerWidget {
                 ),
 
                 const SizedBox(height: 32),
-                const Text("Client Breakdown",
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                const Text(
+                  "Client Breakdown",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
                 const SizedBox(height: 16),
 
                 // Client List
@@ -108,10 +116,14 @@ class AgingReportScreen extends ConsumerWidget {
                         leading: const Icon(FluentIcons.contact),
                         title: Text(name),
                         trailing: Text(
-                          "₹${amount.toStringAsFixed(2)}",
+                          amount.toIndianFormat(
+                            includeSymbol: true,
+                            symbol: ref.read(businessProfileProvider).currency,
+                          ),
                           style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: material.Colors.red),
+                            fontWeight: FontWeight.bold,
+                            color: material.Colors.red,
+                          ),
                         ),
                       );
                     },

@@ -40,8 +40,9 @@ mixin ClientFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     addressController = TextEditingController(text: client?.address ?? '');
     emailController = TextEditingController(text: client?.email ?? '');
     phoneController = TextEditingController(text: client?.phone ?? '');
-    contactController =
-        TextEditingController(text: client?.primaryContact ?? '');
+    contactController = TextEditingController(
+      text: client?.primaryContact ?? '',
+    );
     notesController = TextEditingController(text: client?.notes ?? '');
     stateController = TextEditingController(text: client?.state ?? '');
   }
@@ -61,7 +62,8 @@ mixin ClientFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   /// Returns [true] if successful, [false] if validation failed.
   Future<bool> saveClient({
     required final Client? originalClient,
-    required final WidgetRef ref, // Passed explicitly or use `ref` from ConsumerState
+    required final WidgetRef
+    ref, // Passed explicitly or use `ref` from ConsumerState
   }) async {
     if (!formKey.currentState!.validate()) {
       return false;

@@ -30,18 +30,12 @@ class InvoiceSummarySkeleton extends StatelessWidget {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Bone.text(words: 2),
-              Bone.text(words: 1),
-            ],
+            children: [Bone.text(words: 2), Bone.text(words: 1)],
           ),
           SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Bone.text(words: 2),
-              Bone.text(words: 1),
-            ],
+            children: [Bone.text(words: 2), Bone.text(words: 1)],
           ),
         ],
       ),

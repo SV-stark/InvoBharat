@@ -177,8 +177,10 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                       child: InfoLabel(
                         label: "Expiry Date",
                         child: DatePicker(
-                          selected: expiryDate ?? date.add(const Duration(days: 30)),
-                          onChanged: (final d) => setState(() => expiryDate = d),
+                          selected:
+                              expiryDate ?? date.add(const Duration(days: 30)),
+                          onChanged: (final d) =>
+                              setState(() => expiryDate = d),
                         ),
                       ),
                     ),

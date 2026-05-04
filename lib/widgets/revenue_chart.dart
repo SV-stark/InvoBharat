@@ -27,25 +27,28 @@ class RevenueChart extends StatelessWidget {
 
     final maxY = spots.isEmpty
         ? 1000.0
-        : spots.map((final e) => e.y).reduce((final a, final b) => a > b ? a : b) * 1.2;
+        : spots
+                  .map((final e) => e.y)
+                  .reduce((final a, final b) => a > b ? a : b) *
+              1.2;
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Revenue Trend (Last 6 Months)",
-              style: FluentTheme.of(context).typography.subtitle),
+          Text(
+            "Revenue Trend (Last 6 Months)",
+            style: FluentTheme.of(context).typography.subtitle,
+          ),
           const SizedBox(height: 20),
           Expanded(
             child: LineChart(
               LineChartData(
                 gridData: const FlGridData(drawVerticalLine: false),
                 titlesData: FlTitlesData(
-                  rightTitles: const AxisTitles(
-                      ),
-                  topTitles: const AxisTitles(
-                      ),
+                  rightTitles: const AxisTitles(),
+                  topTitles: const AxisTitles(),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -53,12 +56,15 @@ class RevenueChart extends StatelessWidget {
                       getTitlesWidget: (final value, final meta) {
                         final index = value.toInt();
                         if (index >= 0 && index < displayKeys.length) {
-                          final date =
-                              DateFormat("yyyy-MM").parse(displayKeys[index]);
+                          final date = DateFormat(
+                            "yyyy-MM",
+                          ).parse(displayKeys[index]);
                           return SideTitleWidget(
                             meta: meta,
-                            child: Text(DateFormat("MMM").format(date),
-                                style: const TextStyle(fontSize: 10)),
+                            child: Text(
+                              DateFormat("MMM").format(date),
+                              style: const TextStyle(fontSize: 10),
+                            ),
                           );
                         }
                         return const Text('');
@@ -66,13 +72,17 @@ class RevenueChart extends StatelessWidget {
                     ),
                   ),
                   leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                          showTitles: true,
-                          reservedSize: 45,
-                          getTitlesWidget: (final value, final meta) {
-                            return Text(NumberFormat.compact().format(value),
-                                style: const TextStyle(fontSize: 10));
-                          })),
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 45,
+                      getTitlesWidget: (final value, final meta) {
+                        return Text(
+                          NumberFormat.compact().format(value),
+                          style: const TextStyle(fontSize: 10),
+                        );
+                      },
+                    ),
+                  ),
                 ),
                 borderData: FlBorderData(show: false),
                 minX: 0,
@@ -88,9 +98,9 @@ class RevenueChart extends StatelessWidget {
                     isStrokeCapRound: true,
                     belowBarData: BarAreaData(
                       show: true,
-                      color: FluentTheme.of(context)
-                          .accentColor
-                          .withValues(alpha: 0.1),
+                      color: FluentTheme.of(
+                        context,
+                      ).accentColor.withValues(alpha: 0.1),
                     ),
                   ),
                 ],

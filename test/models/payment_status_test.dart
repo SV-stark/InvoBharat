@@ -14,7 +14,10 @@ void main() {
       invoiceNo: '001',
       items: [
         const InvoiceItem(
-            description: 'Item 1', amount: 1000, gstRate: 0) // Total 1000
+          description: 'Item 1',
+          amount: 1000,
+          gstRate: 0,
+        ), // Total 1000
       ],
       dueDate: DateTime.now().add(const Duration(days: 7)),
     );
@@ -26,34 +29,41 @@ void main() {
     });
 
     test('Status is Partial when partially paid', () {
-      final invoice = baseInvoice.copyWith(payments: [
-        PaymentTransaction(
+      final invoice = baseInvoice.copyWith(
+        payments: [
+          PaymentTransaction(
             id: 'p1',
             invoiceId: '1',
             date: DateTime.now(),
             amount: 500,
-            paymentMode: 'Cash')
-      ]);
+            paymentMode: 'Cash',
+          ),
+        ],
+      );
       expect(invoice.paymentStatus, 'Partial');
       expect(invoice.totalPaid, 500);
       expect(invoice.balanceDue, 500);
     });
 
     test('Status is Paid when fully paid', () {
-      final invoice = baseInvoice.copyWith(payments: [
-        PaymentTransaction(
+      final invoice = baseInvoice.copyWith(
+        payments: [
+          PaymentTransaction(
             id: 'p1',
             invoiceId: '1',
             date: DateTime.now(),
             amount: 500,
-            paymentMode: 'Cash'),
-        PaymentTransaction(
+            paymentMode: 'Cash',
+          ),
+          PaymentTransaction(
             id: 'p2',
             invoiceId: '1',
             date: DateTime.now(),
             amount: 500,
-            paymentMode: 'Cash')
-      ]);
+            paymentMode: 'Cash',
+          ),
+        ],
+      );
       expect(invoice.paymentStatus, 'Paid');
       expect(invoice.totalPaid, 1000);
       expect(invoice.balanceDue, 0);
@@ -62,35 +72,41 @@ void main() {
     test('Status is Paid even with slight overpayment (tolerance)', () {
       // Tolerance logic in code was >= grandTotal - 0.01
       // If overpaid?
-      final invoice = baseInvoice.copyWith(payments: [
-        PaymentTransaction(
+      final invoice = baseInvoice.copyWith(
+        payments: [
+          PaymentTransaction(
             id: 'p1',
             invoiceId: '1',
             date: DateTime.now(),
             amount: 1001,
-            paymentMode: 'Cash'),
-      ]);
+            paymentMode: 'Cash',
+          ),
+        ],
+      );
       expect(invoice.paymentStatus, 'Paid');
       expect(invoice.balanceDue, lessThan(0));
     });
 
     test('Status is Overdue when overdue and unpaid', () {
       final overdueInvoice = baseInvoice.copyWith(
-          dueDate: DateTime.now().subtract(const Duration(days: 1)));
+        dueDate: DateTime.now().subtract(const Duration(days: 1)),
+      );
       expect(overdueInvoice.paymentStatus, 'Overdue');
     });
 
     test('Status is Overdue when overdue and partially paid', () {
       final overdueInvoice = baseInvoice.copyWith(
-          dueDate: DateTime.now().subtract(const Duration(days: 1)),
-          payments: [
-            PaymentTransaction(
-                id: 'p1',
-                invoiceId: '1',
-                date: DateTime.now(),
-                amount: 500,
-                paymentMode: 'Cash')
-          ]);
+        dueDate: DateTime.now().subtract(const Duration(days: 1)),
+        payments: [
+          PaymentTransaction(
+            id: 'p1',
+            invoiceId: '1',
+            date: DateTime.now(),
+            amount: 500,
+            paymentMode: 'Cash',
+          ),
+        ],
+      );
       // Wait, logic in model says:
       // if (totalPaid >= grandTotal - 0.01) return 'Paid';
       // if (totalPaid > 0) return 'Partial'; <--- This returns Partial BEFORE Checking Overdue!

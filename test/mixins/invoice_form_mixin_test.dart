@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/mixins/invoice_form_mixin.dart';
 import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/database_provider.dart';
-import 'package:invobharat/database/database.dart' hide Client, Invoice, BusinessProfile, InvoiceItem, AppSetting;
+import 'package:invobharat/database/database.dart'
+    hide Client, Invoice, BusinessProfile, InvoiceItem, AppSetting;
 import 'package:drift/native.dart';
 
 class TestInvoiceWidget extends ConsumerStatefulWidget {
@@ -75,7 +76,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          databaseProvider.overrideWithValue(AppDatabase(NativeDatabase.memory())),
+          databaseProvider.overrideWithValue(
+            AppDatabase(NativeDatabase.memory()),
+          ),
         ],
         child: const MaterialApp(home: TestInvoiceWidget()),
       ),

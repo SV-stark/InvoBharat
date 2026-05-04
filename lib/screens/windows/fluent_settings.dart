@@ -268,7 +268,8 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                     }
                   },
                 ),
-                if (profile.logoPath != null && profile.logoPath!.isNotEmpty) ...[
+                if (profile.logoPath != null &&
+                    profile.logoPath!.isNotEmpty) ...[
                   const Gap(10),
                   HyperlinkButton(
                     child: const Text("Remove Logo"),
@@ -333,14 +334,13 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                               ref
                                   .read(businessProfileListProvider.notifier)
                                   .updateProfile(
-                                    profile.copyWith(
-                                      signaturePath: image.path,
-                                    ),
+                                    profile.copyWith(signaturePath: image.path),
                                   );
                             }
                           },
                         ),
-                        if (profile.signaturePath != null && profile.signaturePath!.isNotEmpty) ...[
+                        if (profile.signaturePath != null &&
+                            profile.signaturePath!.isNotEmpty) ...[
                           const Gap(5),
                           HyperlinkButton(
                             child: const Text("Remove"),
@@ -377,9 +377,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                         border: Border.all(
                           color: Colors.grey.withValues(alpha: 0.5),
                         ),
-                        borderRadius: BorderRadius.circular(
-                          50,
-                        ),
+                        borderRadius: BorderRadius.circular(50),
                       ),
                       child:
                           (profile.stampPath != null &&
@@ -414,7 +412,8 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                             }
                           },
                         ),
-                        if (profile.stampPath != null && profile.stampPath!.isNotEmpty) ...[
+                        if (profile.stampPath != null &&
+                            profile.stampPath!.isNotEmpty) ...[
                           const Gap(5),
                           HyperlinkButton(
                             child: const Text("Remove"),

@@ -5,7 +5,7 @@ class PaymentDialog extends StatefulWidget {
   final double balanceDue;
   final String currencySymbol;
   final Function(double amount, DateTime date, String mode, String notes)
-      onConfirm;
+  onConfirm;
 
   const PaymentDialog({
     super.key,
@@ -27,8 +27,9 @@ class _PaymentDialogState extends State<PaymentDialog> {
   @override
   void initState() {
     super.initState();
-    _amountController =
-        TextEditingController(text: widget.balanceDue.toStringAsFixed(2));
+    _amountController = TextEditingController(
+      text: widget.balanceDue.toStringAsFixed(2),
+    );
     _notesController = TextEditingController();
   }
 
@@ -52,8 +53,9 @@ class _PaymentDialogState extends State<PaymentDialog> {
             child: TextBox(
               controller: _amountController,
               placeholder: "Enter amount",
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               prefix: Padding(
                 padding: const EdgeInsets.only(left: 8),
                 child: Text(widget.currencySymbol),

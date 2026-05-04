@@ -11,7 +11,9 @@ class SqlClientRepository implements ClientRepository {
 
   @override
   Future<void> saveClient(final model.Client client) async {
-    await database.into(database.clients).insertOnConflictUpdate(
+    await database
+        .into(database.clients)
+        .insertOnConflictUpdate(
           ClientsCompanion(
             id: Value(client.id.isEmpty ? const Uuid().v4() : client.id),
             profileId: Value(client.profileId),
@@ -44,8 +46,9 @@ class SqlClientRepository implements ClientRepository {
 
   @override
   Future<void> deleteClient(final String id) async {
-    await (database.delete(database.clients)..where((final tbl) => tbl.id.equals(id)))
-        .go();
+    await (database.delete(
+      database.clients,
+    )..where((final tbl) => tbl.id.equals(id))).go();
   }
 
   @override

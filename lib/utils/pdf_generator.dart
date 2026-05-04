@@ -112,7 +112,7 @@ Future<String?> saveInvoicePdf(
 ) async {
   final extension = p.extension(fileName).replaceAll('.', '');
   final nameOnly = p.basenameWithoutExtension(fileName);
-  
+
   return FileSaver.instance.saveFile(
     name: nameOnly,
     bytes: bytes,

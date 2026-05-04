@@ -3,10 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:invobharat/widgets/about_tab.dart';
 
 void main() {
-  testWidgets('AboutTab displays correct content', (final WidgetTester tester) async {
+  testWidgets('AboutTab displays correct content', (
+    final WidgetTester tester,
+  ) async {
     // Build the AboutTab widget.
-    await tester
-        .pumpWidget(const MaterialApp(home: Scaffold(body: AboutTab())));
+    await tester.pumpWidget(
+      const MaterialApp(home: Scaffold(body: AboutTab())),
+    );
 
     // Verify "InvoBharat" text is present.
     expect(find.text('InvoBharat'), findsOneWidget);

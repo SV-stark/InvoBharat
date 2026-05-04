@@ -32,11 +32,15 @@ class UpdateService {
   static const String _repoOwner = 'SV-stark';
   static const String _repoName = 'InvoBharat';
 
-  static Future<Map<String, Release?>> checkForUpdates({final http.Client? client}) async {
+  static Future<Map<String, Release?>> checkForUpdates({
+    final http.Client? client,
+  }) async {
     final httpClient = client ?? http.Client();
     try {
       final response = await httpClient.get(
-        Uri.parse('https://api.github.com/repos/$_repoOwner/$_repoName/releases'),
+        Uri.parse(
+          'https://api.github.com/repos/$_repoOwner/$_repoName/releases',
+        ),
         headers: {
           'Accept': 'application/vnd.github+json',
           'X-GitHub-Api-Version': '2022-11-28',

@@ -33,18 +33,13 @@ class BusinessProfiles extends Table {
   Set<Column> get primaryKey => {id};
 
   @override
-  List<String> get customConstraints => [
-        'UNIQUE (gstin)',
-      ];
+  List<String> get customConstraints => ['UNIQUE (gstin)'];
 }
 
 class Clients extends Table {
   TextColumn get id => text()();
-  TextColumn get profileId => text().references(
-        BusinessProfiles,
-        #id,
-        onDelete: KeyAction.cascade,
-      )();
+  TextColumn get profileId =>
+      text().references(BusinessProfiles, #id, onDelete: KeyAction.cascade)();
   TextColumn get name => text()();
   TextColumn get address => text()();
   TextColumn get gstin => text()();
@@ -58,23 +53,15 @@ class Clients extends Table {
   Set<Column> get primaryKey => {id};
 
   @override
-  List<String> get customConstraints => [
-        'UNIQUE (profile_id, gstin)',
-      ];
+  List<String> get customConstraints => ['UNIQUE (profile_id, gstin)'];
 }
 
 class Invoices extends Table {
   TextColumn get id => text()();
-  TextColumn get profileId => text().references(
-        BusinessProfiles,
-        #id,
-        onDelete: KeyAction.cascade,
-      )();
-  TextColumn get clientId => text().nullable().references(
-        Clients,
-        #id,
-        onDelete: KeyAction.setNull,
-      )();
+  TextColumn get profileId =>
+      text().references(BusinessProfiles, #id, onDelete: KeyAction.cascade)();
+  TextColumn get clientId =>
+      text().nullable().references(Clients, #id, onDelete: KeyAction.setNull)();
   TextColumn get invoiceNo => text()();
   TextColumn get type =>
       text().withDefault(const Constant('invoice'))(); // Stores enum name
@@ -121,18 +108,13 @@ class Invoices extends Table {
   Set<Column> get primaryKey => {id};
 
   @override
-  List<String> get customConstraints => [
-        'UNIQUE (profile_id, invoice_no)',
-      ];
+  List<String> get customConstraints => ['UNIQUE (profile_id, invoice_no)'];
 }
 
 class InvoiceItems extends Table {
   TextColumn get id => text()();
-  TextColumn get invoiceId => text().references(
-        Invoices,
-        #id,
-        onDelete: KeyAction.cascade,
-      )();
+  TextColumn get invoiceId =>
+      text().references(Invoices, #id, onDelete: KeyAction.cascade)();
   TextColumn get description => text()();
   TextColumn get sacCode => text()();
   TextColumn get codeType => text()();
@@ -149,11 +131,8 @@ class InvoiceItems extends Table {
 
 class Payments extends Table {
   TextColumn get id => text()();
-  TextColumn get invoiceId => text().references(
-        Invoices,
-        #id,
-        onDelete: KeyAction.cascade,
-      )();
+  TextColumn get invoiceId =>
+      text().references(Invoices, #id, onDelete: KeyAction.cascade)();
   RealColumn get amount => real()();
   DateTimeColumn get date => dateTime()();
   TextColumn get method => text()(); // e.g. Cash, UPI

@@ -19,7 +19,7 @@ class GstPieChart extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     final totalGst = cgst + sgst + igst;
-    
+
     if (totalGst == 0) {
       return const Center(
         child: Text(
@@ -30,7 +30,7 @@ class GstPieChart extends StatelessWidget {
     }
 
     final sections = <PieChartSectionData>[];
-    
+
     if (cgst > 0) {
       sections.add(
         PieChartSectionData(
@@ -46,7 +46,7 @@ class GstPieChart extends StatelessWidget {
         ),
       );
     }
-    
+
     if (sgst > 0) {
       sections.add(
         PieChartSectionData(
@@ -62,7 +62,7 @@ class GstPieChart extends StatelessWidget {
         ),
       );
     }
-    
+
     if (igst > 0) {
       sections.add(
         PieChartSectionData(
@@ -89,7 +89,8 @@ class GstPieChart extends StatelessWidget {
               centerSpaceRadius: 40,
               sections: sections,
               pieTouchData: PieTouchData(
-                touchCallback: (final FlTouchEvent event, final pieTouchResponse) {},
+                touchCallback:
+                    (final FlTouchEvent event, final pieTouchResponse) {},
               ),
             ),
           ),
@@ -100,37 +101,32 @@ class GstPieChart extends StatelessWidget {
           spacing: 16,
           runSpacing: 8,
           children: [
-            if (cgst > 0)
-              _buildLegendItem('CGST', Colors.blue, cgst),
-            if (sgst > 0)
-              _buildLegendItem('SGST', Colors.green, sgst),
-            if (igst > 0)
-              _buildLegendItem('IGST', Colors.orange, igst),
+            if (cgst > 0) _buildLegendItem('CGST', Colors.blue, cgst),
+            if (sgst > 0) _buildLegendItem('SGST', Colors.green, sgst),
+            if (igst > 0) _buildLegendItem('IGST', Colors.orange, igst),
           ],
         ),
         const SizedBox(height: 8),
         Text(
           'Total GST: $currencySymbol${NumberFormat('#,##0.00').format(totalGst)}',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ],
     );
   }
 
-  Widget _buildLegendItem(final String label, final Color color, final double value) {
+  Widget _buildLegendItem(
+    final String label,
+    final Color color,
+    final double value,
+  ) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 12,
           height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 4),
         Text(

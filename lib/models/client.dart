@@ -20,5 +20,6 @@ abstract class Client with _$Client {
     @Default('') final String stateCode,
   }) = _Client;
 
-  factory Client.fromJson(final Map<String, dynamic> json) => _$ClientFromJson(json);
+  factory Client.fromJson(final Map<String, dynamic> json) =>
+      _$ClientFromJson(json);
 }

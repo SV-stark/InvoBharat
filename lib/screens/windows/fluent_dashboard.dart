@@ -25,7 +25,7 @@ import 'package:uuid/uuid.dart';
 import 'package:invobharat/screens/windows/invoice_quick_actions.dart';
 import 'package:invobharat/services/dashboard_actions.dart';
 
-import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
 import 'package:invobharat/models/recurring_profile.dart';
 import 'package:invobharat/providers/recurring_provider.dart';
 import 'package:invobharat/widgets/dialogs/payment_dialog.dart';
@@ -234,8 +234,6 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
               (final sum, final inv) => sum + inv.balanceDue,
             );
 
-
-
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -262,7 +260,8 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                     CommandBarButton(
                       label: const Text('CSV Template'),
                       icon: const Icon(FluentIcons.file_template),
-                      onPressed: () => InvoiceImportService.downloadImportTemplate(),
+                      onPressed: () =>
+                          InvoiceImportService.downloadImportTemplate(),
                     ),
                   ],
                   secondaryItems: [
@@ -302,7 +301,10 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                         child: _buildHeroStatCard(
                           context,
                           "Total Revenue",
-                          IndianCurrencyFormatter.format(totalRevenue),
+                          totalRevenue.toIndianFormat(
+                            includeSymbol: true,
+                            symbol: profile.currency,
+                          ),
                           FluentIcons.money,
                           theme.accentColor,
                         ),
@@ -324,7 +326,10 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                         child: _buildStatCard(
                           context,
                           "Received",
-                          IndianCurrencyFormatter.format(paymentsReceived),
+                          paymentsReceived.toIndianFormat(
+                            includeSymbol: true,
+                            symbol: profile.currency,
+                          ),
                           FluentIcons.check_mark,
                           Colors.green,
                         ),
@@ -335,7 +340,10 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                       child: _buildStatCard(
                         context,
                         "Due",
-                        IndianCurrencyFormatter.format(paymentsDue),
+                        paymentsDue.toIndianFormat(
+                          includeSymbol: true,
+                          symbol: profile.currency,
+                        ),
                         FluentIcons.warning,
                         Colors.orange,
                       ),
@@ -358,7 +366,10 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                         child: _buildStatCard(
                           context,
                           "GST Liability",
-                          IndianCurrencyFormatter.format(totalCGST + totalSGST + totalIGST),
+                          (totalCGST + totalSGST + totalIGST).toIndianFormat(
+                            includeSymbol: true,
+                            symbol: profile.currency,
+                          ),
                           FluentIcons.bank,
                           Colors.purple,
                         ),
@@ -398,9 +409,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                   height: 250,
                   child: Card(
                     child: AgingChart(
-                      agingData: DashboardActions.calculateAging(
-                        allInvoices,
-                      ),
+                      agingData: DashboardActions.calculateAging(allInvoices),
                     ),
                   ),
                 ),
@@ -487,7 +496,10 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
                                       Text(
-                                        IndianCurrencyFormatter.format(inv.grandTotal),
+                                        inv.grandTotal.toIndianFormat(
+                                          includeSymbol: true,
+                                          symbol: profile.currency,
+                                        ),
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 14,
@@ -529,7 +541,8 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
 
   Widget _buildStatusBadge(final dynamic invoice) {
     final lifecycleStatus = invoice.status; // Draft, Sent, Viewed, Paid
-    final paymentStatus = invoice.paymentStatus; // Unpaid, Partial, Overdue, Paid
+    final paymentStatus =
+        invoice.paymentStatus; // Unpaid, Partial, Overdue, Paid
 
     String text = lifecycleStatus;
     Color color = Colors.grey;
@@ -545,7 +558,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         color = Colors.orange;
       }
     }
-    
+
     // Payment status overrides lifecycle for Paid/Partial
     if (paymentStatus == 'Paid') {
       text = "Paid";
@@ -655,7 +668,9 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         return;
       }
 
-      final csvData = await GstrService().generateGstr1CsvAsync(filteredInvoices);
+      final csvData = await GstrService().generateGstr1CsvAsync(
+        filteredInvoices,
+      );
 
       String? outputFile = await FilePicker.saveFile(
         dialogTitle: 'Save GSTR-1 CSV',
@@ -693,7 +708,6 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
       );
     }
   }
-
 
   void _showGstBreakdown(
     final BuildContext context,
@@ -750,7 +764,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
       children: [
         Text(label, style: style),
         Text(
-          IndianCurrencyFormatter.format(amount),
+          amount.toIndianFormat(includeSymbol: true, symbol: symbol),
           style: style,
         ),
       ],
@@ -1020,7 +1034,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         filename: filename,
         subject: "Invoice ${invoice.invoiceNo} from ${profile.companyName}",
         body:
-            "Dear ${invoice.receiver.name},\n\nPlease find attached invoice ${invoice.invoiceNo}.\n\nTotal Amount: ${IndianCurrencyFormatter.format(invoice.grandTotal)}\nDue Date: ${invoice.dueDate != null ? DateFormat('dd MMM yyyy').format(invoice.dueDate!) : 'N/A'}\n\nThank you for your business.",
+            "Dear ${invoice.receiver.name},\n\nPlease find attached invoice ${invoice.invoiceNo}.\n\nTotal Amount: ${invoice.grandTotal.toIndianFormat()}\nDue Date: ${invoice.dueDate != null ? DateFormat('dd MMM yyyy').format(invoice.dueDate!) : 'N/A'}\n\nThank you for your business.",
       );
     } catch (e) {
       if (context.mounted) {

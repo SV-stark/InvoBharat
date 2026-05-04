@@ -2,7 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:go_router/go_router.dart';
@@ -124,6 +125,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
   @override
   Widget build(final BuildContext context) {
     final invoiceListAsync = ref.watch(invoiceListProvider);
+    final currency = ref.watch(businessProfileProvider).currency;
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -201,7 +203,9 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/invoice-form').then((_) => ref.refresh(invoiceListProvider)),
+        onPressed: () => context
+            .push('/invoice-form')
+            .then((_) => ref.refresh(invoiceListProvider)),
         child: const Icon(Icons.add),
       ),
       body: invoiceListAsync.when(
@@ -274,7 +278,10 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                     "${invoice.invoiceNo} • ${DateFormat('dd MMM yyyy').format(invoice.invoiceDate)}",
                   ),
                   secondary: Text(
-                    IndianCurrencyFormatter.format(invoice.grandTotal),
+                    invoice.grandTotal.toIndianFormat(
+                      includeSymbol: true,
+                      symbol: currency,
+                    ),
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 );
@@ -348,7 +355,9 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     onTap: () {
-                      context.push('/invoice-detail', extra: invoice).then((_) => ref.refresh(invoiceListProvider));
+                      context
+                          .push('/invoice-detail', extra: invoice)
+                          .then((_) => ref.refresh(invoiceListProvider));
                     },
                     leading: CircleAvatar(
                       backgroundColor: theme.colorScheme.primaryContainer
@@ -384,7 +393,10 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          IndianCurrencyFormatter.format(invoice.grandTotal),
+                          invoice.grandTotal.toIndianFormat(
+                            includeSymbol: true,
+                            symbol: currency,
+                          ),
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -430,7 +442,10 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                     items: const [
                       DropdownMenuItem(value: 'All', child: Text("All Active")),
                       DropdownMenuItem(value: 'Paid', child: Text("Paid")),
-                      DropdownMenuItem(value: 'Unpaid', child: Text("Unpaid & Partial")),
+                      DropdownMenuItem(
+                        value: 'Unpaid',
+                        child: Text("Unpaid & Partial"),
+                      ),
                       DropdownMenuItem(
                         value: 'Archived',
                         child: Text("Archived"),

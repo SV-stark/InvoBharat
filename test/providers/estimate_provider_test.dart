@@ -13,6 +13,7 @@ import 'package:invobharat/database/database.dart'
     hide Invoice, BusinessProfile, Client, AppSetting, InvoiceItem;
 
 class MockEstimateRepository extends Mock implements EstimateRepository {}
+
 class FakeActiveProfileId extends ActiveProfileId {
   @override
   String build() => 'test-profile';
@@ -84,10 +85,16 @@ void main() {
         items: [],
       );
 
-      when(() => mockRepo.saveEstimate(any())).thenAnswer((_) async => Future.value());
-      when(() => mockRepo.getAllEstimates()).thenAnswer((_) async => [estimate]);
+      when(
+        () => mockRepo.saveEstimate(any()),
+      ).thenAnswer((_) async => Future.value());
+      when(
+        () => mockRepo.getAllEstimates(),
+      ).thenAnswer((_) async => [estimate]);
 
-      await container.read(estimateListProvider.notifier).saveEstimate(estimate);
+      await container
+          .read(estimateListProvider.notifier)
+          .saveEstimate(estimate);
       final estimates = await container.read(estimateListProvider.future);
 
       expect(estimates, contains(estimate));
@@ -104,8 +111,12 @@ void main() {
         items: [],
       );
 
-      when(() => mockRepo.getAllEstimates()).thenAnswer((_) async => [estimate]);
-      when(() => mockRepo.deleteEstimate(any())).thenAnswer((_) async => Future.value());
+      when(
+        () => mockRepo.getAllEstimates(),
+      ).thenAnswer((_) async => [estimate]);
+      when(
+        () => mockRepo.deleteEstimate(any()),
+      ).thenAnswer((_) async => Future.value());
       // After deletion, it should return empty
       when(() => mockRepo.deleteEstimate('est1')).thenAnswer((_) async {
         when(() => mockRepo.getAllEstimates()).thenAnswer((_) async => []);
@@ -113,8 +124,10 @@ void main() {
       });
 
       final container = createContainer();
-      
-      await container.read(estimateListProvider.notifier).deleteEstimate('est1');
+
+      await container
+          .read(estimateListProvider.notifier)
+          .deleteEstimate('est1');
       final estimates = await container.read(estimateListProvider.future);
 
       expect(estimates, isEmpty);

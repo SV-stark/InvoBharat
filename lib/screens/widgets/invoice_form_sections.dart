@@ -9,7 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/providers/invoice_provider.dart';
 import 'package:invobharat/widgets/adaptive_widgets.dart';
-import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
 
 class SectionCard extends StatelessWidget {
   final String title;
@@ -137,8 +137,10 @@ class InvoiceHeaderSection extends ConsumerWidget {
                   controller: posCtrl,
                   items: AppStates.states
                       .map(
-                        (final e) =>
-                            fluent.AutoSuggestBoxItem<String>(value: e, label: e),
+                        (final e) => fluent.AutoSuggestBoxItem<String>(
+                          value: e,
+                          label: e,
+                        ),
                       )
                       .toList(),
                   onSelected: (final item) {
@@ -148,7 +150,9 @@ class InvoiceHeaderSection extends ConsumerWidget {
                   },
                   onChanged: (final text, final reason) {
                     if (reason == fluent.TextChangedReason.userInput) {
-                      ref.read(invoiceProvider.notifier).updatePlaceOfSupply(text);
+                      ref
+                          .read(invoiceProvider.notifier)
+                          .updatePlaceOfSupply(text);
                     }
                   },
                 ),
@@ -325,8 +329,10 @@ class ClientDetailsSection extends ConsumerWidget {
                   controller: receiverStateCtrl,
                   items: AppStates.states
                       .map(
-                        (final e) =>
-                            fluent.AutoSuggestBoxItem<String>(value: e, label: e),
+                        (final e) => fluent.AutoSuggestBoxItem<String>(
+                          value: e,
+                          label: e,
+                        ),
                       )
                       .toList(),
                   onSelected: (final item) {
@@ -336,7 +342,9 @@ class ClientDetailsSection extends ConsumerWidget {
                   },
                   onChanged: (final text, final reason) {
                     if (reason == fluent.TextChangedReason.userInput) {
-                      ref.read(invoiceProvider.notifier).updateReceiverState(text);
+                      ref
+                          .read(invoiceProvider.notifier)
+                          .updateReceiverState(text);
                     }
                   },
                 ),
@@ -499,7 +507,10 @@ class InvoiceSummarySection extends ConsumerWidget {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    IndianCurrencyFormatter.format(invoice.grandTotal),
+                    invoice.grandTotal.toIndianFormat(
+                      includeSymbol: true,
+                      symbol: invoice.currency,
+                    ),
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,

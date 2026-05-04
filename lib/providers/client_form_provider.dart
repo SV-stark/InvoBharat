@@ -118,7 +118,8 @@ class ClientFormNotifier extends Notifier<ClientFormState> {
 
   void updateName(final String value) => state = state.copyWith(name: value);
   void updateGstin(final String value) => state = state.copyWith(gstin: value);
-  void updateAddress(final String value) => state = state.copyWith(address: value);
+  void updateAddress(final String value) =>
+      state = state.copyWith(address: value);
   void updateEmail(final String value) => state = state.copyWith(email: value);
   void updatePhone(final String value) => state = state.copyWith(phone: value);
   void updateState(final String value) => state = state.copyWith(state: value);
@@ -169,5 +170,5 @@ class ClientFormNotifier extends Notifier<ClientFormState> {
 /// Provider for Client Form
 final clientFormProvider =
     NotifierProvider<ClientFormNotifier, ClientFormState>(
-  ClientFormNotifier.new,
-);
+      ClientFormNotifier.new,
+    );

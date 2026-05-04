@@ -26,9 +26,7 @@ void main() {
         overrides: [businessProfileProvider.overrideWithValue(profile)],
         child: fluent.FluentApp(
           theme: fluent.FluentThemeData(),
-          home: const Material(
-            child: InvoiceFormScreen(),
-          ),
+          home: const Material(child: InvoiceFormScreen()),
         ),
       ),
     );

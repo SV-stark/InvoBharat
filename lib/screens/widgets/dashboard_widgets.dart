@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:invobharat/models/invoice.dart';
 
-import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
 
 class DashboardStatCard extends StatelessWidget {
   final String title;
@@ -275,7 +275,7 @@ class _GstRow extends StatelessWidget {
       children: [
         Text(label, style: style),
         Text(
-          IndianCurrencyFormatter.format(amount),
+          amount.toIndianFormat(includeSymbol: true, symbol: symbol),
           style: style,
         ),
       ],

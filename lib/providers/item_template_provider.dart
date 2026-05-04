@@ -5,7 +5,8 @@ import 'package:invobharat/models/item_template.dart';
 
 final itemTemplateListProvider =
     NotifierProvider<ItemTemplateNotifier, List<ItemTemplate>>(
-        ItemTemplateNotifier.new);
+      ItemTemplateNotifier.new,
+    );
 
 class ItemTemplateNotifier extends Notifier<List<ItemTemplate>> {
   @override
@@ -20,8 +21,9 @@ class ItemTemplateNotifier extends Notifier<List<ItemTemplate>> {
     final prefs = await SharedPreferences.getInstance();
     final jsonList = prefs.getStringList(_key);
     if (jsonList != null) {
-      state =
-          jsonList.map((final e) => ItemTemplate.fromJson(jsonDecode(e))).toList();
+      state = jsonList
+          .map((final e) => ItemTemplate.fromJson(jsonDecode(e)))
+          .toList();
     }
   }
 
@@ -33,7 +35,7 @@ class ItemTemplateNotifier extends Notifier<List<ItemTemplate>> {
   Future<void> updateTemplate(final ItemTemplate template) async {
     state = [
       for (final t in state)
-        if (t.id == template.id) template else t
+        if (t.id == template.id) template else t,
     ];
     await _saveTemplates();
   }

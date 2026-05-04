@@ -79,7 +79,10 @@ class ModernTemplate extends BasePdfTemplate {
                       ),
                       pw.Text(
                         "No: ${invoice.invoiceNo}",
-                        style: const pw.TextStyle(color: PdfColors.white, fontSize: 10),
+                        style: const pw.TextStyle(
+                          color: PdfColors.white,
+                          fontSize: 10,
+                        ),
                       ),
                     ],
                   ),
@@ -110,9 +113,18 @@ class ModernTemplate extends BasePdfTemplate {
                       profile.companyName,
                       style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                     ),
-                    pw.Text(profile.address, style: const pw.TextStyle(fontSize: 9)),
-                    pw.Text("GSTIN: ${profile.gstin}", style: const pw.TextStyle(fontSize: 9)),
-                    pw.Text("Email: ${profile.email}", style: const pw.TextStyle(fontSize: 9)),
+                    pw.Text(
+                      profile.address,
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
+                    pw.Text(
+                      "GSTIN: ${profile.gstin}",
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
+                    pw.Text(
+                      "Email: ${profile.email}",
+                      style: const pw.TextStyle(fontSize: 9),
+                    ),
                   ],
                 ),
               ),
@@ -176,8 +188,13 @@ class ModernTemplate extends BasePdfTemplate {
                     const pw.TextStyle(fontSize: 9),
                   ),
                   if (invoice.reverseCharge == 'Y')
-                    pw.Text("Reverse Charge: YES",
-                        style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
+                    pw.Text(
+                      "Reverse Charge: YES",
+                      style: pw.TextStyle(
+                        fontSize: 9,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
                 ],
               ),
             ],
@@ -202,20 +219,42 @@ class ModernTemplate extends BasePdfTemplate {
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               pw.Expanded(
-                  flex: 2,
-                  child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+                flex: 2,
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
                     if (profile.termsAndConditions.isNotEmpty) ...[
-                      pw.Text("Terms & Conditions",
-                          style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: themeColor)),
-                      pw.Text(profile.termsAndConditions, style: const pw.TextStyle(fontSize: 8)),
+                      pw.Text(
+                        "Terms & Conditions",
+                        style: pw.TextStyle(
+                          fontSize: 10,
+                          fontWeight: pw.FontWeight.bold,
+                          color: themeColor,
+                        ),
+                      ),
+                      pw.Text(
+                        profile.termsAndConditions,
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
                       pw.SizedBox(height: 10),
                     ],
                     if (invoice.comments.isNotEmpty) ...[
-                      pw.Text("Notes",
-                          style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: themeColor)),
-                      pw.Text(invoice.comments, style: const pw.TextStyle(fontSize: 8)),
+                      pw.Text(
+                        "Notes",
+                        style: pw.TextStyle(
+                          fontSize: 10,
+                          fontWeight: pw.FontWeight.bold,
+                          color: themeColor,
+                        ),
+                      ),
+                      pw.Text(
+                        invoice.comments,
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
                     ],
-                  ])),
+                  ],
+                ),
+              ),
               pw.SizedBox(width: 20),
               pw.Expanded(
                 child: pw.Column(
@@ -284,10 +323,22 @@ class ModernTemplate extends BasePdfTemplate {
                       ),
                     ),
                     pw.SizedBox(height: 4),
-                    pw.Text("Bank: ${profile.bankName}", style: const pw.TextStyle(fontSize: 8)),
-                    pw.Text("A/C: ${profile.accountNo}", style: const pw.TextStyle(fontSize: 8)),
-                    pw.Text("IFSC: ${profile.ifscCode}", style: const pw.TextStyle(fontSize: 8)),
-                    pw.Text("Branch: ${profile.branch}", style: const pw.TextStyle(fontSize: 8)),
+                    pw.Text(
+                      "Bank: ${profile.bankName}",
+                      style: const pw.TextStyle(fontSize: 8),
+                    ),
+                    pw.Text(
+                      "A/C: ${profile.accountNo}",
+                      style: const pw.TextStyle(fontSize: 8),
+                    ),
+                    pw.Text(
+                      "IFSC: ${profile.ifscCode}",
+                      style: const pw.TextStyle(fontSize: 8),
+                    ),
+                    pw.Text(
+                      "Branch: ${profile.branch}",
+                      style: const pw.TextStyle(fontSize: 8),
+                    ),
                     if (profile.upiId.isNotEmpty) ...[
                       pw.Text(
                         "UPI ID: ${profile.upiId}",

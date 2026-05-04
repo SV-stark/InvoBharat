@@ -1,9 +1,11 @@
 import 'package:intl/intl.dart';
 import 'package:invobharat/models/invoice.dart';
-import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
 
 class DashboardActions {
-  static Map<String, double> calculateRevenueTrend(final List<Invoice> invoices) {
+  static Map<String, double> calculateRevenueTrend(
+    final List<Invoice> invoices,
+  ) {
     final Map<String, double> monthlyRevenue = {};
     for (var inv in invoices) {
       final key = DateFormat('yyyy-MM').format(inv.invoiceDate);
@@ -47,11 +49,14 @@ class DashboardActions {
       "1-30 Days": days30,
       "31-60 Days": days60,
       "61-90 Days": days90,
-      "90+ Days": days90Plus
+      "90+ Days": days90Plus,
     };
   }
 
-  static List<Invoice> filterInvoices(final List<Invoice> invoices, final String period) {
+  static List<Invoice> filterInvoices(
+    final List<Invoice> invoices,
+    final String period,
+  ) {
     if (period == "All Time") return invoices;
     final now = DateTime.now();
     DateTime? start;
@@ -75,9 +80,9 @@ class DashboardActions {
       final quarter = int.tryParse(period.substring(1, 2));
       if (quarter != null) {
         // Find FY start year based on current date
-        final currentFY = IndianDateFormatter.fiscalYear(now); // "FY 2025-26"
+        final currentFY = now.fiscalYear(); // "FY 2025-26"
         final fyStartYear = int.parse(currentFY.substring(3, 7));
-        
+
         switch (quarter) {
           case 1: // Apr-Jun
             start = DateTime(fyStartYear, 4);
@@ -100,13 +105,17 @@ class DashboardActions {
     }
 
     if (start != null && end != null) {
-      final endOfDay =
-          end.add(const Duration(hours: 23, minutes: 59, seconds: 59));
+      final endOfDay = end.add(
+        const Duration(hours: 23, minutes: 59, seconds: 59),
+      );
       return invoices
-          .where((final inv) =>
-              inv.invoiceDate
-                  .isAfter(start!.subtract(const Duration(seconds: 1))) &&
-              inv.invoiceDate.isBefore(endOfDay))
+          .where(
+            (final inv) =>
+                inv.invoiceDate.isAfter(
+                  start!.subtract(const Duration(seconds: 1)),
+                ) &&
+                inv.invoiceDate.isBefore(endOfDay),
+          )
           .toList();
     }
     return invoices;
@@ -114,7 +123,10 @@ class DashboardActions {
 
   static Map<String, dynamic> calculateStats(final List<Invoice> invoices) {
     return {
-      'revenue': invoices.fold(0.0, (final sum, final inv) => sum + inv.grandTotal),
+      'revenue': invoices.fold(
+        0.0,
+        (final sum, final inv) => sum + inv.grandTotal,
+      ),
       'cgst': invoices.fold(0.0, (final sum, final inv) => sum + inv.totalCGST),
       'sgst': invoices.fold(0.0, (final sum, final inv) => sum + inv.totalSGST),
       'igst': invoices.fold(0.0, (final sum, final inv) => sum + inv.totalIGST),

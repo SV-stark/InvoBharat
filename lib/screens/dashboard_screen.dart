@@ -20,7 +20,7 @@ import 'package:invobharat/services/gstr_service.dart';
 import 'package:invobharat/services/gstr3b_service.dart';
 import 'package:invobharat/services/dashboard_actions.dart';
 import 'package:invobharat/screens/widgets/dashboard_widgets.dart';
-import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
 import 'package:invobharat/services/invoice_actions.dart';
 import 'package:invobharat/services/invoice_import_service.dart';
 import 'package:invobharat/utils/pdf_generator.dart';
@@ -67,8 +67,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       case "This Quarter":
         final int quarter = (now.month - 1) ~/ 3 + 1;
         start = DateTime(now.year, (quarter - 1) * 3 + 1);
-        end = quarter == 4 
-            ? DateTime(now.year, 12, 31) 
+        end = quarter == 4
+            ? DateTime(now.year, 12, 31)
             : DateTime(now.year, quarter * 3 + 1, 0);
         setState(() {
           _selectedFilter = filter;
@@ -163,18 +163,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ? invoices
               : invoices.where((final i) {
                   return i.invoiceDate.isAfter(
-                        _dateRange!.start.subtract(
-                          const Duration(seconds: 1),
-                        ),
+                        _dateRange!.start.subtract(const Duration(seconds: 1)),
                       ) &&
                       i.invoiceDate.isBefore(
                         _dateRange!.end.add(const Duration(days: 1)),
                       );
                 }).toList();
 
-          final previousPeriodInvoices = _getPreviousPeriodInvoices(
-            invoices,
-          );
+          final previousPeriodInvoices = _getPreviousPeriodInvoices(invoices);
 
           return _DashboardContent(
             profile: profile,
@@ -292,9 +288,9 @@ class _DashboardHeader extends StatelessWidget {
             Text(
               "${DateTime.now().fiscalYear()} • ${DateTime.now().financialQuarter()}",
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w500,
-                  ),
+                color: Colors.grey,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
@@ -378,7 +374,10 @@ class _DashboardStats extends StatelessWidget {
               child: DashboardStatCard(
                 onTap: () => context.push('/invoices'),
                 title: "Revenue ($selectedFilter)",
-                value: IndianCurrencyFormatter.formatCompact(totalRevenue),
+                value: totalRevenue.toIndianFormat(
+                  includeSymbol: true,
+                  symbol: profile.currency,
+                ),
                 icon: Icons.currency_rupee,
                 color: Colors.green,
                 trend: revenueTrend,
@@ -409,7 +408,10 @@ class _DashboardStats extends StatelessWidget {
             ),
           ),
           title: "GST Output ($selectedFilter)",
-          value: IndianCurrencyFormatter.formatCompact(totalGst),
+          value: totalGst.toIndianFormat(
+            includeSymbol: true,
+            symbol: profile.currency,
+          ),
           icon: Icons.percent,
           color: Colors.purple,
           trend: gstTrend,
@@ -474,7 +476,9 @@ class _DashboardQuickActions extends ConsumerWidget {
               label: "New Invoice",
               icon: Icons.add,
               bgColor: theme.colorScheme.primaryContainer,
-              onTap: () => context.push('/invoice-form').then((_) => ref.refresh(invoiceListProvider)),
+              onTap: () => context
+                  .push('/invoice-form')
+                  .then((_) => ref.refresh(invoiceListProvider)),
             ),
             const Gap(16),
             DashboardActionButton(
@@ -575,12 +579,17 @@ class _DashboardQuickActions extends ConsumerWidget {
     }
   }
 
-  Future<void> _importInvoices(final BuildContext context, final WidgetRef ref) async {
+  Future<void> _importInvoices(
+    final BuildContext context,
+    final WidgetRef ref,
+  ) async {
     final choice = await showDialog<String>(
       context: context,
       builder: (final context) => AlertDialog(
         title: const Text("Import Invoices"),
-        content: const Text("Would you like to import a CSV file or download a sample template?"),
+        content: const Text(
+          "Would you like to import a CSV file or download a sample template?",
+        ),
         actions: [
           TextButton.icon(
             onPressed: () => Navigator.pop(context, "template"),
@@ -604,13 +613,13 @@ class _DashboardQuickActions extends ConsumerWidget {
     if (choice == "import") {
       final repository = ref.read(invoiceRepositoryProvider);
       final result = await InvoiceImportService.importInvoices(repository);
-      
+
       if (!context.mounted) return;
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.message)),
-      );
-      
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result.message)));
+
       if (result.successCount > 0) {
         ref.invalidate(invoiceListProvider);
       }
@@ -688,7 +697,9 @@ class _DashboardRecentActivity extends ConsumerWidget {
             title: "No invoices yet",
             message: "Create your first invoice to get started",
             actionLabel: "Create Invoice",
-            onAction: () => context.push('/invoice-form').then((_) => ref.refresh(invoiceListProvider)),
+            onAction: () => context
+                .push('/invoice-form')
+                .then((_) => ref.refresh(invoiceListProvider)),
           )
         else
           ...invoices
@@ -728,7 +739,10 @@ class _DashboardRecentActivity extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          IndianCurrencyFormatter.format(inv.grandTotal),
+                          inv.grandTotal.toIndianFormat(
+                            includeSymbol: true,
+                            symbol: ref.read(businessProfileProvider).currency,
+                          ),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         PopupMenuButton<String>(
@@ -738,12 +752,18 @@ class _DashboardRecentActivity extends ConsumerWidget {
                               ref.invalidate(invoiceListProvider);
                             } else if (value == 'print') {
                               final profile = ref.read(businessProfileProvider);
-                              final pdfBytes = await generateInvoicePdf(inv, profile);
-                              await Printing.layoutPdf(onLayout: (_) => pdfBytes);
+                              final pdfBytes = await generateInvoicePdf(
+                                inv,
+                                profile,
+                              );
+                              await Printing.layoutPdf(
+                                onLayout: (_) => pdfBytes,
+                              );
                             }
                           },
                           itemBuilder: (final context) => [
-                            if (inv.status != 'Sent' && inv.paymentStatus == 'Unpaid')
+                            if (inv.status != 'Sent' &&
+                                inv.paymentStatus == 'Unpaid')
                               const PopupMenuItem(
                                 value: 'mark_sent',
                                 child: Text('Mark as Sent'),

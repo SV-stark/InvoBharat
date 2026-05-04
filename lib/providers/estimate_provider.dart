@@ -84,7 +84,8 @@ final estimateRepositoryProvider = Provider<EstimateRepository>((final ref) {
 
 final estimateListProvider =
     AsyncNotifierProvider<EstimateListNotifier, List<Estimate>>(
-        EstimateListNotifier.new);
+      EstimateListNotifier.new,
+    );
 
 class EstimateListNotifier extends AsyncNotifier<List<Estimate>> {
   @override
@@ -115,8 +116,10 @@ class EstimateListNotifier extends AsyncNotifier<List<Estimate>> {
   Future<void> markAsConverted(final String id) async {
     final repo = ref.read(estimateRepositoryProvider);
     final estimates = await repo.getAllEstimates();
-    final estimate = estimates.firstWhere((final e) => e.id == id,
-        orElse: () => throw Exception('Estimate not found'));
+    final estimate = estimates.firstWhere(
+      (final e) => e.id == id,
+      orElse: () => throw Exception('Estimate not found'),
+    );
     final updated = estimate.copyWith(status: 'Converted');
     await repo.saveEstimate(updated);
 

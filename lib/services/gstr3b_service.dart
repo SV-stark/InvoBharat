@@ -34,7 +34,9 @@ class Gstr3bService {
       final isInter = inv.isInterState;
       // IndianDateFormatter.fiscalYear(date) returns "FY 2025-26"
       // We want something like "2025-26" or similar.
-      final fy = IndianDateFormatter.fiscalYear(inv.invoiceDate).replaceAll('FY ', '');
+      final fy = IndianDateFormatter.fiscalYear(
+        inv.invoiceDate,
+      ).replaceAll('FY ', '');
       final period = DateFormat('MM').format(inv.invoiceDate);
 
       for (final item in inv.items) {

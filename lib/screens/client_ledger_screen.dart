@@ -8,6 +8,7 @@ import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/utils/client_statement_generator.dart';
 import 'package:printing/printing.dart';
+import 'package:invobharat/utils/formatters.dart';
 
 class ClientLedgerScreen extends ConsumerStatefulWidget {
   final Client client;
@@ -19,7 +20,11 @@ class ClientLedgerScreen extends ConsumerStatefulWidget {
 }
 
 class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
-  DateTime _startDate = DateTime(DateTime.now().year - 1, DateTime.now().month, DateTime.now().day);
+  DateTime _startDate = DateTime(
+    DateTime.now().year - 1,
+    DateTime.now().month,
+    DateTime.now().day,
+  );
   DateTime _endDate = DateTime.now();
   String _selectedRange = 'Last 12 Months';
 
@@ -96,14 +101,14 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
           primaryItems: [
             CommandBarBuilderItem(
               builder: (final context, final mode, final w) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8.0,
+                  vertical: 4.0,
+                ),
                 child: ComboBox<String>(
                   value: _selectedRange,
                   items: _dateRanges.map((final range) {
-                    return ComboBoxItem(
-                      value: range,
-                      child: Text(range),
-                    );
+                    return ComboBoxItem(value: range, child: Text(range));
                   }).toList(),
                   onChanged: (final value) {
                     if (value != null) _updateDateRange(value);
@@ -127,10 +132,15 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
       content: ledgerAsync.when(
         data: (final allEntries) {
           // Filter entries by date range
-          final entries = allEntries.where((final e) => 
-            e.date.isAfter(_startDate.subtract(const Duration(days: 1))) && 
-            e.date.isBefore(_endDate.add(const Duration(days: 1)))
-          ).toList();
+          final entries = allEntries
+              .where(
+                (final e) =>
+                    e.date.isAfter(
+                      _startDate.subtract(const Duration(days: 1)),
+                    ) &&
+                    e.date.isBefore(_endDate.add(const Duration(days: 1))),
+              )
+              .toList();
 
           if (entries.isEmpty) {
             return const Center(
@@ -192,20 +202,35 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
                               material.DataCell(
                                 Text(
                                   e.debit > 0
-                                      ? "₹${e.debit.toStringAsFixed(2)}"
+                                      ? e.debit.toIndianFormat(
+                                          includeSymbol: true,
+                                          symbol: ref
+                                              .read(businessProfileProvider)
+                                              .currency,
+                                        )
                                       : "",
                                 ),
                               ),
                               material.DataCell(
                                 Text(
                                   e.credit > 0
-                                      ? "₹${e.credit.toStringAsFixed(2)}"
+                                      ? e.credit.toIndianFormat(
+                                          includeSymbol: true,
+                                          symbol: ref
+                                              .read(businessProfileProvider)
+                                              .currency,
+                                        )
                                       : "",
                                 ),
                               ),
                               material.DataCell(
                                 Text(
-                                  "₹${e.balance.toStringAsFixed(2)}",
+                                  e.balance.toIndianFormat(
+                                    includeSymbol: true,
+                                    symbol: ref
+                                        .read(businessProfileProvider)
+                                        .currency,
+                                  ),
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: e.balance > 0
@@ -249,7 +274,10 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                "₹${amount.toStringAsFixed(2)}",
+                amount.toIndianFormat(
+                  includeSymbol: true,
+                  symbol: ref.read(businessProfileProvider).currency,
+                ),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,

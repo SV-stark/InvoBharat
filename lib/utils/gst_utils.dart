@@ -34,7 +34,10 @@ class GstUtils {
       return GstinValidationResult.valid();
     }
 
-    final error = IndianValidators.validateGST(gstin.toUpperCase(), verifyChecksum: false);
+    final error = IndianValidators.validateGST(
+      gstin.toUpperCase(),
+      verifyChecksum: false,
+    );
     if (error != null) {
       return GstinValidationResult.invalid(error);
     }
@@ -79,9 +82,6 @@ class GstinValidationResult {
   }
 
   factory GstinValidationResult.invalid(final String errorMessage) {
-    return GstinValidationResult._(
-      isValid: false,
-      errorMessage: errorMessage,
-    );
+    return GstinValidationResult._(isValid: false, errorMessage: errorMessage);
   }
 }

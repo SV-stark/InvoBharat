@@ -46,19 +46,23 @@ class FluentEstimatesScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(FluentIcons.page_solid,
-                      size: 64, color: Colors.grey),
+                  const Icon(
+                    FluentIcons.page_solid,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(height: 16),
-                  Text("No estimates created",
-                      style:
-                          theme.typography.title?.copyWith(color: Colors.grey)),
+                  Text(
+                    "No estimates created",
+                    style: theme.typography.title?.copyWith(color: Colors.grey),
+                  ),
                   const SizedBox(height: 16),
                   FilledButton(
                     onPressed: () {
                       context.push('/estimate-form');
                     },
                     child: const Text("Create Estimate"),
-                  )
+                  ),
                 ],
               ),
             );
@@ -74,10 +78,13 @@ class FluentEstimatesScreen extends ConsumerWidget {
                 child: Card(
                   child: ListTile(
                     leading: const Icon(FluentIcons.page_solid),
-                    title: Text(estimate.receiver.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    title: Text(
+                      estimate.receiver.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     subtitle: Text(
-                        '${estimate.estimateNo} • ${DateFormat('dd MMM yyyy').format(estimate.date)}'),
+                      '${estimate.estimateNo} • ${DateFormat('dd MMM yyyy').format(estimate.date)}',
+                    ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -87,19 +94,24 @@ class FluentEstimatesScreen extends ConsumerWidget {
                           children: [
                             Text(
                               '₹${estimate.totalAmount.toStringAsFixed(2)}',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             _buildStatusBadge(
-                                theme, estimate.status ?? 'Draft'),
+                              theme,
+                              estimate.status ?? 'Draft',
+                            ),
                           ],
                         ),
                         if (estimate.status != 'Converted') ...[
                           const SizedBox(width: 8),
                           IconButton(
-                            icon:
-                                const Icon(FluentIcons.switch_widget, size: 18),
+                            icon: const Icon(
+                              FluentIcons.switch_widget,
+                              size: 18,
+                            ),
                             onPressed: () =>
                                 _convertToInvoice(context, estimate),
                           ),
@@ -145,10 +157,7 @@ class FluentEstimatesScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
-      child: Text(
-        status,
-        style: TextStyle(fontSize: 10, color: color),
-      ),
+      child: Text(status, style: TextStyle(fontSize: 10, color: color)),
     );
   }
 
@@ -164,6 +173,9 @@ class FluentEstimatesScreen extends ConsumerWidget {
       paymentTerms: estimate.terms.isNotEmpty ? estimate.terms : '',
     );
 
-    context.push('/invoice-form', extra: {'invoice': invoice, 'estimateId': estimate.id});
+    context.push(
+      '/invoice-form',
+      extra: {'invoice': invoice, 'estimateId': estimate.id},
+    );
   }
 }

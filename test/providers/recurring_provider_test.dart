@@ -13,6 +13,7 @@ import 'package:invobharat/database/database.dart'
     hide Invoice, BusinessProfile, Client, AppSetting, InvoiceItem;
 
 class MockRecurringRepository extends Mock implements RecurringRepository {}
+
 class FakeActiveProfileId extends ActiveProfileId {
   @override
   String build() => 'test-profile';
@@ -76,7 +77,7 @@ void main() {
       final container = createContainer();
       final profiles = container.read(recurringListProvider);
       expect(profiles, const AsyncValue<List<RecurringProfile>>.loading());
-      
+
       final data = await container.read(recurringListProvider.future);
       expect(data, isEmpty);
     });
@@ -96,8 +97,12 @@ void main() {
         ),
       );
 
-      when(() => mockRepo.saveProfile(any())).thenAnswer((_) async => Future.value());
-      when(() => mockRepo.getAllProfiles(any())).thenAnswer((_) async => [profile]);
+      when(
+        () => mockRepo.saveProfile(any()),
+      ).thenAnswer((_) async => Future.value());
+      when(
+        () => mockRepo.getAllProfiles(any()),
+      ).thenAnswer((_) async => [profile]);
 
       await container.read(recurringListProvider.notifier).addProfile(profile);
       final profiles = await container.read(recurringListProvider.future);

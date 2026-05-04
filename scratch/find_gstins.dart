@@ -13,15 +13,15 @@ void main() {
     }
   }
   print('Valid PAN: $validPan');
-  
+
   final pan = 'ABCDE1234F';
   final states = {'29': 'Karnataka'};
-  
+
   for (final entry in states.entries) {
     final stateCode = entry.key;
     final stateName = entry.value;
     final partial = '$stateCode${pan}1Z';
-    
+
     String? validGstin;
     for (int i = 0; i < 36; i++) {
       final char = i < 10 ? i.toString() : String.fromCharCode(i - 10 + 65);

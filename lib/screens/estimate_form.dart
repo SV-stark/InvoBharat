@@ -49,8 +49,9 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -68,13 +69,15 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
         final invoiceNo = await convertToInvoice();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Converted to Invoice $invoiceNo')));
+            SnackBar(content: Text('Converted to Invoice $invoiceNo')),
+          );
           Navigator.pop(context);
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(e.toString())));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.toString())));
         }
       }
     }
@@ -84,8 +87,9 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
   Widget build(final BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:
-            Text(widget.estimateId == null ? "New Estimate" : "Edit Estimate"),
+        title: Text(
+          widget.estimateId == null ? "New Estimate" : "Edit Estimate",
+        ),
         actions: [
           if (existingEstimate != null)
             IconButton(
@@ -98,13 +102,12 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
             TextButton.icon(
               onPressed: _confirmConvertToInvoice,
               icon: const Icon(Icons.transform, color: Colors.white),
-              label: const Text("Convert to Invoice",
-                  style: TextStyle(color: Colors.white)),
+              label: const Text(
+                "Convert to Invoice",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _saveEstimateUI,
-          )
+          IconButton(icon: const Icon(Icons.save), onPressed: _saveEstimateUI),
         ],
       ),
       body: SingleChildScrollView(
@@ -118,24 +121,33 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
               Row(
                 children: [
                   Expanded(
-                      child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: AppTextInput(
-                      label: "Estimate No",
-                      controller: estimateNoCtrl,
-                      validator: (final val) =>
-                          val == null || val.isEmpty ? 'Required' : null,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: AppTextInput(
+                        label: "Estimate No",
+                        controller: estimateNoCtrl,
+                        validator: (final val) =>
+                            val == null || val.isEmpty ? 'Required' : null,
+                      ),
                     ),
-                  )),
+                  ),
                   const SizedBox(width: 16),
                   Expanded(
-                      child: _buildDatePicker(
-                          "Date", date, (final d) => setState(() => date = d))),
+                    child: _buildDatePicker(
+                      "Date",
+                      date,
+                      (final d) => setState(() => date = d),
+                    ),
+                  ),
                   const SizedBox(width: 16),
                   Expanded(
-                      child: _buildDatePicker(
-                          "Expiry Date", expiryDate ?? DateTime.now().add(const Duration(days: 30)), 
-                          (final d) => setState(() => expiryDate = d))),
+                    child: _buildDatePicker(
+                      "Expiry Date",
+                      expiryDate ??
+                          DateTime.now().add(const Duration(days: 30)),
+                      (final d) => setState(() => expiryDate = d),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -147,12 +159,15 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text("Client Details",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text(
+                    "Client Details",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                   TextButton.icon(
                     onPressed: () => _showClientSelector(
-                        context, ref.read(clientListProvider)),
+                      context,
+                      ref.read(clientListProvider),
+                    ),
                     icon: const Icon(Icons.list),
                     label: const Text("Select Client"),
                   ),
@@ -180,26 +195,28 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
               Row(
                 children: [
                   Expanded(
-                      child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: AppTextInput(
-                      label: "GSTIN",
-                      controller: receiverGstinCtrl,
-                      validator: (final val) =>
-                          val == null || val.isEmpty ? 'Required' : null,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: AppTextInput(
+                        label: "GSTIN",
+                        controller: receiverGstinCtrl,
+                        validator: (final val) =>
+                            val == null || val.isEmpty ? 'Required' : null,
+                      ),
                     ),
-                  )),
+                  ),
                   const SizedBox(width: 16),
                   Expanded(
-                      child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: AppTextInput(
-                      label: "State",
-                      controller: receiverStateCtrl,
-                      validator: (final val) =>
-                          val == null || val.isEmpty ? 'Required' : null,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: AppTextInput(
+                        label: "State",
+                        controller: receiverStateCtrl,
+                        validator: (final val) =>
+                            val == null || val.isEmpty ? 'Required' : null,
+                      ),
                     ),
-                  )),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -208,11 +225,14 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text("Items",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text(
+                    "Items",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                   IconButton(
-                      onPressed: _addItem, icon: const Icon(Icons.add_circle)),
+                    onPressed: _addItem,
+                    icon: const Icon(Icons.add_circle),
+                  ),
                 ],
               ),
               ...items.asMap().entries.map((final entry) {
@@ -220,14 +240,18 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
                 final item = entry.value;
                 return Card(
                   child: ListTile(
-                    title: Text(item.description.isEmpty
-                        ? "Item ${index + 1}"
-                        : item.description),
+                    title: Text(
+                      item.description.isEmpty
+                          ? "Item ${index + 1}"
+                          : item.description,
+                    ),
                     subtitle: Text(
-                        "${item.quantity} x ₹${item.amount} = ₹${item.netAmount}"),
+                      "${item.quantity} x ₹${item.amount} = ₹${item.netAmount}",
+                    ),
                     trailing: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => _removeItem(index)),
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _removeItem(index),
+                    ),
                     onTap: () => _editItem(index),
                   ),
                 );
@@ -262,19 +286,25 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
   }
 
   Widget _buildDatePicker(
-      final String label, final DateTime date, final Function(DateTime) onSelect) {
+    final String label,
+    final DateTime date,
+    final Function(DateTime) onSelect,
+  ) {
     return InkWell(
       onTap: () async {
         final picked = await showDatePicker(
-            context: context,
-            initialDate: date,
-            firstDate: DateTime(2000),
-            lastDate: DateTime(2100));
+          context: context,
+          initialDate: date,
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+        );
         if (picked != null) onSelect(picked);
       },
       child: InputDecorator(
         decoration: InputDecoration(
-            labelText: label, border: const OutlineInputBorder()),
+          labelText: label,
+          border: const OutlineInputBorder(),
+        ),
         child: Text(DateFormat('dd/MM/yyyy').format(date)),
       ),
     );
@@ -300,50 +330,58 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
     }
   }
 
-  void _showClientSelector(final BuildContext context, final List<Client> clients) {
+  void _showClientSelector(
+    final BuildContext context,
+    final List<Client> clients,
+  ) {
     showModalBottomSheet(
-        context: context,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-        builder: (final context) {
-          return Container(
-            padding: const EdgeInsets.all(16),
-            height: 400,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("Select Client",
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: clients.isEmpty
-                      ? const Center(child: Text("No clients found."))
-                      : ListView.builder(
-                          itemCount: clients.length,
-                          itemBuilder: (final context, final index) {
-                            final client = clients[index];
-                            final initial = client.name.isNotEmpty
-                                ? client.name[0].toUpperCase()
-                                : "?";
-                            return ListTile(
-                              leading: CircleAvatar(child: Text(initial)),
-                              title: Text(client.name),
-                              subtitle: Text(client.gstin.isNotEmpty
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (final context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          height: 400,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Select Client",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: clients.isEmpty
+                    ? const Center(child: Text("No clients found."))
+                    : ListView.builder(
+                        itemCount: clients.length,
+                        itemBuilder: (final context, final index) {
+                          final client = clients[index];
+                          final initial = client.name.isNotEmpty
+                              ? client.name[0].toUpperCase()
+                              : "?";
+                          return ListTile(
+                            leading: CircleAvatar(child: Text(initial)),
+                            title: Text(client.name),
+                            subtitle: Text(
+                              client.gstin.isNotEmpty
                                   ? "GST: ${client.gstin}"
-                                  : client.address),
-                              onTap: () {
-                                onClientSelected(client);
-                                Navigator.pop(context);
-                              },
-                            );
-                          },
-                        ),
-                )
-              ],
-            ),
-          );
-        });
+                                  : client.address,
+                            ),
+                            onTap: () {
+                              onClientSelected(client);
+                              Navigator.pop(context);
+                            },
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _removeItem(final int index) {
@@ -351,11 +389,17 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
   }
 
   Widget _buildSummary() {
-    final double total = items.fold(0, (final sum, final item) => sum + item.totalAmount);
+    final double total = items.fold(
+      0,
+      (final sum, final item) => sum + item.totalAmount,
+    );
     return Align(
-        alignment: Alignment.centerRight,
-        child: Text("Total: ₹${total.toStringAsFixed(2)}",
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)));
+      alignment: Alignment.centerRight,
+      child: Text(
+        "Total: ₹${total.toStringAsFixed(2)}",
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      ),
+    );
   }
 }
 
@@ -396,36 +440,41 @@ class _ItemEditDialogState extends State<_ItemEditDialog> {
           AppTextInput(label: "Description", controller: _descCtrl),
           const SizedBox(height: 8),
           AppTextInput(
-              label: "Quantity",
-              controller: _qtyCtrl,
-              keyboardType: TextInputType.number),
+            label: "Quantity",
+            controller: _qtyCtrl,
+            keyboardType: TextInputType.number,
+          ),
           const SizedBox(height: 8),
           AppTextInput(
-              label: "Rate",
-              controller: _rateCtrl,
-              keyboardType: TextInputType.number),
+            label: "Rate",
+            controller: _rateCtrl,
+            keyboardType: TextInputType.number,
+          ),
           const SizedBox(height: 8),
           AppTextInput(
-              label: "GST %",
-              controller: _gstCtrl,
-              keyboardType: TextInputType.number),
+            label: "GST %",
+            controller: _gstCtrl,
+            keyboardType: TextInputType.number,
+          ),
         ],
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel")),
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Cancel"),
+        ),
         ElevatedButton(
-            onPressed: () {
-              final item = InvoiceItem(
-                description: _descCtrl.text,
-                quantity: double.tryParse(_qtyCtrl.text) ?? 1,
-                amount: double.tryParse(_rateCtrl.text) ?? 0,
-                gstRate: double.tryParse(_gstCtrl.text) ?? 0,
-              );
-              Navigator.pop(context, item);
-            },
-            child: const Text("Save")),
+          onPressed: () {
+            final item = InvoiceItem(
+              description: _descCtrl.text,
+              quantity: double.tryParse(_qtyCtrl.text) ?? 1,
+              amount: double.tryParse(_rateCtrl.text) ?? 0,
+              gstRate: double.tryParse(_gstCtrl.text) ?? 0,
+            );
+            Navigator.pop(context, item);
+          },
+          child: const Text("Save"),
+        ),
       ],
     );
   }

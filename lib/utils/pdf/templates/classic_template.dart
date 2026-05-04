@@ -13,13 +13,14 @@ class ClassicTemplate extends BasePdfTemplate {
 
   @override
   Future<Uint8List> generate(
-      final Invoice invoice, final BusinessProfile profile, final pw.Font font, final pw.Font fontBold,
-      {final String? title}) async {
+    final Invoice invoice,
+    final BusinessProfile profile,
+    final pw.Font font,
+    final pw.Font fontBold, {
+    final String? title,
+  }) async {
     final pdf = pw.Document(
-      theme: pw.ThemeData.withFont(
-        base: font,
-        bold: fontBold,
-      ),
+      theme: pw.ThemeData.withFont(base: font, bold: fontBold),
     );
 
     final black = PdfColors.black;
@@ -30,7 +31,8 @@ class ClassicTemplate extends BasePdfTemplate {
     }
 
     final logoPath = profile.logoPath;
-    final hasLogo = logoPath != null && logoPath.isNotEmpty && File(logoPath).existsSync();
+    final hasLogo =
+        logoPath != null && logoPath.isNotEmpty && File(logoPath).existsSync();
 
     pdf.addPage(
       pw.MultiPage(
@@ -46,7 +48,9 @@ class ClassicTemplate extends BasePdfTemplate {
                   pw.Container(
                     width: 80,
                     height: 80,
-                    child: pw.Image(pw.MemoryImage(File(logoPath).readAsBytesSync())),
+                    child: pw.Image(
+                      pw.MemoryImage(File(logoPath).readAsBytesSync()),
+                    ),
                   ),
                 pw.Expanded(
                   child: pw.Column(
@@ -109,31 +113,39 @@ class ClassicTemplate extends BasePdfTemplate {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       buildField(
-                          "Invoice No",
-                          invoice.invoiceNo,
-                          pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                          const pw.TextStyle()),
+                        "Invoice No",
+                        invoice.invoiceNo,
+                        pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        const pw.TextStyle(),
+                      ),
                       buildField(
-                          "Date",
-                          DateFormat('dd-MM-yyyy').format(invoice.invoiceDate),
-                          pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                          const pw.TextStyle()),
+                        "Date",
+                        DateFormat('dd-MM-yyyy').format(invoice.invoiceDate),
+                        pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        const pw.TextStyle(),
+                      ),
                       if (invoice.dueDate != null)
                         buildField(
-                            "Due Date",
-                            DateFormat('dd-MM-yyyy').format(invoice.dueDate!),
-                            pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.red),
-                            const pw.TextStyle()),
+                          "Due Date",
+                          DateFormat('dd-MM-yyyy').format(invoice.dueDate!),
+                          pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.red,
+                          ),
+                          const pw.TextStyle(),
+                        ),
                       buildField(
-                          "Place of Supply",
-                          invoice.placeOfSupply,
-                          pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                          const pw.TextStyle()),
+                        "Place of Supply",
+                        invoice.placeOfSupply,
+                        pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        const pw.TextStyle(),
+                      ),
                       buildField(
-                          "Reverse Charge",
-                          invoice.reverseCharge,
-                          pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                          const pw.TextStyle()),
+                        "Reverse Charge",
+                        invoice.reverseCharge,
+                        pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        const pw.TextStyle(),
+                      ),
                     ],
                   ),
                 ),
@@ -142,15 +154,25 @@ class ClassicTemplate extends BasePdfTemplate {
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      pw.Text("Bill To:", style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text(
+                        "Bill To:",
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                      ),
                       pw.Text(invoice.receiver.name),
-                      pw.Text(invoice.receiver.address, style: const pw.TextStyle(fontSize: 10)),
+                      pw.Text(
+                        invoice.receiver.address,
+                        style: const pw.TextStyle(fontSize: 10),
+                      ),
                       if (invoice.receiver.gstin.isNotEmpty)
-                        pw.Text("GSTIN: ${invoice.receiver.gstin}",
-                            style: const pw.TextStyle(fontSize: 10)),
+                        pw.Text(
+                          "GSTIN: ${invoice.receiver.gstin}",
+                          style: const pw.TextStyle(fontSize: 10),
+                        ),
                       if (invoice.receiver.state.isNotEmpty)
-                        pw.Text("State: ${invoice.receiver.state}",
-                            style: const pw.TextStyle(fontSize: 10)),
+                        pw.Text(
+                          "State: ${invoice.receiver.state}",
+                          style: const pw.TextStyle(fontSize: 10),
+                        ),
                     ],
                   ),
                 ),
@@ -162,10 +184,15 @@ class ClassicTemplate extends BasePdfTemplate {
             // Items Table
             buildItemsTable(
               invoice,
-              headerStyle: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
+              headerStyle: pw.TextStyle(
+                fontSize: 9,
+                fontWeight: pw.FontWeight.bold,
+              ),
               cellStyle: const pw.TextStyle(fontSize: 9),
               border: pw.TableBorder.all(color: black, width: 0.5),
-              headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
+              headerDecoration: const pw.BoxDecoration(
+                color: PdfColors.grey200,
+              ),
             ),
 
             buildAmountInWords(invoice.grandTotal),
@@ -181,30 +208,73 @@ class ClassicTemplate extends BasePdfTemplate {
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      pw.Text("Bank Details:",
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
-                      pw.Text("Bank: ${profile.bankName}", style: const pw.TextStyle(fontSize: 9)),
-                      pw.Text("A/c No: ${profile.accountNo}", style: const pw.TextStyle(fontSize: 9)),
-                      pw.Text("IFSC: ${profile.ifscCode}", style: const pw.TextStyle(fontSize: 9)),
-                      pw.Text("Branch: ${profile.branch}", style: const pw.TextStyle(fontSize: 9)),
+                      pw.Text(
+                        "Bank Details:",
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 10,
+                        ),
+                      ),
+                      pw.Text(
+                        "Bank: ${profile.bankName}",
+                        style: const pw.TextStyle(fontSize: 9),
+                      ),
+                      pw.Text(
+                        "A/c No: ${profile.accountNo}",
+                        style: const pw.TextStyle(fontSize: 9),
+                      ),
+                      pw.Text(
+                        "IFSC: ${profile.ifscCode}",
+                        style: const pw.TextStyle(fontSize: 9),
+                      ),
+                      pw.Text(
+                        "Branch: ${profile.branch}",
+                        style: const pw.TextStyle(fontSize: 9),
+                      ),
                       if (profile.upiId.isNotEmpty) ...[
                         pw.SizedBox(height: 5),
-                        pw.Text("UPI ID: ${profile.upiId}",
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9)),
+                        pw.Text(
+                          "UPI ID: ${profile.upiId}",
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 9,
+                          ),
+                        ),
                         pw.SizedBox(height: 5),
-                        buildPaymentQRCode(profile.upiId, profile.companyName, invoice.grandTotal, invoice.invoiceNo),
+                        buildPaymentQRCode(
+                          profile.upiId,
+                          profile.companyName,
+                          invoice.grandTotal,
+                          invoice.invoiceNo,
+                        ),
                       ],
                       pw.SizedBox(height: 10),
                       if (profile.termsAndConditions.isNotEmpty) ...[
-                        pw.Text("Terms and Conditions:",
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9)),
-                        pw.Text(profile.termsAndConditions, style: const pw.TextStyle(fontSize: 8)),
+                        pw.Text(
+                          "Terms and Conditions:",
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 9,
+                          ),
+                        ),
+                        pw.Text(
+                          profile.termsAndConditions,
+                          style: const pw.TextStyle(fontSize: 8),
+                        ),
                       ],
                       if (invoice.comments.isNotEmpty) ...[
                         pw.SizedBox(height: 10),
-                        pw.Text("Notes:",
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9)),
-                        pw.Text(invoice.comments, style: const pw.TextStyle(fontSize: 8)),
+                        pw.Text(
+                          "Notes:",
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 9,
+                          ),
+                        ),
+                        pw.Text(
+                          invoice.comments,
+                          style: const pw.TextStyle(fontSize: 8),
+                        ),
                       ],
                     ],
                   ),
@@ -215,17 +285,40 @@ class ClassicTemplate extends BasePdfTemplate {
                   child: pw.Column(
                     children: [
                       buildSummaryRow(
-                          "Taxable Value", invoice.totalTaxableValue, profile.currencySymbol),
+                        "Taxable Value",
+                        invoice.totalTaxableValue,
+                        profile.currencySymbol,
+                      ),
                       if (!invoice.isInterState) ...[
-                        buildSummaryRow("CGST", invoice.totalCGST, profile.currencySymbol),
-                        buildSummaryRow("SGST", invoice.totalSGST, profile.currencySymbol),
+                        buildSummaryRow(
+                          "CGST",
+                          invoice.totalCGST,
+                          profile.currencySymbol,
+                        ),
+                        buildSummaryRow(
+                          "SGST",
+                          invoice.totalSGST,
+                          profile.currencySymbol,
+                        ),
                       ] else
-                        buildSummaryRow("IGST", invoice.totalIGST, profile.currencySymbol),
+                        buildSummaryRow(
+                          "IGST",
+                          invoice.totalIGST,
+                          profile.currencySymbol,
+                        ),
                       if (invoice.discountAmount > 0)
-                        buildSummaryRow("Discount", -invoice.discountAmount, profile.currencySymbol),
+                        buildSummaryRow(
+                          "Discount",
+                          -invoice.discountAmount,
+                          profile.currencySymbol,
+                        ),
                       pw.Divider(),
-                      buildSummaryRow("Grand Total", invoice.grandTotal, profile.currencySymbol,
-                          isBold: true),
+                      buildSummaryRow(
+                        "Grand Total",
+                        invoice.grandTotal,
+                        profile.currencySymbol,
+                        isBold: true,
+                      ),
                       pw.SizedBox(height: 20),
                       // Stamp and Signature
                       pw.SizedBox(
@@ -241,7 +334,9 @@ class ClassicTemplate extends BasePdfTemplate {
                                 left: profile.stampX,
                                 top: profile.stampY,
                                 child: pw.Image(
-                                  pw.MemoryImage(File(profile.stampPath!).readAsBytesSync()),
+                                  pw.MemoryImage(
+                                    File(profile.stampPath!).readAsBytesSync(),
+                                  ),
                                   height: 60,
                                   width: 60,
                                 ),
@@ -253,7 +348,11 @@ class ClassicTemplate extends BasePdfTemplate {
                                 left: profile.signatureX,
                                 top: profile.signatureY,
                                 child: pw.Image(
-                                  pw.MemoryImage(File(profile.signaturePath!).readAsBytesSync()),
+                                  pw.MemoryImage(
+                                    File(
+                                      profile.signaturePath!,
+                                    ).readAsBytesSync(),
+                                  ),
                                   height: 40,
                                 ),
                               ),
@@ -261,11 +360,17 @@ class ClassicTemplate extends BasePdfTemplate {
                         ),
                       ),
                       pw.SizedBox(height: 4),
-                      pw.Text("For ${profile.companyName}",
-                          style: const pw.TextStyle(fontSize: 9), textAlign: pw.TextAlign.right),
+                      pw.Text(
+                        "For ${profile.companyName}",
+                        style: const pw.TextStyle(fontSize: 9),
+                        textAlign: pw.TextAlign.right,
+                      ),
                       pw.SizedBox(height: 10),
-                      pw.Text("Authorized Signatory",
-                          style: const pw.TextStyle(fontSize: 9), textAlign: pw.TextAlign.right),
+                      pw.Text(
+                        "Authorized Signatory",
+                        style: const pw.TextStyle(fontSize: 9),
+                        textAlign: pw.TextAlign.right,
+                      ),
                     ],
                   ),
                 ),

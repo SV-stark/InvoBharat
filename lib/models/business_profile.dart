@@ -40,14 +40,14 @@ abstract class BusinessProfile with _$BusinessProfile {
       _$BusinessProfileFromJson(json);
 
   factory BusinessProfile.defaults() => BusinessProfile(
-        id: 'default',
-        companyName: 'Your Company Name',
-        address: '',
-        gstin: '',
-        email: '',
-        phone: '',
-        colorValue: Colors.teal.toARGB32(),
-      );
+    id: 'default',
+    companyName: 'Your Company Name',
+    address: '',
+    gstin: '',
+    email: '',
+    phone: '',
+    colorValue: Colors.teal.toARGB32(),
+  );
 }
 
 extension BusinessProfileExt on BusinessProfile {

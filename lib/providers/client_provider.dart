@@ -10,8 +10,9 @@ final clientRepositoryProvider = Provider<ClientRepository>((final ref) {
   return SqlClientRepository(db);
 });
 
-final clientListProvider =
-    NotifierProvider<ClientListNotifier, List<Client>>(ClientListNotifier.new);
+final clientListProvider = NotifierProvider<ClientListNotifier, List<Client>>(
+  ClientListNotifier.new,
+);
 
 class ClientListNotifier extends Notifier<List<Client>> {
   @override

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
 
 import 'package:invobharat/providers/estimate_provider.dart';
 import 'package:go_router/go_router.dart';
@@ -15,9 +16,7 @@ class EstimatesScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Estimates"),
-      ),
+      appBar: AppBar(title: const Text("Estimates")),
       body: estimatesAsync.when(
         data: (final estimates) {
           if (estimates.isEmpty) {
@@ -25,12 +24,18 @@ class EstimatesScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.request_quote_outlined,
-                      size: 64, color: Colors.grey),
+                  const Icon(
+                    Icons.request_quote_outlined,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(height: 16),
-                  Text("No estimates created",
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(color: Colors.grey)),
+                  Text(
+                    "No estimates created",
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: Colors.grey,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   FilledButton.icon(
                     onPressed: () {
@@ -38,7 +43,7 @@ class EstimatesScreen extends ConsumerWidget {
                     },
                     icon: const Icon(Icons.add),
                     label: const Text("Create Estimate"),
-                  )
+                  ),
                 ],
               ),
             );
@@ -59,13 +64,17 @@ class EstimatesScreen extends ConsumerWidget {
                   ),
                   title: Text(estimate.receiver.name),
                   subtitle: Text(
-                      '${estimate.estimateNo} • ${DateFormat('dd MMM yyyy').format(estimate.date)}'),
+                    '${estimate.estimateNo} • ${DateFormat('dd MMM yyyy').format(estimate.date)}',
+                  ),
                   trailing: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        IndianCurrencyFormatter.format(estimate.totalAmount),
+                        estimate.totalAmount.toIndianFormat(
+                          includeSymbol: true,
+                          symbol: ref.read(businessProfileProvider).currency,
+                        ),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
@@ -116,10 +125,7 @@ class EstimatesScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
-      child: Text(
-        status,
-        style: TextStyle(fontSize: 10, color: color),
-      ),
+      child: Text(status, style: TextStyle(fontSize: 10, color: color)),
     );
   }
 }

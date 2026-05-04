@@ -145,17 +145,17 @@ class ProfileSwitcherSheet extends ConsumerWidget {
       await ref
           .read(businessProfileListProvider.notifier)
           .addProfile(newProfile);
-      
+
       // Auto-select the new profile
       await ref
           .read(activeProfileIdProvider.notifier)
           .selectProfile(newProfile.id);
-      
+
       if (context.mounted) {
         Navigator.pop(context); // Close the sheet
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Profile '$name' created")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Profile '$name' created")));
       }
     }
   }

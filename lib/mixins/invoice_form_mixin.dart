@@ -23,7 +23,7 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   late TextEditingController receiverStateCtrl;
   late TextEditingController poNumberCtrl;
   late TextEditingController
-      receiverAddressCtrl; // Note: In some forms this might be delivery address too?
+  receiverAddressCtrl; // Note: In some forms this might be delivery address too?
   // Checking Material form: has _receiverAddressCtrl (billing)
   // Checking Fluent form: has deliveryAddress too.
   // Let's add delivery address controller too.
@@ -36,16 +36,19 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     posCtrl = TextEditingController(text: invoice?.placeOfSupply);
     receiverNameCtrl = TextEditingController(text: invoice?.receiver.name);
     receiverGstinCtrl = TextEditingController(text: invoice?.receiver.gstin);
-    receiverEmailCtrl =
-        TextEditingController(text: invoice?.receiver.email); // NEW
+    receiverEmailCtrl = TextEditingController(
+      text: invoice?.receiver.email,
+    ); // NEW
     receiverStateCtrl = TextEditingController(text: invoice?.receiver.state);
-    receiverAddressCtrl =
-        TextEditingController(text: invoice?.receiver.address);
+    receiverAddressCtrl = TextEditingController(
+      text: invoice?.receiver.address,
+    );
     poNumberCtrl = TextEditingController(text: invoice?.poNumber);
     deliveryAddressCtrl = TextEditingController(text: invoice?.deliveryAddress);
     paymentTermsCtrl = TextEditingController(text: invoice?.paymentTerms);
-    originalInvoiceNoCtrl =
-        TextEditingController(text: invoice?.originalInvoiceNumber);
+    originalInvoiceNoCtrl = TextEditingController(
+      text: invoice?.originalInvoiceNumber,
+    );
   }
 
   void disposeInvoiceControllers() {
@@ -121,7 +124,7 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     required final Invoice invoice,
     final String? estimateIdToMarkConverted,
     required final BuildContext
-        context, // required for notifications if specific UI logic needed?
+    context, // required for notifications if specific UI logic needed?
     // Actually mixin shouldn't depend on UI widgets like ShowDialog if possible,
     // but here we return status or throw error?
     // Let's return success bool and let UI handle success message.
@@ -133,9 +136,11 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
         invoice.invoiceNo,
         excludeId: invoice.id,
       );
-      
+
       if (exists) {
-        throw Exception("Invoice number '${invoice.invoiceNo}' already exists.");
+        throw Exception(
+          "Invoice number '${invoice.invoiceNo}' already exists.",
+        );
       }
 
       await InvoiceActions.saveInvoice(ref, invoice);
@@ -152,7 +157,10 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     }
   }
 
-  Future<void> printInvoice(final Invoice invoice, final BusinessProfile profile) async {
+  Future<void> printInvoice(
+    final Invoice invoice,
+    final BusinessProfile profile,
+  ) async {
     final pdfBytes = await generateInvoicePdf(invoice, profile);
     await Printing.layoutPdf(onLayout: (_) => pdfBytes);
   }
@@ -160,15 +168,15 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   /// Generates the next invoice number based on existing invoices
   Future<String> generateNextInvoiceNumber() async {
     final invoices = await ref.read(invoiceRepositoryProvider).getAllInvoices();
-    
+
     if (invoices.isEmpty) {
       return 'INV-001';
     }
-    
+
     // Find the highest invoice number
     int maxNumber = 0;
     final regex = RegExp(r'INV-?(\d+)', caseSensitive: false);
-    
+
     for (final invoice in invoices) {
       final match = regex.firstMatch(invoice.invoiceNo);
       if (match != null) {
@@ -178,19 +186,22 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
         }
       }
     }
-    
+
     return 'INV-${(maxNumber + 1).toString().padLeft(3, '0')}';
   }
 
   /// Calculates due date based on payment terms
-  DateTime? calculateDueDate(final DateTime invoiceDate, final String paymentTerms) {
+  DateTime? calculateDueDate(
+    final DateTime invoiceDate,
+    final String paymentTerms,
+  ) {
     if (paymentTerms.isEmpty) {
       return null;
     }
-    
+
     // Parse common payment terms
     final lowerTerms = paymentTerms.toLowerCase();
-    
+
     if (lowerTerms.contains('net') || lowerTerms.contains('days')) {
       // Extract number from terms like "Net 30", "30 days", etc.
       final regex = RegExp(r'(\d+)');
@@ -200,11 +211,12 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
         return invoiceDate.add(Duration(days: days));
       }
     }
-    
-    if (lowerTerms.contains('immediate') || lowerTerms.contains('due on receipt')) {
+
+    if (lowerTerms.contains('immediate') ||
+        lowerTerms.contains('due on receipt')) {
       return invoiceDate;
     }
-    
+
     // Default to 30 days
     return invoiceDate.add(const Duration(days: 30));
   }

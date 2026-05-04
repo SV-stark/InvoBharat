@@ -31,8 +31,9 @@ final agingReportProvider = FutureProvider<AgingReportData>((final ref) async {
   // Filter Unpaid
   // Note: invoice.paymentStatus logic is in model, but we can recheck here to be safe or use model getter.
   // We need actual balance due.
-  final unpaidInvoices =
-      allInvoices.where((final inv) => inv.balanceDue > 0.01).toList();
+  final unpaidInvoices = allInvoices
+      .where((final inv) => inv.balanceDue > 0.01)
+      .toList();
   // > 0.01 to handle float rounding errors or negligible amounts.
 
   double current = 0;

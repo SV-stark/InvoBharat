@@ -38,13 +38,15 @@ class _MaterialClientFormDialogState
     // Initialize controllers with existing data
     _nameController = TextEditingController(text: widget.client?.name ?? '');
     _gstinController = TextEditingController(text: widget.client?.gstin ?? '');
-    _addressController =
-        TextEditingController(text: widget.client?.address ?? '');
+    _addressController = TextEditingController(
+      text: widget.client?.address ?? '',
+    );
     _stateController = TextEditingController(text: widget.client?.state ?? '');
     _emailController = TextEditingController(text: widget.client?.email ?? '');
     _phoneController = TextEditingController(text: widget.client?.phone ?? '');
-    _contactController =
-        TextEditingController(text: widget.client?.primaryContact ?? '');
+    _contactController = TextEditingController(
+      text: widget.client?.primaryContact ?? '',
+    );
     _notesController = TextEditingController(text: widget.client?.notes ?? '');
 
     // Sync controllers to provider
@@ -103,9 +105,9 @@ class _MaterialClientFormDialogState
     } else if (mounted) {
       final error = ref.read(clientFormProvider).errorMessage;
       if (error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error)));
       }
     }
   }

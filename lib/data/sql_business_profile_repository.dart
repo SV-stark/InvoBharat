@@ -93,9 +93,8 @@ class SqlBusinessProfileRepository implements BusinessProfileRepository {
 
   @override
   Future<void> deleteProfile(final String id) async {
-    await (database.delete(database.businessProfiles)
-          ..where((final t) => t.id.equals(id)))
-        .go();
+    await (database.delete(
+      database.businessProfiles,
+    )..where((final t) => t.id.equals(id))).go();
   }
-
 }

@@ -78,7 +78,8 @@ class BusinessProfileList extends _$BusinessProfileList {
     try {
       final directory = await getApplicationDocumentsDirectory();
       final oldPath = '${directory.path}/InvoBharat/invoices';
-      final newPath = '${directory.path}/InvoBharat/profiles/$newProfileId/invoices';
+      final newPath =
+          '${directory.path}/InvoBharat/profiles/$newProfileId/invoices';
 
       final oldDir = Directory(oldPath);
       if (await oldDir.exists()) {

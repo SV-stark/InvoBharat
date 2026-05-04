@@ -10,9 +10,7 @@ void main() {
         placeOfSupply: 'Karnataka',
         invoiceDate: DateTime.now(),
         receiver: const Receiver(),
-        items: [
-          const InvoiceItem(amount: 100),
-        ],
+        items: [const InvoiceItem(amount: 100)],
       );
 
       expect(invoice.isInterState, false);
@@ -29,9 +27,7 @@ void main() {
         placeOfSupply: 'Maharashtra',
         invoiceDate: DateTime.now(),
         receiver: const Receiver(),
-        items: [
-          const InvoiceItem(amount: 100),
-        ],
+        items: [const InvoiceItem(amount: 100)],
       );
 
       expect(invoice.isInterState, true);
@@ -48,28 +44,25 @@ void main() {
         placeOfSupply: 'KARNATAKA',
         invoiceDate: DateTime.now(),
         receiver: const Receiver(),
-        items: [
-          const InvoiceItem(amount: 100),
-        ],
+        items: [const InvoiceItem(amount: 100)],
       );
 
       expect(invoice.isInterState, false);
     });
 
     test(
-        'Empty state check (defaults to false/Intra usually or handles gracefully)',
-        () {
-      final invoice = Invoice(
-        supplier: const Supplier(),
-        placeOfSupply: 'Karnataka',
-        invoiceDate: DateTime.now(),
-        receiver: const Receiver(),
-        items: [
-          const InvoiceItem(amount: 100),
-        ],
-      );
-      // If supplier state is empty, isInterState returns false logic in my code
-      expect(invoice.isInterState, false);
-    });
+      'Empty state check (defaults to false/Intra usually or handles gracefully)',
+      () {
+        final invoice = Invoice(
+          supplier: const Supplier(),
+          placeOfSupply: 'Karnataka',
+          invoiceDate: DateTime.now(),
+          receiver: const Receiver(),
+          items: [const InvoiceItem(amount: 100)],
+        );
+        // If supplier state is empty, isInterState returns false logic in my code
+        expect(invoice.isInterState, false);
+      },
+    );
   });
 }

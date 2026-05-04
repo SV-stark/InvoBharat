@@ -10,13 +10,16 @@ void main() {
       invoiceDate: DateTime(2025, 4),
       supplier: const Supplier(state: 'Karnataka'),
       receiver: const Receiver(
-          name: 'John Doe', state: 'Karnataka', gstin: '29ABCDE1234F1Z3'),
+        name: 'John Doe',
+        state: 'Karnataka',
+        gstin: '29ABCDE1234F1Z3',
+      ),
       items: [
         const InvoiceItem(
           description: 'Item 1',
           amount: 1000,
           quantity: 2,
-        ) // 2000 taxable. CGST 180, SGST 180. Total 2360.
+        ), // 2000 taxable. CGST 180, SGST 180. Total 2360.
       ],
     );
 
@@ -24,14 +27,18 @@ void main() {
 
     // Check Header
     expect(
-        csv,
-        contains(
-            'GSTIN(recipeint),Trade Name(recipeint),Invoice No,Date of Invoice,Invoice Value,GST%,Taxable Value,CESS,Place Of Supply,RCM Applicable,HSN Description'));
+      csv,
+      contains(
+        'GSTIN(recipeint),Trade Name(recipeint),Invoice No,Date of Invoice,Invoice Value,GST%,Taxable Value,CESS,Place Of Supply,RCM Applicable,HSN Description',
+      ),
+    );
 
     // Check Row Content (Expect HSN Description at the end)
     expect(
-        csv,
-        contains(
-            '29ABCDE1234F1Z3,John Doe,INV-001,01-04-2025,2360.00,18.00,2000.00,0.00,Karnataka,N,Item 1'));
+      csv,
+      contains(
+        '29ABCDE1234F1Z3,John Doe,INV-001,01-04-2025,2360.00,18.00,2000.00,0.00,Karnataka,N,Item 1',
+      ),
+    );
   });
 }

@@ -6,6 +6,10 @@ import 'package:invobharat/models/business_profile.dart';
 abstract class InvoiceTemplate {
   String get name;
   Future<Uint8List> generate(
-      final Invoice invoice, final BusinessProfile profile, final pw.Font font, final pw.Font fontBold,
-      {final String? title});
+    final Invoice invoice,
+    final BusinessProfile profile,
+    final pw.Font font,
+    final pw.Font fontBold, {
+    final String? title,
+  });
 }

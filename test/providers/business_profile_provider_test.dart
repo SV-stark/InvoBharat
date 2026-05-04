@@ -46,7 +46,10 @@ void main() {
         );
         addTearDown(container.dispose);
 
-        final sub = container.listen(businessProfileListProvider, (final prev, final next) {});
+        final sub = container.listen(
+          businessProfileListProvider,
+          (final prev, final next) {},
+        );
         addTearDown(sub.close);
 
         container.read(businessProfileListProvider);
@@ -67,8 +70,14 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final subList = container.listen(businessProfileListProvider, (final prev, final next) {});
-      final sub = container.listen(activeProfileIdProvider, (final prev, final next) {});
+      final subList = container.listen(
+        businessProfileListProvider,
+        (final prev, final next) {},
+      );
+      final sub = container.listen(
+        activeProfileIdProvider,
+        (final prev, final next) {},
+      );
       addTearDown(subList.close);
       addTearDown(sub.close);
 
@@ -97,8 +106,14 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final subList = container.listen(businessProfileListProvider, (final prev, final next) {});
-      final subActive = container.listen(activeProfileIdProvider, (final prev, final next) {});
+      final subList = container.listen(
+        businessProfileListProvider,
+        (final prev, final next) {},
+      );
+      final subActive = container.listen(
+        activeProfileIdProvider,
+        (final prev, final next) {},
+      );
       addTearDown(subList.close);
       addTearDown(subActive.close);
 
@@ -111,7 +126,11 @@ void main() {
 
       verify(
         () => mockRepository.saveProfile(
-          any(that: predicate<BusinessProfile>((final p) => p.invoiceSequence == 11)),
+          any(
+            that: predicate<BusinessProfile>(
+              (final p) => p.invoiceSequence == 11,
+            ),
+          ),
         ),
       ).called(1);
     });

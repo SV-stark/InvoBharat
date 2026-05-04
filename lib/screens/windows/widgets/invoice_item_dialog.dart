@@ -159,7 +159,10 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
                   child: ComboBox<double>(
                     value: gst,
                     items: [0.0, 5.0, 12.0, 18.0, 28.0]
-                        .map((final r) => ComboBoxItem(value: r, child: Text("$r%")))
+                        .map(
+                          (final r) =>
+                              ComboBoxItem(value: r, child: Text("$r%")),
+                        )
                         .toList(),
                     onChanged: (final v) => setState(() => gst = v ?? 0),
                   ),
@@ -171,23 +174,25 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
       ),
       actions: [
         Button(
-            child: const Text("Cancel"),
-            onPressed: () => Navigator.pop(context)),
+          child: const Text("Cancel"),
+          onPressed: () => Navigator.pop(context),
+        ),
         FilledButton(
-            child: const Text("Save"),
-            onPressed: () {
-              final newItem = InvoiceItem(
-                description: _descCtrl.text,
-                quantity: qty,
-                amount: price,
-                discount: discount,
-                gstRate: gst,
-                unit: _unitCtrl.text,
-                sacCode: _sacCtrl.text,
-              );
-              widget.onSave(newItem);
-              Navigator.pop(context);
-            }),
+          child: const Text("Save"),
+          onPressed: () {
+            final newItem = InvoiceItem(
+              description: _descCtrl.text,
+              quantity: qty,
+              amount: price,
+              discount: discount,
+              gstRate: gst,
+              unit: _unitCtrl.text,
+              sacCode: _sacCtrl.text,
+            );
+            widget.onSave(newItem);
+            Navigator.pop(context);
+          },
+        ),
       ],
     );
   }

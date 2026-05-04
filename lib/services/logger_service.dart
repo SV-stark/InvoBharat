@@ -13,7 +13,9 @@ final class RiverpodTalkerObserver extends ProviderObserver {
     final Object? previousValue,
     final Object? newValue,
   ) {
-    talker.log('Provider ${context.provider.name ?? context.provider.runtimeType} updated');
+    talker.log(
+      'Provider ${context.provider.name ?? context.provider.runtimeType} updated',
+    );
   }
 
   @override
@@ -21,7 +23,9 @@ final class RiverpodTalkerObserver extends ProviderObserver {
     final ProviderObserverContext context,
     final Object? value,
   ) {
-    talker.log('Provider ${context.provider.name ?? context.provider.runtimeType} added');
+    talker.log(
+      'Provider ${context.provider.name ?? context.provider.runtimeType} added',
+    );
   }
 
   @override
@@ -30,6 +34,10 @@ final class RiverpodTalkerObserver extends ProviderObserver {
     final Object error,
     final StackTrace stackTrace,
   ) {
-    talker.handle(error, stackTrace, 'Provider ${context.provider.name ?? context.provider.runtimeType} failed');
+    talker.handle(
+      error,
+      stackTrace,
+      'Provider ${context.provider.name ?? context.provider.runtimeType} failed',
+    );
   }
 }

@@ -10,7 +10,9 @@ import 'package:flutter/foundation.dart';
 class InvoiceImportService {
   /// Picks a CSV file and imports invoices into the repository.
   /// Supports both InvoBharat format and standard GSTR-1 format.
-  static Future<ImportResult> importInvoices(final InvoiceRepository repository) async {
+  static Future<ImportResult> importInvoices(
+    final InvoiceRepository repository,
+  ) async {
     try {
       final result = await FilePicker.pickFiles(
         type: FileType.custom,
@@ -29,14 +31,23 @@ class InvoiceImportService {
         return ImportResult(0, 0, "CSV file is empty or missing headers");
       }
 
-      final headers = rows.first.map((final e) => e.toString().trim().toLowerCase()).toList();
-      
+      final headers = rows.first
+          .map((final e) => e.toString().trim().toLowerCase())
+          .toList();
+
       // Determine if it's InvoBharat format or GSTR-1 format
-      final isInvoBharat = headers.contains('receiver gstin') && headers.contains('item price');
-      final isGstr1 = headers.contains('gstin(recipeint)') || headers.contains('trade name(recipeint)');
+      final isInvoBharat =
+          headers.contains('receiver gstin') && headers.contains('item price');
+      final isGstr1 =
+          headers.contains('gstin(recipeint)') ||
+          headers.contains('trade name(recipeint)');
 
       if (!isInvoBharat && !isGstr1) {
-        return ImportResult(0, 0, "Unknown CSV format. Please use InvoBharat Export or GSTR-1 CSV.");
+        return ImportResult(
+          0,
+          0,
+          "Unknown CSV format. Please use InvoBharat Export or GSTR-1 CSV.",
+        );
       }
 
       final Map<String, Invoice> invoiceMap = {};
@@ -51,7 +62,11 @@ class InvoiceImportService {
         await repository.saveInvoice(inv);
       }
 
-      return ImportResult(invoiceMap.length, 0, "Successfully imported ${invoiceMap.length} invoices.");
+      return ImportResult(
+        invoiceMap.length,
+        0,
+        "Successfully imported ${invoiceMap.length} invoices.",
+      );
     } catch (e) {
       debugPrint("Import Error: $e");
       return ImportResult(0, 0, "Error: $e");
@@ -72,7 +87,7 @@ class InvoiceImportService {
       'RCM Applicable',
       'HSN Description',
     ];
-    
+
     final sampleData = [
       [
         '27AAPFU0939F1ZV',
@@ -103,7 +118,7 @@ class InvoiceImportService {
     ];
 
     final csvString = Csv().encode([headers, ...sampleData]);
-    
+
     final result = await FilePicker.saveFile(
       dialogTitle: 'Save Import Template',
       fileName: 'invobharat_gst_import_template.csv',
@@ -129,7 +144,7 @@ class InvoiceImportService {
     final idxRecvGstin = headers.indexOf('receiver gstin');
     final idxRecvAddr = headers.indexOf('receiver address');
     final idxRecvState = headers.indexOf('receiver state');
-    
+
     final idxItemDesc = headers.indexOf('description');
     final idxItemHsn = headers.indexOf('hsn');
     final idxItemRate = headers.indexOf('gst rate (%)');
@@ -191,14 +206,18 @@ class InvoiceImportService {
     final Map<String, Invoice> invoiceMap,
   ) {
     final idxGstin = headers.indexWhere((final e) => e.contains('gstin'));
-    final idxName = headers.indexWhere((final e) => e.contains('trade name') || e.contains('recipient'));
+    final idxName = headers.indexWhere(
+      (final e) => e.contains('trade name') || e.contains('recipient'),
+    );
     final idxInvNo = headers.indexOf('invoice no');
     final idxDate = headers.indexOf('date of invoice');
     final idxGstRate = headers.indexOf('gst%');
     final idxTaxable = headers.indexOf('taxable value');
     final idxPos = headers.indexOf('place of supply');
     final idxRcm = headers.indexOf('rcm applicable');
-    final idxHsn = headers.indexWhere((final e) => e.contains('hsn') || e.contains('description'));
+    final idxHsn = headers.indexWhere(
+      (final e) => e.contains('hsn') || e.contains('description'),
+    );
 
     for (int i = 1; i < rows.length; i++) {
       final row = rows[i];
@@ -207,7 +226,9 @@ class InvoiceImportService {
 
       final item = InvoiceItem(
         id: const Uuid().v4(),
-        description: _val(row, idxHsn).isEmpty ? "Goods/Service" : _val(row, idxHsn),
+        description: _val(row, idxHsn).isEmpty
+            ? "Goods/Service"
+            : _val(row, idxHsn),
         sacCode: _val(row, idxHsn),
         gstRate: double.tryParse(_val(row, idxGstRate)) ?? 0,
         amount: double.tryParse(_val(row, idxTaxable)) ?? 0,

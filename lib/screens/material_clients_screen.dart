@@ -111,7 +111,8 @@ class _MaterialClientsScreenState extends ConsumerState<MaterialClientsScreen> {
                             Icons.receipt_long,
                             color: Colors.teal,
                           ),
-                          onPressed: () => context.push('/client-ledger', extra: client),
+                          onPressed: () =>
+                              context.push('/client-ledger', extra: client),
                         ),
                         IconButton(
                           icon: const Icon(Icons.edit, color: Colors.blue),

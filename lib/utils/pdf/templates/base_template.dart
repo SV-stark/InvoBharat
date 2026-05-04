@@ -4,7 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/utils/invoice_template.dart';
-import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
 import 'package:intl/intl.dart';
 
 abstract class BasePdfTemplate implements InvoiceTemplate {
@@ -55,24 +55,24 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
       row.add(item.description);
       row.add(item.cleanSacCode);
       row.add("${item.quantity} ${item.unit}");
-      row.add(IndianNumberFormatter.format(item.amount));
-      row.add(IndianNumberFormatter.format(taxableValue));
+      row.add(item.amount.toIndianFormat());
+      row.add(taxableValue.toIndianFormat());
 
       if (isInterState) {
         row.add("${item.gstRate}%");
-        row.add(IndianNumberFormatter.format(item.calculateIgst(true)));
+        row.add(item.calculateIgst(true).toIndianFormat());
       } else {
         final halfRate = item.gstRate / 2;
         final halfRateStr = halfRate == halfRate.truncateToDouble()
             ? halfRate.toInt().toString()
             : halfRate.toStringAsFixed(1);
         row.add("$halfRateStr%");
-        row.add(IndianNumberFormatter.format(item.calculateCgst(false)));
+        row.add(item.calculateCgst(false).toIndianFormat());
         row.add("$halfRateStr%");
-        row.add(IndianNumberFormatter.format(item.calculateSgst(false)));
+        row.add(item.calculateSgst(false).toIndianFormat());
       }
 
-      row.add(IndianNumberFormatter.format(item.totalAmount));
+      row.add(item.totalAmount.toIndianFormat());
       return row;
     }).toList();
 
@@ -109,11 +109,15 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
             3: pw.Alignment.centerRight,
             4: pw.Alignment.centerRight,
             5: pw.Alignment.centerRight,
-            headers.length - 1: pw.Alignment.centerRight,
+            6: pw.Alignment.centerRight,
+            7: pw.Alignment.centerRight,
+            8: pw.Alignment.centerRight,
+            9: pw.Alignment.centerRight,
+            10: pw.Alignment.centerRight,
           },
       cellPadding:
           cellPadding ??
-          const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
     );
   }
 
@@ -137,8 +141,8 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
           ),
           pw.Text(
             symbol != null
-                ? "$symbol ${IndianNumberFormatter.format(value)}"
-                : IndianNumberFormatter.format(value),
+                ? "$symbol ${value.toIndianFormat()}"
+                : value.toIndianFormat(),
             style: pw.TextStyle(
               fontSize: 9,
               fontWeight: isBold ? pw.FontWeight.bold : null,
@@ -188,16 +192,17 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
   pw.Widget buildPaymentQRCode(
     final String upiId,
     final String name,
-    final double amount,
-    [final String? invoiceNo]
-  ) {
+    final double amount, [
+    final String? invoiceNo,
+  ]) {
     if (upiId.isEmpty) return pw.SizedBox();
 
     // Standard UPI deep link format
     String upiUrl =
         "upi://pay?pa=$upiId&pn=${Uri.encodeComponent(name)}&am=${amount.toStringAsFixed(2)}&cu=INR";
     if (invoiceNo != null && invoiceNo.isNotEmpty) {
-      upiUrl += "&tr=${Uri.encodeComponent(invoiceNo)}&tn=${Uri.encodeComponent('Invoice $invoiceNo')}";
+      upiUrl +=
+          "&tr=${Uri.encodeComponent(invoiceNo)}&tn=${Uri.encodeComponent('Invoice $invoiceNo')}";
     }
 
     return pw.Column(
@@ -249,13 +254,16 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
           ),
           pw.Row(
             children: [
-              pw.Text("Inv No: ${invoice.originalInvoiceNumber}",
-                  style: const pw.TextStyle(fontSize: 9)),
+              pw.Text(
+                "Inv No: ${invoice.originalInvoiceNumber}",
+                style: const pw.TextStyle(fontSize: 9),
+              ),
               pw.SizedBox(width: 16),
               if (invoice.originalInvoiceDate != null)
                 pw.Text(
-                    "Date: ${DateFormat('dd/MM/yyyy').format(invoice.originalInvoiceDate!)}",
-                    style: const pw.TextStyle(fontSize: 9)),
+                  "Date: ${DateFormat('dd/MM/yyyy').format(invoice.originalInvoiceDate!)}",
+                  style: const pw.TextStyle(fontSize: 9),
+                ),
             ],
           ),
         ],

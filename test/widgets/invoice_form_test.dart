@@ -17,7 +17,8 @@ import 'package:invobharat/providers/database_provider.dart';
 import 'package:invobharat/data/invoice_repository.dart';
 import 'package:invobharat/data/client_repository.dart';
 import 'package:invobharat/data/business_profile_repository.dart';
-import 'package:invobharat/database/database.dart' hide Client, Invoice, BusinessProfile, InvoiceItem, AppSetting;
+import 'package:invobharat/database/database.dart'
+    hide Client, Invoice, BusinessProfile, InvoiceItem, AppSetting;
 
 class MockInvoiceRepository extends Mock implements InvoiceRepository {}
 
@@ -80,9 +81,7 @@ void main() {
         ],
         home: fluent.FluentTheme(
           data: fluent.FluentThemeData(),
-          child: const Material(
-            child: InvoiceFormScreen(),
-          ),
+          child: const Material(child: InvoiceFormScreen()),
         ),
       ),
     );
@@ -122,7 +121,7 @@ void main() {
     final selectButton = find.widgetWithText(TextButton, 'Select Client');
     await tester.tap(selectButton);
     await tester.pumpAndSettle();
-    
+
     // Use runAsync to allow the mock repo to return data
     await tester.runAsync(() async {
       await Future.delayed(const Duration(milliseconds: 200));

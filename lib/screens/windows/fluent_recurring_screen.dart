@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import 'package:invobharat/providers/recurring_provider.dart';
-import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:go_router/go_router.dart';
 
 class FluentRecurringScreen extends ConsumerWidget {
@@ -90,7 +91,7 @@ class FluentRecurringScreen extends ConsumerWidget {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      "${profile.interval.name.toUpperCase()} • Next: ${DateFormat('dd MMM').format(profile.nextRunDate)} • ${IndianCurrencyFormatter.format(profile.baseInvoice.grandTotal)}",
+                      "${profile.interval.name.toUpperCase()} • Next: ${DateFormat('dd MMM').format(profile.nextRunDate)} • ${profile.baseInvoice.grandTotal.toIndianFormat(includeSymbol: true, symbol: ref.read(businessProfileProvider).currency)}",
                     ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,

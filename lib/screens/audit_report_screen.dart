@@ -11,9 +11,7 @@ class AuditReportScreen extends ConsumerWidget {
     final invoiceListAsync = ref.watch(invoiceListProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Audit Report"),
-      ),
+      appBar: AppBar(title: const Text("Audit Report")),
       body: invoiceListAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (final err, final stack) => Center(child: Text("Error: $err")),
@@ -27,8 +25,10 @@ class AuditReportScreen extends ConsumerWidget {
                 children: [
                   Icon(Icons.check_circle, size: 64, color: Colors.green),
                   SizedBox(height: 16),
-                  Text("No invoice sequence gaps found.",
-                      style: TextStyle(fontSize: 18)),
+                  Text(
+                    "No invoice sequence gaps found.",
+                    style: TextStyle(fontSize: 18),
+                  ),
                 ],
               ),
             );
@@ -44,7 +44,8 @@ class AuditReportScreen extends ConsumerWidget {
                 leading: const Icon(Icons.warning, color: Colors.orange),
                 title: Text("Missing Invoice: $missing"),
                 subtitle: const Text(
-                    "This invoice number is skipped in your sequence."),
+                  "This invoice number is skipped in your sequence.",
+                ),
               );
             },
           );

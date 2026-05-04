@@ -53,9 +53,7 @@ void main() {
         businessProfileRepositoryProvider.overrideWithValue(mockProfileRepo),
         appSettingsServiceProvider.overrideWithValue(mockSettingsService),
         // We override the list provider which will use our mock repo to load testProfile
-        businessProfileListProvider.overrideWith(
-          () => BusinessProfileList(),
-        ),
+        businessProfileListProvider.overrideWith(() => BusinessProfileList()),
         activeProfileIdProvider.overrideWith(() => ActiveProfileId()),
       ],
       child: MaterialApp(

@@ -17,7 +17,8 @@ import 'package:invobharat/providers/client_provider.dart';
 import 'package:invobharat/data/client_repository.dart';
 import 'package:invobharat/data/invoice_repository.dart';
 import 'package:invobharat/data/business_profile_repository.dart';
-import 'package:invobharat/database/database.dart' hide Client, Invoice, BusinessProfile, InvoiceItem, AppSetting;
+import 'package:invobharat/database/database.dart'
+    hide Client, Invoice, BusinessProfile, InvoiceItem, AppSetting;
 
 class MockInvoiceRepository extends Mock implements InvoiceRepository {}
 
@@ -59,9 +60,7 @@ void main() {
     when(
       () => mockProfileRepo.getAllProfiles(),
     ).thenAnswer((_) async => [testProfile]);
-    when(
-      () => mockClientRepo.getAllClients(),
-    ).thenAnswer((_) async => []);
+    when(() => mockClientRepo.getAllClients()).thenAnswer((_) async => []);
   });
 
   Widget createTestWidget() {
@@ -69,9 +68,7 @@ void main() {
       overrides: [
         invoiceRepositoryProvider.overrideWithValue(mockInvoiceRepo),
         businessProfileRepositoryProvider.overrideWithValue(mockProfileRepo),
-        clientRepositoryProvider.overrideWithValue(
-          mockClientRepo,
-        ),
+        clientRepositoryProvider.overrideWithValue(mockClientRepo),
         businessProfileProvider.overrideWithValue(testProfile),
         databaseProvider.overrideWith((final ref) {
           final db = AppDatabase(NativeDatabase.memory());
@@ -81,9 +78,7 @@ void main() {
       ],
       child: fluent.FluentApp(
         theme: fluent.FluentThemeData(),
-        home: const Material(
-          child: DashboardScreen(),
-        ),
+        home: const Material(child: DashboardScreen()),
       ),
     );
   }

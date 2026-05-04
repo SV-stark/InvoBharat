@@ -13,7 +13,7 @@ import 'package:invobharat/services/logger_service.dart';
 
 void main() {
   final talker = TalkerFlutter.init();
-  
+
   // Ensure errors are shown even in release mode
   ErrorWidget.builder = (final FlutterErrorDetails details) {
     talker.handle(details.exception, details.stack, 'Flutter Error');
@@ -69,9 +69,7 @@ void main() {
   runApp(
     ProviderScope(
       observers: [RiverpodTalkerObserver(talker: talker)],
-      overrides: [
-        talkerProvider.overrideWithValue(talker),
-      ],
+      overrides: [talkerProvider.overrideWithValue(talker)],
       child: const InvoBharatApp(),
     ),
   );

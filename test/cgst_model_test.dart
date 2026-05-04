@@ -15,21 +15,13 @@ void main() {
     });
 
     test('InvoiceItem calculates netAmount correctly with discount', () {
-      final item = const InvoiceItem(
-        amount: 100,
-        quantity: 5,
-        discount: 50,
-      );
+      final item = const InvoiceItem(amount: 100, quantity: 5, discount: 50);
       // (100 * 5) - 50 = 450
       expect(item.netAmount, 450);
     });
 
     test('InvoiceItem serializes quantity and unit', () {
-      final item = const InvoiceItem(
-        quantity: 2.5,
-        unit: 'Kg',
-        amount: 50,
-      );
+      final item = const InvoiceItem(quantity: 2.5, unit: 'Kg', amount: 50);
       final json = jsonDecode(jsonEncode(item.toJson()));
       expect(json['quantity'], 2.5);
       expect(json['unit'], 'Kg');
@@ -56,10 +48,7 @@ void main() {
     });
 
     test('Receiver holds state and stateCode', () {
-      final receiver = const Receiver(
-        state: "Maharashtra",
-        stateCode: "27",
-      );
+      final receiver = const Receiver(state: "Maharashtra", stateCode: "27");
       expect(receiver.state, "Maharashtra");
       expect(receiver.stateCode, "27");
 

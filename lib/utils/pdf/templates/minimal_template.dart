@@ -82,7 +82,10 @@ class MinimalTemplate extends BasePdfTemplate {
                       "No",
                       invoice.invoiceNo,
                       const pw.TextStyle(fontSize: 10),
-                      pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+                      pw.TextStyle(
+                        fontSize: 10,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
                     ),
                     buildField(
                       "Date",
@@ -96,9 +99,10 @@ class MinimalTemplate extends BasePdfTemplate {
                         DateFormat('dd MMM yyyy').format(invoice.dueDate!),
                         const pw.TextStyle(fontSize: 10),
                         pw.TextStyle(
-                            fontSize: 10,
-                            fontWeight: pw.FontWeight.bold,
-                            color: PdfColors.red700),
+                          fontSize: 10,
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColors.red700,
+                        ),
                       ),
                   ],
                 ),
@@ -279,18 +283,37 @@ class MinimalTemplate extends BasePdfTemplate {
                         ),
                       ),
                       pw.SizedBox(height: 4),
-                      pw.Text("Bank: ${profile.bankName}", style: const pw.TextStyle(fontSize: 8)),
-                      pw.Text("A/C: ${profile.accountNo}", style: const pw.TextStyle(fontSize: 8)),
-                      pw.Text("IFSC: ${profile.ifscCode}", style: const pw.TextStyle(fontSize: 8)),
-                      pw.Text("Branch: ${profile.branch}", style: const pw.TextStyle(fontSize: 8)),
+                      pw.Text(
+                        "Bank: ${profile.bankName}",
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
+                      pw.Text(
+                        "A/C: ${profile.accountNo}",
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
+                      pw.Text(
+                        "IFSC: ${profile.ifscCode}",
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
+                      pw.Text(
+                        "Branch: ${profile.branch}",
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
                       if (profile.upiId.isNotEmpty) ...[
                         pw.SizedBox(height: 4),
-                        pw.Text("UPI ID: ${profile.upiId}",
-                            style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold, fontSize: 8)),
+                        pw.Text(
+                          "UPI ID: ${profile.upiId}",
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 8,
+                          ),
+                        ),
                         pw.SizedBox(height: 4),
                         buildPaymentQRCode(
-                            profile.upiId, profile.companyName, invoice.grandTotal),
+                          profile.upiId,
+                          profile.companyName,
+                          invoice.grandTotal,
+                        ),
                       ],
                     ],
                   ),
@@ -346,9 +369,7 @@ class MinimalTemplate extends BasePdfTemplate {
                   pw.SizedBox(height: 4),
                   pw.Text(
                     "Authorized Signatory",
-                    style: const pw.TextStyle(
-                      fontSize: 10,
-                    ),
+                    style: const pw.TextStyle(fontSize: 10),
                   ),
                 ],
               ),

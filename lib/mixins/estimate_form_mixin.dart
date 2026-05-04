@@ -69,7 +69,9 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     if (estimateId != null) {
       final estimates = await ref.read(estimateListProvider.future);
       try {
-        existingEstimate = estimates.firstWhere((final e) => e.id == estimateId);
+        existingEstimate = estimates.firstWhere(
+          (final e) => e.id == estimateId,
+        );
 
         date = existingEstimate!.date;
         expiryDate = existingEstimate!.expiryDate;
@@ -173,7 +175,9 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     await ref.read(estimateListProvider.notifier).saveEstimate(updatedEstimate);
 
     // Increment sequence
-    await ref.read(businessProfileListProvider.notifier).incrementInvoiceSequence();
+    await ref
+        .read(businessProfileListProvider.notifier)
+        .incrementInvoiceSequence();
 
     return invoiceNo;
   }
@@ -200,7 +204,8 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     );
 
     await Printing.layoutPdf(
-        onLayout: (final format) =>
-            generateInvoicePdf(estimateInvoice, profile, title: "ESTIMATE"));
+      onLayout: (final format) =>
+          generateInvoicePdf(estimateInvoice, profile, title: "ESTIMATE"),
+    );
   }
 }

@@ -28,14 +28,8 @@ void main() {
       expect(Validators.phone(''), null);
       expect(Validators.phone('9876543210'), null);
 
-      expect(
-        Validators.phone('12345'),
-        'Invalid mobile number',
-      );
-      expect(
-        Validators.phone('123456789'),
-        'Invalid mobile number',
-      );
+      expect(Validators.phone('12345'), 'Invalid mobile number');
+      expect(Validators.phone('123456789'), 'Invalid mobile number');
     });
 
     test('gstin should validate GSTIN formats correctly', () {
@@ -44,10 +38,7 @@ void main() {
       // Valid Maharashtra GSTIN (with correct checksum T)
       expect(Validators.gstin('27AAPFU0939F1ZT'), null);
 
-      expect(
-        Validators.gstin('123'),
-        'Invalid GST number',
-      );
+      expect(Validators.gstin('123'), 'Invalid GST number');
       expect(
         Validators.gstin('27AAPFU0939F1Z'),
         'Invalid GST number',
@@ -71,20 +62,14 @@ void main() {
       expect(Validators.pan(''), null);
       expect(Validators.pan('ABCDE1234O'), null);
 
-      expect(
-        Validators.pan('12345ABCDE'),
-        'Invalid PAN number',
-      );
-      expect(
-        Validators.pan('ABCDE1234'),
-        'Invalid PAN number',
-      );
+      expect(Validators.pan('12345ABCDE'), 'Invalid PAN number');
+      expect(Validators.pan('ABCDE1234'), 'Invalid PAN number');
     });
 
     test('aadhaar should validate correctly', () {
       expect(Validators.aadhaar(null), null);
       expect(Validators.aadhaar(''), null);
-      // Valid Aadhaar requires Verhoeff check, using a known valid-format one is hard, 
+      // Valid Aadhaar requires Verhoeff check, using a known valid-format one is hard,
       // but let's test invalid one.
       expect(Validators.aadhaar('123456789012'), 'Invalid Aadhaar number');
     });

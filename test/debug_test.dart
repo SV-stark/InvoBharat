@@ -14,7 +14,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          invoiceListProvider.overrideWith((final ref) => Future.value(<Invoice>[])),
+          invoiceListProvider.overrideWith(
+            (final ref) => Future.value(<Invoice>[]),
+          ),
         ],
         child: const InvoBharatApp(),
       ),
@@ -27,7 +29,8 @@ void main() {
     debugPrint("Checking for Error text...");
     if (find.textContaining('Error:').evaluate().isNotEmpty) {
       debugPrint(
-          "Found Error: ${find.textContaining('Error:').evaluate().first}");
+        "Found Error: ${find.textContaining('Error:').evaluate().first}",
+      );
       // Print the actual error text widget
       final errorWidget = tester.widget<Text>(find.textContaining('Error:'));
       debugPrint("Error Message: ${errorWidget.data}");

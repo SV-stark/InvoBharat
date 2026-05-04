@@ -43,7 +43,8 @@ class RecurringRepository {
   }
 
   Future<List<RecurringProfile>> getAllProfiles(
-      final String businessProfileId) async {
+    final String businessProfileId,
+  ) async {
     try {
       final path = await _localPath;
       final dir = Directory(path);
@@ -71,7 +72,9 @@ class RecurringRepository {
   }
 }
 
-final recurringRepositoryProvider = Provider((final ref) => RecurringRepository());
+final recurringRepositoryProvider = Provider(
+  (final ref) => RecurringRepository(),
+);
 
 class RecurringService {
   final Ref ref;
@@ -93,8 +96,10 @@ class RecurringService {
         generatedCount++;
 
         // Update profile
-        final nextDate =
-            calculateNextDate(profile.nextRunDate, profile.interval);
+        final nextDate = calculateNextDate(
+          profile.nextRunDate,
+          profile.interval,
+        );
         final updatedProfile = profile.copyWith(
           lastRunDate: DateTime.now(),
           nextRunDate: nextDate,
@@ -112,7 +117,10 @@ class RecurringService {
     return generatedCount;
   }
 
-  DateTime calculateNextDate(final DateTime current, final RecurringInterval interval) {
+  DateTime calculateNextDate(
+    final DateTime current,
+    final RecurringInterval interval,
+  ) {
     switch (interval) {
       case RecurringInterval.daily:
         return current.add(const Duration(days: 1));
@@ -122,7 +130,10 @@ class RecurringService {
         final next = DateTime(current.year, current.month + 1);
         final lastDayOfMonth = DateTime(next.year, next.month + 1, 0).day;
         return DateTime(
-            next.year, next.month, current.day.clamp(1, lastDayOfMonth));
+          next.year,
+          next.month,
+          current.day.clamp(1, lastDayOfMonth),
+        );
       case RecurringInterval.yearly:
         return DateTime(current.year + 1, current.month, current.day);
     }
@@ -132,8 +143,9 @@ class RecurringService {
     // Get Business Profile for sequence
     // Use read, but we might be in background? We should be careful.
     // We assume this runs in foreground.
-    final businessProfileNotifier =
-        ref.read(businessProfileListProvider.notifier);
+    final businessProfileNotifier = ref.read(
+      businessProfileListProvider.notifier,
+    );
     // getting active profile from provider might be tricky if we are passing specific ID.
     // Ideally we fetch the specific profile.
 
@@ -158,8 +170,9 @@ class RecurringService {
       id: const Uuid().v4(),
       invoiceNo: invoiceNo,
       invoiceDate: DateTime.now(),
-      dueDate: DateTime.now().add(Duration(
-          days: profile.dueDays ?? 7)), // Use profile setting or default 7 days
+      dueDate: DateTime.now().add(
+        Duration(days: profile.dueDays ?? 7),
+      ), // Use profile setting or default 7 days
       payments: [], // Empty payments
     );
 
@@ -168,7 +181,8 @@ class RecurringService {
 
     // Increment Sequence
     final updatedBusinessProfile = businessProfile.copyWith(
-        invoiceSequence: businessProfile.invoiceSequence + 1);
+      invoiceSequence: businessProfile.invoiceSequence + 1,
+    );
     await businessProfileNotifier.updateProfile(updatedBusinessProfile);
   }
 }
@@ -177,7 +191,8 @@ final recurringServiceProvider = Provider((final ref) => RecurringService(ref));
 
 final recurringListProvider =
     AsyncNotifierProvider<RecurringListNotifier, List<RecurringProfile>>(
-        RecurringListNotifier.new);
+      RecurringListNotifier.new,
+    );
 
 class RecurringListNotifier extends AsyncNotifier<List<RecurringProfile>> {
   @override

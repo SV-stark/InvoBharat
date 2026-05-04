@@ -24,8 +24,10 @@ class LedgerEntry {
 
 // Provider that returns a list of LedgerEntry for a given Client Name (since we link by name mostly)
 // We use Family to pass arguments.
-final clientLedgerProvider =
-    FutureProvider.family<List<LedgerEntry>, String>((final ref, final clientName) async {
+final clientLedgerProvider = FutureProvider.family<List<LedgerEntry>, String>((
+  final ref,
+  final clientName,
+) async {
   final repository = ref.watch(invoiceRepositoryProvider);
 
   // 1. Fetch all invoices
@@ -35,9 +37,11 @@ final clientLedgerProvider =
   // 2. Filter for this client
   // We match by Receiver Name as Invoice/Receiver models do not store a Client ID.
   final clientInvoices = allInvoices
-      .where((final inv) =>
-          inv.receiver.name.trim().toLowerCase() ==
-          clientName.trim().toLowerCase())
+      .where(
+        (final inv) =>
+            inv.receiver.name.trim().toLowerCase() ==
+            clientName.trim().toLowerCase(),
+      )
       .toList();
 
   final List<LedgerEntry> entries = [];
@@ -52,25 +56,29 @@ final clientLedgerProvider =
 
     // Scenario A: Standard Invoice
     if (inv.type == InvoiceType.invoice) {
-      entries.add(LedgerEntry(
-        date: inv.invoiceDate,
-        particulars: "Invoice #${inv.invoiceNo}",
-        type: 'INVOICE',
-        debit: inv.grandTotal,
-        credit: 0,
-        balance: 0, // Calc later
-      ));
+      entries.add(
+        LedgerEntry(
+          date: inv.invoiceDate,
+          particulars: "Invoice #${inv.invoiceNo}",
+          type: 'INVOICE',
+          debit: inv.grandTotal,
+          credit: 0,
+          balance: 0, // Calc later
+        ),
+      );
     } else if (inv.type == InvoiceType.creditNote) {
       // It's a Credit Note Document.
       // It reduces balance. So Credit column.
-      entries.add(LedgerEntry(
-        date: inv.invoiceDate,
-        particulars: "Credit Note #${inv.invoiceNo}",
-        type: 'CREDIT_NOTE',
-        debit: 0,
-        credit: inv.grandTotal,
-        balance: 0,
-      ));
+      entries.add(
+        LedgerEntry(
+          date: inv.invoiceDate,
+          particulars: "Credit Note #${inv.invoiceNo}",
+          type: 'CREDIT_NOTE',
+          debit: 0,
+          credit: inv.grandTotal,
+          balance: 0,
+        ),
+      );
     }
 
     // 4. Payments (Credit) associated with this invoice
@@ -91,14 +99,16 @@ final clientLedgerProvider =
 
       if (pay.paymentMode == 'Credit Note') continue;
 
-      entries.add(LedgerEntry(
-        date: pay.date,
-        particulars: "Payment (${pay.paymentMode})",
-        type: 'PAYMENT',
-        debit: 0,
-        credit: pay.amount,
-        balance: 0,
-      ));
+      entries.add(
+        LedgerEntry(
+          date: pay.date,
+          particulars: "Payment (${pay.paymentMode})",
+          type: 'PAYMENT',
+          debit: 0,
+          credit: pay.amount,
+          balance: 0,
+        ),
+      );
     }
   }
 
@@ -111,14 +121,16 @@ final clientLedgerProvider =
 
   for (final entry in entries) {
     runningBalance += entry.debit - entry.credit;
-    calculatedEntries.add(LedgerEntry(
-      date: entry.date,
-      particulars: entry.particulars,
-      type: entry.type,
-      debit: entry.debit,
-      credit: entry.credit,
-      balance: runningBalance,
-    ));
+    calculatedEntries.add(
+      LedgerEntry(
+        date: entry.date,
+        particulars: entry.particulars,
+        type: entry.type,
+        debit: entry.debit,
+        credit: entry.credit,
+        balance: runningBalance,
+      ),
+    );
   }
 
   // Reverse to show latest first?

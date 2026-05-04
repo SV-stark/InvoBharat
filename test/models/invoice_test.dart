@@ -59,13 +59,8 @@ void main() {
     final receiver = const Receiver(state: 'Maharashtra');
     final date = DateTime(2025);
 
-    final item1 = const InvoiceItem(
-      amount: 100,
-    ); // Net 100
-    final item2 = const InvoiceItem(
-      amount: 200,
-      gstRate: 12,
-    ); // Net 200
+    final item1 = const InvoiceItem(amount: 100); // Net 100
+    final item2 = const InvoiceItem(amount: 200, gstRate: 12); // Net 200
 
     test('isInterState detection', () {
       final intraInvoice = Invoice(

@@ -4,15 +4,12 @@ import 'package:invobharat/screens/dashboard_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  testWidgets('DashboardScreen displays App Logo and InvoBharat text',
-      (final WidgetTester tester) async {
+  testWidgets('DashboardScreen displays App Logo and InvoBharat text', (
+    final WidgetTester tester,
+  ) async {
     // Provide a mock or container for Riverpod
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(
-          home: DashboardScreen(),
-        ),
-      ),
+      const ProviderScope(child: MaterialApp(home: DashboardScreen())),
     );
 
     await tester.pump();

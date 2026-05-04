@@ -25,11 +25,15 @@ class InvoiceActions {
       invoiceNo: '${profile.invoiceSeries}${profile.invoiceSequence}',
       invoiceDate: DateTime.now(),
       payments: [],
-      items: invoice.items.map((final e) => e.copyWith(id: const Uuid().v4())).toList(),
+      items: invoice.items
+          .map((final e) => e.copyWith(id: const Uuid().v4()))
+          .toList(),
     );
 
     await ref.read(invoiceRepositoryProvider).saveInvoice(newInvoice);
-    await ref.read(businessProfileListProvider.notifier).incrementInvoiceSequence();
+    await ref
+        .read(businessProfileListProvider.notifier)
+        .incrementInvoiceSequence();
     ref.invalidate(invoiceListProvider);
   }
 
@@ -37,10 +41,7 @@ class InvoiceActions {
     final WidgetRef ref,
     final Invoice invoice,
   ) async {
-    final updated = invoice.copyWith(
-      status: 'Sent',
-      sentAt: DateTime.now(),
-    );
+    final updated = invoice.copyWith(status: 'Sent', sentAt: DateTime.now());
     await saveInvoice(ref, updated);
   }
 
