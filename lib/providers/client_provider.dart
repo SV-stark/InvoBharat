@@ -5,9 +5,12 @@ import 'package:invobharat/data/client_repository.dart';
 import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/database_provider.dart';
 
+import 'package:invobharat/providers/business_profile_provider.dart';
+
 final clientRepositoryProvider = Provider<ClientRepository>((final ref) {
   final db = ref.watch(databaseProvider);
-  return SqlClientRepository(db);
+  final profile = ref.watch(businessProfileProvider);
+  return SqlClientRepository(db, profile.id);
 });
 
 final clientListProvider = NotifierProvider<ClientListNotifier, List<Client>>(

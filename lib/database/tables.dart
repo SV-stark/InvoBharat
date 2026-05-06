@@ -142,6 +142,21 @@ class Payments extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+@DataClassName('BankAccountData')
+class BankAccounts extends Table {
+  TextColumn get id => text()();
+  TextColumn get profileId =>
+      text().references(BusinessProfiles, #id, onDelete: KeyAction.cascade)();
+  TextColumn get bankName => text()();
+  TextColumn get accountNo => text()();
+  TextColumn get ifscCode => text()();
+  TextColumn get branch => text()();
+  BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 class AppSettings extends Table {
   TextColumn get key => text()();
   TextColumn get value => text()();

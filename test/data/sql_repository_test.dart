@@ -17,7 +17,7 @@ void main() {
 
   setUp(() {
     database = AppDatabase(NativeDatabase.memory());
-    clientRepo = SqlClientRepository(database);
+    clientRepo = SqlClientRepository(database, 'default');
     profileRepo = SqlBusinessProfileRepository(database);
     invoiceRepo = SqlInvoiceRepository(database, 'default');
   });

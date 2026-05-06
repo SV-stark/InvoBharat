@@ -16,6 +16,9 @@ class DatabaseMigrationService {
   DatabaseMigrationService(this.database);
 
   Future<void> performMigration(final Function(String) onProgress) async {
+    // Fix orphan data from previous bug
+    await fixOrphanData();
+
     final prefs = await SharedPreferences.getInstance();
     final isMigrated = prefs.getBool('db_migration_completed_v1') ?? false;
 
@@ -67,11 +70,34 @@ class DatabaseMigrationService {
     }
   }
 
+  Future<void> fixOrphanData() async {
+    try {
+      final profiles = await database.select(database.businessProfiles).get();
+      if (profiles.isEmpty) return;
+
+      final firstProfileId = profiles.first.id;
+
+      // Update invoices with empty profileId
+      await database.customStatement(
+        'UPDATE invoices SET profile_id = ? WHERE profile_id = ? OR profile_id IS NULL',
+        [firstProfileId, ''],
+      );
+
+      // Update clients with empty profileId
+      await database.customStatement(
+        'UPDATE clients SET profile_id = ? WHERE profile_id = ? OR profile_id IS NULL',
+        [firstProfileId, ''],
+      );
+    } catch (e) {
+      if (kDebugMode) print("Error fixing orphan data: $e");
+    }
+  }
+
   Future<void> _migrateClients(
     final String profileId,
     final Function(String) onProgress,
   ) async {
-    final sqlRepo = SqlClientRepository(database);
+    final sqlRepo = SqlClientRepository(database, profileId);
 
     onProgress("Starting Client Migration...");
 

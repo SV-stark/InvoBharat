@@ -216,19 +216,19 @@ class ClassicTemplate extends BasePdfTemplate {
                         ),
                       ),
                       pw.Text(
-                        "Bank: ${profile.bankName}",
+                        "Bank: ${invoice.bankName}",
                         style: const pw.TextStyle(fontSize: 9),
                       ),
                       pw.Text(
-                        "A/c No: ${profile.accountNo}",
+                        "A/c No: ${invoice.accountNo}",
                         style: const pw.TextStyle(fontSize: 9),
                       ),
                       pw.Text(
-                        "IFSC: ${profile.ifscCode}",
+                        "IFSC: ${invoice.ifscCode}",
                         style: const pw.TextStyle(fontSize: 9),
                       ),
                       pw.Text(
-                        "Branch: ${profile.branch}",
+                        "Branch: ${invoice.branch}",
                         style: const pw.TextStyle(fontSize: 9),
                       ),
                       if (profile.upiId.isNotEmpty) ...[

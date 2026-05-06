@@ -148,22 +148,20 @@ class BusinessProfileList extends _$BusinessProfileList {
 class ActiveProfileId extends _$ActiveProfileId {
   @override
   String build() {
-    _loadActiveId();
+    final profiles = ref.watch(businessProfileListProvider);
+    _loadActiveId(profiles);
     return "";
   }
 
-  Future<void> _loadActiveId() async {
+  Future<void> _loadActiveId(final List<BusinessProfile> profiles) async {
     final prefs = await SharedPreferences.getInstance();
     final storedId = prefs.getString('active_profile_id');
 
-    if (storedId != null) {
+    if (storedId != null && profiles.any((final p) => p.id == storedId)) {
       state = storedId;
-    } else {
-      final profiles = ref.read(businessProfileListProvider);
-      if (profiles.isNotEmpty) {
-        state = profiles.first.id;
-        await selectProfile(state);
-      }
+    } else if (profiles.isNotEmpty) {
+      state = profiles.first.id;
+      await selectProfile(state);
     }
   }
 

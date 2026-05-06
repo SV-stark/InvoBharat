@@ -4957,6 +4957,472 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
   }
 }
 
+class $BankAccountsTable extends BankAccounts
+    with TableInfo<$BankAccountsTable, BankAccountData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BankAccountsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _profileIdMeta = const VerificationMeta(
+    'profileId',
+  );
+  @override
+  late final GeneratedColumn<String> profileId = GeneratedColumn<String>(
+    'profile_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES business_profiles (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _bankNameMeta = const VerificationMeta(
+    'bankName',
+  );
+  @override
+  late final GeneratedColumn<String> bankName = GeneratedColumn<String>(
+    'bank_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _accountNoMeta = const VerificationMeta(
+    'accountNo',
+  );
+  @override
+  late final GeneratedColumn<String> accountNo = GeneratedColumn<String>(
+    'account_no',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ifscCodeMeta = const VerificationMeta(
+    'ifscCode',
+  );
+  @override
+  late final GeneratedColumn<String> ifscCode = GeneratedColumn<String>(
+    'ifsc_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _branchMeta = const VerificationMeta('branch');
+  @override
+  late final GeneratedColumn<String> branch = GeneratedColumn<String>(
+    'branch',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isDefaultMeta = const VerificationMeta(
+    'isDefault',
+  );
+  @override
+  late final GeneratedColumn<bool> isDefault = GeneratedColumn<bool>(
+    'is_default',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_default" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    profileId,
+    bankName,
+    accountNo,
+    ifscCode,
+    branch,
+    isDefault,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'bank_accounts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<BankAccountData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('profile_id')) {
+      context.handle(
+        _profileIdMeta,
+        profileId.isAcceptableOrUnknown(data['profile_id']!, _profileIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_profileIdMeta);
+    }
+    if (data.containsKey('bank_name')) {
+      context.handle(
+        _bankNameMeta,
+        bankName.isAcceptableOrUnknown(data['bank_name']!, _bankNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bankNameMeta);
+    }
+    if (data.containsKey('account_no')) {
+      context.handle(
+        _accountNoMeta,
+        accountNo.isAcceptableOrUnknown(data['account_no']!, _accountNoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_accountNoMeta);
+    }
+    if (data.containsKey('ifsc_code')) {
+      context.handle(
+        _ifscCodeMeta,
+        ifscCode.isAcceptableOrUnknown(data['ifsc_code']!, _ifscCodeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ifscCodeMeta);
+    }
+    if (data.containsKey('branch')) {
+      context.handle(
+        _branchMeta,
+        branch.isAcceptableOrUnknown(data['branch']!, _branchMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_branchMeta);
+    }
+    if (data.containsKey('is_default')) {
+      context.handle(
+        _isDefaultMeta,
+        isDefault.isAcceptableOrUnknown(data['is_default']!, _isDefaultMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  BankAccountData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return BankAccountData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      profileId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}profile_id'],
+      )!,
+      bankName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bank_name'],
+      )!,
+      accountNo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}account_no'],
+      )!,
+      ifscCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ifsc_code'],
+      )!,
+      branch: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}branch'],
+      )!,
+      isDefault: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_default'],
+      )!,
+    );
+  }
+
+  @override
+  $BankAccountsTable createAlias(String alias) {
+    return $BankAccountsTable(attachedDatabase, alias);
+  }
+}
+
+class BankAccountData extends DataClass implements Insertable<BankAccountData> {
+  final String id;
+  final String profileId;
+  final String bankName;
+  final String accountNo;
+  final String ifscCode;
+  final String branch;
+  final bool isDefault;
+  const BankAccountData({
+    required this.id,
+    required this.profileId,
+    required this.bankName,
+    required this.accountNo,
+    required this.ifscCode,
+    required this.branch,
+    required this.isDefault,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['profile_id'] = Variable<String>(profileId);
+    map['bank_name'] = Variable<String>(bankName);
+    map['account_no'] = Variable<String>(accountNo);
+    map['ifsc_code'] = Variable<String>(ifscCode);
+    map['branch'] = Variable<String>(branch);
+    map['is_default'] = Variable<bool>(isDefault);
+    return map;
+  }
+
+  BankAccountsCompanion toCompanion(bool nullToAbsent) {
+    return BankAccountsCompanion(
+      id: Value(id),
+      profileId: Value(profileId),
+      bankName: Value(bankName),
+      accountNo: Value(accountNo),
+      ifscCode: Value(ifscCode),
+      branch: Value(branch),
+      isDefault: Value(isDefault),
+    );
+  }
+
+  factory BankAccountData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return BankAccountData(
+      id: serializer.fromJson<String>(json['id']),
+      profileId: serializer.fromJson<String>(json['profileId']),
+      bankName: serializer.fromJson<String>(json['bankName']),
+      accountNo: serializer.fromJson<String>(json['accountNo']),
+      ifscCode: serializer.fromJson<String>(json['ifscCode']),
+      branch: serializer.fromJson<String>(json['branch']),
+      isDefault: serializer.fromJson<bool>(json['isDefault']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'profileId': serializer.toJson<String>(profileId),
+      'bankName': serializer.toJson<String>(bankName),
+      'accountNo': serializer.toJson<String>(accountNo),
+      'ifscCode': serializer.toJson<String>(ifscCode),
+      'branch': serializer.toJson<String>(branch),
+      'isDefault': serializer.toJson<bool>(isDefault),
+    };
+  }
+
+  BankAccountData copyWith({
+    String? id,
+    String? profileId,
+    String? bankName,
+    String? accountNo,
+    String? ifscCode,
+    String? branch,
+    bool? isDefault,
+  }) => BankAccountData(
+    id: id ?? this.id,
+    profileId: profileId ?? this.profileId,
+    bankName: bankName ?? this.bankName,
+    accountNo: accountNo ?? this.accountNo,
+    ifscCode: ifscCode ?? this.ifscCode,
+    branch: branch ?? this.branch,
+    isDefault: isDefault ?? this.isDefault,
+  );
+  BankAccountData copyWithCompanion(BankAccountsCompanion data) {
+    return BankAccountData(
+      id: data.id.present ? data.id.value : this.id,
+      profileId: data.profileId.present ? data.profileId.value : this.profileId,
+      bankName: data.bankName.present ? data.bankName.value : this.bankName,
+      accountNo: data.accountNo.present ? data.accountNo.value : this.accountNo,
+      ifscCode: data.ifscCode.present ? data.ifscCode.value : this.ifscCode,
+      branch: data.branch.present ? data.branch.value : this.branch,
+      isDefault: data.isDefault.present ? data.isDefault.value : this.isDefault,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BankAccountData(')
+          ..write('id: $id, ')
+          ..write('profileId: $profileId, ')
+          ..write('bankName: $bankName, ')
+          ..write('accountNo: $accountNo, ')
+          ..write('ifscCode: $ifscCode, ')
+          ..write('branch: $branch, ')
+          ..write('isDefault: $isDefault')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    profileId,
+    bankName,
+    accountNo,
+    ifscCode,
+    branch,
+    isDefault,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is BankAccountData &&
+          other.id == this.id &&
+          other.profileId == this.profileId &&
+          other.bankName == this.bankName &&
+          other.accountNo == this.accountNo &&
+          other.ifscCode == this.ifscCode &&
+          other.branch == this.branch &&
+          other.isDefault == this.isDefault);
+}
+
+class BankAccountsCompanion extends UpdateCompanion<BankAccountData> {
+  final Value<String> id;
+  final Value<String> profileId;
+  final Value<String> bankName;
+  final Value<String> accountNo;
+  final Value<String> ifscCode;
+  final Value<String> branch;
+  final Value<bool> isDefault;
+  final Value<int> rowid;
+  const BankAccountsCompanion({
+    this.id = const Value.absent(),
+    this.profileId = const Value.absent(),
+    this.bankName = const Value.absent(),
+    this.accountNo = const Value.absent(),
+    this.ifscCode = const Value.absent(),
+    this.branch = const Value.absent(),
+    this.isDefault = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  BankAccountsCompanion.insert({
+    required String id,
+    required String profileId,
+    required String bankName,
+    required String accountNo,
+    required String ifscCode,
+    required String branch,
+    this.isDefault = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       profileId = Value(profileId),
+       bankName = Value(bankName),
+       accountNo = Value(accountNo),
+       ifscCode = Value(ifscCode),
+       branch = Value(branch);
+  static Insertable<BankAccountData> custom({
+    Expression<String>? id,
+    Expression<String>? profileId,
+    Expression<String>? bankName,
+    Expression<String>? accountNo,
+    Expression<String>? ifscCode,
+    Expression<String>? branch,
+    Expression<bool>? isDefault,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (profileId != null) 'profile_id': profileId,
+      if (bankName != null) 'bank_name': bankName,
+      if (accountNo != null) 'account_no': accountNo,
+      if (ifscCode != null) 'ifsc_code': ifscCode,
+      if (branch != null) 'branch': branch,
+      if (isDefault != null) 'is_default': isDefault,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  BankAccountsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? profileId,
+    Value<String>? bankName,
+    Value<String>? accountNo,
+    Value<String>? ifscCode,
+    Value<String>? branch,
+    Value<bool>? isDefault,
+    Value<int>? rowid,
+  }) {
+    return BankAccountsCompanion(
+      id: id ?? this.id,
+      profileId: profileId ?? this.profileId,
+      bankName: bankName ?? this.bankName,
+      accountNo: accountNo ?? this.accountNo,
+      ifscCode: ifscCode ?? this.ifscCode,
+      branch: branch ?? this.branch,
+      isDefault: isDefault ?? this.isDefault,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (profileId.present) {
+      map['profile_id'] = Variable<String>(profileId.value);
+    }
+    if (bankName.present) {
+      map['bank_name'] = Variable<String>(bankName.value);
+    }
+    if (accountNo.present) {
+      map['account_no'] = Variable<String>(accountNo.value);
+    }
+    if (ifscCode.present) {
+      map['ifsc_code'] = Variable<String>(ifscCode.value);
+    }
+    if (branch.present) {
+      map['branch'] = Variable<String>(branch.value);
+    }
+    if (isDefault.present) {
+      map['is_default'] = Variable<bool>(isDefault.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BankAccountsCompanion(')
+          ..write('id: $id, ')
+          ..write('profileId: $profileId, ')
+          ..write('bankName: $bankName, ')
+          ..write('accountNo: $accountNo, ')
+          ..write('ifscCode: $ifscCode, ')
+          ..write('branch: $branch, ')
+          ..write('isDefault: $isDefault, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $AppSettingsTable extends AppSettings
     with TableInfo<$AppSettingsTable, AppSetting> {
   @override
@@ -5175,6 +5641,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $InvoicesTable invoices = $InvoicesTable(this);
   late final $InvoiceItemsTable invoiceItems = $InvoiceItemsTable(this);
   late final $PaymentsTable payments = $PaymentsTable(this);
+  late final $BankAccountsTable bankAccounts = $BankAccountsTable(this);
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -5186,6 +5653,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     invoices,
     invoiceItems,
     payments,
+    bankAccounts,
     appSettings,
   ];
   @override
@@ -5224,6 +5692,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('payments', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'business_profiles',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('bank_accounts', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -5339,6 +5814,27 @@ final class $$BusinessProfilesTableReferences
     ).filter((f) => f.profileId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_invoicesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$BankAccountsTable, List<BankAccountData>>
+  _bankAccountsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.bankAccounts,
+    aliasName: $_aliasNameGenerator(
+      db.businessProfiles.id,
+      db.bankAccounts.profileId,
+    ),
+  );
+
+  $$BankAccountsTableProcessedTableManager get bankAccountsRefs {
+    final manager = $$BankAccountsTableTableManager(
+      $_db,
+      $_db.bankAccounts,
+    ).filter((f) => f.profileId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_bankAccountsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -5530,6 +6026,31 @@ class $$BusinessProfilesTableFilterComposer
           }) => $$InvoicesTableFilterComposer(
             $db: $db,
             $table: $db.invoices,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> bankAccountsRefs(
+    Expression<bool> Function($$BankAccountsTableFilterComposer f) f,
+  ) {
+    final $$BankAccountsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.bankAccounts,
+      getReferencedColumn: (t) => t.profileId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BankAccountsTableFilterComposer(
+            $db: $db,
+            $table: $db.bankAccounts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5844,6 +6365,31 @@ class $$BusinessProfilesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> bankAccountsRefs<T extends Object>(
+    Expression<T> Function($$BankAccountsTableAnnotationComposer a) f,
+  ) {
+    final $$BankAccountsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.bankAccounts,
+      getReferencedColumn: (t) => t.profileId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BankAccountsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.bankAccounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$BusinessProfilesTableTableManager
@@ -5859,7 +6405,11 @@ class $$BusinessProfilesTableTableManager
           $$BusinessProfilesTableUpdateCompanionBuilder,
           (BusinessProfile, $$BusinessProfilesTableReferences),
           BusinessProfile,
-          PrefetchHooks Function({bool clientsRefs, bool invoicesRefs})
+          PrefetchHooks Function({
+            bool clientsRefs,
+            bool invoicesRefs,
+            bool bankAccountsRefs,
+          })
         > {
   $$BusinessProfilesTableTableManager(
     _$AppDatabase db,
@@ -6002,58 +6552,89 @@ class $$BusinessProfilesTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({clientsRefs = false, invoicesRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (clientsRefs) db.clients,
-                if (invoicesRefs) db.invoices,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (clientsRefs)
-                    await $_getPrefetchedData<
-                      BusinessProfile,
-                      $BusinessProfilesTable,
-                      Client
-                    >(
-                      currentTable: table,
-                      referencedTable: $$BusinessProfilesTableReferences
-                          ._clientsRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$BusinessProfilesTableReferences(
-                            db,
-                            table,
-                            p0,
-                          ).clientsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.profileId == item.id),
-                      typedResults: items,
-                    ),
-                  if (invoicesRefs)
-                    await $_getPrefetchedData<
-                      BusinessProfile,
-                      $BusinessProfilesTable,
-                      Invoice
-                    >(
-                      currentTable: table,
-                      referencedTable: $$BusinessProfilesTableReferences
-                          ._invoicesRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$BusinessProfilesTableReferences(
-                            db,
-                            table,
-                            p0,
-                          ).invoicesRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.profileId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({
+                clientsRefs = false,
+                invoicesRefs = false,
+                bankAccountsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (clientsRefs) db.clients,
+                    if (invoicesRefs) db.invoices,
+                    if (bankAccountsRefs) db.bankAccounts,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (clientsRefs)
+                        await $_getPrefetchedData<
+                          BusinessProfile,
+                          $BusinessProfilesTable,
+                          Client
+                        >(
+                          currentTable: table,
+                          referencedTable: $$BusinessProfilesTableReferences
+                              ._clientsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$BusinessProfilesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).clientsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.profileId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (invoicesRefs)
+                        await $_getPrefetchedData<
+                          BusinessProfile,
+                          $BusinessProfilesTable,
+                          Invoice
+                        >(
+                          currentTable: table,
+                          referencedTable: $$BusinessProfilesTableReferences
+                              ._invoicesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$BusinessProfilesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).invoicesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.profileId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (bankAccountsRefs)
+                        await $_getPrefetchedData<
+                          BusinessProfile,
+                          $BusinessProfilesTable,
+                          BankAccountData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$BusinessProfilesTableReferences
+                              ._bankAccountsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$BusinessProfilesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).bankAccountsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.profileId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -6070,7 +6651,11 @@ typedef $$BusinessProfilesTableProcessedTableManager =
       $$BusinessProfilesTableUpdateCompanionBuilder,
       (BusinessProfile, $$BusinessProfilesTableReferences),
       BusinessProfile,
-      PrefetchHooks Function({bool clientsRefs, bool invoicesRefs})
+      PrefetchHooks Function({
+        bool clientsRefs,
+        bool invoicesRefs,
+        bool bankAccountsRefs,
+      })
     >;
 typedef $$ClientsTableCreateCompanionBuilder =
     ClientsCompanion Function({
@@ -8510,6 +9095,363 @@ typedef $$PaymentsTableProcessedTableManager =
       Payment,
       PrefetchHooks Function({bool invoiceId})
     >;
+typedef $$BankAccountsTableCreateCompanionBuilder =
+    BankAccountsCompanion Function({
+      required String id,
+      required String profileId,
+      required String bankName,
+      required String accountNo,
+      required String ifscCode,
+      required String branch,
+      Value<bool> isDefault,
+      Value<int> rowid,
+    });
+typedef $$BankAccountsTableUpdateCompanionBuilder =
+    BankAccountsCompanion Function({
+      Value<String> id,
+      Value<String> profileId,
+      Value<String> bankName,
+      Value<String> accountNo,
+      Value<String> ifscCode,
+      Value<String> branch,
+      Value<bool> isDefault,
+      Value<int> rowid,
+    });
+
+final class $$BankAccountsTableReferences
+    extends BaseReferences<_$AppDatabase, $BankAccountsTable, BankAccountData> {
+  $$BankAccountsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $BusinessProfilesTable _profileIdTable(_$AppDatabase db) =>
+      db.businessProfiles.createAlias(
+        $_aliasNameGenerator(db.bankAccounts.profileId, db.businessProfiles.id),
+      );
+
+  $$BusinessProfilesTableProcessedTableManager get profileId {
+    final $_column = $_itemColumn<String>('profile_id')!;
+
+    final manager = $$BusinessProfilesTableTableManager(
+      $_db,
+      $_db.businessProfiles,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_profileIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$BankAccountsTableFilterComposer
+    extends Composer<_$AppDatabase, $BankAccountsTable> {
+  $$BankAccountsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bankName => $composableBuilder(
+    column: $table.bankName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get accountNo => $composableBuilder(
+    column: $table.accountNo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ifscCode => $composableBuilder(
+    column: $table.ifscCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get branch => $composableBuilder(
+    column: $table.branch,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDefault => $composableBuilder(
+    column: $table.isDefault,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$BusinessProfilesTableFilterComposer get profileId {
+    final $$BusinessProfilesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.businessProfiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BusinessProfilesTableFilterComposer(
+            $db: $db,
+            $table: $db.businessProfiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$BankAccountsTableOrderingComposer
+    extends Composer<_$AppDatabase, $BankAccountsTable> {
+  $$BankAccountsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bankName => $composableBuilder(
+    column: $table.bankName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get accountNo => $composableBuilder(
+    column: $table.accountNo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ifscCode => $composableBuilder(
+    column: $table.ifscCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get branch => $composableBuilder(
+    column: $table.branch,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDefault => $composableBuilder(
+    column: $table.isDefault,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$BusinessProfilesTableOrderingComposer get profileId {
+    final $$BusinessProfilesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.businessProfiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BusinessProfilesTableOrderingComposer(
+            $db: $db,
+            $table: $db.businessProfiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$BankAccountsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $BankAccountsTable> {
+  $$BankAccountsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get bankName =>
+      $composableBuilder(column: $table.bankName, builder: (column) => column);
+
+  GeneratedColumn<String> get accountNo =>
+      $composableBuilder(column: $table.accountNo, builder: (column) => column);
+
+  GeneratedColumn<String> get ifscCode =>
+      $composableBuilder(column: $table.ifscCode, builder: (column) => column);
+
+  GeneratedColumn<String> get branch =>
+      $composableBuilder(column: $table.branch, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDefault =>
+      $composableBuilder(column: $table.isDefault, builder: (column) => column);
+
+  $$BusinessProfilesTableAnnotationComposer get profileId {
+    final $$BusinessProfilesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.businessProfiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BusinessProfilesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.businessProfiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$BankAccountsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $BankAccountsTable,
+          BankAccountData,
+          $$BankAccountsTableFilterComposer,
+          $$BankAccountsTableOrderingComposer,
+          $$BankAccountsTableAnnotationComposer,
+          $$BankAccountsTableCreateCompanionBuilder,
+          $$BankAccountsTableUpdateCompanionBuilder,
+          (BankAccountData, $$BankAccountsTableReferences),
+          BankAccountData,
+          PrefetchHooks Function({bool profileId})
+        > {
+  $$BankAccountsTableTableManager(_$AppDatabase db, $BankAccountsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$BankAccountsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$BankAccountsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$BankAccountsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> profileId = const Value.absent(),
+                Value<String> bankName = const Value.absent(),
+                Value<String> accountNo = const Value.absent(),
+                Value<String> ifscCode = const Value.absent(),
+                Value<String> branch = const Value.absent(),
+                Value<bool> isDefault = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => BankAccountsCompanion(
+                id: id,
+                profileId: profileId,
+                bankName: bankName,
+                accountNo: accountNo,
+                ifscCode: ifscCode,
+                branch: branch,
+                isDefault: isDefault,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String profileId,
+                required String bankName,
+                required String accountNo,
+                required String ifscCode,
+                required String branch,
+                Value<bool> isDefault = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => BankAccountsCompanion.insert(
+                id: id,
+                profileId: profileId,
+                bankName: bankName,
+                accountNo: accountNo,
+                ifscCode: ifscCode,
+                branch: branch,
+                isDefault: isDefault,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$BankAccountsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({profileId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (profileId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.profileId,
+                                referencedTable: $$BankAccountsTableReferences
+                                    ._profileIdTable(db),
+                                referencedColumn: $$BankAccountsTableReferences
+                                    ._profileIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$BankAccountsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $BankAccountsTable,
+      BankAccountData,
+      $$BankAccountsTableFilterComposer,
+      $$BankAccountsTableOrderingComposer,
+      $$BankAccountsTableAnnotationComposer,
+      $$BankAccountsTableCreateCompanionBuilder,
+      $$BankAccountsTableUpdateCompanionBuilder,
+      (BankAccountData, $$BankAccountsTableReferences),
+      BankAccountData,
+      PrefetchHooks Function({bool profileId})
+    >;
 typedef $$AppSettingsTableCreateCompanionBuilder =
     AppSettingsCompanion Function({
       required String key,
@@ -8663,6 +9605,8 @@ class $AppDatabaseManager {
       $$InvoiceItemsTableTableManager(_db, _db.invoiceItems);
   $$PaymentsTableTableManager get payments =>
       $$PaymentsTableTableManager(_db, _db.payments);
+  $$BankAccountsTableTableManager get bankAccounts =>
+      $$BankAccountsTableTableManager(_db, _db.bankAccounts);
   $$AppSettingsTableTableManager get appSettings =>
       $$AppSettingsTableTableManager(_db, _db.appSettings);
 }

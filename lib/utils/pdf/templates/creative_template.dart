@@ -313,7 +313,7 @@ class CreativeTemplate extends BasePdfTemplate {
                                       ),
                                     ),
                                     pw.Text(
-                                      "Bank: ${profile.bankName}\nA/c: ${profile.accountNo}\nIFSC: ${profile.ifscCode}",
+                                      "Bank: ${invoice.bankName}\nA/c: ${invoice.accountNo}\nIFSC: ${invoice.ifscCode}",
                                       style: const pw.TextStyle(fontSize: 9),
                                     ),
                                     if (profile

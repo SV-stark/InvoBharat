@@ -11,7 +11,7 @@ void main() {
 
   setUp(() {
     database = AppDatabase(NativeDatabase.memory());
-    repository = SqlClientRepository(database);
+    repository = SqlClientRepository(database, 'p1');
   });
 
   tearDown(() async {

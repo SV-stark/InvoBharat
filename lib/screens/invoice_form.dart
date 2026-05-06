@@ -10,6 +10,8 @@ import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/client_provider.dart';
 import 'package:invobharat/providers/invoice_provider.dart';
 import 'package:invobharat/providers/item_template_provider.dart';
+import 'package:invobharat/providers/bank_provider.dart';
+
 import 'package:invobharat/mixins/invoice_form_mixin.dart';
 import 'package:invobharat/screens/widgets/invoice_form_sections.dart';
 import 'package:invobharat/utils/formatters.dart';
@@ -130,6 +132,8 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
                 gstinField: _buildGstinField(),
               ),
               const SizedBox(height: 16),
+              _buildBankSection(context),
+              const SizedBox(height: 16),
               InvoiceItemsSection(
                 onAddItem: () => ref.read(invoiceProvider.notifier).addItem(),
                 onAddFromTemplate: () => _showTemplateSelector(context),
@@ -143,6 +147,115 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBankSection(final BuildContext context) {
+    final invoice = ref.watch(invoiceProvider);
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: Theme.of(context).dividerColor),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Bank Details",
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                TextButton.icon(
+                  onPressed: () => _showBankSelector(context),
+                  icon: const Icon(Icons.account_balance_outlined, size: 16),
+                  label: const Text("Switch Bank"),
+                ),
+              ],
+            ),
+            const Divider(),
+            if (invoice.bankName.isNotEmpty) ...[
+              Text(
+                invoice.bankName,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text("A/C: ${invoice.accountNo}"),
+              Text("IFSC: ${invoice.ifscCode}"),
+              if (invoice.branch.isNotEmpty) Text("Branch: ${invoice.branch}"),
+            ] else
+              const Text(
+                "No bank details selected",
+                style: TextStyle(color: Colors.grey),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showBankSelector(final BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (final context) {
+        return Consumer(
+          builder: (final context, final ref, final child) {
+            final banksAsync = ref.watch(bankListProvider);
+            return Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Select Bank Account",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  banksAsync.when(
+                    data: (final banks) {
+                      if (banks.isEmpty) {
+                        return const Center(child: Text("No bank accounts found in settings."));
+                      }
+                      return Flexible(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: banks.length,
+                          itemBuilder: (final context, final index) {
+                            final bank = banks[index];
+                            return ListTile(
+                              title: Text(bank.bankName),
+                              subtitle: Text("${bank.accountNo} (${bank.ifscCode})"),
+                              trailing: bank.isDefault ? const Icon(Icons.star, color: Colors.amber) : null,
+                              onTap: () {
+                                ref.read(invoiceProvider.notifier).updateBankDetails(
+                                      bank.bankName,
+                                      bank.accountNo,
+                                      bank.ifscCode,
+                                      bank.branch,
+                                    );
+                                Navigator.pop(context);
+                              },
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (final err, final stack) => Center(child: Text("Error: $err")),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

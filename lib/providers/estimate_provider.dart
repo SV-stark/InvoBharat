@@ -78,8 +78,8 @@ class EstimateRepository {
 // --- Providers ---
 
 final estimateRepositoryProvider = Provider<EstimateRepository>((final ref) {
-  final activeId = ref.watch(activeProfileIdProvider);
-  return EstimateRepository(profileId: activeId);
+  final profile = ref.watch(businessProfileProvider);
+  return EstimateRepository(profileId: profile.id);
 });
 
 final estimateListProvider =

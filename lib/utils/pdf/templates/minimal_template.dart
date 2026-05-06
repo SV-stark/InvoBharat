@@ -284,19 +284,19 @@ class MinimalTemplate extends BasePdfTemplate {
                       ),
                       pw.SizedBox(height: 4),
                       pw.Text(
-                        "Bank: ${profile.bankName}",
+                        "Bank: ${invoice.bankName}",
                         style: const pw.TextStyle(fontSize: 8),
                       ),
                       pw.Text(
-                        "A/C: ${profile.accountNo}",
+                        "A/C: ${invoice.accountNo}",
                         style: const pw.TextStyle(fontSize: 8),
                       ),
                       pw.Text(
-                        "IFSC: ${profile.ifscCode}",
+                        "IFSC: ${invoice.ifscCode}",
                         style: const pw.TextStyle(fontSize: 8),
                       ),
                       pw.Text(
-                        "Branch: ${profile.branch}",
+                        "Branch: ${invoice.branch}",
                         style: const pw.TextStyle(fontSize: 8),
                       ),
                       if (profile.upiId.isNotEmpty) ...[

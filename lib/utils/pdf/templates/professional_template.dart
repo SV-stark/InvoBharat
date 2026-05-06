@@ -322,19 +322,19 @@ class ProfessionalTemplate extends BasePdfTemplate {
                     ),
                     pw.SizedBox(height: 4),
                     pw.Text(
-                      "Bank Name: ${profile.bankName}",
+                      "Bank Name: ${invoice.bankName}",
                       style: const pw.TextStyle(fontSize: 8),
                     ),
                     pw.Text(
-                      "Account No: ${profile.accountNo}",
+                      "Account No: ${invoice.accountNo}",
                       style: const pw.TextStyle(fontSize: 8),
                     ),
                     pw.Text(
-                      "IFSC Code: ${profile.ifscCode}",
+                      "IFSC Code: ${invoice.ifscCode}",
                       style: const pw.TextStyle(fontSize: 8),
                     ),
                     pw.Text(
-                      "Branch: ${profile.branch}",
+                      "Branch: ${invoice.branch}",
                       style: const pw.TextStyle(fontSize: 8),
                     ),
                     if (profile.upiId.isNotEmpty) ...[

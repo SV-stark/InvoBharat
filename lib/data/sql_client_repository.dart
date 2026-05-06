@@ -6,33 +6,32 @@ import 'package:invobharat/data/client_repository.dart';
 
 class SqlClientRepository implements ClientRepository {
   final AppDatabase database;
+  final String profileId;
 
-  SqlClientRepository(this.database);
+  SqlClientRepository(this.database, this.profileId);
 
   @override
   Future<void> saveClient(final model.Client client) async {
-    await database
-        .into(database.clients)
-        .insertOnConflictUpdate(
-          ClientsCompanion(
-            id: Value(client.id.isEmpty ? const Uuid().v4() : client.id),
-            profileId: Value(client.profileId),
-            name: Value(client.name),
-            address: Value(client.address),
-            gstin: Value(client.gstin),
-            pan: Value(client.pan), // Added field
-            state: Value(client.state),
-            stateCode: Value(client.stateCode), // Added field
-            email: Value(client.email),
-            phone: Value(client.phone),
-          ),
-        );
+    await database.into(database.clients).insertOnConflictUpdate(
+      ClientsCompanion(
+        id: Value(client.id.isEmpty ? const Uuid().v4() : client.id),
+        profileId: Value(profileId), // Use repository profileId
+        name: Value(client.name),
+        address: Value(client.address),
+        gstin: Value(client.gstin),
+        pan: Value(client.pan),
+        state: Value(client.state),
+        stateCode: Value(client.stateCode),
+        email: Value(client.email),
+        phone: Value(client.phone),
+      ),
+    );
   }
 
   @override
   Future<model.Client?> getClient(final String id) async {
     final query = database.select(database.clients)
-      ..where((final tbl) => tbl.id.equals(id));
+      ..where((final tbl) => tbl.id.equals(id) & tbl.profileId.equals(profileId));
     final row = await query.getSingleOrNull();
     if (row == null) return null;
     return _mapRowToClient(row);
@@ -40,20 +39,24 @@ class SqlClientRepository implements ClientRepository {
 
   @override
   Future<List<model.Client>> getAllClients() async {
-    final rows = await database.select(database.clients).get();
+    final rows = await (database.select(database.clients)
+          ..where((final tbl) => tbl.profileId.equals(profileId)))
+        .get();
     return rows.map(_mapRowToClient).toList();
   }
 
   @override
   Future<void> deleteClient(final String id) async {
-    await (database.delete(
-      database.clients,
-    )..where((final tbl) => tbl.id.equals(id))).go();
+    await (database.delete(database.clients)
+          ..where((final tbl) => tbl.id.equals(id) & tbl.profileId.equals(profileId)))
+        .go();
   }
 
   @override
   Future<void> deleteAll() async {
-    await database.delete(database.clients).go();
+    await (database.delete(database.clients)
+          ..where((final tbl) => tbl.profileId.equals(profileId)))
+        .go();
   }
 
   model.Client _mapRowToClient(final Client row) {

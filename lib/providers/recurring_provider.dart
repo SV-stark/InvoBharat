@@ -197,9 +197,8 @@ final recurringListProvider =
 class RecurringListNotifier extends AsyncNotifier<List<RecurringProfile>> {
   @override
   Future<List<RecurringProfile>> build() async {
-    final activeId = ref.watch(activeProfileIdProvider);
-    if (activeId.isEmpty) return [];
-    return ref.read(recurringRepositoryProvider).getAllProfiles(activeId);
+    final profile = ref.watch(businessProfileProvider);
+    return ref.read(recurringRepositoryProvider).getAllProfiles(profile.id);
   }
 
   Future<void> addProfile(final RecurringProfile profile) async {
@@ -218,9 +217,7 @@ class RecurringListNotifier extends AsyncNotifier<List<RecurringProfile>> {
   }
 
   Future<void> runChecks() async {
-    final activeId = ref.read(activeProfileIdProvider);
-    if (activeId.isNotEmpty) {
-      await ref.read(recurringServiceProvider).checkAndRun(activeId);
-    }
+    final profile = ref.read(businessProfileProvider);
+    await ref.read(recurringServiceProvider).checkAndRun(profile.id);
   }
 }

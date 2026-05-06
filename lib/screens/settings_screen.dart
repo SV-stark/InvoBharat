@@ -18,6 +18,9 @@ import 'package:indian_formatters/indian_formatters.dart';
 import 'package:invobharat/utils/formatters.dart';
 import 'package:flutter/services.dart';
 
+import 'package:invobharat/providers/bank_provider.dart';
+import 'package:invobharat/models/bank_account.dart' as bank_model;
+
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
@@ -171,13 +174,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(final BuildContext context) {
     return DefaultTabController(
-      length: 5,
+      length: 6,
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Settings"),
           bottom: const TabBar(
+            isScrollable: true,
             tabs: [
               Tab(text: "General", icon: Icon(Icons.settings)),
+              Tab(text: "Banks", icon: Icon(Icons.account_balance)),
               Tab(text: "Profiles", icon: Icon(Icons.business)),
               Tab(text: "Backup", icon: Icon(Icons.backup)),
               Tab(text: "Email", icon: Icon(Icons.email)),
@@ -188,6 +193,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         body: TabBarView(
           children: [
             _buildGeneralSettings(),
+            _buildBanksTab(),
             _buildProfileSettings(),
             _buildBackupSettings(),
             const _EmailSettingsTab(),
@@ -279,23 +285,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const Gap(16),
             _buildTextField("Default Terms", _termsController, maxLines: 4),
             _buildTextField("Default Notes", _notesController, maxLines: 2),
-            const Gap(24),
-            _buildSectionHeader("Payment Details"),
-            _buildTextField("Bank Name", _bankNameController),
-            _buildTextField("Account Number", _accountNumberController),
-            _buildTextField(
-              "IFSC Code",
-              _ifscCodeController,
-              onChanged: (final val) {
-                if (val.length >= 4) {
-                  final bank = IndianValidators.getBankFromIFSC(val);
-                  if (bank != null) {
-                    _bankNameController.text = bank;
-                  }
-                }
-              },
-            ),
-            _buildTextField("Branch Name", _branchNameController),
             const Gap(24),
             _buildSectionHeader("UPI Details"),
             _buildTextField("UPI ID (VPA)", _upiIdController),
@@ -672,6 +661,157 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildBanksTab() {
+    final banksAsync = ref.watch(bankListProvider);
+    return banksAsync.when(
+      data: (final banks) => ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildSectionHeader("Bank Accounts"),
+              FilledButton.icon(
+                onPressed: () => _showAddEditBankDialog(context),
+                icon: const Icon(Icons.add),
+                label: const Text("Add Bank"),
+              ),
+            ],
+          ),
+          if (banks.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(32.0),
+                child: Text("No bank accounts found. Add one to get started."),
+              ),
+            )
+          else
+            ...banks.map((final bank) => Card(
+              child: ListTile(
+                leading: const Icon(Icons.account_balance),
+                title: Text(bank.bankName),
+                subtitle: Text("${bank.accountNo} (${bank.ifscCode})"),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (bank.isDefault)
+                      const Tooltip(
+                        message: "Default Bank",
+                        child: Icon(Icons.star, color: Colors.amber),
+                      ),
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () => _showAddEditBankDialog(context, bank: bank),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _confirmDeleteBank(bank),
+                    ),
+                  ],
+                ),
+                onTap: () {
+                  if (!bank.isDefault) {
+                    ref.read(bankListProvider.notifier).setDefaultBank(bank.id);
+                  }
+                },
+              ),
+            )),
+        ],
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (final err, final stack) => Center(child: Text("Error: $err")),
+    );
+  }
+
+  Future<void> _showAddEditBankDialog(final BuildContext context, {final bank_model.BankAccount? bank}) async {
+    final nameCtrl = TextEditingController(text: bank?.bankName);
+    final accCtrl = TextEditingController(text: bank?.accountNo);
+    final ifscCtrl = TextEditingController(text: bank?.ifscCode);
+    final branchCtrl = TextEditingController(text: bank?.branch);
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (final context) => AlertDialog(
+        title: Text(bank == null ? "Add Bank Account" : "Edit Bank Account"),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(labelText: "Bank Name"),
+                textCapitalization: TextCapitalization.words,
+              ),
+              TextField(
+                controller: accCtrl,
+                decoration: const InputDecoration(labelText: "Account Number"),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: ifscCtrl,
+                decoration: const InputDecoration(labelText: "IFSC Code"),
+                textCapitalization: TextCapitalization.characters,
+                onChanged: (final val) {
+                  if (val.length >= 4) {
+                    final b = IndianValidators.getBankFromIFSC(val);
+                    if (b != null) nameCtrl.text = b;
+                  }
+                },
+              ),
+              TextField(
+                controller: branchCtrl,
+                decoration: const InputDecoration(labelText: "Branch Name"),
+                textCapitalization: TextCapitalization.words,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(bank == null ? "Add" : "Save"),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      final profile = ref.read(businessProfileProvider);
+      final newBank = bank_model.BankAccount(
+        id: bank?.id ?? const Uuid().v4(),
+        profileId: profile.id,
+        bankName: nameCtrl.text.trim(),
+        accountNo: accCtrl.text.trim(),
+        ifscCode: ifscCtrl.text.trim(),
+        branch: branchCtrl.text.trim(),
+        isDefault: bank?.isDefault ?? false,
+      );
+      await ref.read(bankListProvider.notifier).saveBank(newBank);
+    }
+  }
+
+  Future<void> _confirmDeleteBank(final bank_model.BankAccount bank) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (final context) => AlertDialog(
+        title: const Text("Delete Bank?"),
+        content: Text("Are you sure you want to delete '${bank.bankName} - ${bank.accountNo}'?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await ref.read(bankListProvider.notifier).deleteBank(bank.id);
+    }
   }
 
   Widget _buildSectionHeader(final String title) {

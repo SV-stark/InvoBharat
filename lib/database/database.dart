@@ -14,6 +14,7 @@ part 'database.g.dart';
     Invoices,
     InvoiceItems,
     Payments,
+    BankAccounts,
     AppSettings,
   ],
 )
@@ -22,7 +23,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration {
@@ -158,6 +159,22 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(invoices, invoices.poNumber);
           await m.addColumn(invoices, invoices.status);
           await m.addColumn(invoices, invoices.sentAt);
+        }
+        if (from < 9) {
+          await m.createTable(bankAccounts);
+          // Backfill bank accounts from business profiles
+          try {
+            await m.database.customStatement('''
+              INSERT INTO bank_accounts (id, profile_id, bank_name, account_no, ifsc_code, branch, is_default)
+              SELECT lower(hex(randomblob(16))), id, bank_name, account_no, ifsc_code, branch, 1
+              FROM business_profiles
+              WHERE bank_name IS NOT NULL AND bank_name != ''
+            ''');
+          } catch (e) {
+            if (kDebugMode) {
+              print("Migration V9 Backfill Error: $e");
+            }
+          }
         }
       },
       beforeOpen: (final details) async {

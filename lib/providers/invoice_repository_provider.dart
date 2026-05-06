@@ -9,8 +9,8 @@ const _pageSize = 50;
 
 final invoiceRepositoryProvider = Provider<InvoiceRepository>((final ref) {
   final db = ref.watch(databaseProvider);
-  final profileId = ref.watch(activeProfileIdProvider);
-  return SqlInvoiceRepository(db, profileId);
+  final profile = ref.watch(businessProfileProvider);
+  return SqlInvoiceRepository(db, profile.id);
 });
 
 final invoiceListProvider = FutureProvider<List<Invoice>>((final ref) async {

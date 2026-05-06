@@ -12,7 +12,13 @@ final invoiceProvider = NotifierProvider<InvoiceNotifier, Invoice>(
   InvoiceNotifier.new,
 );
 
-Invoice _createDefaultInvoice(final BusinessProfile profile) {
+Invoice _createDefaultInvoice(
+  final BusinessProfile profile, {
+  final String? bankName,
+  final String? accountNo,
+  final String? ifscCode,
+  final String? branch,
+}) {
   return Invoice(
     supplier: Supplier(
       name: profile.companyName,
@@ -27,10 +33,10 @@ Invoice _createDefaultInvoice(final BusinessProfile profile) {
     invoiceNo:
         "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}",
     items: [InvoiceItem(id: _uuid.v4())],
-    bankName: profile.bankName,
-    accountNo: profile.accountNumber,
-    ifscCode: profile.ifscCode,
-    branch: profile.branchName,
+    bankName: bankName ?? profile.bankName,
+    accountNo: accountNo ?? profile.accountNo, // changed from accountNumber to accountNo
+    ifscCode: ifscCode ?? profile.ifscCode,
+    branch: branch ?? profile.branch, // changed from branchName to branch
   );
 }
 
@@ -39,6 +45,20 @@ class InvoiceNotifier extends Notifier<Invoice> {
   Invoice build() {
     final profile = ref.watch(businessProfileProvider);
     return _createDefaultInvoice(profile);
+  }
+
+  void updateBankDetails(
+    final String bankName,
+    final String accountNo,
+    final String ifscCode,
+    final String branch,
+  ) {
+    state = state.copyWith(
+      bankName: bankName,
+      accountNo: accountNo,
+      ifscCode: ifscCode,
+      branch: branch,
+    );
   }
 
   void setInvoice(final Invoice invoice) {
