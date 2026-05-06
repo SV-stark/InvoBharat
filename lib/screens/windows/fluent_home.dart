@@ -3,6 +3,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/screens/windows/fluent_dashboard.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'dart:async';
+import 'package:invobharat/services/update_service.dart';
 
 import 'package:invobharat/screens/windows/fluent_invoice_wizard.dart';
 import 'package:invobharat/screens/windows/fluent_settings.dart';
@@ -185,11 +188,18 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                                         .copyWith(fontWeight: FontWeight.bold),
                                   ),
                                   const SizedBox(height: 4),
-                                  Text(
-                                    "Version 1.0.0",
-                                    style: FluentTheme.of(
-                                      context,
-                                    ).typography.caption,
+                                  FutureBuilder<PackageInfo>(
+                                    future: PackageInfo.fromPlatform(),
+                                    builder: (final context, final snapshot) {
+                                      final version =
+                                          snapshot.data?.version ?? '...';
+                                      return Text(
+                                        "Version $version",
+                                        style: FluentTheme.of(
+                                          context,
+                                        ).typography.caption,
+                                      );
+                                    },
                                   ),
                                   const SizedBox(height: 12),
                                   const Text(
@@ -218,18 +228,224 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
-                        // Links placeholders
-                        const Text("Visit GitHub Repository"),
-                        const SizedBox(height: 10),
                         HyperlinkButton(
                           child: const Text("github.com/SV-stark/InvoBharat"),
                           onPressed: () => launchUrl(
                             Uri.parse("https://github.com/SV-stark/InvoBharat"),
                           ),
                         ),
+                        const SizedBox(height: 24),
+                        const Text(
+                          "Update Settings",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            const Text("Update Channel:"),
+                            const SizedBox(width: 12),
+                            SizedBox(
+                              width: 150,
+                              child: ComboBox<UpdateChannel>(
+                                value:
+                                    ref.watch(appConfigProvider).updateChannel,
+                                items: const [
+                                  ComboBoxItem(
+                                    value: UpdateChannel.stable,
+                                    child: Text("Stable"),
+                                  ),
+                                  ComboBoxItem(
+                                    value: UpdateChannel.nightly,
+                                    child: Text("Nightly"),
+                                  ),
+                                ],
+                                onChanged: (final val) {
+                                  if (val != null) {
+                                    ref
+                                        .read(appConfigProvider.notifier)
+                                        .setUpdateChannel(val);
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                     actions: [
+                      Button(
+                        onPressed: () async {
+                          final config = ref.read(appConfigProvider);
+                          final packageInfo = await PackageInfo.fromPlatform();
+                          final currentVersion = packageInfo.version;
+
+                          final updates = await UpdateService.checkForUpdates();
+                          final Release? latest =
+                              config.updateChannel == UpdateChannel.stable
+                                  ? updates['stable']
+                                  : updates['nightly'];
+
+                          if (latest == null) {
+                            if (context.mounted) {
+                              displayInfoBar(
+                                context,
+                                builder: (final context, final close) {
+                                  return const InfoBar(
+                                    title: Text("Update Check"),
+                                    content: Text(
+                                      "No updates found for this channel.",
+                                    ),
+                                    severity: InfoBarSeverity.info,
+                                  );
+                                },
+                              );
+                            }
+                            return;
+                          }
+
+                          bool updateAvailable = false;
+                          if (config.updateChannel == UpdateChannel.stable) {
+                            updateAvailable =
+                                latest.tagName.compareTo(currentVersion) > 0;
+                          } else {
+                            updateAvailable = latest.tagName != currentVersion;
+                          }
+
+                          if (!updateAvailable) {
+                            if (context.mounted) {
+                              displayInfoBar(
+                                context,
+                                builder: (final context, final close) {
+                                  return const InfoBar(
+                                    title: Text("Update Check"),
+                                    content: Text(
+                                      "You are on the latest version.",
+                                    ),
+                                    severity: InfoBarSeverity.success,
+                                  );
+                                },
+                              );
+                            }
+                            return;
+                          }
+
+                          if (context.mounted) {
+                            unawaited(
+                              showDialog(
+                                context: context,
+                                builder: (final context) {
+                                  bool isDownloading = false;
+                                  return StatefulBuilder(
+                                    builder:
+                                        (final context, final setDialogState) {
+                                      return ContentDialog(
+                                        title: Text(
+                                          config.updateChannel ==
+                                                  UpdateChannel.stable
+                                              ? 'New Version Available'
+                                              : 'New Nightly Build Available',
+                                        ),
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text('Current: $currentVersion'),
+                                            Text('Latest: ${latest.tagName}'),
+                                            const SizedBox(height: 10),
+                                            Text(
+                                              'Published: ${latest.publishedAt}',
+                                            ),
+                                            if (latest.body != null) ...[
+                                              const SizedBox(height: 10),
+                                              const Text(
+                                                'Changelog:',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              Text(
+                                                latest.body!,
+                                                maxLines: 5,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                            if (isDownloading) ...[
+                                              const SizedBox(height: 20),
+                                              const ProgressBar(),
+                                              const SizedBox(height: 10),
+                                              const Text(
+                                                "Downloading and preparing update...",
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                        actions: [
+                                          Button(
+                                            onPressed:
+                                                isDownloading
+                                                    ? null
+                                                    : () => Navigator.pop(
+                                                      context,
+                                                    ),
+                                            child: const Text('Later'),
+                                          ),
+                                          FilledButton(
+                                            onPressed:
+                                                isDownloading
+                                                    ? null
+                                                    : () async {
+                                                      setDialogState(
+                                                        () =>
+                                                            isDownloading =
+                                                                true,
+                                                      );
+                                                      try {
+                                                        await UpdateService
+                                                            .downloadAndInstallUpdate(
+                                                              latest,
+                                                            );
+                                                      } catch (e) {
+                                                        if (context.mounted) {
+                                                          displayInfoBar(
+                                                            context,
+                                                            builder:
+                                                                (
+                                                                  final context,
+                                                                  final close,
+                                                                ) {
+                                                              return InfoBar(
+                                                                title: const Text(
+                                                                  "Update Failed",
+                                                                ),
+                                                                content: Text(
+                                                                  e.toString(),
+                                                                ),
+                                                                severity:
+                                                                    InfoBarSeverity
+                                                                        .error,
+                                                              );
+                                                            },
+                                                          );
+                                                          Navigator.pop(
+                                                            context,
+                                                          );
+                                                        }
+                                                      }
+                                                    },
+                                            child: const Text('Update Now'),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text("Check for Updates"),
+                      ),
                       Button(
                         child: const Text("Close"),
                         onPressed: () => Navigator.pop(context),

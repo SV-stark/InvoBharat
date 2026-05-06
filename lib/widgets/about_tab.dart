@@ -177,10 +177,60 @@ class AboutTab extends ConsumerWidget {
             label: const Text('View on GitHub'),
           ),
           const SizedBox(height: 16),
+          _buildUpdateChannelDropdown(ref),
+          const SizedBox(height: 16),
           OutlinedButton.icon(
             onPressed: () => _checkForUpdates(context, ref),
             icon: const Icon(Icons.update),
             label: const Text('Check for Updates'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUpdateChannelDropdown(final WidgetRef ref) {
+    final config = ref.watch(appConfigProvider);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.sync_alt, size: 18, color: Colors.grey),
+          const SizedBox(width: 12),
+          const Text(
+            'Channel:',
+            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+          ),
+          const Gap(16),
+          DropdownButton<UpdateChannel>(
+            value: config.updateChannel,
+            underline: const SizedBox(),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+            items: const [
+              DropdownMenuItem(
+                value: UpdateChannel.stable,
+                child: Text("Stable"),
+              ),
+              DropdownMenuItem(
+                value: UpdateChannel.nightly,
+                child: Text("Nightly"),
+              ),
+            ],
+            onChanged: (final val) {
+              if (val != null) {
+                ref.read(appConfigProvider.notifier).setUpdateChannel(val);
+              }
+            },
           ),
         ],
       ),

@@ -245,34 +245,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
             const Gap(8),
-            ListTile(
-              title: const Text("Update Channel"),
-              subtitle: Text(
-                ref.watch(appConfigProvider).updateChannel ==
-                        UpdateChannel.stable
-                    ? "Stable (Recommended)"
-                    : "Nightly (Bleeding Edge)",
-              ),
-              trailing: DropdownButton<UpdateChannel>(
-                value: ref.watch(appConfigProvider).updateChannel,
-                underline: const SizedBox(),
-                items: const [
-                  DropdownMenuItem(
-                    value: UpdateChannel.stable,
-                    child: Text("Stable"),
-                  ),
-                  DropdownMenuItem(
-                    value: UpdateChannel.nightly,
-                    child: Text("Nightly"),
-                  ),
-                ],
-                onChanged: (final val) {
-                  if (val != null) {
-                    ref.read(appConfigProvider.notifier).setUpdateChannel(val);
-                  }
-                },
-              ),
-            ),
             const Gap(16),
             const Text(
               "Sidebar Mode (Desktop)",
