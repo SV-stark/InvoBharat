@@ -965,9 +965,12 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "Bank Details",
-                style: FluentTheme.of(context).typography.subtitle,
+              Expanded(
+                child: Text(
+                  "Bank Details",
+                  style: FluentTheme.of(context).typography.subtitle,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               Button(
                 onPressed: _showBankSelector,

@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/screens/windows/fluent_invoice_wizard.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/models/business_profile.dart';
+import 'package:invobharat/providers/bank_provider.dart';
+import 'package:invobharat/models/bank_account.dart';
 
 void main() {
   testWidgets('FluentInvoiceWizard should render on Windows', (
@@ -24,7 +26,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [businessProfileProvider.overrideWithValue(profile)],
+        overrides: [
+          businessProfileProvider.overrideWithValue(profile),
+          bankListProvider.overrideWith(() => MockBankListNotifier()),
+        ],
         child: const FluentApp(
           home: material.Material(child: FluentInvoiceWizard()),
         ),
@@ -36,5 +41,13 @@ void main() {
     expect(find.text('New Invoice'), findsOneWidget);
     expect(find.text('Bill To'), findsOneWidget);
     expect(find.text('Invoice Details'), findsOneWidget);
+    expect(find.text('Bank Details'), findsOneWidget);
   });
+}
+
+class MockBankListNotifier extends BankListNotifier {
+  @override
+  Future<List<BankAccount>> build() async {
+    return [];
+  }
 }
