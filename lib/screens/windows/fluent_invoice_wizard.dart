@@ -15,8 +15,8 @@ import 'package:invobharat/providers/item_template_provider.dart';
 import 'package:invobharat/utils/pdf_generator.dart';
 import 'package:url_launcher/url_launcher.dart'; // New
 import 'package:invobharat/mixins/invoice_form_mixin.dart';
-import 'package:invobharat/providers/invoice_provider.dart'; // NEW Import
-
+import 'package:invobharat/providers/invoice_provider.dart';
+import 'package:invobharat/providers/bank_provider.dart';
 import 'package:invobharat/utils/constants.dart';
 import 'package:invobharat/screens/windows/widgets/wizard_add_client_dialog.dart';
 import 'package:invobharat/screens/windows/widgets/invoice_item_dialog.dart';
@@ -54,9 +54,29 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
         _commentsCtrl.text = ref.read(invoiceProvider).comments;
       });
     } else {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         // Ensure reset if new
         ref.read(invoiceProvider.notifier).reset();
+
+        // Fetch and set default bank
+        try {
+          final banks = await ref.read(bankListProvider.future);
+          if (banks.isNotEmpty) {
+            final defBank = banks.firstWhere(
+              (final b) => b.isDefault,
+              orElse: () => banks.first,
+            );
+            ref.read(invoiceProvider.notifier).updateBankDetails(
+              defBank.bankName,
+              defBank.accountNo,
+              defBank.ifscCode,
+              defBank.branch,
+            );
+          }
+        } catch (e) {
+          debugPrint("Error setting default bank: $e");
+        }
+
         syncInvoiceControllers(ref.read(invoiceProvider));
         _commentsCtrl.clear();
       });
@@ -205,6 +225,8 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                     ],
                   ),
                 ),
+              const SizedBox(height: 20),
+              _buildBankSection(),
               const SizedBox(height: 20),
               InfoLabel(
                 label: "Client Not Found?",
@@ -927,6 +949,118 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                 Navigator.pop(context);
                 _saveInvoice(invoice);
               },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildBankSection() {
+    final invoice = ref.watch(invoiceProvider);
+    return Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Bank Details",
+                style: FluentTheme.of(context).typography.subtitle,
+              ),
+              Button(
+                onPressed: _showBankSelector,
+                child: const Row(
+                  children: [
+                    Icon(FluentIcons.bank),
+                    SizedBox(width: 8),
+                    Text("Switch Bank"),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (invoice.bankName.isNotEmpty) ...[
+            Text(
+              invoice.bankName,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text("A/C: ${invoice.accountNo}"),
+            Text("IFSC: ${invoice.ifscCode}"),
+            if (invoice.branch.isNotEmpty) Text("Branch: ${invoice.branch}"),
+          ] else
+            const Text(
+              "No bank details selected",
+              style: TextStyle(color: Colors.grey),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _showBankSelector() {
+    showDialog(
+      context: context,
+      builder: (final context) {
+        return ContentDialog(
+          title: const Text("Select Bank Account"),
+          content: Consumer(
+            builder: (final context, final ref, final child) {
+              final banksAsync = ref.watch(bankListProvider);
+              return banksAsync.when(
+                data: (final banks) {
+                  if (banks.isEmpty) {
+                    return const Text("No bank accounts found in settings.");
+                  }
+                  return SizedBox(
+                    height: 300,
+                    child: ListView.builder(
+                      itemCount: banks.length,
+                      itemBuilder: (final context, final index) {
+                        final bank = banks[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Card(
+                            child: ListTile(
+                              title: Text(bank.bankName),
+                              subtitle: Text(
+                                "${bank.accountNo} (${bank.ifscCode})",
+                              ),
+                              trailing: bank.isDefault
+                                  ? const Icon(
+                                      FluentIcons.favorite_star_fill,
+                                      color: Colors.warningPrimaryColor,
+                                    )
+                                  : null,
+                              onPressed: () {
+                                ref
+                                    .read(invoiceProvider.notifier)
+                                    .updateBankDetails(
+                                      bank.bankName,
+                                      bank.accountNo,
+                                      bank.ifscCode,
+                                      bank.branch,
+                                    );
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+                loading: () => const Center(child: ProgressBar()),
+                error: (final err, final stack) => Text("Error: $err"),
+              );
+            },
+          ),
+          actions: [
+            Button(
+              child: const Text("Cancel"),
+              onPressed: () => Navigator.pop(context),
             ),
           ],
         );
