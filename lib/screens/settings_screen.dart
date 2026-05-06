@@ -20,6 +20,7 @@ import 'package:flutter/services.dart';
 
 import 'package:invobharat/providers/bank_provider.dart';
 import 'package:invobharat/models/bank_account.dart' as bank_model;
+import 'package:invobharat/providers/app_config_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -238,6 +239,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 onChanged: (final val) {
                   if (val != null) {
                     ref.read(themeProvider.notifier).setTheme(val);
+                  }
+                },
+              ),
+            ),
+            const Gap(8),
+            ListTile(
+              title: const Text("Update Channel"),
+              subtitle: Text(
+                ref.watch(appConfigProvider).updateChannel ==
+                        UpdateChannel.stable
+                    ? "Stable (Recommended)"
+                    : "Nightly (Bleeding Edge)",
+              ),
+              trailing: DropdownButton<UpdateChannel>(
+                value: ref.watch(appConfigProvider).updateChannel,
+                underline: const SizedBox(),
+                items: const [
+                  DropdownMenuItem(
+                    value: UpdateChannel.stable,
+                    child: Text("Stable"),
+                  ),
+                  DropdownMenuItem(
+                    value: UpdateChannel.nightly,
+                    child: Text("Nightly"),
+                  ),
+                ],
+                onChanged: (final val) {
+                  if (val != null) {
+                    ref.read(appConfigProvider.notifier).setUpdateChannel(val);
                   }
                 },
               ),

@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:invobharat/services/update_service.dart';
+import 'package:invobharat/providers/app_config_provider.dart';
 
-class AboutTab extends StatelessWidget {
+class AboutTab extends ConsumerWidget {
   const AboutTab({super.key});
 
   Future<void> _launchUrl() async {
@@ -13,8 +16,16 @@ class AboutTab extends StatelessWidget {
     }
   }
 
-  Future<void> _checkForUpdates(final BuildContext context) async {
-    // Show loading
+  Future<void> _checkForUpdates(
+    final BuildContext context,
+    final WidgetRef ref,
+  ) async {
+    final config = ref.read(appConfigProvider);
+    final packageInfo = await PackageInfo.fromPlatform();
+    final currentVersion = packageInfo.version;
+
+    if (!context.mounted) return;
+
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Checking for updates...')));
@@ -22,96 +33,137 @@ class AboutTab extends StatelessWidget {
     final updates = await UpdateService.checkForUpdates();
     if (!context.mounted) return;
 
-    if (updates['stable'] == null && updates['beta'] == null) {
+    final Release? latest =
+        config.updateChannel == UpdateChannel.stable
+            ? updates['stable']
+            : updates['nightly'];
+
+    if (latest == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No updates found or check failed.')),
+        const SnackBar(content: Text('No updates found for this channel.')),
       );
+      return;
+    }
+
+    bool updateAvailable = false;
+    if (config.updateChannel == UpdateChannel.stable) {
+      // Simple version comparison (e.g., 1.0.1 > 1.0.0)
+      updateAvailable = latest.tagName.compareTo(currentVersion) > 0;
+    } else {
+      // For nightly, we'll just check if it's newer than some baseline or always show if date is recent
+      // As a simplification, we show it if it's a prerelease and tag is different from current
+      updateAvailable = latest.tagName != currentVersion;
+    }
+
+    if (!updateAvailable) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('You are on the latest version.')));
       return;
     }
 
     unawaited(
       showDialog(
         context: context,
-        builder: (final context) => AlertDialog(
-          title: const Text('Updates Available'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (updates['stable'] != null) ...[
-                const Text(
-                  'Stable Release:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+        builder: (final context) {
+          bool isDownloading = false;
+          return StatefulBuilder(
+            builder: (final context, final setDialogState) {
+              return AlertDialog(
+                title: Text(
+                  config.updateChannel == UpdateChannel.stable
+                      ? 'New Version Available'
+                      : 'New Nightly Build Available',
                 ),
-                ListTile(
-                  title: Text(updates['stable']!.tagName),
-                  subtitle: Text(
-                    'Published: ${updates['stable']!.publishedAt}',
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Current: $currentVersion'),
+                    Text('Latest: ${latest.tagName}'),
+                    const SizedBox(height: 10),
+                    Text('Published: ${latest.publishedAt}'),
+                    if (latest.body != null) ...[
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Changelog:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        latest.body!,
+                        maxLines: 5,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    if (isDownloading) ...[
+                      const SizedBox(height: 20),
+                      const LinearProgressIndicator(),
+                      const SizedBox(height: 10),
+                      const Text("Downloading and preparing update..."),
+                    ],
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: isDownloading ? null : () => Navigator.pop(context),
+                    child: const Text('Later'),
                   ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.open_in_new),
-                    onPressed: () =>
-                        launchUrl(Uri.parse(updates['stable']!.htmlUrl)),
+                  FilledButton(
+                    onPressed:
+                        isDownloading
+                            ? null
+                            : () async {
+                              setDialogState(() => isDownloading = true);
+                              try {
+                                await UpdateService.downloadAndInstallUpdate(
+                                  latest,
+                                );
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Update failed: $e')),
+                                  );
+                                  Navigator.pop(context);
+                                }
+                              }
+                            },
+                    child: const Text('Update Now'),
                   ),
-                ),
-                const SizedBox(height: 10),
-              ],
-              if (updates['beta'] != null) ...[
-                const Text(
-                  'Beta / Nightly:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                ListTile(
-                  title: Text(updates['beta']!.tagName),
-                  subtitle: Text('Published: ${updates['beta']!.publishedAt}'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.open_in_new),
-                    onPressed: () =>
-                        launchUrl(Uri.parse(updates['beta']!.htmlUrl)),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
-        ),
+                ],
+              );
+            },
+          );
+        },
       ),
     );
   }
 
   @override
-  Widget build(final BuildContext context) {
+  Widget build(final BuildContext context, final WidgetRef ref) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Logo
-          Image.asset(
-            'logo.png', // Assuming logo.png is in the root of assets as per README
-            width: 120,
-            height: 120,
-          ),
+          Image.asset('logo.png', width: 120, height: 120),
           const SizedBox(height: 16),
-          // App Name
           const Text(
             'InvoBharat',
             style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          // Version
-          const Text(
-            'Version 1.0.0',
-            style: TextStyle(color: Colors.grey, fontSize: 16),
+          FutureBuilder<PackageInfo>(
+            future: PackageInfo.fromPlatform(),
+            builder: (final context, final snapshot) {
+              final version = snapshot.data?.version ?? '...';
+              return Text(
+                'Version $version',
+                style: const TextStyle(color: Colors.grey, fontSize: 16),
+              );
+            },
           ),
           const SizedBox(height: 32),
           const Divider(indent: 64, endIndent: 64),
           const SizedBox(height: 32),
-          // Credits
           const Text('Made with ❤️ in India', style: TextStyle(fontSize: 18)),
           const SizedBox(height: 8),
           const Text(
@@ -119,7 +171,6 @@ class AboutTab extends StatelessWidget {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 32),
-          // Link
           FilledButton.icon(
             onPressed: _launchUrl,
             icon: const Icon(Icons.code),
@@ -127,7 +178,7 @@ class AboutTab extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           OutlinedButton.icon(
-            onPressed: () => _checkForUpdates(context),
+            onPressed: () => _checkForUpdates(context, ref),
             icon: const Icon(Icons.update),
             label: const Text('Check for Updates'),
           ),

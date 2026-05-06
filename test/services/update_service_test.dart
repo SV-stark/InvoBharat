@@ -29,9 +29,9 @@ void main() {
       final results = await UpdateService.checkForUpdates(client: client);
 
       expect(results['stable']?.tagName, 'v1.1.0');
-      expect(results['beta']?.tagName, 'v1.2.0-beta');
+      expect(results['nightly']?.tagName, 'v1.2.0-beta');
       expect(results['stable']?.prerelease, isFalse);
-      expect(results['beta']?.prerelease, isTrue);
+      expect(results['nightly']?.prerelease, isTrue);
     });
 
     test('checkForUpdates handles empty results', () async {
@@ -42,7 +42,7 @@ void main() {
       final results = await UpdateService.checkForUpdates(client: client);
 
       expect(results['stable'], isNull);
-      expect(results['beta'], isNull);
+      expect(results['nightly'], isNull);
     });
 
     test('checkForUpdates handles errors gracefully', () async {
@@ -53,7 +53,7 @@ void main() {
       final results = await UpdateService.checkForUpdates(client: client);
 
       expect(results['stable'], isNull);
-      expect(results['beta'], isNull);
+      expect(results['nightly'], isNull);
     });
 
     test('checkForUpdates handles exception gracefully', () async {
@@ -64,7 +64,7 @@ void main() {
       final results = await UpdateService.checkForUpdates(client: client);
 
       expect(results['stable'], isNull);
-      expect(results['beta'], isNull);
+      expect(results['nightly'], isNull);
     });
   });
 }
