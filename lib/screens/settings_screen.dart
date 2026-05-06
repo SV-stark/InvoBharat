@@ -1,5 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart' show PaneDisplayMode;
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -615,9 +616,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildBackupSettings() {
-    return Center(
+    final config = ref.watch(appConfigProvider);
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.cloud_upload, size: 64, color: Colors.grey),
           const Gap(16),
@@ -625,81 +627,176 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             "Backup & Restore",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          const Gap(32),
-          SizedBox(
-            width: 250,
-            child: ElevatedButton.icon(
-              onPressed: _isBackupLoading
-                  ? null
-                  : () async {
-                      setState(() => _isBackupLoading = true);
-                      try {
-                        final msg = await BackupService().exportFullBackup();
-                        if (mounted) {
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(SnackBar(content: Text(msg)));
-                        }
-                      } catch (e) {
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Export Failed: $e")),
-                          );
-                        }
-                      } finally {
-                        if (mounted) {
-                          setState(() => _isBackupLoading = false);
-                        }
-                      }
+          const Gap(24),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Auto Backup Schedule",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const Gap(8),
+                  const Text(
+                    "Schedule automatic backups of your database to ensure your data is always safe.",
+                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                  ),
+                  const Gap(16),
+                  SwitchListTile(
+                    title: const Text("Enable Auto Backup"),
+                    value: config.autoBackupEnabled,
+                    onChanged: (final v) {
+                      ref
+                          .read(appConfigProvider.notifier)
+                          .setAutoBackupEnabled(v);
                     },
-              icon: _isBackupLoading
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.download),
-              label: const Text("Export Full Backup (ZIP)"),
+                  ),
+                  if (config.autoBackupEnabled) ...[
+                    const Gap(8),
+                    ListTile(
+                      title: const Text("Frequency"),
+                      trailing: DropdownButton<BackupFrequency>(
+                        value: config.backupFrequency,
+                        underline: const SizedBox(),
+                        items: BackupFrequency.values
+                            .where((final f) => f != BackupFrequency.none)
+                            .map(
+                              (final f) => DropdownMenuItem(
+                                value: f,
+                                child: Text(
+                                  f.name[0].toUpperCase() + f.name.substring(1),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (final v) {
+                          if (v != null) {
+                            ref
+                                .read(appConfigProvider.notifier)
+                                .setBackupFrequency(v);
+                          }
+                        },
+                      ),
+                    ),
+                    ListTile(
+                      title: const Text("Preferred Time"),
+                      trailing: TextButton(
+                        onPressed: () async {
+                          final timeParts = config.backupTime.split(':');
+                          final initialTime = TimeOfDay(
+                            hour: int.parse(timeParts[0]),
+                            minute: int.parse(timeParts[1]),
+                          );
+                          final picked = await showTimePicker(
+                            context: context,
+                            initialTime: initialTime,
+                          );
+                          if (picked != null) {
+                            final timeStr =
+                                "${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}";
+                            ref
+                                .read(appConfigProvider.notifier)
+                                .setBackupTime(timeStr);
+                          }
+                        },
+                        child: Text(config.backupTime),
+                      ),
+                    ),
+                    if (config.lastAutoBackup != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          "Last Auto Backup: ${DateFormat('dd MMM yyyy, hh:mm a').format(config.lastAutoBackup!)}",
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                  ],
+                ],
+              ),
             ),
           ),
-          const Gap(16),
-          SizedBox(
-            width: 250,
-            child: OutlinedButton.icon(
-              onPressed: _isRestoreLoading
-                  ? null
-                  : () async {
-                      setState(() => _isRestoreLoading = true);
-                      try {
-                        final result = await BackupService()
-                            .restoreFullBackup();
-                        if (!mounted) return;
-
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text(result)));
-                        _loadProfileData();
-                        setState(() {});
-                      } catch (e) {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Restore Failed: $e")),
-                        );
-                      } finally {
-                        if (mounted) {
-                          setState(() => _isRestoreLoading = false);
-                        }
-                      }
-                    },
-              icon: _isRestoreLoading
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.upload),
-              label: const Text("Restore Data (ZIP)"),
-            ),
+          const Gap(24),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _isBackupLoading
+                      ? null
+                      : () async {
+                          setState(() => _isBackupLoading = true);
+                          try {
+                            final msg = await BackupService()
+                                .exportFullBackup();
+                            if (mounted) {
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(SnackBar(content: Text(msg)));
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Export Failed: $e")),
+                              );
+                            }
+                          } finally {
+                            if (mounted) {
+                              setState(() => _isBackupLoading = false);
+                            }
+                          }
+                        },
+                  icon: _isBackupLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.download),
+                  label: const Text("Export ZIP"),
+                ),
+              ),
+              const Gap(16),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _isRestoreLoading
+                      ? null
+                      : () async {
+                          setState(() => _isRestoreLoading = true);
+                          try {
+                            final result = await BackupService()
+                                .restoreFullBackup();
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(
+                              context,
+                            ).showSnackBar(SnackBar(content: Text(result)));
+                            _loadProfileData();
+                            setState(() {});
+                          } catch (e) {
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Restore Failed: $e")),
+                            );
+                          } finally {
+                            if (mounted) {
+                              setState(() => _isRestoreLoading = false);
+                            }
+                          }
+                        },
+                  icon: _isRestoreLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.upload),
+                  label: const Text("Restore ZIP"),
+                ),
+              ),
+            ],
           ),
           const Gap(32),
           const Text(

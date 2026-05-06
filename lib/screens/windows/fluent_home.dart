@@ -247,8 +247,9 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                             SizedBox(
                               width: 150,
                               child: ComboBox<UpdateChannel>(
-                                value:
-                                    ref.watch(appConfigProvider).updateChannel,
+                                value: ref
+                                    .watch(appConfigProvider)
+                                    .updateChannel,
                                 items: const [
                                   ComboBoxItem(
                                     value: UpdateChannel.stable,
@@ -282,8 +283,8 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                           final updates = await UpdateService.checkForUpdates();
                           final Release? latest =
                               config.updateChannel == UpdateChannel.stable
-                                  ? updates['stable']
-                                  : updates['nightly'];
+                              ? updates['stable']
+                              : updates['nightly'];
 
                           if (latest == null) {
                             if (context.mounted) {
@@ -314,20 +315,20 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
 
                           if (!updateAvailable) {
                             if (context.mounted) {
-                            unawaited(
-                              displayInfoBar(
-                                context,
-                                builder: (final context, final close) {
-                                  return const InfoBar(
-                                    title: Text("Update Check"),
-                                    content: Text(
-                                      "You are on the latest version.",
-                                    ),
-                                    severity: InfoBarSeverity.success,
-                                  );
-                                },
-                              ),
-                            );
+                              unawaited(
+                                displayInfoBar(
+                                  context,
+                                  builder: (final context, final close) {
+                                    return const InfoBar(
+                                      title: Text("Update Check"),
+                                      content: Text(
+                                        "You are on the latest version.",
+                                      ),
+                                      severity: InfoBarSeverity.success,
+                                    );
+                                  },
+                                ),
+                              );
                             }
                             return;
                           }
@@ -339,8 +340,7 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                                 builder: (final context) {
                                   bool isDownloading = false;
                                   return StatefulBuilder(
-                                    builder:
-                                        (final context, final setDialogState) {
+                                    builder: (final context, final setDialogState) {
                                       return ContentDialog(
                                         title: Text(
                                           config.updateChannel ==
@@ -385,59 +385,51 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                                         ),
                                         actions: [
                                           Button(
-                                            onPressed:
-                                                isDownloading
-                                                    ? null
-                                                    : () => Navigator.pop(
-                                                      context,
-                                                    ),
+                                            onPressed: isDownloading
+                                                ? null
+                                                : () => Navigator.pop(context),
                                             child: const Text('Later'),
                                           ),
                                           FilledButton(
-                                            onPressed:
-                                                isDownloading
-                                                    ? null
-                                                    : () async {
-                                                      setDialogState(
-                                                        () =>
-                                                            isDownloading =
-                                                                true,
+                                            onPressed: isDownloading
+                                                ? null
+                                                : () async {
+                                                    setDialogState(
+                                                      () =>
+                                                          isDownloading = true,
+                                                    );
+                                                    try {
+                                                      await UpdateService.downloadAndInstallUpdate(
+                                                        latest,
                                                       );
-                                                      try {
-                                                        await UpdateService
-                                                            .downloadAndInstallUpdate(
-                                                              latest,
-                                                            );
-                                                      } catch (e) {
-                                                        if (context.mounted) {
-                                                          unawaited(
-                                                            displayInfoBar(
-                                                              context,
-                                                              builder:
-                                                                  (
-                                                                    final context,
-                                                                    final close,
-                                                                  ) {
-                                                                return InfoBar(
-                                                                  title: const Text(
-                                                                    "Update Failed",
-                                                                  ),
-                                                                  content: Text(
-                                                                    e.toString(),
-                                                                  ),
-                                                                  severity:
-                                                                      InfoBarSeverity
-                                                                          .error,
-                                                                );
-                                                              },
-                                                            ),
-                                                          );
-                                                          Navigator.pop(
+                                                    } catch (e) {
+                                                      if (context.mounted) {
+                                                        unawaited(
+                                                          displayInfoBar(
                                                             context,
-                                                          );
-                                                        }
+                                                            builder:
+                                                                (
+                                                                  final context,
+                                                                  final close,
+                                                                ) {
+                                                                  return InfoBar(
+                                                                    title: const Text(
+                                                                      "Update Failed",
+                                                                    ),
+                                                                    content: Text(
+                                                                      e.toString(),
+                                                                    ),
+                                                                    severity:
+                                                                        InfoBarSeverity
+                                                                            .error,
+                                                                  );
+                                                                },
+                                                          ),
+                                                        );
+                                                        Navigator.pop(context);
                                                       }
-                                                    },
+                                                    }
+                                                  },
                                             child: const Text('Update Now'),
                                           ),
                                         ],

@@ -1,5 +1,6 @@
 // ignore_for_file: unawaited_futures
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
@@ -935,10 +936,98 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
         const Divider(),
         const Gap(20),
 
+        const Gap(20),
+        const Divider(),
+        const Gap(20),
+        const Text(
+          "Auto Backup Schedule",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const Gap(10),
+        const Text(
+          "Schedule automatic backups of your database to ensure your data is always safe.",
+          style: TextStyle(color: Colors.grey),
+        ),
+        const Gap(15),
+        ToggleSwitch(
+          checked: ref.watch(appConfigProvider).autoBackupEnabled,
+          content: const Text("Enable Auto Backup"),
+          onChanged: (final v) {
+            ref.read(appConfigProvider.notifier).setAutoBackupEnabled(v);
+          },
+        ),
+        if (ref.watch(appConfigProvider).autoBackupEnabled) ...[
+          const Gap(15),
+          Row(
+            children: [
+              Expanded(
+                child: InfoLabel(
+                  label: "Backup Frequency",
+                  child: ComboBox<BackupFrequency>(
+                    value: ref.watch(appConfigProvider).backupFrequency,
+                    items: BackupFrequency.values
+                        .where((final f) => f != BackupFrequency.none)
+                        .map(
+                          (final f) => ComboBoxItem(
+                            value: f,
+                            child: Text(
+                              f.name[0].toUpperCase() + f.name.substring(1),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (final v) {
+                      if (v != null) {
+                        ref
+                            .read(appConfigProvider.notifier)
+                            .setBackupFrequency(v);
+                      }
+                    },
+                  ),
+                ),
+              ),
+              const Gap(10),
+              Expanded(
+                child: InfoLabel(
+                  label: "Backup Time",
+                  child: TimePicker(
+                    selected: DateTime(
+                      2024,
+                      1,
+                      1,
+                      int.parse(
+                        ref.watch(appConfigProvider).backupTime.split(':')[0],
+                      ),
+                      int.parse(
+                        ref.watch(appConfigProvider).backupTime.split(':')[1],
+                      ),
+                    ),
+                    onChanged: (final time) {
+                      final timeStr =
+                          "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
+                      ref
+                          .read(appConfigProvider.notifier)
+                          .setBackupTime(timeStr);
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Gap(15),
+          if (ref.watch(appConfigProvider).lastAutoBackup != null)
+            Text(
+              "Last Auto Backup: ${DateFormat('dd MMM yyyy, hh:mm a').format(ref.watch(appConfigProvider).lastAutoBackup!)}",
+              style: const TextStyle(color: Colors.grey),
+            ),
+        ],
+        const Gap(20),
+        const Divider(),
+        const Gap(20),
         InfoLabel(
-          label: "Backup & Restore",
+          label: "Manual Backup & Restore",
           child: const Text(
-            "Export your data to a CSV file or restore from a previous backup. Note: Logos and images are not included in the backup file.",
+            "Export your data to a ZIP file or restore from a previous backup. Note: Logos and images are not included in the backup file.",
           ),
         ),
         const Gap(15),

@@ -282,18 +282,53 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                     ),
                   );
                 }),
-                const Divider(),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                  child: Column(
                     children: [
-                      Text(
-                        "Total: ₹${items.fold(0.0, (final sum, final i) => sum + i.totalAmount).toStringAsFixed(2)}",
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                      _buildSummaryRow(
+                        "Taxable Value",
+                        items.fold(
+                          0.0,
+                          (final sum, final i) => sum + i.netAmount,
                         ),
+                      ),
+                      if (existingEstimate?.isInterState ?? false)
+                        _buildSummaryRow(
+                          "IGST",
+                          items.fold(
+                            0.0,
+                            (final sum, final i) => sum + i.igstAmount,
+                          ),
+                        )
+                      else ...[
+                        _buildSummaryRow(
+                          "CGST",
+                          items.fold(
+                            0.0,
+                            (final sum, final i) => sum + i.cgstAmount,
+                          ),
+                        ),
+                        _buildSummaryRow(
+                          "SGST",
+                          items.fold(
+                            0.0,
+                            (final sum, final i) => sum + i.sgstAmount,
+                          ),
+                        ),
+                      ],
+                      const Divider(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            "Total: ₹${(items.fold(0.0, (final sum, final i) => sum + i.netAmount) + items.fold(0.0, (final sum, final i) => sum + (existingEstimate?.isInterState ?? false ? i.igstAmount : i.cgstAmount + i.sgstAmount))).toStringAsFixed(2)}",
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -350,6 +385,26 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
 
   void _removeItem(final int index) {
     setState(() => items.removeAt(index));
+  }
+
+  Widget _buildSummaryRow(final String label, final double value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text("$label: "),
+          SizedBox(
+            width: 100,
+            child: Text(
+              "₹${value.toStringAsFixed(2)}",
+              textAlign: TextAlign.right,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

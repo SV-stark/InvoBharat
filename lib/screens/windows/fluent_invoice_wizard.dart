@@ -23,7 +23,8 @@ import 'package:invobharat/screens/windows/widgets/invoice_item_dialog.dart';
 
 class FluentInvoiceWizard extends ConsumerStatefulWidget {
   final Invoice? invoiceToEdit;
-  const FluentInvoiceWizard({super.key, this.invoiceToEdit});
+  final String? estimateId;
+  const FluentInvoiceWizard({super.key, this.invoiceToEdit, this.estimateId});
 
   @override
   ConsumerState<FluentInvoiceWizard> createState() =>
@@ -1074,6 +1075,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
   }
 
   Future<void> _saveInvoice(final Invoice invoice) async {
+    final context = this.context;
     // Validation
     if (invoice.receiver.name.isEmpty) {
       displayInfoBar(
@@ -1146,10 +1148,12 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
     }
 
     try {
-      // Use Mixin's saveInvoice? No, mixin saveInvoice returns bool and handles specific actions.
-      // But we have custom UI here.
-      // Let's call repository directly as before.
-      await repository.saveInvoice(invoice);
+      // Use Mixin's saveInvoice to centralize logic (handles uniqueness and marking estimate as converted)
+      await saveInvoice(
+        invoice: invoice,
+        estimateIdToMarkConverted: widget.estimateId,
+        context: context,
+      );
 
       // Increment invoice sequence only for new invoices (not edits)
       if (widget.invoiceToEdit == null) {
@@ -1165,7 +1169,6 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
       // Invalidate invoice list so dashboard refreshes
       ref.invalidate(invoiceListProvider);
 
-      final context = this.context;
       if (!context.mounted) return;
 
       displayInfoBar(

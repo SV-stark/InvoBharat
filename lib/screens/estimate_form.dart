@@ -389,15 +389,59 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
   }
 
   Widget _buildSummary() {
-    final double total = items.fold(
+    final double taxable = items.fold(
       0,
-      (final sum, final item) => sum + item.totalAmount,
+      (final sum, final item) => sum + item.netAmount,
     );
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Text(
-        "Total: ₹${total.toStringAsFixed(2)}",
-        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    final isInterState = existingEstimate?.isInterState ?? false;
+    final double cgst = isInterState
+        ? 0
+        : items.fold(0, (final sum, final item) => sum + item.cgstAmount);
+    final double sgst = isInterState
+        ? 0
+        : items.fold(0, (final sum, final item) => sum + item.sgstAmount);
+    final double igst = isInterState
+        ? items.fold(0, (final sum, final item) => sum + item.igstAmount)
+        : 0;
+    final double total = taxable + cgst + sgst + igst;
+
+    return Column(
+      children: [
+        _buildSummaryRowItem("Taxable Value", taxable),
+        if (isInterState)
+          _buildSummaryRowItem("IGST", igst)
+        else ...[
+          _buildSummaryRowItem("CGST", cgst),
+          _buildSummaryRowItem("SGST", sgst),
+        ],
+        const Divider(),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Text(
+            "Total: ₹${total.toStringAsFixed(2)}",
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryRowItem(final String label, final double value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text("$label: "),
+          SizedBox(
+            width: 100,
+            child: Text(
+              "₹${value.toStringAsFixed(2)}",
+              textAlign: TextAlign.right,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -42,10 +42,27 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/invoice-form',
       builder: (final context, final state) {
-        if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
-          return FluentInvoiceWizard(invoiceToEdit: state.extra as Invoice?);
+        Invoice? invoice;
+        String? estimateId;
+
+        if (state.extra is Invoice) {
+          invoice = state.extra as Invoice;
+        } else if (state.extra is Map<String, dynamic>) {
+          final map = state.extra as Map<String, dynamic>;
+          invoice = map['invoice'] as Invoice?;
+          estimateId = map['estimateId'] as String?;
         }
-        return InvoiceFormScreen(invoiceToEdit: state.extra as Invoice?);
+
+        if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
+          return FluentInvoiceWizard(
+            invoiceToEdit: invoice,
+            estimateId: estimateId,
+          );
+        }
+        return InvoiceFormScreen(
+          invoiceToEdit: invoice,
+          estimateId: estimateId,
+        );
       },
     ),
 

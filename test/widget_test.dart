@@ -6,10 +6,19 @@ import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/data/invoice_repository.dart';
 
 import 'package:invobharat/providers/invoice_repository_provider.dart';
-
 import 'package:invobharat/providers/database_provider.dart';
 import 'package:invobharat/database/database.dart' hide Invoice;
+import 'package:invobharat/services/auto_backup_service.dart';
 import 'package:drift/native.dart';
+
+class MockAutoBackupService implements AutoBackupService {
+  @override
+  void start() {}
+  @override
+  void stop() {}
+  @override
+  dynamic noSuchMethod(final Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 class FakeInvoiceRepository implements InvoiceRepository {
   String get profileId => 'test_profile';
@@ -49,6 +58,7 @@ void main() {
             ref.onDispose(db.close);
             return db;
           }),
+          autoBackupServiceProvider.overrideWith((final ref) => MockAutoBackupService()),
         ],
         child: const InvoBharatApp(),
       ),

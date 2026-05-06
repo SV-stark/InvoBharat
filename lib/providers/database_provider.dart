@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/database/database.dart';
 import 'package:invobharat/services/database_migration_service.dart';
+import 'package:invobharat/services/auto_backup_service.dart';
 import 'dart:async';
 
 final databaseProvider = Provider<AppDatabase>((final ref) {
@@ -49,4 +50,7 @@ final appInitializationProvider = FutureProvider<void>((final ref) async {
   await migrationService.performMigration((final status) {
     ref.read(migrationStatusProvider.notifier).update(status);
   });
+
+  // Start Auto Backup Service
+  ref.read(autoBackupServiceProvider).start();
 });

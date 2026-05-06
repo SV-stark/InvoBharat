@@ -20,7 +20,8 @@ import 'package:invobharat/utils/formatters.dart';
 
 class InvoiceFormScreen extends ConsumerStatefulWidget {
   final Invoice? invoiceToEdit;
-  const InvoiceFormScreen({super.key, this.invoiceToEdit});
+  final String? estimateId;
+  const InvoiceFormScreen({super.key, this.invoiceToEdit, this.estimateId});
 
   @override
   ConsumerState<InvoiceFormScreen> createState() => _InvoiceFormScreenState();
@@ -277,7 +278,11 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
       return;
     }
     try {
-      await saveInvoice(invoice: invoice, context: context);
+      await saveInvoice(
+        invoice: invoice,
+        estimateIdToMarkConverted: widget.estimateId,
+        context: context,
+      );
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Invoice saved successfully")),

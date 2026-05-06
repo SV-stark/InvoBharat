@@ -37,10 +37,29 @@ abstract class Estimate with _$Estimate {
     );
   }
 
+  bool get isInterState {
+    if (supplier.state.isEmpty || receiver.state.isEmpty) return false;
+    return supplier.state.trim().toLowerCase() !=
+        receiver.state.trim().toLowerCase();
+  }
+
   double get totalTaxableValue =>
       items.fold(0, (final sum, final item) => sum + item.netAmount);
+
+  double get totalCGST => isInterState
+      ? 0
+      : items.fold(0, (final sum, final item) => sum + item.cgstAmount);
+
+  double get totalSGST => isInterState
+      ? 0
+      : items.fold(0, (final sum, final item) => sum + item.sgstAmount);
+
+  double get totalIGST => isInterState
+      ? items.fold(0, (final sum, final item) => sum + item.igstAmount)
+      : 0;
+
   double get totalAmount =>
-      items.fold(0, (final sum, final item) => sum + item.totalAmount);
+      totalTaxableValue + totalCGST + totalSGST + totalIGST;
 
   factory Estimate.fromJson(final Map<String, dynamic> json) =>
       _$EstimateFromJson(json);
