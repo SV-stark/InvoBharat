@@ -17,7 +17,8 @@ class MockAutoBackupService implements AutoBackupService {
   @override
   void stop() {}
   @override
-  dynamic noSuchMethod(final Invocation invocation) => super.noSuchMethod(invocation);
+  dynamic noSuchMethod(final Invocation invocation) =>
+      super.noSuchMethod(invocation);
 }
 
 class FakeInvoiceRepository implements InvoiceRepository {
@@ -58,7 +59,9 @@ void main() {
             ref.onDispose(db.close);
             return db;
           }),
-          autoBackupServiceProvider.overrideWith((final ref) => MockAutoBackupService()),
+          autoBackupServiceProvider.overrideWith(
+            (final ref) => MockAutoBackupService(),
+          ),
         ],
         child: const InvoBharatApp(),
       ),

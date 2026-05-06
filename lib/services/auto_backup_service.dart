@@ -7,7 +7,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:archive/archive_io.dart';
 import 'package:invobharat/providers/app_config_provider.dart';
-import 'package:invobharat/services/backup_service.dart';
 
 final autoBackupServiceProvider = Provider<AutoBackupService>((final ref) {
   return AutoBackupService(ref);

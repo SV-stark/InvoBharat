@@ -7,9 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Data Safety**: Automated Backup Scheduling system with user-configurable frequency and preferred time.
+- **Financial Transparency**: Detailed GST breakdown (Taxable Value, CGST, SGST, IGST) in Estimate forms for both Fluent and Material UIs.
+
 ### Changed
 - Refined sidebar behavior and accent color selection UI.
-- Resolved various linting issues across the codebase.
+- Relocated "Update Channels" configuration to the About section for better discoverability.
+
+### Fixed
+- **Estimate Conversion**: Resolved critical application crash during the "Convert Estimate to Invoice" workflow.
+- **Data Integrity**: Correctly marking Estimates as "Converted" in the database upon successful invoice creation.
+- **Tax Logic**: Fixed GST calculation in Estimates to correctly distinguish between Inter-state and Intra-state transactions.
+- Resolved various linting issues and BuildContext async gap warnings across the codebase.
 
 ## [1.0.0] - 2026-05-06
 

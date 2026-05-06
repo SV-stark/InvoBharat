@@ -952,8 +952,8 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
         ToggleSwitch(
           checked: ref.watch(appConfigProvider).autoBackupEnabled,
           content: const Text("Enable Auto Backup"),
-          onChanged: (final v) {
-            ref.read(appConfigProvider.notifier).setAutoBackupEnabled(v);
+          onChanged: (final v) async {
+            await ref.read(appConfigProvider.notifier).setAutoBackupEnabled(v);
           },
         ),
         if (ref.watch(appConfigProvider).autoBackupEnabled) ...[
@@ -976,9 +976,9 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                           ),
                         )
                         .toList(),
-                    onChanged: (final v) {
+                    onChanged: (final v) async {
                       if (v != null) {
-                        ref
+                        await ref
                             .read(appConfigProvider.notifier)
                             .setBackupFrequency(v);
                       }
@@ -1002,10 +1002,10 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                         ref.watch(appConfigProvider).backupTime.split(':')[1],
                       ),
                     ),
-                    onChanged: (final time) {
+                    onChanged: (final time) async {
                       final timeStr =
                           "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
-                      ref
+                      await ref
                           .read(appConfigProvider.notifier)
                           .setBackupTime(timeStr);
                     },

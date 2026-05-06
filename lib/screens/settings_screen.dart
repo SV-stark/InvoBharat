@@ -647,8 +647,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   SwitchListTile(
                     title: const Text("Enable Auto Backup"),
                     value: config.autoBackupEnabled,
-                    onChanged: (final v) {
-                      ref
+                    onChanged: (final v) async {
+                      await ref
                           .read(appConfigProvider.notifier)
                           .setAutoBackupEnabled(v);
                     },
@@ -671,9 +671,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               ),
                             )
                             .toList(),
-                        onChanged: (final v) {
+                        onChanged: (final v) async {
                           if (v != null) {
-                            ref
+                            await ref
                                 .read(appConfigProvider.notifier)
                                 .setBackupFrequency(v);
                           }
@@ -696,7 +696,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           if (picked != null) {
                             final timeStr =
                                 "${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}";
-                            ref
+                            await ref
                                 .read(appConfigProvider.notifier)
                                 .setBackupTime(timeStr);
                           }

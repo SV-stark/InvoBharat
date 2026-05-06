@@ -1128,7 +1128,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
       excludeId: widget.invoiceToEdit?.id,
     );
 
-    if (!mounted) return;
+    if (!context.mounted) return;
 
     if (exists) {
       displayInfoBar(
