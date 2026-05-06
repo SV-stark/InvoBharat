@@ -12,6 +12,7 @@ import 'package:invobharat/widgets/profile_switcher_sheet.dart';
 import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/services/gstr_service.dart';
 import 'package:invobharat/services/invoice_import_service.dart';
+import 'package:invobharat/services/gstr1_json_import_service.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
@@ -261,6 +262,11 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                       label: const Text('Import Invoices'),
                       icon: const Icon(FluentIcons.upload),
                       onPressed: () => _importInvoices(context),
+                    ),
+                    CommandBarButton(
+                      label: const Text('Import GSTR-1 JSON'),
+                      icon: const Icon(FluentIcons.code),
+                      onPressed: () => _importGstr1Json(context),
                     ),
                     CommandBarButton(
                       label: const Text('CSV Template'),
@@ -1115,6 +1121,29 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
             },
           ),
         ],
+      ),
+    );
+
+    if (result.successCount > 0) {
+      ref.invalidate(invoiceListProvider);
+    }
+  }
+
+  Future<void> _importGstr1Json(final BuildContext context) async {
+    final repository = ref.read(invoiceRepositoryProvider);
+    final result = await Gstr1JsonImportService.importGstr1Json(repository);
+
+    if (!context.mounted) return;
+
+    displayInfoBar(
+      context,
+      builder: (final context, final close) => InfoBar(
+        title: const Text("GSTR-1 JSON Import"),
+        content: Text(result.message),
+        severity: result.successCount > 0
+            ? InfoBarSeverity.success
+            : InfoBarSeverity.info,
+        onClose: close,
       ),
     );
 

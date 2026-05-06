@@ -23,6 +23,7 @@ import 'package:invobharat/screens/widgets/dashboard_widgets.dart';
 import 'package:invobharat/utils/formatters.dart';
 import 'package:invobharat/services/invoice_actions.dart';
 import 'package:invobharat/services/invoice_import_service.dart';
+import 'package:invobharat/services/gstr1_json_import_service.dart';
 import 'package:invobharat/utils/pdf_generator.dart';
 import 'package:printing/printing.dart';
 
@@ -601,6 +602,11 @@ class _DashboardQuickActions extends ConsumerWidget {
             icon: const Icon(Icons.download),
             label: const Text("Template"),
           ),
+          TextButton.icon(
+            onPressed: () => Navigator.pop(context, "json"),
+            icon: const Icon(Icons.javascript),
+            label: const Text("GSTR-1 JSON"),
+          ),
           FilledButton.icon(
             onPressed: () => Navigator.pop(context, "import"),
             icon: const Icon(Icons.file_upload),
@@ -612,6 +618,22 @@ class _DashboardQuickActions extends ConsumerWidget {
 
     if (choice == "template") {
       await InvoiceImportService.downloadImportTemplate();
+      return;
+    }
+
+    if (choice == "json") {
+      final repository = ref.read(invoiceRepositoryProvider);
+      final result = await Gstr1JsonImportService.importGstr1Json(repository);
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result.message)));
+
+      if (result.successCount > 0) {
+        ref.invalidate(invoiceListProvider);
+      }
       return;
     }
 
