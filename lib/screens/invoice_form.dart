@@ -221,7 +221,9 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
                   banksAsync.when(
                     data: (final banks) {
                       if (banks.isEmpty) {
-                        return const Center(child: Text("No bank accounts found in settings."));
+                        return const Center(
+                          child: Text("No bank accounts found in settings."),
+                        );
                       }
                       return Flexible(
                         child: ListView.builder(
@@ -231,10 +233,16 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
                             final bank = banks[index];
                             return ListTile(
                               title: Text(bank.bankName),
-                              subtitle: Text("${bank.accountNo} (${bank.ifscCode})"),
-                              trailing: bank.isDefault ? const Icon(Icons.star, color: Colors.amber) : null,
+                              subtitle: Text(
+                                "${bank.accountNo} (${bank.ifscCode})",
+                              ),
+                              trailing: bank.isDefault
+                                  ? const Icon(Icons.star, color: Colors.amber)
+                                  : null,
                               onTap: () {
-                                ref.read(invoiceProvider.notifier).updateBankDetails(
+                                ref
+                                    .read(invoiceProvider.notifier)
+                                    .updateBankDetails(
                                       bank.bankName,
                                       bank.accountNo,
                                       bank.ifscCode,
@@ -247,8 +255,10 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
                         ),
                       );
                     },
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (final err, final stack) => Center(child: Text("Error: $err")),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (final err, final stack) =>
+                        Center(child: Text("Error: $err")),
                   ),
                 ],
               ),

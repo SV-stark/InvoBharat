@@ -10,9 +10,10 @@ final bankRepositoryProvider = Provider<BankRepository>((final ref) {
   return SqlBankRepository(db);
 });
 
-final bankListProvider = AsyncNotifierProvider<BankListNotifier, List<BankAccount>>(
-  BankListNotifier.new,
-);
+final bankListProvider =
+    AsyncNotifierProvider<BankListNotifier, List<BankAccount>>(
+      BankListNotifier.new,
+    );
 
 class BankListNotifier extends AsyncNotifier<List<BankAccount>> {
   @override

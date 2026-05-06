@@ -177,7 +177,7 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     // Increment sequence
     await ref
         .read(businessProfileListProvider.notifier)
-        .incrementInvoiceSequence();
+        .incrementInvoiceSequence(profile.id);
 
     return invoiceNo;
   }

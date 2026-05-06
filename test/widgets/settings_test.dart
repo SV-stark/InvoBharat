@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:invobharat/screens/settings_screen.dart';
@@ -22,6 +24,7 @@ void main() {
   late BusinessProfile testProfile;
 
   setUpAll(() {
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
     registerFallbackValue(BusinessProfile.defaults());
   });
 
@@ -48,8 +51,10 @@ void main() {
   });
 
   Widget createTestWidget() {
+    final dbInstance = db.AppDatabase(NativeDatabase.memory());
     return ProviderScope(
       overrides: [
+        databaseProvider.overrideWithValue(dbInstance),
         businessProfileRepositoryProvider.overrideWithValue(mockProfileRepo),
         appSettingsServiceProvider.overrideWithValue(mockSettingsService),
         // We override the list provider which will use our mock repo to load testProfile

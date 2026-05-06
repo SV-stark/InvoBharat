@@ -78,6 +78,8 @@ flutter:
     - fonts/NotoSans-Regular.ttf
     - fonts/Inter-Regular.ttf
     - fonts/Inter-Bold.ttf
+    - fonts/Spectral-Regular.ttf
+    - fonts/Spectral-Bold.ttf
   fonts:
     - family: NotoSans
       fonts:
@@ -86,4 +88,9 @@ flutter:
       fonts:
         - asset: fonts/Inter-Regular.ttf
         - asset: fonts/Inter-Bold.ttf
+          weight: 700
+    - family: Spectral
+      fonts:
+        - asset: fonts/Spectral-Regular.ttf
+        - asset: fonts/Spectral-Bold.ttf
           weight: 700

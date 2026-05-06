@@ -91,8 +91,8 @@ Future<Uint8List> generateInvoicePdf(
   final String? title,
 }) async {
   // Load fonts in the main thread where rootBundle is guaranteed to work
-  final regularData = await rootBundle.load('fonts/Inter-Regular.ttf');
-  final boldData = await rootBundle.load('fonts/Inter-Bold.ttf');
+  final regularData = await rootBundle.load('fonts/Spectral-Regular.ttf');
+  final boldData = await rootBundle.load('fonts/Spectral-Bold.ttf');
 
   final params = PdfGeneratorParams(
     invoice: invoice,

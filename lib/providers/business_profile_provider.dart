@@ -121,21 +121,19 @@ class BusinessProfileList extends _$BusinessProfileList {
     state = state.where((final p) => p.id != id).toList();
   }
 
-  Future<void> updateColor(final int color) async {
+  Future<void> updateColor(final String profileId, final int color) async {
     if (state.isEmpty) return;
-    final activeId = ref.read(activeProfileIdProvider);
     final current = state.firstWhere(
-      (final p) => p.id == activeId,
+      (final p) => p.id == profileId,
       orElse: () => state.first,
     );
     await updateProfile(current.copyWith(colorValue: color));
   }
 
-  Future<void> incrementInvoiceSequence() async {
+  Future<void> incrementInvoiceSequence(final String profileId) async {
     if (state.isEmpty) return;
-    final activeId = ref.read(activeProfileIdProvider);
     final current = state.firstWhere(
-      (final p) => p.id == activeId,
+      (final p) => p.id == profileId,
       orElse: () => state.first,
     );
     final newSeq = current.invoiceSequence + 1;
@@ -149,7 +147,7 @@ class ActiveProfileId extends _$ActiveProfileId {
   @override
   String build() {
     final profiles = ref.watch(businessProfileListProvider);
-    _loadActiveId(profiles);
+    Future.microtask(() => _loadActiveId(profiles));
     return "";
   }
 

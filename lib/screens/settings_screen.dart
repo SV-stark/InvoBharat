@@ -688,36 +688,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             )
           else
-            ...banks.map((final bank) => Card(
-              child: ListTile(
-                leading: const Icon(Icons.account_balance),
-                title: Text(bank.bankName),
-                subtitle: Text("${bank.accountNo} (${bank.ifscCode})"),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (bank.isDefault)
-                      const Tooltip(
-                        message: "Default Bank",
-                        child: Icon(Icons.star, color: Colors.amber),
+            ...banks.map(
+              (final bank) => Card(
+                child: ListTile(
+                  leading: const Icon(Icons.account_balance),
+                  title: Text(bank.bankName),
+                  subtitle: Text("${bank.accountNo} (${bank.ifscCode})"),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (bank.isDefault)
+                        const Tooltip(
+                          message: "Default Bank",
+                          child: Icon(Icons.star, color: Colors.amber),
+                        ),
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () =>
+                            _showAddEditBankDialog(context, bank: bank),
                       ),
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => _showAddEditBankDialog(context, bank: bank),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _confirmDeleteBank(bank),
-                    ),
-                  ],
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _confirmDeleteBank(bank),
+                      ),
+                    ],
+                  ),
+                  onTap: () {
+                    if (!bank.isDefault) {
+                      ref
+                          .read(bankListProvider.notifier)
+                          .setDefaultBank(bank.id);
+                    }
+                  },
                 ),
-                onTap: () {
-                  if (!bank.isDefault) {
-                    ref.read(bankListProvider.notifier).setDefaultBank(bank.id);
-                  }
-                },
               ),
-            )),
+            ),
         ],
       ),
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -725,7 +730,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Future<void> _showAddEditBankDialog(final BuildContext context, {final bank_model.BankAccount? bank}) async {
+  Future<void> _showAddEditBankDialog(
+    final BuildContext context, {
+    final bank_model.BankAccount? bank,
+  }) async {
     final nameCtrl = TextEditingController(text: bank?.bankName);
     final accCtrl = TextEditingController(text: bank?.accountNo);
     final ifscCtrl = TextEditingController(text: bank?.ifscCode);
@@ -769,7 +777,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(bank == null ? "Add" : "Save"),
@@ -798,9 +809,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (final context) => AlertDialog(
         title: const Text("Delete Bank?"),
-        content: Text("Are you sure you want to delete '${bank.bankName} - ${bank.accountNo}'?"),
+        content: Text(
+          "Are you sure you want to delete '${bank.bankName} - ${bank.accountNo}'?",
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: const Text("Delete", style: TextStyle(color: Colors.red)),
@@ -854,14 +870,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildColorOption(final Color color) {
-    final selectedColor = ref.watch(businessProfileProvider).colorValue;
+    final profile = ref.watch(businessProfileProvider);
+    final selectedColor = profile.colorValue;
     final isSelected = selectedColor == color.toARGB32();
 
     return GestureDetector(
       onTap: () {
         ref
             .read(businessProfileListProvider.notifier)
-            .updateColor(color.toARGB32());
+            .updateColor(profile.id, color.toARGB32());
       },
       child: Container(
         width: 40,

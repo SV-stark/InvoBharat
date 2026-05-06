@@ -33,7 +33,7 @@ class InvoiceActions {
     await ref.read(invoiceRepositoryProvider).saveInvoice(newInvoice);
     await ref
         .read(businessProfileListProvider.notifier)
-        .incrementInvoiceSequence();
+        .incrementInvoiceSequence(profile.id);
     ref.invalidate(invoiceListProvider);
   }
 

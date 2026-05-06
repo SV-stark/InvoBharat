@@ -11,17 +11,19 @@ class SqlBankRepository implements BankRepository {
 
   @override
   Future<void> saveBank(final model.BankAccount bank) async {
-    await database.into(database.bankAccounts).insertOnConflictUpdate(
-      BankAccountsCompanion(
-        id: Value(bank.id.isEmpty ? const Uuid().v4() : bank.id),
-        profileId: Value(bank.profileId),
-        bankName: Value(bank.bankName),
-        accountNo: Value(bank.accountNo),
-        ifscCode: Value(bank.ifscCode),
-        branch: Value(bank.branch),
-        isDefault: Value(bank.isDefault),
-      ),
-    );
+    await database
+        .into(database.bankAccounts)
+        .insertOnConflictUpdate(
+          BankAccountsCompanion(
+            id: Value(bank.id.isEmpty ? const Uuid().v4() : bank.id),
+            profileId: Value(bank.profileId),
+            bankName: Value(bank.bankName),
+            accountNo: Value(bank.accountNo),
+            ifscCode: Value(bank.ifscCode),
+            branch: Value(bank.branch),
+            isDefault: Value(bank.isDefault),
+          ),
+        );
   }
 
   @override
@@ -34,7 +36,9 @@ class SqlBankRepository implements BankRepository {
   }
 
   @override
-  Future<List<model.BankAccount>> getBanksByProfile(final String profileId) async {
+  Future<List<model.BankAccount>> getBanksByProfile(
+    final String profileId,
+  ) async {
     final query = database.select(database.bankAccounts)
       ..where((final tbl) => tbl.profileId.equals(profileId));
     final rows = await query.get();
@@ -43,19 +47,22 @@ class SqlBankRepository implements BankRepository {
 
   @override
   Future<void> deleteBank(final String id) async {
-    await (database.delete(database.bankAccounts)
-          ..where((final tbl) => tbl.id.equals(id)))
-        .go();
+    await (database.delete(
+      database.bankAccounts,
+    )..where((final tbl) => tbl.id.equals(id))).go();
   }
 
   @override
-  Future<void> setDefaultBank(final String profileId, final String bankId) async {
+  Future<void> setDefaultBank(
+    final String profileId,
+    final String bankId,
+  ) async {
     await database.transaction(() async {
       // 1. Set all for this profile to non-default
       await (database.update(database.bankAccounts)
             ..where((final tbl) => tbl.profileId.equals(profileId)))
           .write(const BankAccountsCompanion(isDefault: Value(false)));
-      
+
       // 2. Set this one as default
       await (database.update(database.bankAccounts)
             ..where((final tbl) => tbl.id.equals(bankId)))

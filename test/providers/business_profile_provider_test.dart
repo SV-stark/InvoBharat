@@ -62,6 +62,9 @@ void main() {
 
     test('ActiveProfileIdNotifier should load and select active ID', () async {
       SharedPreferences.setMockInitialValues({'active_profile_id': 'p1'});
+      when(() => mockRepository.getAllProfiles()).thenAnswer((_) async => [
+            BusinessProfile.defaults().copyWith(id: 'p1'),
+          ]);
 
       final container = ProviderContainer(
         overrides: [
@@ -94,9 +97,7 @@ void main() {
         invoiceSequence: 10,
       );
       SharedPreferences.setMockInitialValues({'active_profile_id': 'p1'});
-      when(
-        () => mockRepository.getAllProfiles(),
-      ).thenAnswer((_) async => [profile]);
+      when(() => mockRepository.getAllProfiles()).thenAnswer((_) async => [profile]);
       when(() => mockRepository.saveProfile(any())).thenAnswer((_) async => {});
 
       final container = ProviderContainer(
@@ -122,7 +123,7 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 100));
 
       final proxy = container.read(businessProfileListProvider.notifier);
-      await proxy.incrementInvoiceSequence();
+      await proxy.incrementInvoiceSequence('p1');
 
       verify(
         () => mockRepository.saveProfile(

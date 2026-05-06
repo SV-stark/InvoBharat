@@ -34,7 +34,9 @@ Invoice _createDefaultInvoice(
         "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}",
     items: [InvoiceItem(id: _uuid.v4())],
     bankName: bankName ?? profile.bankName,
-    accountNo: accountNo ?? profile.accountNo, // changed from accountNumber to accountNo
+    accountNo:
+        accountNo ??
+        profile.accountNo, // changed from accountNumber to accountNo
     ifscCode: ifscCode ?? profile.ifscCode,
     branch: branch ?? profile.branch, // changed from branchName to branch
   );
