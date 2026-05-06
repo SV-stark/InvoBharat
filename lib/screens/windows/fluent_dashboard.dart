@@ -1168,13 +1168,12 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         title: const Text("Select Financial Year"),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children:
-              years.map((final fy) {
-                return ListTile(
-                  title: Text(fy),
-                  onPressed: () => Navigator.pop(context, fy),
-                );
-              }).toList(),
+          children: years.map((final fy) {
+            return ListTile(
+              title: Text(fy),
+              onPressed: () => Navigator.pop(context, fy),
+            );
+          }).toList(),
         ),
         actions: [
           Button(

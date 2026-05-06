@@ -1,3 +1,4 @@
+import 'package:fluent_ui/fluent_ui.dart' show PaneDisplayMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,6 +11,7 @@ import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/services/backup_service.dart';
+import 'package:invobharat/providers/app_config_provider.dart';
 
 import 'package:invobharat/widgets/about_tab.dart';
 import 'package:invobharat/services/email_service.dart';
@@ -20,7 +22,6 @@ import 'package:flutter/services.dart';
 
 import 'package:invobharat/providers/bank_provider.dart';
 import 'package:invobharat/models/bank_account.dart' as bank_model;
-import 'package:invobharat/providers/app_config_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -272,22 +273,67 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 },
               ),
             ),
+            const Gap(16),
+            const Text(
+              "Sidebar Mode (Desktop)",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const Gap(8),
-            const Text("Primary Color"),
-            const Gap(8),
+            DropdownButtonFormField<PaneDisplayMode>(
+              initialValue: ref.watch(appConfigProvider).paneDisplayMode,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12),
+              ),
+              items: const [
+                DropdownMenuItem(
+                  value: PaneDisplayMode.auto,
+                  child: Text("Auto (Recommended)"),
+                ),
+                DropdownMenuItem(
+                  value: PaneDisplayMode.expanded,
+                  child: Text("Always Open"),
+                ),
+                DropdownMenuItem(
+                  value: PaneDisplayMode.compact,
+                  child: Text("Compact (Icons Only)"),
+                ),
+                DropdownMenuItem(
+                  value: PaneDisplayMode.minimal,
+                  child: Text("Minimal (Hamburger)"),
+                ),
+              ],
+              onChanged: (final val) {
+                if (val != null) {
+                  ref.read(appConfigProvider.notifier).setPaneDisplayMode(val);
+                }
+              },
+            ),
+            const Gap(24),
+            const Text(
+              "Primary Accent Color",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const Gap(12),
             Wrap(
               spacing: 12,
+              runSpacing: 12,
               children: [
-                _buildColorOption(Colors.teal),
-                _buildColorOption(Colors.blue),
-                _buildColorOption(Colors.indigo),
-                _buildColorOption(Colors.purple),
-                _buildColorOption(Colors.pink),
-                _buildColorOption(Colors.red),
-                _buildColorOption(Colors.deepOrange),
-                _buildColorOption(Colors.orange),
-                _buildColorOption(Colors.green),
+                _buildColorOption(const Color(0xFF009688), 'Teal'),
+                _buildColorOption(const Color(0xFF2196F3), 'Blue'),
+                _buildColorOption(const Color(0xFF3F51B5), 'Indigo'),
+                _buildColorOption(const Color(0xFF9C27B0), 'Purple'),
+                _buildColorOption(const Color(0xFFE91E63), 'Pink'),
+                _buildColorOption(const Color(0xFFF44336), 'Red'),
+                _buildColorOption(const Color(0xFFFF9800), 'Orange'),
+                _buildColorOption(const Color(0xFF4CAF50), 'Green'),
+                _buildColorOption(const Color(0xFF607D8B), 'Slate'),
               ],
+            ),
+            const Gap(12),
+            const Text(
+              "This color will be used as the primary theme for the current business profile.",
+              style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
             const Gap(24),
             _buildSectionHeader("Invoice Configuration"),
@@ -899,26 +945,45 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _buildColorOption(final Color color) {
+  Widget _buildColorOption(final Color color, final String name) {
     final profile = ref.watch(businessProfileProvider);
     final selectedColor = profile.colorValue;
     final isSelected = selectedColor == color.toARGB32();
 
-    return GestureDetector(
-      onTap: () {
-        ref
-            .read(businessProfileListProvider.notifier)
-            .updateColor(profile.id, color.toARGB32());
-      },
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: isSelected ? Border.all(width: 3, color: Colors.grey) : null,
+    return Tooltip(
+      message: name,
+      child: GestureDetector(
+        onTap: () {
+          ref
+              .read(businessProfileListProvider.notifier)
+              .updateColor(profile.id, color.toARGB32());
+        },
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: isSelected
+                ? Border.all(
+                    width: 3,
+                    color: Theme.of(context).colorScheme.primary,
+                  )
+                : Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.4),
+                      blurRadius: 8,
+                      spreadRadius: 2,
+                    ),
+                  ]
+                : null,
+          ),
+          child: isSelected
+              ? const Icon(Icons.check, color: Colors.white, size: 20)
+              : null,
         ),
-        child: isSelected ? const Icon(Icons.check, color: Colors.white) : null,
       ),
     );
   }

@@ -66,12 +66,14 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
               (final b) => b.isDefault,
               orElse: () => banks.first,
             );
-            ref.read(invoiceProvider.notifier).updateBankDetails(
-              defBank.bankName,
-              defBank.accountNo,
-              defBank.ifscCode,
-              defBank.branch,
-            );
+            ref
+                .read(invoiceProvider.notifier)
+                .updateBankDetails(
+                  defBank.bankName,
+                  defBank.accountNo,
+                  defBank.ifscCode,
+                  defBank.branch,
+                );
           }
         } catch (e) {
           debugPrint("Error setting default bank: $e");

@@ -157,7 +157,6 @@ class Gstr1JsonImportService {
       items: invoiceItems,
       supplier: const Supplier(),
       status: 'Sent',
-      type: InvoiceType.invoice,
     );
   }
 

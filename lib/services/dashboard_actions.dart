@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:invobharat/models/invoice.dart';
-import 'package:invobharat/utils/formatters.dart';
 
 class DashboardActions {
   static Map<String, double> calculateRevenueTrend(
@@ -68,10 +67,9 @@ class DashboardActions {
     } else if (period == "This Quarter") {
       final int quarter = (now.month - 1) ~/ 3 + 1;
       start = DateTime(now.year, (quarter - 1) * 3 + 1);
-      end =
-          quarter == 4
-              ? DateTime(now.year, 12, 31)
-              : DateTime(now.year, quarter * 3 + 1, 0);
+      end = quarter == 4
+          ? DateTime(now.year, 12, 31)
+          : DateTime(now.year, quarter * 3 + 1, 0);
     } else if (period == "This Financial Year") {
       final int startYear = now.month >= 4 ? now.year : now.year - 1;
       start = DateTime(startYear, 4);
@@ -110,7 +108,7 @@ class DashboardActions {
             end = DateTime(startYear, 12, 31);
             break;
           case 4: // Jan-Mar
-            start = DateTime(startYear + 1, 1);
+            start = DateTime(startYear + 1);
             end = DateTime(startYear + 1, 3, 31);
             break;
         }

@@ -11,6 +11,7 @@ import 'package:invobharat/screens/windows/fluent_recurring_screen.dart';
 import 'package:invobharat/screens/windows/fluent_estimates_screen.dart';
 import 'package:invobharat/screens/windows/fluent_item_templates_screen.dart';
 import 'package:invobharat/screens/aging_report_screen.dart';
+import 'package:invobharat/providers/app_config_provider.dart';
 
 class FluentHome extends ConsumerStatefulWidget {
   const FluentHome({super.key});
@@ -80,9 +81,7 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
         pane: NavigationPane(
           selected: topIndex,
           onChanged: (final index) => setState(() => topIndex = index),
-          displayMode: MediaQuery.of(context).size.width > 1000
-              ? PaneDisplayMode.auto
-              : PaneDisplayMode.compact,
+          displayMode: ref.watch(appConfigProvider).paneDisplayMode,
           items: [
             PaneItem(
               icon: const Icon(FluentIcons.home),

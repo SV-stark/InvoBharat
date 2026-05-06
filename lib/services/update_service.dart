@@ -73,8 +73,9 @@ class UpdateService {
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = jsonDecode(response.body);
-        final releases =
-            jsonList.map((final json) => Release.fromJson(json)).toList();
+        final releases = jsonList
+            .map((final json) => Release.fromJson(json))
+            .toList();
 
         Release? stableRelease;
         Release? nightlyRelease;

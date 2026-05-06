@@ -89,16 +89,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       context: context,
       builder: (final context) => SimpleDialog(
         title: const Text("Select Financial Year"),
-        children:
-            years.map((final fy) {
-              return SimpleDialogOption(
-                onPressed: () => Navigator.pop(context, fy),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(fy, style: const TextStyle(fontSize: 16)),
-                ),
-              );
-            }).toList(),
+        children: years.map((final fy) {
+          return SimpleDialogOption(
+            onPressed: () => Navigator.pop(context, fy),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(fy, style: const TextStyle(fontSize: 16)),
+            ),
+          );
+        }).toList(),
       ),
     );
 
@@ -279,9 +278,7 @@ class _DashboardHeader extends StatelessWidget {
               ),
               Text(
                 profile.companyName,
-                style: Theme.of(
-                  context,
-                ).textTheme.headlineMedium?.copyWith(
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
                 overflow: TextOverflow.ellipsis,

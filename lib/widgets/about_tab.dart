@@ -33,10 +33,9 @@ class AboutTab extends ConsumerWidget {
     final updates = await UpdateService.checkForUpdates();
     if (!context.mounted) return;
 
-    final Release? latest =
-        config.updateChannel == UpdateChannel.stable
-            ? updates['stable']
-            : updates['nightly'];
+    final Release? latest = config.updateChannel == UpdateChannel.stable
+        ? updates['stable']
+        : updates['nightly'];
 
     if (latest == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -56,9 +55,9 @@ class AboutTab extends ConsumerWidget {
     }
 
     if (!updateAvailable) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('You are on the latest version.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You are on the latest version.')),
+      );
       return;
     }
 
@@ -105,28 +104,29 @@ class AboutTab extends ConsumerWidget {
                 ),
                 actions: [
                   TextButton(
-                    onPressed: isDownloading ? null : () => Navigator.pop(context),
+                    onPressed: isDownloading
+                        ? null
+                        : () => Navigator.pop(context),
                     child: const Text('Later'),
                   ),
                   FilledButton(
-                    onPressed:
-                        isDownloading
-                            ? null
-                            : () async {
-                              setDialogState(() => isDownloading = true);
-                              try {
-                                await UpdateService.downloadAndInstallUpdate(
-                                  latest,
+                    onPressed: isDownloading
+                        ? null
+                        : () async {
+                            setDialogState(() => isDownloading = true);
+                            try {
+                              await UpdateService.downloadAndInstallUpdate(
+                                latest,
+                              );
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Update failed: $e')),
                                 );
-                              } catch (e) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Update failed: $e')),
-                                  );
-                                  Navigator.pop(context);
-                                }
+                                Navigator.pop(context);
                               }
-                            },
+                            }
+                          },
                     child: const Text('Update Now'),
                   ),
                 ],
