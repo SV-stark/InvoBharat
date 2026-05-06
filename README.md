@@ -31,13 +31,19 @@ Generates beautiful, professional PDFs in seconds. No internet required. No subs
 | **🧾 Instant Invoicing** | Auto-calculation of taxes and totals. Smart detection of **Inter-state vs Intra-state** supply based on GSTIN. |
 | **📋 Estimates & Quotes** | Create professional estimates and convert them to invoices with one click. |
 | **🔄 Recurring Invoices** | Set up profiles for auto-generating invoices for repeat clients. |
-| **🎨 Native Experience** | **Desktop**: Fluent UI experience. **Android**: Dynamic Material You theming. Dark mode support on all platforms. |
+| **🏢 Multi-Business** | Manage multiple distinct businesses. Each profile has its own logo, GSTIN, sequence, and client list. |
 | **📁 Client Management** | Save client details once (GSTIN, Address) and auto-fill them forever. **View Client Ledger** for transaction history. |
 | **📦 Product Library** | Manage products/services with predefined tax slabs. **HSN/SAC Lookup** with auto-fill for 100+ common codes. |
+| **💳 Payment Tracking** | Record partial payments and track **Paid/Unpaid/Partial** status with a dedicated payment history ledger. |
 | **📉 Aging Reports** | Visual breakdown of **Receivables** (Overdue Invoices) by aging buckets (30/60/90 days). |
-| **💾 Secure Backups** | Full **Database Backup (ZIP)** and restore functionality to keep your data pixel-perfect. |
+| **📧 Direct Email** | Send invoices directly via configured SMTP (e.g., Gmail) without opening an external mail client. |
+| **📱 UPI QR Codes** | Dynamic, scannable UPI QR codes generated automatically on PDFs based on your configured UPI ID. |
+| **📥 GSTR Data Import** | Import historic **GSTR-1 JSON** files from other software or government portals for seamless migration. |
+| **⏱️ Automated Backups** | **AutoBackupService** handles daily, weekly, or monthly background backups for hands-free data safety. |
+| **🔄 OTA Updates** | Built-in update service checks for new releases and seamlessly runs installers for Windows users. |
 | **🇮🇳 India Ready** | **Number-to-Words** conversion (e.g., "Rupees One Thousand Only"). **GSTR-1 & GSTR-3B** compatible CSV exports for easy filing. |
 | **📝 Audit Logs** | Track all changes to invoices and profiles for better financial accountability and compliance. |
+| **🎨 Native Experience** | **Desktop**: Fluent UI experience. **Android**: Dynamic Material You theming. Dark mode support on all platforms. |
 | **🖨️ Professional Output** | High-resolution A4 PDFs with your brand logo. Full-screen print preview and layout customization. |
 
 ---
