@@ -34,79 +34,75 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  String _selectedFilter = "This Month";
+  String _selectedFilter = "This Financial Year";
   DateTimeRange? _dateRange;
 
   @override
   void initState() {
     super.initState();
-    _updateDateRange("This Month");
+    _updateDateRange("This Financial Year");
   }
 
   void _updateDateRange(final String filter) async {
-    final now = DateTime.now();
-    DateTime start, end;
+    if (filter == "Custom") {
+      final picked = await showDateRangePicker(
+        context: context,
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2100),
+        initialDateRange: _dateRange,
+      );
+      if (picked != null) {
+        setState(() {
+          _selectedFilter = "Custom";
+          _dateRange = picked;
+        });
+      }
+      return;
+    }
 
-    switch (filter) {
-      case "This Month":
-        start = DateTime(now.year, now.month);
-        end = DateTime(now.year, now.month + 1, 0);
-        setState(() {
-          _selectedFilter = filter;
-          _dateRange = DateTimeRange(start: start, end: end);
-        });
-        break;
-      case "Last Month":
-        start = DateTime(now.year, now.month - 1);
-        end = DateTime(now.year, now.month, 0);
-        setState(() {
-          _selectedFilter = filter;
-          _dateRange = DateTimeRange(start: start, end: end);
-        });
-        break;
-      case "This Quarter":
-        final int quarter = (now.month - 1) ~/ 3 + 1;
-        start = DateTime(now.year, (quarter - 1) * 3 + 1);
-        end = quarter == 4
-            ? DateTime(now.year, 12, 31)
-            : DateTime(now.year, quarter * 3 + 1, 0);
-        setState(() {
-          _selectedFilter = filter;
-          _dateRange = DateTimeRange(start: start, end: end);
-        });
-        break;
-      case "This Financial Year":
-        final int startYear = now.month >= 4 ? now.year : now.year - 1;
-        start = DateTime(startYear, 4);
-        end = DateTime(startYear + 1, 3, 31);
-        setState(() {
-          _selectedFilter = filter;
-          _dateRange = DateTimeRange(start: start, end: end);
-        });
-        break;
-      case "Last Financial Year":
-        final int startYear = now.month >= 4 ? now.year - 1 : now.year - 2;
-        start = DateTime(startYear, 4);
-        end = DateTime(startYear + 1, 3, 31);
-        setState(() {
-          _selectedFilter = filter;
-          _dateRange = DateTimeRange(start: start, end: end);
-        });
-        break;
-      case "Custom":
-        final picked = await showDateRangePicker(
-          context: context,
-          firstDate: DateTime(2000),
-          lastDate: DateTime(2100),
-          initialDateRange: _dateRange,
-        );
-        if (picked != null) {
-          setState(() {
-            _selectedFilter = "Custom";
-            _dateRange = picked;
-          });
-        }
-        break;
+    if (filter == "Select Financial Year") {
+      await _showFinancialYearPicker();
+      return;
+    }
+
+    final range = DashboardActions.getRangeForPeriod(filter);
+    if (range != null) {
+      setState(() {
+        _selectedFilter = filter;
+        _dateRange = range;
+      });
+    }
+  }
+
+  Future<void> _showFinancialYearPicker() async {
+    final now = DateTime.now();
+    final currentFYStart = now.month >= 4 ? now.year : now.year - 1;
+
+    final List<String> years = [];
+    for (int i = 0; i < 5; i++) {
+      final start = currentFYStart - i;
+      years.add("FY $start-${(start + 1).toString().substring(2)}");
+    }
+
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (final context) => SimpleDialog(
+        title: const Text("Select Financial Year"),
+        children:
+            years.map((final fy) {
+              return SimpleDialogOption(
+                onPressed: () => Navigator.pop(context, fy),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(fy, style: const TextStyle(fontSize: 16)),
+                ),
+              );
+            }).toList(),
+      ),
+    );
+
+    if (selected != null) {
+      _updateDateRange(selected);
     }
   }
 
@@ -270,29 +266,34 @@ class _DashboardHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Welcome back,",
-              style: Theme.of(
-                context,
-              ).textTheme.bodyLarge?.copyWith(color: Colors.grey),
-            ),
-            Text(
-              profile.companyName,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            Text(
-              "${DateTime.now().fiscalYear()} • ${DateTime.now().financialQuarter()}",
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Welcome back,",
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(color: Colors.grey),
               ),
-            ),
-          ],
+              Text(
+                profile.companyName,
+                style: Theme.of(
+                  context,
+                ).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                "${DateTime.now().fiscalYear()} • ${DateTime.now().financialQuarter()}",
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
         PopupMenuButton<String>(
           initialValue: selectedFilter,
@@ -315,6 +316,10 @@ class _DashboardHeader extends StatelessWidget {
             const PopupMenuItem(
               value: "Last Financial Year",
               child: Text("Last Financial Year"),
+            ),
+            const PopupMenuItem(
+              value: "Select Financial Year",
+              child: Text("Select FY..."),
             ),
             const PopupMenuItem(
               value: "Custom",

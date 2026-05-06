@@ -40,7 +40,7 @@ class FluentDashboard extends ConsumerStatefulWidget {
 }
 
 class _FluentDashboardState extends ConsumerState<FluentDashboard> {
-  String _selectedPeriod = "All Time";
+  String _selectedPeriod = "This Financial Year";
   String _selectedType = "All";
   String _searchQuery = "";
   final Set<String> _selectedIds = {};
@@ -123,6 +123,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                           "Last Month",
                           "This Financial Year",
                           "Last Financial Year",
+                          "Select FY...",
                           "Q1 (Apr-Jun)",
                           "Q2 (Jul-Sep)",
                           "Q3 (Oct-Dec)",
@@ -132,8 +133,12 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                           (final e) => ComboBoxItem(value: e, child: Text(e)),
                         )
                         .toList(),
-                onChanged: (final v) {
-                  if (v != null) setState(() => _selectedPeriod = v);
+                onChanged: (final v) async {
+                  if (v == "Select FY...") {
+                    await _showFinancialYearPicker();
+                  } else if (v != null) {
+                    setState(() => _selectedPeriod = v);
+                  }
                 },
                 placeholder: const Text("Select Period"),
               ),
@@ -1115,6 +1120,46 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
 
     if (result.successCount > 0) {
       ref.invalidate(invoiceListProvider);
+    }
+  }
+
+  Future<void> _showFinancialYearPicker() async {
+    final now = DateTime.now();
+    final currentFYStart = now.month >= 4 ? now.year : now.year - 1;
+
+    final List<String> years = [];
+    for (int i = 0; i < 5; i++) {
+      final start = currentFYStart - i;
+      years.add("FY $start-${(start + 1).toString().substring(2)}");
+    }
+
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (final context) => ContentDialog(
+        title: const Text("Select Financial Year"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children:
+              years.map((final fy) {
+                return ListTile(
+                  title: Text(fy),
+                  onPressed: () => Navigator.pop(context, fy),
+                );
+              }).toList(),
+        ),
+        actions: [
+          Button(
+            child: const Text("Cancel"),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+
+    if (selected != null) {
+      setState(() {
+        _selectedPeriod = selected;
+      });
     }
   }
 }
