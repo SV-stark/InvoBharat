@@ -207,7 +207,7 @@ class AboutTab extends ConsumerWidget {
             'Channel:',
             style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
           ),
-          const Gap(16),
+          const SizedBox(width: 16),
           DropdownButton<UpdateChannel>(
             value: config.updateChannel,
             underline: const SizedBox(),

@@ -287,17 +287,18 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
 
                           if (latest == null) {
                             if (context.mounted) {
-                              displayInfoBar(
-                                context,
-                                builder: (final context, final close) {
-                                  return const InfoBar(
-                                    title: Text("Update Check"),
-                                    content: Text(
-                                      "No updates found for this channel.",
-                                    ),
-                                    severity: InfoBarSeverity.info,
-                                  );
-                                },
+                              unawaited(
+                                displayInfoBar(
+                                  context,
+                                  builder: (final context, final close) {
+                                    return const InfoBar(
+                                      title: Text("Update Check"),
+                                      content: Text(
+                                        "No updates found for this channel.",
+                                      ),
+                                    );
+                                  },
+                                ),
                               );
                             }
                             return;
@@ -313,6 +314,7 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
 
                           if (!updateAvailable) {
                             if (context.mounted) {
+                            unawaited(
                               displayInfoBar(
                                 context,
                                 builder: (final context, final close) {
@@ -324,7 +326,8 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                                     severity: InfoBarSeverity.success,
                                   );
                                 },
-                              );
+                              ),
+                            );
                             }
                             return;
                           }
@@ -407,25 +410,27 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                                                             );
                                                       } catch (e) {
                                                         if (context.mounted) {
-                                                          displayInfoBar(
-                                                            context,
-                                                            builder:
-                                                                (
-                                                                  final context,
-                                                                  final close,
-                                                                ) {
-                                                              return InfoBar(
-                                                                title: const Text(
-                                                                  "Update Failed",
-                                                                ),
-                                                                content: Text(
-                                                                  e.toString(),
-                                                                ),
-                                                                severity:
-                                                                    InfoBarSeverity
-                                                                        .error,
-                                                              );
-                                                            },
+                                                          unawaited(
+                                                            displayInfoBar(
+                                                              context,
+                                                              builder:
+                                                                  (
+                                                                    final context,
+                                                                    final close,
+                                                                  ) {
+                                                                return InfoBar(
+                                                                  title: const Text(
+                                                                    "Update Failed",
+                                                                  ),
+                                                                  content: Text(
+                                                                    e.toString(),
+                                                                  ),
+                                                                  severity:
+                                                                      InfoBarSeverity
+                                                                          .error,
+                                                                );
+                                                              },
+                                                            ),
                                                           );
                                                           Navigator.pop(
                                                             context,
