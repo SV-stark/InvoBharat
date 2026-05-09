@@ -180,20 +180,12 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             value: appConfig.paneDisplayMode,
             items: const [
               ComboBoxItem(
-                value: PaneDisplayMode.auto,
-                child: Text("Auto (Recommended)"),
-              ),
-              ComboBoxItem(
                 value: PaneDisplayMode.expanded,
                 child: Text("Always Open"),
               ),
               ComboBoxItem(
                 value: PaneDisplayMode.compact,
                 child: Text("Compact (Icons Only)"),
-              ),
-              ComboBoxItem(
-                value: PaneDisplayMode.minimal,
-                child: Text("Minimal (Hamburger)"),
               ),
             ],
             onChanged: (final mode) {

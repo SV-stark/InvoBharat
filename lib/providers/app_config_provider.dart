@@ -20,7 +20,7 @@ class AppConfig {
   final String? backupPath;
 
   AppConfig({
-    this.paneDisplayMode = PaneDisplayMode.auto,
+    this.paneDisplayMode = PaneDisplayMode.expanded,
     this.updateChannel = UpdateChannel.stable,
     this.autoBackupEnabled = false,
     this.backupFrequency = BackupFrequency.none,
@@ -88,8 +88,12 @@ class AppConfigNotifier extends Notifier<AppConfig> {
     if (paneIndex != null &&
         paneIndex >= 0 &&
         paneIndex < PaneDisplayMode.values.length) {
+      var loadedMode = PaneDisplayMode.values[paneIndex];
+      if (loadedMode == PaneDisplayMode.auto || loadedMode == PaneDisplayMode.minimal) {
+        loadedMode = PaneDisplayMode.expanded;
+      }
       newState = newState.copyWith(
-        paneDisplayMode: PaneDisplayMode.values[paneIndex],
+        paneDisplayMode: loadedMode,
       );
     }
 
