@@ -164,7 +164,14 @@ class InvoiceNotifier extends Notifier<Invoice> {
   }
 
   void updateReceiverState(final String val) {
-    state = state.copyWith(receiver: state.receiver.copyWith(state: val));
+    state = state.copyWith(
+      receiver: state.receiver.copyWith(state: val),
+      // Auto-update place of supply to match receiver state by default
+      placeOfSupply: state.placeOfSupply.isEmpty ||
+              state.placeOfSupply == state.receiver.state
+          ? val
+          : state.placeOfSupply,
+    );
   }
 
   void updateReceiverAddress(final String val) {

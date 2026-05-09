@@ -430,7 +430,14 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Recent Invoices", style: theme.typography.title),
+                    Expanded(
+                      child: Text(
+                        "Recent Invoices",
+                        style: theme.typography.title,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const Gap(16),
                     SizedBox(
                       width: 250,
                       child: TextBox(

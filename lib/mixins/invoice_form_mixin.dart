@@ -118,6 +118,7 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     receiverEmailCtrl.text = client.email; // NEW
     receiverStateCtrl.text = client.state;
     receiverAddressCtrl.text = client.address;
+    posCtrl.text = client.state; // NEW: Update Place of Supply controller
   }
 
   Future<bool> saveInvoice({

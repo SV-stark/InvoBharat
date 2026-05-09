@@ -5,6 +5,7 @@ import 'package:invobharat/main.dart';
 
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:invobharat/providers/database_provider.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -14,6 +15,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          appInitializationProvider.overrideWith((final ref) => Future.value()),
           invoiceListProvider.overrideWith(
             (final ref) => Future.value(<Invoice>[]),
           ),
