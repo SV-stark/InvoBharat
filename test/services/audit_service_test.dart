@@ -25,7 +25,7 @@ void main() {
       ];
 
       final missing = AuditService.detectGaps(invoices);
-      expect(missing, contains('INV-2'));
+      expect(missing, contains('INV-002'));
     });
 
     test('detectGaps should handle multiple prefixes', () {

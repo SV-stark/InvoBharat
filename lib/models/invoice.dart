@@ -136,6 +136,7 @@ abstract class Receiver with _$Receiver {
     @Default('') final String state,
     @Default('') final String stateCode,
     @Default('') final String email,
+    @Default('') final String phone,
   }) = _Receiver;
 
   factory Receiver.fromJson(final Map<String, dynamic> json) =>
@@ -193,8 +194,8 @@ abstract class InvoiceItem with _$InvoiceItem {
       isInterState ? igstAmount : 0;
 
   double get totalAmount {
-    // Both sums should be identical if using Money.
-    // However, rounding differences can occur between IGST and CGST+SGST.
-    return (netAmountMoney + cgstMoney + sgstMoney).toDouble();
+    // igstMoney represents the full GST (gstRate), which is the same as cgst + sgst.
+    // Pick one to avoid double-counting.
+    return (netAmountMoney + igstMoney).toDouble();
   }
 }

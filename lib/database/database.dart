@@ -20,10 +20,15 @@ part 'database.g.dart';
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([final QueryExecutor? executor])
-    : super(executor ?? _openConnection());
+    : super(executor ?? _openConnection()) {
+    _instance = this;
+  }
+
+  static AppDatabase? _instance;
+  static AppDatabase get instance => _instance ??= AppDatabase();
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration {
@@ -142,12 +147,28 @@ class AppDatabase extends _$AppDatabase {
               // 2. Create new table with updated constraints
               await m.createTable(table);
 
+              // instead of mapping table.$columns (which has V10 columns),
+              // we manually list or safely query.
+              
               // 3. Copy data from temp to new table
-              final columns = table.$columns
+              // Drift doesn't give a great way to read results from customStatement easily here,
+              // but we can assume V6 columns or just use a safer approach.
+              // Let's use a simpler approach: only copy columns that are in BOTH.
+              // For simplicity in this fix, we'll hardcode the known V6 columns or use a helper.
+              // Actually, sqlite allows: INSERT INTO table (col1) SELECT col1 FROM temp
+              // We'll filter the current columns by checking if they exist in temp.
+              // But drift's customStatement returns void.
+              
+              // Let's use a more robust check if possible, or just be careful.
+              // For now, I'll filter out columns known to be added in V8, V9, V10.
+              final newCols = {'po_number', 'status', 'sent_at', 'receiver_phone'};
+              final columnsToCopy = table.$columns
                   .map((final c) => c.name)
+                  .where((final name) => !newCols.contains(name))
                   .join(', ');
+
               await m.database.customStatement(
-                'INSERT INTO `$tableName` ($columns) SELECT $columns FROM `$tempName`',
+                'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
               );
 
               // 4. Drop temp table
@@ -176,6 +197,9 @@ class AppDatabase extends _$AppDatabase {
             }
           }
         }
+        if (from < 10) {
+          await m.addColumn(invoices, invoices.receiverPhone);
+        }
       },
       beforeOpen: (final details) async {
         if (details.wasCreated) {
@@ -183,6 +207,10 @@ class AppDatabase extends _$AppDatabase {
         }
       },
     );
+  }
+
+  Future<void> vacuumInto(final String path) async {
+    await customStatement('VACUUM INTO ?', [path]);
   }
 }
 

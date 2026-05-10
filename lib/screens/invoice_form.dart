@@ -129,6 +129,8 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
                 receiverNameCtrl: receiverNameCtrl,
                 receiverStateCtrl: receiverStateCtrl,
                 receiverAddressCtrl: receiverAddressCtrl,
+                receiverEmailCtrl: receiverEmailCtrl,
+                receiverPhoneCtrl: receiverPhoneCtrl,
                 onSelectClient: () => _showClientSelector(context),
                 gstinField: _buildGstinField(),
               ),

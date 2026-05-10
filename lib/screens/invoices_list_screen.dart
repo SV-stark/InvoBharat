@@ -112,6 +112,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
       invoiceNo: '',
       invoiceDate: DateTime.now(),
       payments: [],
+      status: 'Draft',
     );
 
     await context.push('/invoice-form', extra: duplicated);
@@ -240,6 +241,8 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                 if (inv.paymentStatus == 'Paid') {
                   return false;
                 }
+              } else if (_filter == 'Overdue') {
+                if (inv.paymentStatus != 'Overdue') return false;
               }
             }
 
@@ -445,6 +448,10 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                       DropdownMenuItem(
                         value: 'Unpaid',
                         child: Text("Unpaid & Partial"),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Overdue',
+                        child: Text("Overdue"),
                       ),
                       DropdownMenuItem(
                         value: 'Archived',

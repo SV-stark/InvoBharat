@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:archive/archive_io.dart';
 import 'package:invobharat/providers/app_config_provider.dart';
+import 'package:invobharat/providers/database_provider.dart';
 
 final autoBackupServiceProvider = Provider<AutoBackupService>((final ref) {
   return AutoBackupService(ref);
@@ -48,8 +49,14 @@ class AutoBackupService {
     if (timeParts.length != 2) return;
     final scheduledHour = int.tryParse(timeParts[0]) ?? 0;
 
-    // We check if it's the same day and if the current hour is >= scheduled hour
-    // and if we haven't backed up today (for daily) or this week/month.
+    final scheduledMinute = int.tryParse(timeParts[1]) ?? 0;
+    final scheduledTimeToday = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      scheduledHour,
+      scheduledMinute,
+    );
 
     bool shouldBackup = false;
 
@@ -57,19 +64,26 @@ class AutoBackupService {
       shouldBackup = true;
     } else {
       final diff = now.difference(lastBackup);
+
       switch (config.backupFrequency) {
         case BackupFrequency.daily:
-          if (diff.inDays >= 1 && now.hour >= scheduledHour) {
+          // Backup if we haven't backed up today and it's past the scheduled time
+          if (lastBackup.isBefore(scheduledTimeToday) &&
+              now.isAfter(scheduledTimeToday)) {
+            shouldBackup = true;
+          }
+          // Or if we've missed more than 24 hours entirely
+          if (diff.inHours >= 24) {
             shouldBackup = true;
           }
           break;
         case BackupFrequency.weekly:
-          if (diff.inDays >= 7 && now.hour >= scheduledHour) {
+          if (diff.inDays >= 7 && now.isAfter(scheduledTimeToday)) {
             shouldBackup = true;
           }
           break;
         case BackupFrequency.monthly:
-          if (diff.inDays >= 30 && now.hour >= scheduledHour) {
+          if (diff.inDays >= 30 && now.isAfter(scheduledTimeToday)) {
             shouldBackup = true;
           }
           break;
@@ -93,6 +107,7 @@ class AutoBackupService {
 
   Future<void> _performBackup() async {
     final config = _ref.read(appConfigProvider);
+    final db = _ref.read(databaseProvider);
 
     // Get default backup directory
     final docDir = await getApplicationDocumentsDirectory();
@@ -104,23 +119,42 @@ class AutoBackupService {
       await backupDir.create(recursive: true);
     }
 
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final dbPath = p.join(dbFolder.path, 'InvoBharat', 'db.sqlite');
-    final dbFile = File(dbPath);
-
-    if (!await dbFile.exists()) {
-      throw Exception("Database file not found at $dbPath");
-    }
-
     final timestamp = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
-    final outputFile = p.join(
-      backupDir.path,
-      'invobharat_auto_backup_$timestamp.zip',
+
+    // Create a temporary file for VACUUM INTO
+    // This ensures we get a clean, consistent copy of the DB including WAL data
+    final tempDbPath = p.join(
+      Directory.systemTemp.path,
+      'invobharat_backup_$timestamp.sqlite',
     );
 
-    final zipEncoder = ZipFileEncoder();
-    zipEncoder.create(outputFile);
-    await zipEncoder.addFile(dbFile);
-    await zipEncoder.close();
+    try {
+      // 1. Create consistent copy
+      await db.vacuumInto(tempDbPath);
+
+      final tempFile = File(tempDbPath);
+      final outputFile = p.join(
+        backupDir.path,
+        'invobharat_auto_backup_$timestamp.zip',
+      );
+
+      // 2. Zip the consistent copy
+      final zipEncoder = ZipFileEncoder();
+      zipEncoder.create(outputFile);
+      await zipEncoder.addFile(tempFile);
+      await zipEncoder.close();
+
+      // 3. Clean up temp file
+      if (await tempFile.exists()) {
+        await tempFile.delete();
+      }
+    } catch (e) {
+      // Clean up on error
+      final tempFile = File(tempDbPath);
+      if (await tempFile.exists()) {
+        await tempFile.delete();
+      }
+      rethrow;
+    }
   }
 }

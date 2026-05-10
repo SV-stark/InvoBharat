@@ -19,7 +19,8 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   late TextEditingController posCtrl;
   late TextEditingController receiverNameCtrl;
   late TextEditingController receiverGstinCtrl;
-  late TextEditingController receiverEmailCtrl; // NEW
+  late TextEditingController receiverEmailCtrl;
+  late TextEditingController receiverPhoneCtrl; // Added
   late TextEditingController receiverStateCtrl;
   late TextEditingController poNumberCtrl;
   late TextEditingController
@@ -36,9 +37,8 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     posCtrl = TextEditingController(text: invoice?.placeOfSupply);
     receiverNameCtrl = TextEditingController(text: invoice?.receiver.name);
     receiverGstinCtrl = TextEditingController(text: invoice?.receiver.gstin);
-    receiverEmailCtrl = TextEditingController(
-      text: invoice?.receiver.email,
-    ); // NEW
+    receiverEmailCtrl = TextEditingController(text: invoice?.receiver.email);
+    receiverPhoneCtrl = TextEditingController(text: invoice?.receiver.phone); // Added
     receiverStateCtrl = TextEditingController(text: invoice?.receiver.state);
     receiverAddressCtrl = TextEditingController(
       text: invoice?.receiver.address,
@@ -56,7 +56,8 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     posCtrl.dispose();
     receiverNameCtrl.dispose();
     receiverGstinCtrl.dispose();
-    receiverEmailCtrl.dispose(); // NEW
+    receiverEmailCtrl.dispose();
+    receiverPhoneCtrl.dispose(); // Added
     receiverStateCtrl.dispose();
     receiverAddressCtrl.dispose();
     poNumberCtrl.dispose();
@@ -83,6 +84,9 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     if (receiverEmailCtrl.text != invoice.receiver.email) {
       receiverEmailCtrl.text = invoice.receiver.email;
     }
+    if (receiverPhoneCtrl.text != invoice.receiver.phone) {
+      receiverPhoneCtrl.text = invoice.receiver.phone;
+    }
     if (receiverStateCtrl.text != invoice.receiver.state) {
       receiverStateCtrl.text = invoice.receiver.state;
     }
@@ -108,14 +112,16 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     final notifier = ref.read(invoiceProvider.notifier);
     notifier.updateReceiverName(client.name);
     notifier.updateReceiverGstin(client.gstin);
-    notifier.updateReceiverEmail(client.email); // NEW
+    notifier.updateReceiverEmail(client.email);
+    notifier.updateReceiverPhone(client.phone); // Added
     notifier.updateReceiverState(client.state);
     notifier.updateReceiverAddress(client.address);
 
     // Explicitly update controllers to match
     receiverNameCtrl.text = client.name;
     receiverGstinCtrl.text = client.gstin;
-    receiverEmailCtrl.text = client.email; // NEW
+    receiverEmailCtrl.text = client.email;
+    receiverPhoneCtrl.text = client.phone; // Added
     receiverStateCtrl.text = client.state;
     receiverAddressCtrl.text = client.address;
     posCtrl.text = client.state; // NEW: Update Place of Supply controller

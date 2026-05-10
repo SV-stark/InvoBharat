@@ -9,6 +9,7 @@ import 'package:archive/archive_io.dart';
 
 import 'package:invobharat/services/csv_export_service.dart';
 import 'package:invobharat/data/sql_invoice_repository.dart';
+import 'package:invobharat/database/database.dart';
 
 const kDbFileName = 'db.sqlite';
 const kMinCompatibleSchemaVersion = 5;
@@ -68,12 +69,15 @@ class DefaultFilePickerWrapper implements FilePickerWrapper {
 class BackupService {
   final FilePickerWrapper _filePicker;
   final CsvExportService _csvService;
+  final AppDatabase? _db;
 
   BackupService({
     final FilePickerWrapper? filePicker,
     final CsvExportService? csvService,
+    final AppDatabase? db,
   }) : _filePicker = filePicker ?? DefaultFilePickerWrapper(),
-       _csvService = csvService ?? CsvExportService();
+       _csvService = csvService ?? CsvExportService(),
+       _db = db;
 
   Future<String> exportData(final SqlInvoiceRepository repository) async {
     try {
@@ -116,13 +120,6 @@ class BackupService {
 
   Future<String> exportFullBackup() async {
     try {
-      final dbPath = await _getDbPath();
-      final dbFile = File(dbPath);
-
-      if (!await dbFile.exists()) {
-        throw Exception("Database file not found at $dbPath");
-      }
-
       String? outputFile = await _filePicker.saveFile(
         dialogTitle: 'Save Full Backup (ZIP)',
         fileName:
@@ -131,9 +128,32 @@ class BackupService {
         type: FileType.custom,
       );
 
-      if (outputFile != null) {
-        if (!outputFile.toLowerCase().endsWith('.zip')) {
-          outputFile = '$outputFile.zip';
+      if (outputFile == null) return "Backup cancelled";
+
+      if (!outputFile.toLowerCase().endsWith('.zip')) {
+        outputFile = '$outputFile.zip';
+      }
+
+      final timestamp = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
+      final tempDbPath = p.join(
+        Directory.systemTemp.path,
+        'invobharat_export_$timestamp.sqlite',
+      );
+
+      try {
+        File dbFile;
+
+        if (_db != null) {
+          // Safe path: VACUUM INTO gives a consistent snapshot including WAL data
+          await _db.vacuumInto(tempDbPath);
+          dbFile = File(tempDbPath);
+        } else {
+          // Fallback: zip the raw file (legacy behaviour, WAL not guaranteed)
+          final dbPath = await _getDbPath();
+          dbFile = File(dbPath);
+          if (!await dbFile.exists()) {
+            throw Exception("Database file not found at $dbPath");
+          }
         }
 
         final zipEncoder = ZipFileEncoder();
@@ -142,8 +162,12 @@ class BackupService {
         await zipEncoder.close();
 
         return "Full Backup saved to $outputFile";
-      } else {
-        return "Backup cancelled";
+      } finally {
+        // Clean up the temp VACUUM file if it was created
+        final tempFile = File(tempDbPath);
+        if (await tempFile.exists()) {
+          await tempFile.delete();
+        }
       }
     } catch (e) {
       debugPrint("Full Backup Error: $e");
@@ -205,8 +229,15 @@ class BackupService {
           if (dbEntry.isFile) {
             final data = dbEntry.content as List<int>;
             await dbDestFile.writeAsBytes(data, flush: true);
+
+            // Delete stale WAL and SHM files to prevent the database engine
+            // from replaying an old log over the freshly restored file.
+            final walFile = File('$dbPath-wal');
+            final shmFile = File('$dbPath-shm');
+            if (await walFile.exists()) await walFile.delete();
+            if (await shmFile.exists()) await shmFile.delete();
           }
-          return "Restore Successful. Please restart the app manually.";
+          return "Restore Successful. Please restart the app to apply changes.";
         } catch (e) {
           if (backupPath != null) {
             final backupFile = File(backupPath);

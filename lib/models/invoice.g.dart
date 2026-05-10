@@ -117,6 +117,7 @@ _Receiver _$ReceiverFromJson(Map<String, dynamic> json) => _Receiver(
   state: json['state'] as String? ?? '',
   stateCode: json['stateCode'] as String? ?? '',
   email: json['email'] as String? ?? '',
+  phone: json['phone'] as String? ?? '',
 );
 
 Map<String, dynamic> _$ReceiverToJson(_Receiver instance) => <String, dynamic>{
@@ -127,6 +128,7 @@ Map<String, dynamic> _$ReceiverToJson(_Receiver instance) => <String, dynamic>{
   'state': instance.state,
   'stateCode': instance.stateCode,
   'email': instance.email,
+  'phone': instance.phone,
 };
 
 _InvoiceItem _$InvoiceItemFromJson(Map<String, dynamic> json) => _InvoiceItem(

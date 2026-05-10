@@ -80,19 +80,19 @@ class EmailService {
   }
 
   static Future<EmailSettings?> getSettingsStatic() async {
-    final db = AppDatabase();
+    final db = AppDatabase.instance;
     final service = EmailService(settingsService: AppSettingsService(db));
     return service.getSettings();
   }
 
   static Future<void> saveSettingsStatic(final EmailSettings settings) async {
-    final db = AppDatabase();
+    final db = AppDatabase.instance;
     final service = EmailService(settingsService: AppSettingsService(db));
     await service.saveSettings(settings);
   }
 
   static Future<void> clearSettingsStatic() async {
-    final db = AppDatabase();
+    final db = AppDatabase.instance;
     final service = EmailService(settingsService: AppSettingsService(db));
     await service.clearSettings();
   }

@@ -388,6 +388,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       invoiceNo: '',
       invoiceDate: DateTime.now(),
       payments: [],
+      status: 'Draft',
     );
 
     if (mounted) {
@@ -532,26 +533,8 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
   }
 
   void _markAsPaid() async {
-    final payment = PaymentTransaction(
-      id: const Uuid().v4(),
-      invoiceId: _invoice.id!,
-      date: DateTime.now(),
-      amount: _invoice.balanceDue,
-      paymentMode: "Cash",
-      notes: "Marked as paid",
-    );
-
-    final updated = _invoice.copyWith(
-      payments: [..._invoice.payments, payment],
-    );
-    await ref.read(invoiceRepositoryProvider).saveInvoice(updated);
-    _refreshInvoice();
-    ref.invalidate(invoiceListProvider);
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Marked as paid")));
-    }
+    // Show dialog instead of hardcoding Cash
+    _recordPayment();
   }
 
   void _deleteInvoice() async {
@@ -615,6 +598,17 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
         await context.push('/settings');
         if (mounted) await _sendEmail();
       }
+      return;
+    }
+
+    // Guard: Check if receiver has an email
+    if (_invoice.receiver.email.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Recipient email is missing. Please add an email address to the client."),
+        ),
+      );
       return;
     }
 

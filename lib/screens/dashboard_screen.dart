@@ -10,6 +10,7 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/recurring_provider.dart';
 
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/models/invoice.dart';
@@ -42,6 +43,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   void initState() {
     super.initState();
     _updateDateRange("This Financial Year");
+    // Trigger recurring invoice checks on app start/dashboard load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(recurringListProvider.notifier).runChecks();
+    });
   }
 
   void _updateDateRange(final String filter) async {

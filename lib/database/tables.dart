@@ -94,6 +94,7 @@ class Invoices extends Table {
   TextColumn get receiverState => text().nullable()();
   TextColumn get receiverStateCode => text().nullable()();
   TextColumn get receiverEmail => text().nullable()();
+  TextColumn get receiverPhone => text().nullable()(); // Added V10
 
   // Credit/Debit Note Fields
   TextColumn get originalInvoiceNumber => text().nullable()();

@@ -115,6 +115,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
               receiverState: Value(invoice.receiver.state),
               receiverStateCode: Value(invoice.receiver.stateCode),
               receiverEmail: Value(invoice.receiver.email),
+              receiverPhone: Value(invoice.receiver.phone), // Added
 
               originalInvoiceNumber: Value(invoice.originalInvoiceNumber),
               originalInvoiceDate: Value(invoice.originalInvoiceDate),
@@ -225,6 +226,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
               state: invoiceRow.receiverState ?? "",
               stateCode: invoiceRow.receiverStateCode ?? "",
               email: invoiceRow.receiverEmail ?? "",
+              phone: invoiceRow.receiverPhone ?? "", // Added
             )
           : (clientRow != null
                 ? model.Receiver(
@@ -379,6 +381,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
           state: row.receiverState ?? "",
           stateCode: row.receiverStateCode ?? "",
           email: row.receiverEmail ?? "",
+          phone: row.receiverPhone ?? "", // Added
         ),
         originalInvoiceNumber: row.originalInvoiceNumber,
         originalInvoiceDate: row.originalInvoiceDate,

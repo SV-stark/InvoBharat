@@ -285,6 +285,8 @@ class ClientDetailsSection extends ConsumerWidget {
   final TextEditingController receiverNameCtrl;
   final TextEditingController receiverStateCtrl;
   final TextEditingController receiverAddressCtrl;
+  final TextEditingController receiverEmailCtrl;
+  final TextEditingController receiverPhoneCtrl;
   final VoidCallback onSelectClient;
   final Widget gstinField;
 
@@ -293,6 +295,8 @@ class ClientDetailsSection extends ConsumerWidget {
     required this.receiverNameCtrl,
     required this.receiverStateCtrl,
     required this.receiverAddressCtrl,
+    required this.receiverEmailCtrl,
+    required this.receiverPhoneCtrl,
     required this.onSelectClient,
     required this.gstinField,
   });
@@ -348,6 +352,28 @@ class ClientDetailsSection extends ConsumerWidget {
                     }
                   },
                 ),
+              ),
+            ),
+          ],
+        ),
+        const Gap(16),
+        Row(
+          children: [
+            Expanded(
+              child: AppTextInput(
+                controller: receiverEmailCtrl,
+                label: "Email",
+                onChanged: (final val) =>
+                    ref.read(invoiceProvider.notifier).updateReceiverEmail(val),
+              ),
+            ),
+            const Gap(16),
+            Expanded(
+              child: AppTextInput(
+                controller: receiverPhoneCtrl,
+                label: "Phone",
+                onChanged: (final val) =>
+                    ref.read(invoiceProvider.notifier).updateReceiverPhone(val),
               ),
             ),
           ],

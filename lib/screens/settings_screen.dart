@@ -13,6 +13,7 @@ import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/services/backup_service.dart';
 import 'package:invobharat/providers/app_config_provider.dart';
+import 'package:invobharat/providers/database_provider.dart';
 
 import 'package:invobharat/widgets/about_tab.dart';
 import 'package:invobharat/services/email_service.dart';
@@ -730,7 +731,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       : () async {
                           setState(() => _isBackupLoading = true);
                           try {
-                            final msg = await BackupService()
+                            final msg = await BackupService(db: ref.read(databaseProvider))
                                 .exportFullBackup();
                             if (mounted) {
                               ScaffoldMessenger.of(
@@ -767,7 +768,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       : () async {
                           setState(() => _isRestoreLoading = true);
                           try {
-                            final result = await BackupService()
+                            final result = await BackupService(db: ref.read(databaseProvider))
                                 .restoreFullBackup();
                             if (!mounted) return;
                             ScaffoldMessenger.of(

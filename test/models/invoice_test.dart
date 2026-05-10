@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'dart:convert';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/payment_transaction.dart';
 
@@ -12,10 +13,17 @@ void main() {
     });
 
     test('Receiver fromJson/toJson', () {
-      final receiver = const Receiver(name: 'Rec', email: 'test@test.com');
+      final receiver = const Receiver(
+        name: 'Rec',
+        email: 'test@test.com',
+        state: 'Maharashtra',
+        stateCode: '27',
+      );
       final json = receiver.toJson();
       expect(json['email'], 'test@test.com');
+      expect(json['stateCode'], '27');
       expect(Receiver.fromJson(json).name, 'Rec');
+      expect(Receiver.fromJson(json).stateCode, '27');
     });
   });
 
@@ -31,6 +39,7 @@ void main() {
       // (100 * 2) - 10 = 190
       expect(item.netAmount, 190.0);
     });
+
 
     test('tax calculations for intra-state', () {
       expect(item.cgstRate, 9.0);
@@ -51,6 +60,17 @@ void main() {
     test('totalAmount calculation', () {
       // 190 * 1.18 = 224.2
       expect(item.totalAmount, closeTo(224.2, 0.001));
+    });
+
+    test('InvoiceItem serialization of quantity and unit', () {
+      final item = const InvoiceItem(quantity: 2.5, unit: 'Kg', amount: 50);
+      final json = item.toJson();
+      expect(json['quantity'], 2.5);
+      expect(json['unit'], 'Kg');
+
+      final deserialized = InvoiceItem.fromJson(json);
+      expect(deserialized.quantity, 2.5);
+      expect(deserialized.unit, 'Kg');
     });
   });
 
@@ -164,6 +184,22 @@ void main() {
       );
       expect(paidInvoice.paymentStatus, 'Paid');
       expect(paidInvoice.balanceDue, 0.0);
+    });
+
+    test('Invoice holds and serializes deliveryAddress', () {
+      final invoice = Invoice(
+        supplier: const Supplier(),
+        receiver: const Receiver(),
+        invoiceDate: DateTime.now(),
+        deliveryAddress: "123 Warehouse St",
+      );
+      expect(invoice.deliveryAddress, "123 Warehouse St");
+
+      final json = jsonDecode(jsonEncode(invoice.toJson()));
+      expect(json['deliveryAddress'], "123 Warehouse St");
+
+      final deserialized = Invoice.fromJson(json);
+      expect(deserialized.deliveryAddress, "123 Warehouse St");
     });
   });
 }

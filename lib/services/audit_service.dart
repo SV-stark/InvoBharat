@@ -10,42 +10,44 @@ class AuditService {
     final numericPartRegExp = RegExp(r'(\d+)$');
 
     // Group by prefix (e.g. "INV-")
-    final Map<String, List<int>> prefixMap = {};
+    // Store as Map<Prefix, Map<PaddingWidth, List<Numbers>>>
+    final Map<String, Map<int, List<int>>> prefixPaddingMap = {};
 
     for (final inv in invoices) {
       final match = numericPartRegExp.firstMatch(inv.invoiceNo);
       if (match != null) {
         final numberStr = match.group(1)!;
         final number = int.parse(numberStr);
+        final padding = numberStr.length;
         final prefix = inv.invoiceNo.substring(
           0,
           inv.invoiceNo.length - numberStr.length,
         );
 
-        prefixMap.putIfAbsent(prefix, () => []).add(number);
+        prefixPaddingMap
+            .putIfAbsent(prefix, () => {})
+            .putIfAbsent(padding, () => [])
+            .add(number);
       }
     }
 
     final missing = <String>[];
 
-    prefixMap.forEach((final prefix, final numbers) {
-      numbers.sort();
-      // Remove duplicates
-      final uniqueNumbers = numbers.toSet().toList()..sort();
+    prefixPaddingMap.forEach((final prefix, final paddingMap) {
+      paddingMap.forEach((final padding, final numbers) {
+        numbers.sort();
+        final uniqueNumbers = numbers.toSet().toList()..sort();
 
-      for (int i = 0; i < uniqueNumbers.length - 1; i++) {
-        final current = uniqueNumbers[i];
-        final next = uniqueNumbers[i + 1];
-        if (next > current + 1) {
-          // Gap found
-          for (int gap = current + 1; gap < next; gap++) {
-            // Check if this gap can be formatted similarly to neighbors
-            // We'll rely on a heuristic to pad it if the current/next were padded.
-            // But getting original length is hard since we only stored int.
-            missing.add("$prefix$gap");
+        for (int i = 0; i < uniqueNumbers.length - 1; i++) {
+          final current = uniqueNumbers[i];
+          final next = uniqueNumbers[i + 1];
+          if (next > current + 1) {
+            for (int gap = current + 1; gap < next; gap++) {
+              missing.add("$prefix${gap.toString().padLeft(padding, '0')}");
+            }
           }
         }
-      }
+      });
     });
 
     return missing;

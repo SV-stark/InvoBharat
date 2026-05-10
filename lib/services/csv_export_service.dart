@@ -1,4 +1,5 @@
 import 'dart:isolate';
+import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:csv/csv.dart';
 import 'package:invobharat/models/invoice.dart';
@@ -52,7 +53,7 @@ class CsvExportService {
     final String csvContent,
     final String fileName,
   ) async {
-    final bytes = Uint8List.fromList(csvContent.codeUnits);
+    final bytes = Uint8List.fromList(utf8.encode(csvContent));
     final extension = p.extension(fileName).replaceAll('.', '');
     final nameOnly = p.basenameWithoutExtension(fileName);
 

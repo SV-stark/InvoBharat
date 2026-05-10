@@ -17,6 +17,7 @@ import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/utils/constants.dart';
 import 'package:invobharat/utils/validators.dart';
 import 'package:invobharat/services/backup_service.dart';
+import 'package:invobharat/providers/database_provider.dart';
 import 'package:invobharat/models/bank_account.dart' as bank_model;
 import 'package:invobharat/providers/bank_provider.dart';
 import 'package:gap/gap.dart';
@@ -1029,7 +1030,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
               child: Button(
                 onPressed: () async {
                   try {
-                    final result = await BackupService().exportFullBackup();
+                    final result = await BackupService(db: ref.read(databaseProvider)).exportFullBackup();
                     if (!mounted) return;
                     displayInfoBar(
                       context,
@@ -1078,7 +1079,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
               child: Button(
                 onPressed: () async {
                   try {
-                    final result = await BackupService().restoreFullBackup();
+                    final result = await BackupService(db: ref.read(databaseProvider)).restoreFullBackup();
                     if (!mounted) return;
                     displayInfoBar(
                       context,

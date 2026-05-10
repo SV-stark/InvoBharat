@@ -139,6 +139,7 @@ class InvoiceNotifier extends Notifier<Invoice> {
         address: client.address,
         gstin: client.gstin,
         email: client.email,
+        phone: client.phone,
         state: client.state,
       ),
     );
@@ -184,6 +185,10 @@ class InvoiceNotifier extends Notifier<Invoice> {
 
   void updateReceiverEmail(final String val) {
     state = state.copyWith(receiver: state.receiver.copyWith(email: val));
+  }
+
+  void updateReceiverPhone(final String val) {
+    state = state.copyWith(receiver: state.receiver.copyWith(phone: val));
   }
 
   void updateItemDescription(final int index, final String val) {

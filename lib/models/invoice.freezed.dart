@@ -685,7 +685,7 @@ as String,
 /// @nodoc
 mixin _$Receiver {
 
- String get name; String get address; String get gstin; String get pan; String get state; String get stateCode; String get email;
+ String get name; String get address; String get gstin; String get pan; String get state; String get stateCode; String get email; String get phone;
 /// Create a copy of Receiver
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -698,16 +698,16 @@ $ReceiverCopyWith<Receiver> get copyWith => _$ReceiverCopyWithImpl<Receiver>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Receiver&&(identical(other.name, name) || other.name == name)&&(identical(other.address, address) || other.address == address)&&(identical(other.gstin, gstin) || other.gstin == gstin)&&(identical(other.pan, pan) || other.pan == pan)&&(identical(other.state, state) || other.state == state)&&(identical(other.stateCode, stateCode) || other.stateCode == stateCode)&&(identical(other.email, email) || other.email == email));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Receiver&&(identical(other.name, name) || other.name == name)&&(identical(other.address, address) || other.address == address)&&(identical(other.gstin, gstin) || other.gstin == gstin)&&(identical(other.pan, pan) || other.pan == pan)&&(identical(other.state, state) || other.state == state)&&(identical(other.stateCode, stateCode) || other.stateCode == stateCode)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,address,gstin,pan,state,stateCode,email);
+int get hashCode => Object.hash(runtimeType,name,address,gstin,pan,state,stateCode,email,phone);
 
 @override
 String toString() {
-  return 'Receiver(name: $name, address: $address, gstin: $gstin, pan: $pan, state: $state, stateCode: $stateCode, email: $email)';
+  return 'Receiver(name: $name, address: $address, gstin: $gstin, pan: $pan, state: $state, stateCode: $stateCode, email: $email, phone: $phone)';
 }
 
 
@@ -718,7 +718,7 @@ abstract mixin class $ReceiverCopyWith<$Res>  {
   factory $ReceiverCopyWith(Receiver value, $Res Function(Receiver) _then) = _$ReceiverCopyWithImpl;
 @useResult
 $Res call({
- String name, String address, String gstin, String pan, String state, String stateCode, String email
+ String name, String address, String gstin, String pan, String state, String stateCode, String email, String phone
 });
 
 
@@ -735,7 +735,7 @@ class _$ReceiverCopyWithImpl<$Res>
 
 /// Create a copy of Receiver
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? address = null,Object? gstin = null,Object? pan = null,Object? state = null,Object? stateCode = null,Object? email = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? address = null,Object? gstin = null,Object? pan = null,Object? state = null,Object? stateCode = null,Object? email = null,Object? phone = null,}) {
   return _then(_self.copyWith(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
@@ -744,6 +744,7 @@ as String,pan: null == pan ? _self.pan : pan // ignore: cast_nullable_to_non_nul
 as String,state: null == state ? _self.state : state // ignore: cast_nullable_to_non_nullable
 as String,stateCode: null == stateCode ? _self.stateCode : stateCode // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String,phone: null == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -829,10 +830,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  String address,  String gstin,  String pan,  String state,  String stateCode,  String email)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  String address,  String gstin,  String pan,  String state,  String stateCode,  String email,  String phone)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Receiver() when $default != null:
-return $default(_that.name,_that.address,_that.gstin,_that.pan,_that.state,_that.stateCode,_that.email);case _:
+return $default(_that.name,_that.address,_that.gstin,_that.pan,_that.state,_that.stateCode,_that.email,_that.phone);case _:
   return orElse();
 
 }
@@ -850,10 +851,10 @@ return $default(_that.name,_that.address,_that.gstin,_that.pan,_that.state,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  String address,  String gstin,  String pan,  String state,  String stateCode,  String email)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  String address,  String gstin,  String pan,  String state,  String stateCode,  String email,  String phone)  $default,) {final _that = this;
 switch (_that) {
 case _Receiver():
-return $default(_that.name,_that.address,_that.gstin,_that.pan,_that.state,_that.stateCode,_that.email);case _:
+return $default(_that.name,_that.address,_that.gstin,_that.pan,_that.state,_that.stateCode,_that.email,_that.phone);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -870,10 +871,10 @@ return $default(_that.name,_that.address,_that.gstin,_that.pan,_that.state,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  String address,  String gstin,  String pan,  String state,  String stateCode,  String email)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  String address,  String gstin,  String pan,  String state,  String stateCode,  String email,  String phone)?  $default,) {final _that = this;
 switch (_that) {
 case _Receiver() when $default != null:
-return $default(_that.name,_that.address,_that.gstin,_that.pan,_that.state,_that.stateCode,_that.email);case _:
+return $default(_that.name,_that.address,_that.gstin,_that.pan,_that.state,_that.stateCode,_that.email,_that.phone);case _:
   return null;
 
 }
@@ -885,7 +886,7 @@ return $default(_that.name,_that.address,_that.gstin,_that.pan,_that.state,_that
 @JsonSerializable()
 
 class _Receiver implements Receiver {
-  const _Receiver({this.name = '', this.address = '', this.gstin = '', this.pan = '', this.state = '', this.stateCode = '', this.email = ''});
+  const _Receiver({this.name = '', this.address = '', this.gstin = '', this.pan = '', this.state = '', this.stateCode = '', this.email = '', this.phone = ''});
   factory _Receiver.fromJson(Map<String, dynamic> json) => _$ReceiverFromJson(json);
 
 @override@JsonKey() final  String name;
@@ -895,6 +896,7 @@ class _Receiver implements Receiver {
 @override@JsonKey() final  String state;
 @override@JsonKey() final  String stateCode;
 @override@JsonKey() final  String email;
+@override@JsonKey() final  String phone;
 
 /// Create a copy of Receiver
 /// with the given fields replaced by the non-null parameter values.
@@ -909,16 +911,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Receiver&&(identical(other.name, name) || other.name == name)&&(identical(other.address, address) || other.address == address)&&(identical(other.gstin, gstin) || other.gstin == gstin)&&(identical(other.pan, pan) || other.pan == pan)&&(identical(other.state, state) || other.state == state)&&(identical(other.stateCode, stateCode) || other.stateCode == stateCode)&&(identical(other.email, email) || other.email == email));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Receiver&&(identical(other.name, name) || other.name == name)&&(identical(other.address, address) || other.address == address)&&(identical(other.gstin, gstin) || other.gstin == gstin)&&(identical(other.pan, pan) || other.pan == pan)&&(identical(other.state, state) || other.state == state)&&(identical(other.stateCode, stateCode) || other.stateCode == stateCode)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,address,gstin,pan,state,stateCode,email);
+int get hashCode => Object.hash(runtimeType,name,address,gstin,pan,state,stateCode,email,phone);
 
 @override
 String toString() {
-  return 'Receiver(name: $name, address: $address, gstin: $gstin, pan: $pan, state: $state, stateCode: $stateCode, email: $email)';
+  return 'Receiver(name: $name, address: $address, gstin: $gstin, pan: $pan, state: $state, stateCode: $stateCode, email: $email, phone: $phone)';
 }
 
 
@@ -929,7 +931,7 @@ abstract mixin class _$ReceiverCopyWith<$Res> implements $ReceiverCopyWith<$Res>
   factory _$ReceiverCopyWith(_Receiver value, $Res Function(_Receiver) _then) = __$ReceiverCopyWithImpl;
 @override @useResult
 $Res call({
- String name, String address, String gstin, String pan, String state, String stateCode, String email
+ String name, String address, String gstin, String pan, String state, String stateCode, String email, String phone
 });
 
 
@@ -946,7 +948,7 @@ class __$ReceiverCopyWithImpl<$Res>
 
 /// Create a copy of Receiver
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? address = null,Object? gstin = null,Object? pan = null,Object? state = null,Object? stateCode = null,Object? email = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? address = null,Object? gstin = null,Object? pan = null,Object? state = null,Object? stateCode = null,Object? email = null,Object? phone = null,}) {
   return _then(_Receiver(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
@@ -955,6 +957,7 @@ as String,pan: null == pan ? _self.pan : pan // ignore: cast_nullable_to_non_nul
 as String,state: null == state ? _self.state : state // ignore: cast_nullable_to_non_nullable
 as String,stateCode: null == stateCode ? _self.stateCode : stateCode // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String,phone: null == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
