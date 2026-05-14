@@ -365,8 +365,6 @@ class CreativeTemplate extends BasePdfTemplate {
                               // Column 2: Bank & QR
                               pw.Expanded(
                                 child: pw.Column(
-                                  crossAxisAlignment:
-                                      pw.CrossAxisAlignment.center,
                                   children: [
                                     pw.Text(
                                       "Bank Details",

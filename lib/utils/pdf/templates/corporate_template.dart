@@ -357,7 +357,6 @@ class CorporateTemplate extends BasePdfTemplate {
 
                       pw.Expanded(
                         child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.center,
                           children: [
                             pw.Text(
                               "Payment Details",
