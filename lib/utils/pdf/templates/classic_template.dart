@@ -199,12 +199,97 @@ class ClassicTemplate extends BasePdfTemplate {
 
             pw.SizedBox(height: 10),
 
-            // Footer Section
+            // Summary and Footer Section
             pw.Row(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
+                pw.Expanded(flex: 6, child: pw.SizedBox()),
                 pw.Expanded(
-                  flex: 6,
+                  flex: 4,
+                  child: pw.Column(
+                    children: [
+                      buildSummaryRow(
+                        "Taxable Value",
+                        invoice.totalTaxableValue,
+                        profile.currency,
+                      ),
+                      if (!invoice.isInterState) ...[
+                        buildSummaryRow(
+                          "CGST",
+                          invoice.totalCGST,
+                          profile.currency,
+                        ),
+                        buildSummaryRow(
+                          "SGST",
+                          invoice.totalSGST,
+                          profile.currency,
+                        ),
+                      ] else
+                        buildSummaryRow(
+                          "IGST",
+                          invoice.totalIGST,
+                          profile.currency,
+                        ),
+                      if (invoice.discountAmount > 0)
+                        buildSummaryRow(
+                          "Discount",
+                          -invoice.discountAmount,
+                          profile.currency,
+                        ),
+                      pw.Divider(),
+                      buildSummaryRow(
+                        "Grand Total",
+                        invoice.grandTotal,
+                        profile.currency,
+                        isBold: true,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 20),
+            pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.end,
+              children: [
+                // Terms and Notes
+                pw.Expanded(
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      if (profile.termsAndConditions.isNotEmpty) ...[
+                        pw.Text(
+                          "Terms and Conditions:",
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 9,
+                          ),
+                        ),
+                        pw.Text(
+                          profile.termsAndConditions,
+                          style: const pw.TextStyle(fontSize: 8),
+                        ),
+                      ],
+                      if (invoice.comments.isNotEmpty) ...[
+                        pw.SizedBox(height: 10),
+                        pw.Text(
+                          "Notes:",
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 9,
+                          ),
+                        ),
+                        pw.Text(
+                          invoice.comments,
+                          style: const pw.TextStyle(fontSize: 8),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                pw.SizedBox(width: 16),
+                // Bank and QR
+                pw.Expanded(
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
@@ -241,86 +326,24 @@ class ClassicTemplate extends BasePdfTemplate {
                           ),
                         ),
                         pw.SizedBox(height: 5),
-                        buildPaymentQRCode(
-                          profile.upiId,
-                          profile.companyName,
-                          invoice.grandTotal,
-                          invoice.invoiceNo,
-                        ),
-                      ],
-                      pw.SizedBox(height: 10),
-                      if (profile.termsAndConditions.isNotEmpty) ...[
-                        pw.Text(
-                          "Terms and Conditions:",
-                          style: pw.TextStyle(
-                            fontWeight: pw.FontWeight.bold,
-                            fontSize: 9,
+                        pw.Center(
+                          child: buildPaymentQRCode(
+                            profile.upiId,
+                            profile.companyName,
+                            invoice.grandTotal,
+                            invoice.invoiceNo,
                           ),
-                        ),
-                        pw.Text(
-                          profile.termsAndConditions,
-                          style: const pw.TextStyle(fontSize: 8),
-                        ),
-                      ],
-                      if (invoice.comments.isNotEmpty) ...[
-                        pw.SizedBox(height: 10),
-                        pw.Text(
-                          "Notes:",
-                          style: pw.TextStyle(
-                            fontWeight: pw.FontWeight.bold,
-                            fontSize: 9,
-                          ),
-                        ),
-                        pw.Text(
-                          invoice.comments,
-                          style: const pw.TextStyle(fontSize: 8),
                         ),
                       ],
                     ],
                   ),
                 ),
-                pw.SizedBox(width: 20),
+                pw.SizedBox(width: 16),
+                // Signatory
                 pw.Expanded(
-                  flex: 4,
                   child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
-                      buildSummaryRow(
-                        "Taxable Value",
-                        invoice.totalTaxableValue,
-                        profile.currencySymbol,
-                      ),
-                      if (!invoice.isInterState) ...[
-                        buildSummaryRow(
-                          "CGST",
-                          invoice.totalCGST,
-                          profile.currencySymbol,
-                        ),
-                        buildSummaryRow(
-                          "SGST",
-                          invoice.totalSGST,
-                          profile.currencySymbol,
-                        ),
-                      ] else
-                        buildSummaryRow(
-                          "IGST",
-                          invoice.totalIGST,
-                          profile.currencySymbol,
-                        ),
-                      if (invoice.discountAmount > 0)
-                        buildSummaryRow(
-                          "Discount",
-                          -invoice.discountAmount,
-                          profile.currencySymbol,
-                        ),
-                      pw.Divider(),
-                      buildSummaryRow(
-                        "Grand Total",
-                        invoice.grandTotal,
-                        profile.currencySymbol,
-                        isBold: true,
-                      ),
-                      pw.SizedBox(height: 20),
-                      // Stamp and Signature
                       pw.SizedBox(
                         width: 120,
                         height: 60,
@@ -362,7 +385,10 @@ class ClassicTemplate extends BasePdfTemplate {
                       pw.SizedBox(height: 4),
                       pw.Text(
                         "For ${profile.companyName}",
-                        style: const pw.TextStyle(fontSize: 9),
+                        style: pw.TextStyle(
+                          fontSize: 9,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
                         textAlign: pw.TextAlign.right,
                       ),
                       pw.SizedBox(height: 10),

@@ -38,7 +38,9 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     receiverNameCtrl = TextEditingController(text: invoice?.receiver.name);
     receiverGstinCtrl = TextEditingController(text: invoice?.receiver.gstin);
     receiverEmailCtrl = TextEditingController(text: invoice?.receiver.email);
-    receiverPhoneCtrl = TextEditingController(text: invoice?.receiver.phone); // Added
+    receiverPhoneCtrl = TextEditingController(
+      text: invoice?.receiver.phone,
+    ); // Added
     receiverStateCtrl = TextEditingController(text: invoice?.receiver.state);
     receiverAddressCtrl = TextEditingController(
       text: invoice?.receiver.address,

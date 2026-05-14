@@ -606,7 +606,9 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Recipient email is missing. Please add an email address to the client."),
+          content: Text(
+            "Recipient email is missing. Please add an email address to the client.",
+          ),
         ),
       );
       return;

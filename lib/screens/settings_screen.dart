@@ -731,8 +731,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       : () async {
                           setState(() => _isBackupLoading = true);
                           try {
-                            final msg = await BackupService(db: ref.read(databaseProvider))
-                                .exportFullBackup();
+                            final msg = await BackupService(
+                              db: ref.read(databaseProvider),
+                            ).exportFullBackup();
                             if (mounted) {
                               ScaffoldMessenger.of(
                                 context,
@@ -768,8 +769,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       : () async {
                           setState(() => _isRestoreLoading = true);
                           try {
-                            final result = await BackupService(db: ref.read(databaseProvider))
-                                .restoreFullBackup();
+                            final result = await BackupService(
+                              db: ref.read(databaseProvider),
+                            ).restoreFullBackup();
                             if (!mounted) return;
                             ScaffoldMessenger.of(
                               context,

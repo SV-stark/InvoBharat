@@ -51,7 +51,11 @@ void main() {
         items: [const InvoiceItem(amount: 100, gstRate: 12)],
       );
 
-      expect(invoice.isInterState, isFalse, reason: 'Should handle whitespace and casing');
+      expect(
+        invoice.isInterState,
+        isFalse,
+        reason: 'Should handle whitespace and casing',
+      );
       expect(invoice.totalCGST, 6.0);
     });
 
@@ -63,7 +67,11 @@ void main() {
         receiver: defaultReceiver,
         items: [
           const InvoiceItem(amount: 1000), // CGST 90, SGST 90
-          const InvoiceItem(amount: 500, quantity: 2, gstRate: 5),   // Taxable 1000, CGST 25, SGST 25
+          const InvoiceItem(
+            amount: 500,
+            quantity: 2,
+            gstRate: 5,
+          ), // Taxable 1000, CGST 25, SGST 25
         ],
       );
 
@@ -96,7 +104,7 @@ void main() {
         invoiceDate: DateTime.now(),
         receiver: defaultReceiver,
         items: [
-          const InvoiceItem(amount: 33.33), 
+          const InvoiceItem(amount: 33.33),
           // Taxable: 33.33
           // GST: 5.9994 -> Should round based on currency (INR usually 2 decimal)
         ],
@@ -105,7 +113,7 @@ void main() {
       // 33.33 * 0.09 = 2.9997 -> Rounded to 3.00
       // CGST: 3.00, SGST: 3.00, Total GST: 6.00
       // Grand Total: 33.33 + 6.00 = 39.33
-      
+
       expect(invoice.totalCGST, 3.00);
       expect(invoice.totalSGST, 3.00);
       expect(invoice.grandTotal, 39.33);
@@ -119,7 +127,11 @@ void main() {
         items: [const InvoiceItem(amount: 100)],
       );
 
-      expect(invoice.isInterState, isFalse, reason: 'Defaults to Intrastate if states are missing');
+      expect(
+        invoice.isInterState,
+        isFalse,
+        reason: 'Defaults to Intrastate if states are missing',
+      );
       expect(invoice.totalCGST, 9.0);
     });
   });

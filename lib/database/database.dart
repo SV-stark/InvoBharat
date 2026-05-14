@@ -149,7 +149,7 @@ class AppDatabase extends _$AppDatabase {
 
               // instead of mapping table.$columns (which has V10 columns),
               // we manually list or safely query.
-              
+
               // 3. Copy data from temp to new table
               // Drift doesn't give a great way to read results from customStatement easily here,
               // but we can assume V6 columns or just use a safer approach.
@@ -158,10 +158,15 @@ class AppDatabase extends _$AppDatabase {
               // Actually, sqlite allows: INSERT INTO table (col1) SELECT col1 FROM temp
               // We'll filter the current columns by checking if they exist in temp.
               // But drift's customStatement returns void.
-              
+
               // Let's use a more robust check if possible, or just be careful.
               // For now, I'll filter out columns known to be added in V8, V9, V10.
-              final newCols = {'po_number', 'status', 'sent_at', 'receiver_phone'};
+              final newCols = {
+                'po_number',
+                'status',
+                'sent_at',
+                'receiver_phone',
+              };
               final columnsToCopy = table.$columns
                   .map((final c) => c.name)
                   .where((final name) => !newCols.contains(name))

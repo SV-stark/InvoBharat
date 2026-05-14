@@ -89,12 +89,11 @@ class AppConfigNotifier extends Notifier<AppConfig> {
         paneIndex >= 0 &&
         paneIndex < PaneDisplayMode.values.length) {
       var loadedMode = PaneDisplayMode.values[paneIndex];
-      if (loadedMode == PaneDisplayMode.auto || loadedMode == PaneDisplayMode.minimal) {
+      if (loadedMode == PaneDisplayMode.auto ||
+          loadedMode == PaneDisplayMode.minimal) {
         loadedMode = PaneDisplayMode.expanded;
       }
-      newState = newState.copyWith(
-        paneDisplayMode: loadedMode,
-      );
+      newState = newState.copyWith(paneDisplayMode: loadedMode);
     }
 
     if (channelIndex != null &&

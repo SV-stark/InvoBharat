@@ -247,7 +247,7 @@ class CorporateTemplate extends BasePdfTemplate {
                   buildAmountInWords(invoice.grandTotal),
                   pw.SizedBox(height: 20),
 
-                  // Totals & Bank
+                  // Totals
                   pw.Row(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
@@ -256,46 +256,7 @@ class CorporateTemplate extends BasePdfTemplate {
                         child: pw.Column(
                           crossAxisAlignment: pw.CrossAxisAlignment.start,
                           children: [
-                            pw.Text(
-                              "Payment Details",
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                                color: themeColor,
-                              ),
-                            ),
-                            pw.SizedBox(height: 5),
-                            pw.Text(
-                              "Bank: ${invoice.bankName}",
-                              style: const pw.TextStyle(fontSize: 9),
-                            ),
-                            pw.Text(
-                              "A/c No: ${invoice.accountNo}",
-                              style: const pw.TextStyle(fontSize: 9),
-                            ),
-                            pw.Text(
-                              "IFSC: ${invoice.ifscCode}",
-                              style: const pw.TextStyle(fontSize: 9),
-                            ),
-                            if (profile.upiId.isNotEmpty) ...[
-                              pw.SizedBox(height: 5),
-                              pw.Text(
-                                "UPI ID: ${profile.upiId}",
-                                style: pw.TextStyle(
-                                  fontWeight: pw.FontWeight.bold,
-                                  fontSize: 9,
-                                  color: themeColor,
-                                ),
-                              ),
-                              pw.SizedBox(height: 5),
-                              buildPaymentQRCode(
-                                profile.upiId,
-                                profile.companyName,
-                                invoice.grandTotal,
-                                invoice.invoiceNo,
-                              ),
-                            ],
                             if (profile.termsAndConditions.isNotEmpty) ...[
-                              pw.SizedBox(height: 10),
                               pw.Text(
                                 "Terms",
                                 style: pw.TextStyle(
@@ -333,58 +294,119 @@ class CorporateTemplate extends BasePdfTemplate {
                       ),
                       pw.Expanded(
                         flex: 4,
-                        child: pw.Column(
-                          children: [
-                            pw.Container(
-                              padding: const pw.EdgeInsets.all(10),
-                              decoration: const pw.BoxDecoration(
-                                color: PdfColors.grey100,
-                                borderRadius: pw.BorderRadius.all(
-                                  pw.Radius.circular(4),
-                                ),
+                        child: pw.Container(
+                          padding: const pw.EdgeInsets.all(10),
+                          decoration: const pw.BoxDecoration(
+                            color: PdfColors.grey100,
+                            borderRadius: pw.BorderRadius.all(
+                              pw.Radius.circular(4),
+                            ),
+                          ),
+                          child: pw.Column(
+                            children: [
+                              buildSummaryRow(
+                                "Taxable Value",
+                                invoice.totalTaxableValue,
+                                profile.currencySymbol,
                               ),
-                              child: pw.Column(
-                                children: [
-                                  buildSummaryRow(
-                                    "Taxable Value",
-                                    invoice.totalTaxableValue,
-                                    profile.currencySymbol,
-                                  ),
-                                  if (!invoice.isInterState) ...[
-                                    buildSummaryRow(
-                                      "CGST",
-                                      invoice.totalCGST,
-                                      profile.currencySymbol,
-                                    ),
-                                    buildSummaryRow(
-                                      "SGST",
-                                      invoice.totalSGST,
-                                      profile.currencySymbol,
-                                    ),
-                                  ] else
-                                    buildSummaryRow(
-                                      "IGST",
-                                      invoice.totalIGST,
-                                      profile.currencySymbol,
-                                    ),
-                                  if (invoice.discountAmount > 0)
-                                    buildSummaryRow(
-                                      "Discount",
-                                      -invoice.discountAmount,
-                                      profile.currencySymbol,
-                                    ),
-                                  pw.Divider(color: PdfColors.white),
-                                  buildSummaryRow(
-                                    "Total",
-                                    invoice.grandTotal,
-                                    profile.currencySymbol,
-                                    isBold: true,
-                                  ),
-                                ],
+                              if (!invoice.isInterState) ...[
+                                buildSummaryRow(
+                                  "CGST",
+                                  invoice.totalCGST,
+                                  profile.currencySymbol,
+                                ),
+                                buildSummaryRow(
+                                  "SGST",
+                                  invoice.totalSGST,
+                                  profile.currencySymbol,
+                                ),
+                              ] else
+                                buildSummaryRow(
+                                  "IGST",
+                                  invoice.totalIGST,
+                                  profile.currencySymbol,
+                                ),
+                              if (invoice.discountAmount > 0)
+                                buildSummaryRow(
+                                  "Discount",
+                                  -invoice.discountAmount,
+                                  profile.currencySymbol,
+                                ),
+                              pw.Divider(color: PdfColors.white),
+                              buildSummaryRow(
+                                "Total",
+                                invoice.grandTotal,
+                                profile.currencySymbol,
+                                isBold: true,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  pw.SizedBox(height: 40),
+
+                  // Footer (Payment + Sign)
+                  pw.Row(
+                    crossAxisAlignment: pw.CrossAxisAlignment.end,
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Expanded(child: pw.SizedBox()), // Empty left
+
+                      pw.Expanded(
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.center,
+                          children: [
+                            pw.Text(
+                              "Payment Details",
+                              style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold,
+                                color: themeColor,
                               ),
                             ),
-                            pw.SizedBox(height: 20),
-                            // Stamp and Signature
+                            pw.SizedBox(height: 5),
+                            pw.Text(
+                              "Bank: ${invoice.bankName}",
+                              style: const pw.TextStyle(fontSize: 9),
+                            ),
+                            pw.Text(
+                              "A/c No: ${invoice.accountNo}",
+                              style: const pw.TextStyle(fontSize: 9),
+                            ),
+                            pw.Text(
+                              "IFSC: ${invoice.ifscCode}",
+                              style: const pw.TextStyle(fontSize: 9),
+                            ),
+                            if (profile.upiId.isNotEmpty) ...[
+                              pw.SizedBox(height: 5),
+                              pw.Text(
+                                "UPI ID: ${profile.upiId}",
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                  fontSize: 9,
+                                  color: themeColor,
+                                ),
+                              ),
+                              pw.SizedBox(height: 5),
+                              pw.Center(
+                                child: buildPaymentQRCode(
+                                  profile.upiId,
+                                  profile.companyName,
+                                  invoice.grandTotal,
+                                  invoice.invoiceNo,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+
+                      pw.Expanded(
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.end,
+                          children: [
                             pw.SizedBox(
                               width: 120,
                               height: 60,

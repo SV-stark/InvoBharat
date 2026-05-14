@@ -265,10 +265,11 @@ class ProfessionalTemplate extends BasePdfTemplate {
           buildAmountInWords(invoice.grandTotal),
           pw.SizedBox(height: 32),
 
-          // Terms and Bank Details
+          // Footer (Terms, Payment Details, Signature)
           pw.Row(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            crossAxisAlignment: pw.CrossAxisAlignment.end,
             children: [
+              // Terms & Conditions
               pw.Expanded(
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -307,7 +308,9 @@ class ProfessionalTemplate extends BasePdfTemplate {
                   ],
                 ),
               ),
-              pw.SizedBox(width: 32),
+              pw.SizedBox(width: 16),
+
+              // Payment Details (Center)
               pw.Expanded(
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -338,6 +341,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                       style: const pw.TextStyle(fontSize: 8),
                     ),
                     if (profile.upiId.isNotEmpty) ...[
+                      pw.SizedBox(height: 8),
                       pw.Text(
                         "UPI ID: ${profile.upiId}",
                         style: pw.TextStyle(
@@ -345,78 +349,79 @@ class ProfessionalTemplate extends BasePdfTemplate {
                           fontWeight: pw.FontWeight.bold,
                         ),
                       ),
-                      pw.SizedBox(height: 8),
-                      buildPaymentQRCode(
-                        profile.upiId,
-                        profile.companyName,
-                        invoice.grandTotal,
-                        invoice.invoiceNo,
+                      pw.SizedBox(height: 4),
+                      pw.Center(
+                        child: buildPaymentQRCode(
+                          profile.upiId,
+                          profile.companyName,
+                          invoice.grandTotal,
+                          invoice.invoiceNo,
+                        ),
                       ),
                     ],
                   ],
                 ),
               ),
-            ],
-          ),
+              pw.SizedBox(width: 16),
 
-          pw.SizedBox(height: 64),
-
-          // Signature Area
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.end,
-            children: [
-              pw.Column(
-                children: [
-                  pw.SizedBox(
-                    width: 120,
-                    height: 60,
-                    child: pw.Stack(
-                      alignment: pw.Alignment.center,
-                      children: [
-                        if (profile.stampPath != null &&
-                            profile.stampPath!.isNotEmpty &&
-                            File(profile.stampPath!).existsSync())
-                          pw.Positioned(
-                            left: profile.stampX,
-                            top: profile.stampY,
-                            child: pw.Image(
-                              pw.MemoryImage(
-                                File(profile.stampPath!).readAsBytesSync(),
+              // Signature Area
+              pw.Expanded(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  children: [
+                    pw.SizedBox(
+                      width: 120,
+                      height: 60,
+                      child: pw.Stack(
+                        alignment: pw.Alignment.center,
+                        children: [
+                          if (profile.stampPath != null &&
+                              profile.stampPath!.isNotEmpty &&
+                              File(profile.stampPath!).existsSync())
+                            pw.Positioned(
+                              left: profile.stampX,
+                              top: profile.stampY,
+                              child: pw.Image(
+                                pw.MemoryImage(
+                                  File(profile.stampPath!).readAsBytesSync(),
+                                ),
+                                height: 60,
+                                width: 60,
                               ),
-                              height: 60,
-                              width: 60,
                             ),
-                          ),
-                        if (profile.signaturePath != null &&
-                            profile.signaturePath!.isNotEmpty &&
-                            File(profile.signaturePath!).existsSync())
-                          pw.Positioned(
-                            left: profile.signatureX,
-                            top: profile.signatureY,
-                            child: pw.Image(
-                              pw.MemoryImage(
-                                File(profile.signaturePath!).readAsBytesSync(),
+                          if (profile.signaturePath != null &&
+                              profile.signaturePath!.isNotEmpty &&
+                              File(profile.signaturePath!).existsSync())
+                            pw.Positioned(
+                              left: profile.signatureX,
+                              top: profile.signatureY,
+                              child: pw.Image(
+                                pw.MemoryImage(
+                                  File(
+                                    profile.signaturePath!,
+                                  ).readAsBytesSync(),
+                                ),
+                                height: 40,
                               ),
-                              height: 40,
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  pw.SizedBox(height: 4),
-                  pw.Text(
-                    "For ${profile.companyName}",
-                    style: pw.TextStyle(
-                      fontSize: 10,
-                      fontWeight: pw.FontWeight.bold,
+                    pw.SizedBox(height: 4),
+                    pw.Text(
+                      "For ${profile.companyName}",
+                      style: pw.TextStyle(
+                        fontSize: 10,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  pw.SizedBox(height: 16),
-                  pw.Text(
-                    "Authorized Signatory",
-                    style: const pw.TextStyle(fontSize: 10),
-                  ),
-                ],
+                    pw.SizedBox(height: 16),
+                    pw.Text(
+                      "Authorized Signatory",
+                      style: const pw.TextStyle(fontSize: 10),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

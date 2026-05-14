@@ -40,7 +40,6 @@ void main() {
       expect(item.netAmount, 190.0);
     });
 
-
     test('tax calculations for intra-state', () {
       expect(item.cgstRate, 9.0);
       expect(item.sgstRate, 9.0);
