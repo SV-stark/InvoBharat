@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/utils/gst_utils.dart';
 import 'package:invobharat/models/client.dart';
+import 'package:invobharat/models/item_template.dart';
 
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/models/business_profile.dart';
@@ -254,11 +255,22 @@ class InvoiceNotifier extends Notifier<Invoice> {
     state = state.copyWith(items: newItems);
   }
 
-  void addItem() {
+  void addItem([final ItemTemplate? template]) {
     state = state.copyWith(
       items: [
         ...state.items,
-        InvoiceItem(id: _uuid.v4()),
+        template != null
+            ? InvoiceItem(
+                id: _uuid.v4(),
+                description: template.description,
+                amount: template.amount,
+                quantity: template.quantity,
+                unit: template.unit,
+                gstRate: template.gstRate,
+                sacCode: template.sacCode,
+                codeType: template.codeType,
+              )
+            : InvoiceItem(id: _uuid.v4()),
       ],
     );
   }

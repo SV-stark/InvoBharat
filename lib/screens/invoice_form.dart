@@ -350,58 +350,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
                                   // Add Item
                                   ref
                                       .read(invoiceProvider.notifier)
-                                      .addItem(
-                                        // We need to pass data.
-                                        // Does addItem support arguments? Checked previous code: NO.
-                                        // I need to modify InvoiceNotifier to accept item?
-                                        // Or add blank then update last item?
-                                        // Valid approach: Add blank, then update.
-                                      );
-                                  // BUT `addItem` is sync.
-                                  // Let's modify `addItem` to optional arg OR use a new method `addInvoiceItem`.
-                                  // Since I can't see InvoiceNotifier source right now easily, I'll assume I should modify it OR update manually.
-                                  // For now, I'll assume I update notifier later.
-                                  // For now, I will manually update fields of the new item.
-
-                                  final notifier = ref.read(
-                                    invoiceProvider.notifier,
-                                  );
-                                  notifier.addItem(); // Adds empty
-
-                                  // We need to wait for state update? Not if it's sync StateNotifier.
-                                  // But `addItem` might be async? No normally sync.
-                                  // However, reading back immediately might be stale if inside build? No we are in callback.
-                                  // Let's TRY to perform updates.
-                                  // Accessing `invoiceProvider` subsequent times should get updated state if using ref.read inside callback?
-                                  // Actually `addItem` updates state. `ref.read` should get new state.
-                                  final newItems = ref
-                                      .read(invoiceProvider)
-                                      .items;
-                                  final idx = newItems.length - 1;
-
-                                  notifier.updateItemDescription(
-                                    idx,
-                                    template.description,
-                                  );
-                                  notifier.updateItemAmount(
-                                    idx,
-                                    template.amount.toString(),
-                                  );
-                                  notifier.updateItemQuantity(
-                                    idx,
-                                    template.quantity.toString(),
-                                  ); // NEW
-                                  notifier.updateItemUnit(idx, template.unit);
-                                  notifier.updateItemGstRate(
-                                    idx,
-                                    template.gstRate.toString(),
-                                  );
-                                  notifier.updateItemSac(idx, template.sacCode);
-                                  notifier.updateItemCodeType(
-                                    idx,
-                                    template.codeType,
-                                  );
-
+                                      .addItem(template);
                                   Navigator.pop(context);
                                 },
                               );

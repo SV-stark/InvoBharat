@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:indian_formatters/indian_formatters.dart';
 
 class CurrencyFormatter {
   static final _indianFormat = NumberFormat.currency(
@@ -78,89 +79,6 @@ extension InvoDateTimeFormatter on DateTime {
 
 extension DoubleToWords on double {
   String toChequeFormat() {
-    if (this == 0) return "Zero Rupees Only";
-
-    final int totalAmount = truncate();
-    final int paise = ((this - totalAmount) * 100).round();
-
-    String result = "${_convertNumberToWords(totalAmount)} Rupees";
-    if (paise > 0) {
-      result += " and ${_convertNumberToWords(paise)} Paise";
-    }
-    return "$result Only";
-  }
-
-  static String _convertNumberToWords(int number) {
-    if (number == 0) return "Zero";
-
-    final units = [
-      "",
-      "One",
-      "Two",
-      "Three",
-      "Four",
-      "Five",
-      "Six",
-      "Seven",
-      "Eight",
-      "Nine",
-      "Ten",
-      "Eleven",
-      "Twelve",
-      "Thirteen",
-      "Fourteen",
-      "Fifteen",
-      "Sixteen",
-      "Seventeen",
-      "Eighteen",
-      "Nineteen",
-    ];
-    final tens = [
-      "",
-      "",
-      "Twenty",
-      "Thirty",
-      "Forty",
-      "Fifty",
-      "Sixty",
-      "Seventy",
-      "Eighty",
-      "Ninety",
-    ];
-
-    String words = "";
-
-    if ((number / 10000000).truncate() > 0) {
-      words +=
-          "${_convertNumberToWords((number / 10000000).truncate())} Crore ";
-      number %= 10000000;
-    }
-
-    if ((number / 100000).truncate() > 0) {
-      words += "${_convertNumberToWords((number / 100000).truncate())} Lakh ";
-      number %= 100000;
-    }
-
-    if ((number / 1000).truncate() > 0) {
-      words += "${_convertNumberToWords((number / 1000).truncate())} Thousand ";
-      number %= 1000;
-    }
-
-    if ((number / 100).truncate() > 0) {
-      words += "${_convertNumberToWords((number / 100).truncate())} Hundred ";
-      number %= 100;
-    }
-
-    if (number > 0) {
-      if (words != "") words += "and ";
-      if (number < 20) {
-        words += units[number];
-      } else {
-        words += tens[(number / 10).truncate()];
-        if ((number % 10) > 0) words += "-${units[number % 10]}";
-      }
-    }
-
-    return words.trim();
+    return IndianCurrencyFormatter.forCheque(this);
   }
 }

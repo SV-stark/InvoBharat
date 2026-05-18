@@ -10,6 +10,7 @@ import 'package:invobharat/utils/pdf_generator.dart';
 import 'package:invobharat/providers/invoice_provider.dart';
 import 'package:invobharat/providers/estimate_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
 
 /// Mixin to handle form logic for creating/editing Invoices.
 /// Standardizes controller management and common actions.
@@ -176,27 +177,10 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
 
   /// Generates the next invoice number based on existing invoices
   Future<String> generateNextInvoiceNumber() async {
-    final invoices = await ref.read(invoiceRepositoryProvider).getAllInvoices();
-
-    if (invoices.isEmpty) {
-      return 'INV-001';
-    }
-
-    // Find the highest invoice number
-    int maxNumber = 0;
-    final regex = RegExp(r'INV-?(\d+)', caseSensitive: false);
-
-    for (final invoice in invoices) {
-      final match = regex.firstMatch(invoice.invoiceNo);
-      if (match != null) {
-        final number = int.tryParse(match.group(1) ?? '0') ?? 0;
-        if (number > maxNumber) {
-          maxNumber = number;
-        }
-      }
-    }
-
-    return 'INV-${(maxNumber + 1).toString().padLeft(3, '0')}';
+    final profile = ref.read(businessProfileProvider);
+    final nextSeq = profile.invoiceSequence;
+    final series = profile.invoiceSeries;
+    return '$series${nextSeq.toString().padLeft(3, '0')}';
   }
 
   /// Calculates due date based on payment terms
