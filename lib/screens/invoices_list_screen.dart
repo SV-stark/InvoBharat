@@ -18,6 +18,7 @@ class InvoicesListScreen extends ConsumerStatefulWidget {
 class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
   final TextEditingController _searchCtrl = TextEditingController();
   String _filter = 'All';
+  String _sortBy = 'date_desc';
   DateTimeRange? _dateRange;
   bool _isMultiSelectMode = false;
   final Set<String> _selectedIds = {};
@@ -175,6 +176,106 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
+                PopupMenuButton<String>(
+                  initialValue: _sortBy,
+                  icon: Icon(
+                    Icons.sort,
+                    color: _sortBy != 'date_desc' ? theme.primaryColor : null,
+                  ),
+                  tooltip: "Sort invoices",
+                  onSelected: (final String value) {
+                    setState(() {
+                      _sortBy = value;
+                    });
+                  },
+                  itemBuilder: (final BuildContext context) =>
+                      <PopupMenuEntry<String>>[
+                        const PopupMenuItem<String>(
+                          value: 'date_desc',
+                          child: Row(
+                            children: [
+                              Icon(Icons.calendar_today, size: 18),
+                              SizedBox(width: 8),
+                              Text("Date: Newest First"),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'date_asc',
+                          child: Row(
+                            children: [
+                              Icon(Icons.calendar_today, size: 18),
+                              SizedBox(width: 8),
+                              Text("Date: Oldest First"),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuDivider(),
+                        const PopupMenuItem<String>(
+                          value: 'amount_desc',
+                          child: Row(
+                            children: [
+                              Icon(Icons.arrow_downward, size: 18),
+                              SizedBox(width: 8),
+                              Text("Amount: High to Low"),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'amount_asc',
+                          child: Row(
+                            children: [
+                              Icon(Icons.arrow_upward, size: 18),
+                              SizedBox(width: 8),
+                              Text("Amount: Low to High"),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuDivider(),
+                        const PopupMenuItem<String>(
+                          value: 'no_desc',
+                          child: Row(
+                            children: [
+                              Icon(Icons.tag, size: 18),
+                              SizedBox(width: 8),
+                              Text("Invoice No: High to Low"),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'no_asc',
+                          child: Row(
+                            children: [
+                              Icon(Icons.tag, size: 18),
+                              SizedBox(width: 8),
+                              Text("Invoice No: Low to High"),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuDivider(),
+                        const PopupMenuItem<String>(
+                          value: 'client_asc',
+                          child: Row(
+                            children: [
+                              Icon(Icons.person, size: 18),
+                              SizedBox(width: 8),
+                              Text("Client Name: A-Z"),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'client_desc',
+                          child: Row(
+                            children: [
+                              Icon(Icons.person, size: 18),
+                              SizedBox(width: 8),
+                              Text("Client Name: Z-A"),
+                            ],
+                          ),
+                        ),
+                      ],
+                ),
+                const SizedBox(width: 8),
                 IconButton(
                   icon: Icon(
                     Icons.filter_list,
@@ -248,6 +349,51 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
 
             return true;
           }).toList();
+
+          switch (_sortBy) {
+            case 'date_desc':
+              filtered.sort(
+                (final a, final b) => b.invoiceDate.compareTo(a.invoiceDate),
+              );
+              break;
+            case 'date_asc':
+              filtered.sort(
+                (final a, final b) => a.invoiceDate.compareTo(b.invoiceDate),
+              );
+              break;
+            case 'amount_desc':
+              filtered.sort(
+                (final a, final b) => b.grandTotal.compareTo(a.grandTotal),
+              );
+              break;
+            case 'amount_asc':
+              filtered.sort(
+                (final a, final b) => a.grandTotal.compareTo(b.grandTotal),
+              );
+              break;
+            case 'no_desc':
+              filtered.sort(
+                (final a, final b) => b.invoiceNo.compareTo(a.invoiceNo),
+              );
+              break;
+            case 'no_asc':
+              filtered.sort(
+                (final a, final b) => a.invoiceNo.compareTo(b.invoiceNo),
+              );
+              break;
+            case 'client_asc':
+              filtered.sort(
+                (final a, final b) =>
+                    a.receiver.name.compareTo(b.receiver.name),
+              );
+              break;
+            case 'client_desc':
+              filtered.sort(
+                (final a, final b) =>
+                    b.receiver.name.compareTo(a.receiver.name),
+              );
+              break;
+          }
 
           if (filtered.isEmpty) {
             return Center(

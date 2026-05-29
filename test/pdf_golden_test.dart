@@ -62,10 +62,19 @@ void main() {
       ),
     );
 
-    for (final style in ['Modern', 'Professional', 'Minimal', 'Classic', 'Corporate', 'Creative']) {
-      testWidgets('Template $style layout matches golden', (WidgetTester tester) async {
+    for (final style in [
+      'Modern',
+      'Professional',
+      'Minimal',
+      'Classic',
+      'Corporate',
+      'Creative',
+    ]) {
+      testWidgets('Template $style layout matches golden', (
+        WidgetTester tester,
+      ) async {
         final styledInvoice = invoice.copyWith(style: style);
-        
+
         print('[DEBUG] Generating PDF for $style...');
         Uint8List pdfBytes;
         try {
@@ -73,30 +82,44 @@ void main() {
         } catch (e) {
           fail('Failed to generate PDF for $style: $e');
         }
-        print('[DEBUG] PDF generated for $style. Size: ${pdfBytes.length} bytes. Rasterizing...');
+        print(
+          '[DEBUG] PDF generated for $style. Size: ${pdfBytes.length} bytes. Rasterizing...',
+        );
 
         // Try rasterizing - if it fails with MissingPluginException, we are headless and should skip
         List<PdfRaster> rasterPages;
         try {
-          rasterPages = await Printing.raster(pdfBytes, pages: [0], dpi: 72).toList();
+          rasterPages = await Printing.raster(
+            pdfBytes,
+            pages: [0],
+            dpi: 72,
+          ).toList();
         } on MissingPluginException {
           // Skip the test gracefully in headless mode
-          print('Skipping $style golden test (headless environment: Printing plugin not available).');
+          print(
+            'Skipping $style golden test (headless environment: Printing plugin not available).',
+          );
           return;
         } catch (e) {
           // If we run on standard unit test environment, we might get other plugin exceptions
-          print('Skipping $style golden test due to platform channel error: $e');
+          print(
+            'Skipping $style golden test due to platform channel error: $e',
+          );
           return;
         }
 
-        print('[DEBUG] Rasterization done for $style. Pages: ${rasterPages.length}. Converting first page to PNG...');
+        print(
+          '[DEBUG] Rasterization done for $style. Pages: ${rasterPages.length}. Converting first page to PNG...',
+        );
 
         if (rasterPages.isEmpty) {
           fail('No pages rasterized for $style template');
         }
 
         final pngBytes = await rasterPages.first.toPng();
-        print('[DEBUG] PNG conversion done for $style. Size: ${pngBytes.length} bytes. Pumping widget...');
+        print(
+          '[DEBUG] PNG conversion done for $style. Size: ${pngBytes.length} bytes. Pumping widget...',
+        );
 
         // Display the rasterized PDF image
         await tester.pumpWidget(
@@ -104,10 +127,7 @@ void main() {
             debugShowCheckedModeBanner: false,
             home: Scaffold(
               body: RepaintBoundary(
-                child: Image.memory(
-                  pngBytes,
-                  fit: BoxFit.contain,
-                ),
+                child: Image.memory(pngBytes, fit: BoxFit.contain),
               ),
             ),
           ),
