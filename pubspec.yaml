@@ -37,7 +37,7 @@ dependencies:
 
   indian_formatters: ^0.0.2
   money2: ^6.3.0
-  drift_flutter: ^0.3.0
+  drift_flutter: ^0.2.8
   gap: ^3.0.1
   skeletonizer: ^2.1.3
   file_saver: ^0.4.0

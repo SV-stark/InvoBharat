@@ -15,11 +15,29 @@ class ClientsScreen extends StatefulWidget {
 class _ClientsScreenState extends State<ClientsScreen> {
   final TextEditingController _searchCtrl = TextEditingController();
   String _searchQuery = '';
+  String _sortBy = 'name_asc';
+  final _sortController = FlyoutController();
 
   @override
   void dispose() {
     _searchCtrl.dispose();
+    _sortController.dispose();
     super.dispose();
+  }
+
+  String _getSortLabel(final String sortBy) {
+    switch (sortBy) {
+      case 'name_asc':
+        return "Name A-Z";
+      case 'name_desc':
+        return "Name Z-A";
+      case 'email_asc':
+        return "Email";
+      case 'phone':
+        return "Phone";
+      default:
+        return "Name A-Z";
+    }
   }
 
   @override
@@ -33,6 +51,75 @@ class _ClientsScreenState extends State<ClientsScreen> {
               icon: const Icon(FluentIcons.add),
               label: const Text('New Client'),
               onPressed: () => _showClientDialog(context, null),
+            ),
+            CommandBarBuilderItem(
+              wrappedItem: CommandBarButton(
+                icon: const Icon(FluentIcons.sort),
+                label: Text('Sort: ${_getSortLabel(_sortBy)}'),
+                onPressed: () {},
+              ),
+              builder: (final context, final mode, final w) {
+                return FlyoutTarget(
+                  controller: _sortController,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6.0,
+                      vertical: 4.0,
+                    ),
+                    child: Button(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(FluentIcons.sort, size: 16),
+                          const SizedBox(width: 8),
+                          Text('Sort: ${_getSortLabel(_sortBy)}'),
+                        ],
+                      ),
+                      onPressed: () {
+                        _sortController.showFlyout(
+                          autoModeConfiguration: FlyoutAutoConfiguration(
+                            preferredMode: FlyoutPlacementMode.bottomCenter,
+                          ),
+                          builder: (final flyoutContext) {
+                            return MenuFlyout(
+                              items: [
+                                MenuFlyoutItem(
+                                  text: const Text('Name: A-Z'),
+                                  onPressed: () {
+                                    Flyout.of(flyoutContext).close();
+                                    setState(() => _sortBy = 'name_asc');
+                                  },
+                                ),
+                                MenuFlyoutItem(
+                                  text: const Text('Name: Z-A'),
+                                  onPressed: () {
+                                    Flyout.of(flyoutContext).close();
+                                    setState(() => _sortBy = 'name_desc');
+                                  },
+                                ),
+                                MenuFlyoutItem(
+                                  text: const Text('Email: A-Z'),
+                                  onPressed: () {
+                                    Flyout.of(flyoutContext).close();
+                                    setState(() => _sortBy = 'email_asc');
+                                  },
+                                ),
+                                MenuFlyoutItem(
+                                  text: const Text('Phone'),
+                                  onPressed: () {
+                                    Flyout.of(flyoutContext).close();
+                                    setState(() => _sortBy = 'phone');
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -78,15 +165,39 @@ class _ClientsScreenState extends State<ClientsScreen> {
                           )
                           .toList();
 
-                if (filteredClients.isEmpty) {
+                final sortedClients = filteredClients.toList();
+                switch (_sortBy) {
+                  case 'name_asc':
+                    sortedClients.sort(
+                      (final a, final b) => a.name.compareTo(b.name),
+                    );
+                    break;
+                  case 'name_desc':
+                    sortedClients.sort(
+                      (final a, final b) => b.name.compareTo(a.name),
+                    );
+                    break;
+                  case 'email_asc':
+                    sortedClients.sort(
+                      (final a, final b) => a.email.compareTo(b.email),
+                    );
+                    break;
+                  case 'phone':
+                    sortedClients.sort(
+                      (final a, final b) => a.phone.compareTo(b.phone),
+                    );
+                    break;
+                }
+
+                if (sortedClients.isEmpty) {
                   return _buildEmptyState(context, ref);
                 }
 
                 return ListView.builder(
                   padding: const EdgeInsets.all(16),
-                  itemCount: filteredClients.length,
+                  itemCount: sortedClients.length,
                   itemBuilder: (final context, final index) {
-                    final client = filteredClients[index];
+                    final client = sortedClients[index];
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8.0),
                       child: Card(

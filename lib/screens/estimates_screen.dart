@@ -3,23 +3,231 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:invobharat/utils/formatters.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
-
 import 'package:invobharat/providers/estimate_provider.dart';
 import 'package:go_router/go_router.dart';
 
-class EstimatesScreen extends ConsumerWidget {
+class EstimatesScreen extends ConsumerStatefulWidget {
   const EstimatesScreen({super.key});
 
   @override
-  Widget build(final BuildContext context, final WidgetRef ref) {
+  ConsumerState<EstimatesScreen> createState() => _EstimatesScreenState();
+}
+
+class _EstimatesScreenState extends ConsumerState<EstimatesScreen> {
+  final TextEditingController _searchCtrl = TextEditingController();
+  String _sortBy = 'date_desc';
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  String _getSortLabel(final String sortBy) {
+    switch (sortBy) {
+      case 'date_desc':
+        return "Newest First";
+      case 'date_asc':
+        return "Oldest First";
+      case 'amount_desc':
+        return "Amount (High to Low)";
+      case 'amount_asc':
+        return "Amount (Low to High)";
+      case 'no_desc':
+        return "Estimate No (High to Low)";
+      case 'no_asc':
+        return "Estimate No (Low to High)";
+      case 'client_asc':
+        return "Client Name (A-Z)";
+      case 'client_desc':
+        return "Client Name (Z-A)";
+      default:
+        return "Newest First";
+    }
+  }
+
+  @override
+  Widget build(final BuildContext context) {
     final estimatesAsync = ref.watch(estimateListProvider);
     final theme = Theme.of(context);
+    final currency = ref.watch(businessProfileProvider).currency;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Estimates")),
+      appBar: AppBar(
+        title: const Text("Estimates"),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(105),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _searchCtrl,
+                        decoration: InputDecoration(
+                          hintText: "Search Client / Estimate # / Amount",
+                          prefixIcon: const Icon(Icons.search),
+                          suffixIcon: _searchCtrl.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear),
+                                  onPressed: () {
+                                    _searchCtrl.clear();
+                                    setState(() {});
+                                  },
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: theme.colorScheme.surfaceContainerHighest,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                          ),
+                        ),
+                        onChanged: (final val) => setState(() {}),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    PopupMenuButton<String>(
+                      initialValue: _sortBy,
+                      icon: Icon(
+                        Icons.sort,
+                        color: _sortBy != 'date_desc'
+                            ? theme.primaryColor
+                            : null,
+                      ),
+                      tooltip: "Sort estimates",
+                      onSelected: (final String value) {
+                        setState(() {
+                          _sortBy = value;
+                        });
+                      },
+                      itemBuilder: (final BuildContext context) =>
+                          <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'date_desc',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.calendar_today, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Date: Newest First"),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'date_asc',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.calendar_today, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Date: Oldest First"),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuDivider(),
+                            const PopupMenuItem<String>(
+                              value: 'amount_desc',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.arrow_downward, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Amount: High to Low"),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'amount_asc',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.arrow_upward, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Amount: Low to High"),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuDivider(),
+                            const PopupMenuItem<String>(
+                              value: 'no_desc',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.tag, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Estimate No: High to Low"),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'no_asc',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.tag, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Estimate No: Low to High"),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuDivider(),
+                            const PopupMenuItem<String>(
+                              value: 'client_asc',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.person, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Client Name: A-Z"),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'client_desc',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.person, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Client Name: Z-A"),
+                                ],
+                              ),
+                            ),
+                          ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      InputChip(
+                        avatar: const Icon(Icons.sort, size: 16),
+                        label: Text("Sorted by: ${_getSortLabel(_sortBy)}"),
+                        onPressed: () {
+                          // No-op
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
       body: estimatesAsync.when(
         data: (final estimates) {
-          if (estimates.isEmpty) {
+          final query = _searchCtrl.text.toLowerCase().trim();
+          final filtered = estimates.where((final est) {
+            return query.isEmpty ||
+                est.receiver.name.toLowerCase().contains(query) ||
+                est.estimateNo.toLowerCase().contains(query) ||
+                est.totalAmount.toStringAsFixed(2).contains(query);
+          }).toList();
+
+          if (filtered.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -31,29 +239,74 @@ class EstimatesScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    "No estimates created",
+                    query.isNotEmpty
+                        ? "No estimates found"
+                        : "No estimates created",
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: Colors.grey,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  FilledButton.icon(
-                    onPressed: () {
-                      context.push('/estimate-form');
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text("Create Estimate"),
-                  ),
+                  if (query.isEmpty) ...[
+                    const SizedBox(height: 16),
+                    FilledButton.icon(
+                      onPressed: () {
+                        context.push('/estimate-form');
+                      },
+                      icon: const Icon(Icons.add),
+                      label: const Text("Create Estimate"),
+                    ),
+                  ],
                 ],
               ),
             );
           }
 
+          switch (_sortBy) {
+            case 'date_desc':
+              filtered.sort((final a, final b) => b.date.compareTo(a.date));
+              break;
+            case 'date_asc':
+              filtered.sort((final a, final b) => a.date.compareTo(b.date));
+              break;
+            case 'amount_desc':
+              filtered.sort(
+                (final a, final b) => b.totalAmount.compareTo(a.totalAmount),
+              );
+              break;
+            case 'amount_asc':
+              filtered.sort(
+                (final a, final b) => a.totalAmount.compareTo(b.totalAmount),
+              );
+              break;
+            case 'no_desc':
+              filtered.sort(
+                (final a, final b) => b.estimateNo.compareTo(a.estimateNo),
+              );
+              break;
+            case 'no_asc':
+              filtered.sort(
+                (final a, final b) => a.estimateNo.compareTo(b.estimateNo),
+              );
+              break;
+            case 'client_asc':
+              filtered.sort(
+                (final a, final b) =>
+                    a.receiver.name.compareTo(b.receiver.name),
+              );
+              break;
+            case 'client_desc':
+              filtered.sort(
+                (final a, final b) =>
+                    b.receiver.name.compareTo(a.receiver.name),
+              );
+              break;
+          }
+
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: estimates.length,
+            itemCount: filtered.length,
             itemBuilder: (final context, final index) {
-              final estimate = estimates[index];
+              final estimate = filtered[index];
               return Card(
                 elevation: 2,
                 margin: const EdgeInsets.only(bottom: 12),
@@ -73,7 +326,7 @@ class EstimatesScreen extends ConsumerWidget {
                       Text(
                         estimate.totalAmount.toIndianFormat(
                           includeSymbol: true,
-                          symbol: ref.read(businessProfileProvider).currency,
+                          symbol: currency,
                         ),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),

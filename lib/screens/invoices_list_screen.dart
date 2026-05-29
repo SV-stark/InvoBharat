@@ -142,148 +142,195 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
               )
             : null,
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
+          preferredSize: const Size.fromHeight(105),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchCtrl,
-                    decoration: InputDecoration(
-                      hintText: "Search Client / Invoice # / Amount",
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: _searchCtrl.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                _searchCtrl.clear();
-                                setState(() {});
-                              },
-                            )
-                          : null,
-                      filled: true,
-                      fillColor: theme.colorScheme.surfaceContainerHighest,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _searchCtrl,
+                        decoration: InputDecoration(
+                          hintText: "Search Client / Invoice # / Amount",
+                          prefixIcon: const Icon(Icons.search),
+                          suffixIcon: _searchCtrl.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear),
+                                  onPressed: () {
+                                    _searchCtrl.clear();
+                                    setState(() {});
+                                  },
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: theme.colorScheme.surfaceContainerHighest,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                          ),
+                        ),
+                        onChanged: (final val) => setState(() {}),
                       ),
                     ),
-                    onChanged: (final val) => setState(() {}),
-                  ),
+                    const SizedBox(width: 8),
+                    PopupMenuButton<String>(
+                      initialValue: _sortBy,
+                      icon: Icon(
+                        Icons.sort,
+                        color: _sortBy != 'date_desc'
+                            ? theme.primaryColor
+                            : null,
+                      ),
+                      tooltip: "Sort invoices",
+                      onSelected: (final String value) {
+                        setState(() {
+                          _sortBy = value;
+                        });
+                      },
+                      itemBuilder: (final BuildContext context) =>
+                          <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'date_desc',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.calendar_today, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Date: Newest First"),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'date_asc',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.calendar_today, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Date: Oldest First"),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuDivider(),
+                            const PopupMenuItem<String>(
+                              value: 'amount_desc',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.arrow_downward, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Amount: High to Low"),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'amount_asc',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.arrow_upward, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Amount: Low to High"),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuDivider(),
+                            const PopupMenuItem<String>(
+                              value: 'no_desc',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.tag, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Invoice No: High to Low"),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'no_asc',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.tag, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Invoice No: Low to High"),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuDivider(),
+                            const PopupMenuItem<String>(
+                              value: 'client_asc',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.person, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Client Name: A-Z"),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'client_desc',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.person, size: 18),
+                                  SizedBox(width: 8),
+                                  Text("Client Name: Z-A"),
+                                ],
+                              ),
+                            ),
+                          ],
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: Icon(
+                        Icons.filter_list,
+                        color: _dateRange != null || _filter != 'All'
+                            ? theme.primaryColor
+                            : null,
+                      ),
+                      onPressed: _showFilterDialog,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                PopupMenuButton<String>(
-                  initialValue: _sortBy,
-                  icon: Icon(
-                    Icons.sort,
-                    color: _sortBy != 'date_desc' ? theme.primaryColor : null,
-                  ),
-                  tooltip: "Sort invoices",
-                  onSelected: (final String value) {
-                    setState(() {
-                      _sortBy = value;
-                    });
-                  },
-                  itemBuilder: (final BuildContext context) =>
-                      <PopupMenuEntry<String>>[
-                        const PopupMenuItem<String>(
-                          value: 'date_desc',
-                          child: Row(
-                            children: [
-                              Icon(Icons.calendar_today, size: 18),
-                              SizedBox(width: 8),
-                              Text("Date: Newest First"),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem<String>(
-                          value: 'date_asc',
-                          child: Row(
-                            children: [
-                              Icon(Icons.calendar_today, size: 18),
-                              SizedBox(width: 8),
-                              Text("Date: Oldest First"),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuDivider(),
-                        const PopupMenuItem<String>(
-                          value: 'amount_desc',
-                          child: Row(
-                            children: [
-                              Icon(Icons.arrow_downward, size: 18),
-                              SizedBox(width: 8),
-                              Text("Amount: High to Low"),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem<String>(
-                          value: 'amount_asc',
-                          child: Row(
-                            children: [
-                              Icon(Icons.arrow_upward, size: 18),
-                              SizedBox(width: 8),
-                              Text("Amount: Low to High"),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuDivider(),
-                        const PopupMenuItem<String>(
-                          value: 'no_desc',
-                          child: Row(
-                            children: [
-                              Icon(Icons.tag, size: 18),
-                              SizedBox(width: 8),
-                              Text("Invoice No: High to Low"),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem<String>(
-                          value: 'no_asc',
-                          child: Row(
-                            children: [
-                              Icon(Icons.tag, size: 18),
-                              SizedBox(width: 8),
-                              Text("Invoice No: Low to High"),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuDivider(),
-                        const PopupMenuItem<String>(
-                          value: 'client_asc',
-                          child: Row(
-                            children: [
-                              Icon(Icons.person, size: 18),
-                              SizedBox(width: 8),
-                              Text("Client Name: A-Z"),
-                            ],
-                          ),
-                        ),
-                        const PopupMenuItem<String>(
-                          value: 'client_desc',
-                          child: Row(
-                            children: [
-                              Icon(Icons.person, size: 18),
-                              SizedBox(width: 8),
-                              Text("Client Name: Z-A"),
-                            ],
-                          ),
+                const SizedBox(height: 8),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      InputChip(
+                        avatar: const Icon(Icons.sort, size: 16),
+                        label: Text("Sorted by: ${_getSortLabel(_sortBy)}"),
+                        onPressed: () {
+                          // No-op
+                        },
+                      ),
+                      if (_filter != 'All') ...[
+                        const SizedBox(width: 8),
+                        InputChip(
+                          label: Text("Filter: $_filter"),
+                          onDeleted: () {
+                            setState(() {
+                              _filter = 'All';
+                            });
+                          },
                         ),
                       ],
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: Icon(
-                    Icons.filter_list,
-                    color: _dateRange != null || _filter != 'All'
-                        ? theme.primaryColor
-                        : null,
+                      if (_dateRange != null) ...[
+                        const SizedBox(width: 8),
+                        InputChip(
+                          label: Text(
+                            "Date: ${DateFormat('dd/MM').format(_dateRange!.start)} - ${DateFormat('dd/MM').format(_dateRange!.end)}",
+                          ),
+                          onDeleted: () {
+                            setState(() {
+                              _dateRange = null;
+                            });
+                          },
+                        ),
+                      ],
+                    ],
                   ),
-                  onPressed: _showFilterDialog,
                 ),
               ],
             ),
@@ -671,5 +718,28 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
       ),
       child: Text(status, style: TextStyle(color: color, fontSize: 10)),
     );
+  }
+
+  String _getSortLabel(final String sortBy) {
+    switch (sortBy) {
+      case 'date_desc':
+        return "Newest First";
+      case 'date_asc':
+        return "Oldest First";
+      case 'amount_desc':
+        return "Amount (High to Low)";
+      case 'amount_asc':
+        return "Amount (Low to High)";
+      case 'no_desc':
+        return "Invoice No (High to Low)";
+      case 'no_asc':
+        return "Invoice No (Low to High)";
+      case 'client_asc':
+        return "Client Name (A-Z)";
+      case 'client_desc':
+        return "Client Name (Z-A)";
+      default:
+        return "Newest First";
+    }
   }
 }
