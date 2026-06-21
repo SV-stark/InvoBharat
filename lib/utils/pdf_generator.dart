@@ -1,4 +1,5 @@
 import 'dart:isolate';
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:invobharat/models/invoice.dart';
@@ -101,6 +102,10 @@ Future<Uint8List> generateInvoicePdf(
     regularFont: regularData,
     boldFont: boldData,
   );
+
+  if (Platform.environment.containsKey('FLUTTER_TEST')) {
+    return _generatePdfInIsolate(params);
+  }
 
   return Isolate.run(() => _generatePdfInIsolate(params));
 }

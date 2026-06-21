@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -21,6 +22,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(FileType.any);
+    registerFallbackValue(Uint8List(0));
   });
 
   setUp(() {
@@ -49,6 +51,7 @@ void main() {
           fileName: any(named: 'fileName'),
           allowedExtensions: any(named: 'allowedExtensions'),
           type: any(named: 'type'),
+          bytes: any(named: 'bytes'),
         ),
       ).thenAnswer((_) async => tempFile.path);
 
@@ -74,6 +77,7 @@ void main() {
             fileName: any(named: 'fileName'),
             allowedExtensions: any(named: 'allowedExtensions'),
             type: any(named: 'type'),
+            bytes: any(named: 'bytes'),
           ),
         ).thenAnswer((_) async => null);
 

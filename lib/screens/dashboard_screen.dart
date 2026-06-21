@@ -15,6 +15,8 @@ import 'package:invobharat/providers/recurring_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:invobharat/services/gstr_service.dart';
@@ -567,6 +569,7 @@ class _DashboardQuickActions extends ConsumerWidget {
         fileName: 'GSTR1_${selectedFilter.replaceAll(" ", "_")}.csv',
         allowedExtensions: ['csv'],
         type: FileType.custom,
+        bytes: Uint8List.fromList(utf8.encode(csvData)),
       );
 
       if (outputFile != null) {
@@ -619,7 +622,18 @@ class _DashboardQuickActions extends ConsumerWidget {
     );
 
     if (choice == "template") {
-      await InvoiceImportService.downloadImportTemplate();
+      try {
+        await InvoiceImportService.downloadImportTemplate();
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Import template downloaded successfully")),
+        );
+      } catch (e) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to download template: $e")),
+        );
+      }
       return;
     }
 
@@ -675,6 +689,7 @@ class _DashboardQuickActions extends ConsumerWidget {
         fileName: 'GSTR3B_${selectedFilter.replaceAll(" ", "_")}.csv',
         allowedExtensions: ['csv'],
         type: FileType.custom,
+        bytes: Uint8List.fromList(utf8.encode(csvData)),
       );
 
       if (outputFile != null) {

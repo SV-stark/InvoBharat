@@ -28,8 +28,9 @@ abstract class FilePickerWrapper {
     final String? fileName,
     final List<String>? allowedExtensions,
     final FileType type = FileType.any,
+    required final Uint8List bytes,
   });
-  Future<FilePickerResult?> pickFiles({
+  Future<PlatformFile?> pickFile({
     final String? dialogTitle,
     final FileType type = FileType.any,
     final List<String>? allowedExtensions,
@@ -43,22 +44,24 @@ class DefaultFilePickerWrapper implements FilePickerWrapper {
     final String? fileName,
     final List<String>? allowedExtensions,
     final FileType type = FileType.any,
+    required final Uint8List bytes,
   }) {
     return FilePicker.saveFile(
       dialogTitle: dialogTitle,
-      fileName: fileName,
+      fileName: fileName ?? '',
       allowedExtensions: allowedExtensions,
       type: type,
+      bytes: bytes,
     );
   }
 
   @override
-  Future<FilePickerResult?> pickFiles({
+  Future<PlatformFile?> pickFile({
     final String? dialogTitle,
     final FileType type = FileType.any,
     final List<String>? allowedExtensions,
   }) {
-    return FilePicker.pickFiles(
+    return FilePicker.pickFile(
       dialogTitle: dialogTitle,
       type: type,
       allowedExtensions: allowedExtensions,
@@ -94,6 +97,7 @@ class BackupService {
             'invobharat_backup_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.csv',
         allowedExtensions: ['csv'],
         type: FileType.custom,
+        bytes: Uint8List.fromList(utf8.encode(csvString)),
       );
 
       if (outputFile != null) {
@@ -126,6 +130,7 @@ class BackupService {
             'invobharat_backup_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.zip',
         allowedExtensions: ['zip'],
         type: FileType.custom,
+        bytes: Uint8List(0),
       );
 
       if (outputFile == null) return "Backup cancelled";
@@ -177,14 +182,14 @@ class BackupService {
 
   Future<String> restoreFullBackup() async {
     try {
-      final FilePickerResult? result = await _filePicker.pickFiles(
+      final PlatformFile? file = await _filePicker.pickFile(
         dialogTitle: 'Select Full Backup (ZIP)',
         type: FileType.custom,
         allowedExtensions: ['zip'],
       );
 
-      if (result != null && result.files.single.path != null) {
-        final zipFile = File(result.files.single.path!);
+      if (file != null && file.path != null) {
+        final zipFile = File(file.path!);
         final bytes = await zipFile.readAsBytes();
 
         final archive = ZipDecoder().decodeBytes(bytes);

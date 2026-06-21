@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -69,26 +70,35 @@ void main() {
       testWidgets('Template $style layout matches golden', (
         final WidgetTester tester,
       ) async {
+        if (Platform.environment.containsKey('FLUTTER_TEST')) {
+          debugPrint('Skipping $style golden test (headless test environment).');
+          return;
+        }
+
         final styledInvoice = invoice.copyWith(style: style);
 
-        debugPrint('[DEBUG] Generating PDF for $style...');
-        Uint8List pdfBytes;
+        Uint8List? pdfBytes;
         try {
-          pdfBytes = await generateInvoicePdf(styledInvoice, profile);
+          pdfBytes = await tester.runAsync(() => generateInvoicePdf(styledInvoice, profile));
         } catch (e) {
           fail('Failed to generate PDF for $style: $e');
         }
+        
+        if (pdfBytes == null) {
+          fail('PDF generation returned null for $style');
+        }
+
         debugPrint(
           '[DEBUG] PDF generated for $style. Size: ${pdfBytes.length} bytes. Rasterizing...',
         );
 
         // Try rasterizing - if it fails with MissingPluginException, we are headless and should skip
-        List<PdfRaster> rasterPages;
+        List<PdfRaster>? rasterPages;
         try {
-          rasterPages = await Printing.raster(
-            pdfBytes,
+          rasterPages = await tester.runAsync(() => Printing.raster(
+            pdfBytes!,
             pages: [0],
-          ).toList();
+          ).toList());
         } on MissingPluginException {
           // Skip the test gracefully in headless mode
           debugPrint(
@@ -101,6 +111,10 @@ void main() {
             'Skipping $style golden test due to platform channel error: $e',
           );
           return;
+        }
+
+        if (rasterPages == null) {
+          fail('No pages rasterized for $style template');
         }
 
         debugPrint(

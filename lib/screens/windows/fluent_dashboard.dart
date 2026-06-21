@@ -15,6 +15,8 @@ import 'package:invobharat/services/invoice_import_service.dart';
 import 'package:invobharat/services/gstr1_json_import_service.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:file_picker/file_picker.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'dart:io';
 
 import 'package:invobharat/services/invoice_actions.dart';
@@ -271,8 +273,32 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                     CommandBarButton(
                       label: const Text('CSV Template'),
                       icon: const Icon(FluentIcons.file_template),
-                      onPressed: () =>
-                          InvoiceImportService.downloadImportTemplate(),
+                      onPressed: () async {
+                        try {
+                          await InvoiceImportService.downloadImportTemplate();
+                          if (!context.mounted) return;
+                          displayInfoBar(
+                            context,
+                            builder: (final context, final close) => InfoBar(
+                              title: const Text("Success"),
+                              content: const Text("Import template downloaded successfully"),
+                              severity: InfoBarSeverity.success,
+                              onClose: close,
+                            ),
+                          );
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          displayInfoBar(
+                            context,
+                            builder: (final context, final close) => InfoBar(
+                              title: const Text("Error"),
+                              content: Text("Failed to download template: $e"),
+                              severity: InfoBarSeverity.error,
+                              onClose: close,
+                            ),
+                          );
+                        }
+                      },
                     ),
                   ],
                   secondaryItems: [
@@ -695,6 +721,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         fileName: 'GSTR1_${_selectedPeriod.replaceAll(" ", "_")}.csv',
         allowedExtensions: ['csv'],
         type: FileType.custom,
+        bytes: Uint8List.fromList(utf8.encode(csvData)),
       );
 
       if (outputFile != null) {
@@ -1122,9 +1149,32 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
           ),
           Button(
             child: const Text('Download Template'),
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              InvoiceImportService.downloadImportTemplate();
+              try {
+                await InvoiceImportService.downloadImportTemplate();
+                if (!context.mounted) return;
+                displayInfoBar(
+                  context,
+                  builder: (final context, final close) => InfoBar(
+                    title: const Text("Success"),
+                    content: const Text("Import template downloaded successfully"),
+                    severity: InfoBarSeverity.success,
+                    onClose: close,
+                  ),
+                );
+              } catch (e) {
+                if (!context.mounted) return;
+                displayInfoBar(
+                  context,
+                  builder: (final context, final close) => InfoBar(
+                    title: const Text("Error"),
+                    content: Text("Failed to download template: $e"),
+                    severity: InfoBarSeverity.error,
+                    onClose: close,
+                  ),
+                );
+              }
             },
           ),
         ],
