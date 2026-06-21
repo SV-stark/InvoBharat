@@ -10,7 +10,9 @@ import 'package:invobharat/providers/app_config_provider.dart';
 import 'package:invobharat/providers/database_provider.dart';
 
 final autoBackupServiceProvider = Provider<AutoBackupService>((final ref) {
-  return AutoBackupService(ref);
+  final service = AutoBackupService(ref);
+  ref.onDispose(service.stop);
+  return service;
 });
 
 class AutoBackupService {
