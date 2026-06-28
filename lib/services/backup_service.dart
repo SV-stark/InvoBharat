@@ -147,7 +147,6 @@ class BackupService {
 
       try {
         File dbFile;
-
         if (_db != null) {
           // Safe path: VACUUM INTO gives a consistent snapshot including WAL data
           await _db.vacuumInto(tempDbPath);
@@ -161,17 +160,33 @@ class BackupService {
           }
         }
 
+        final schemaVersion = _db?.schemaVersion ?? 10;
+        final tempManifestPath = p.join(
+          Directory.systemTemp.path,
+          'invobharat_manifest_$timestamp.json',
+        );
+        final manifestFile = File(tempManifestPath);
+        await manifestFile.writeAsString(jsonEncode({'schemaVersion': schemaVersion}));
+
         final zipEncoder = ZipFileEncoder();
         zipEncoder.create(outputFile);
-        await zipEncoder.addFile(dbFile);
+        await zipEncoder.addFile(dbFile, kDbFileName);
+        await zipEncoder.addFile(manifestFile, 'manifest.json');
         await zipEncoder.close();
 
         return "Full Backup saved to $outputFile";
       } finally {
-        // Clean up the temp VACUUM file if it was created
+        // Clean up the temp files if they were created
         final tempFile = File(tempDbPath);
         if (await tempFile.exists()) {
           await tempFile.delete();
+        }
+        final tempManifestFile = File(p.join(
+          Directory.systemTemp.path,
+          'invobharat_manifest_$timestamp.json',
+        ));
+        if (await tempManifestFile.exists()) {
+          await tempManifestFile.delete();
         }
       }
     } catch (e) {
@@ -218,6 +233,10 @@ class BackupService {
 
         final dbPath = await _getDbPath();
         final dbDestFile = File(dbPath);
+
+        if (_db != null) {
+          await _db.close();
+        }
 
         String? backupPath;
         if (await dbDestFile.exists()) {

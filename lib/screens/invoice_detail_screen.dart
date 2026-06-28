@@ -105,12 +105,16 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             icon: const Icon(Icons.share),
             tooltip: "Share",
             onPressed: () async {
-              final profile = ref.read(businessProfileProvider);
-              final bytes = await generateInvoicePdf(_invoice, profile);
-              await Printing.sharePdf(
-                bytes: bytes,
-                filename: 'invoice_${_invoice.invoiceNo}.pdf',
-              );
+              try {
+                final profile = ref.read(businessProfileProvider);
+                final bytes = await generateInvoicePdf(_invoice, profile);
+                await Printing.sharePdf(
+                  bytes: bytes,
+                  filename: 'invoice_${_invoice.invoiceNo}.pdf',
+                );
+              } catch (e) {
+                debugPrint("Error sharing invoice: $e");
+              }
             },
           ),
           PopupMenuButton<String>(

@@ -146,32 +146,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _pickLogo() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    if (pickedFile != null) {
-      final currentProfile = ref.read(businessProfileProvider);
-      final newProfile = currentProfile.copyWith(logoPath: pickedFile.path);
-      await ref
-          .read(businessProfileListProvider.notifier)
-          .updateProfile(newProfile);
-      setState(() {});
+      if (pickedFile != null) {
+        final currentProfile = ref.read(businessProfileProvider);
+        final newProfile = currentProfile.copyWith(logoPath: pickedFile.path);
+        await ref
+            .read(businessProfileListProvider.notifier)
+            .updateProfile(newProfile);
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint("Error picking logo: $e");
     }
   }
 
   Future<void> _pickSignature() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    if (pickedFile != null) {
-      final currentProfile = ref.read(businessProfileProvider);
-      final newProfile = currentProfile.copyWith(
-        signaturePath: pickedFile.path,
-      );
-      await ref
-          .read(businessProfileListProvider.notifier)
-          .updateProfile(newProfile);
-      setState(() {});
+      if (pickedFile != null) {
+        final currentProfile = ref.read(businessProfileProvider);
+        final newProfile = currentProfile.copyWith(
+          signaturePath: pickedFile.path,
+        );
+        await ref
+            .read(businessProfileListProvider.notifier)
+            .updateProfile(newProfile);
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint("Error picking signature: $e");
     }
   }
 

@@ -25,12 +25,15 @@ class RevenueChart extends StatelessWidget {
       return FlSpot(e.key.toDouble(), monthlyData[e.value]!);
     }).toList();
 
-    final maxY = spots.isEmpty
+    double maxY = spots.isEmpty
         ? 1000.0
         : spots
                   .map((final e) => e.y)
                   .reduce((final a, final b) => a > b ? a : b) *
               1.2;
+    if (maxY == 0) {
+      maxY = 1000.0;
+    }
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -56,16 +59,26 @@ class RevenueChart extends StatelessWidget {
                       getTitlesWidget: (final value, final meta) {
                         final index = value.toInt();
                         if (index >= 0 && index < displayKeys.length) {
-                          final date = DateFormat(
-                            "yyyy-MM",
-                          ).parse(displayKeys[index]);
-                          return SideTitleWidget(
-                            meta: meta,
-                            child: Text(
-                              DateFormat("MMM").format(date),
-                              style: const TextStyle(fontSize: 10),
-                            ),
-                          );
+                          try {
+                            final date = DateFormat(
+                              "yyyy-MM",
+                            ).parse(displayKeys[index]);
+                            return SideTitleWidget(
+                              meta: meta,
+                              child: Text(
+                                DateFormat("MMM").format(date),
+                                style: const TextStyle(fontSize: 10),
+                              ),
+                            );
+                          } catch (_) {
+                            return SideTitleWidget(
+                              meta: meta,
+                              child: Text(
+                                displayKeys[index],
+                                style: const TextStyle(fontSize: 10),
+                              ),
+                            );
+                          }
                         }
                         return const Text('');
                       },

@@ -171,8 +171,12 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     final Invoice invoice,
     final BusinessProfile profile,
   ) async {
-    final pdfBytes = await generateInvoicePdf(invoice, profile);
-    await Printing.layoutPdf(onLayout: (_) => pdfBytes);
+    try {
+      final pdfBytes = await generateInvoicePdf(invoice, profile);
+      await Printing.layoutPdf(onLayout: (_) => pdfBytes);
+    } catch (e) {
+      debugPrint("Error printing invoice: $e");
+    }
   }
 
   /// Generates the next invoice number based on existing invoices

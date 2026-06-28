@@ -164,7 +164,11 @@ class UpdateService {
     return {'stable': stableRelease, 'nightly': nightlyRelease};
   }
 
-  static Future<void> downloadAndInstallUpdate(final Release release) async {
+  static Future<void> downloadAndInstallUpdate(
+    final Release release, {
+    final http.Client? client,
+    @visibleForTesting final Future<void> Function(String path)? startProcess,
+  }) async {
     if (!Platform.isWindows) return;
 
     final asset = release.assets.firstWhere(
@@ -175,14 +179,19 @@ class UpdateService {
     final tempDir = await getTemporaryDirectory();
     final savePath = '${tempDir.path}/${asset.name}';
 
-    final response = await http.get(Uri.parse(asset.browserDownloadUrl));
+    final httpClient = client ?? http.Client();
+    final response = await httpClient.get(Uri.parse(asset.browserDownloadUrl));
     if (response.statusCode == 200) {
       final file = File(savePath);
       await file.writeAsBytes(response.bodyBytes);
 
       // Run the installer
-      await Process.start(savePath, [], mode: ProcessStartMode.detached);
-      exit(0); // Exit app to let installer run
+      if (startProcess != null) {
+        await startProcess(savePath);
+      } else {
+        await Process.start(savePath, [], mode: ProcessStartMode.detached);
+        exit(0); // Exit app to let installer run
+      }
     } else {
       throw Exception('Failed to download update: ${response.statusCode}');
     }

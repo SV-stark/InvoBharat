@@ -67,6 +67,7 @@ class DatabaseMigrationService {
       onProgress("Error: $e");
       // Delay so user can see error?
       await Future.delayed(const Duration(seconds: 3));
+      rethrow;
     }
   }
 

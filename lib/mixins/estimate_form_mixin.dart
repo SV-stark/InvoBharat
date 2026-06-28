@@ -203,9 +203,13 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
       branch: profile.branch,
     );
 
-    await Printing.layoutPdf(
-      onLayout: (final format) =>
-          generateInvoicePdf(estimateInvoice, profile, title: "ESTIMATE"),
-    );
+    try {
+      await Printing.layoutPdf(
+        onLayout: (final format) =>
+            generateInvoicePdf(estimateInvoice, profile, title: "ESTIMATE"),
+      );
+    } catch (e) {
+      debugPrint("Error printing estimate: $e");
+    }
   }
 }

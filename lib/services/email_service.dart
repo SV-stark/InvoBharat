@@ -133,6 +133,10 @@ class EmailService {
       throw Exception(
         "Email failed: ${e.message}\nCheck settings or internet.",
       );
+    } catch (e) {
+      throw Exception(
+        "Email failed: $e\nCheck settings or internet.",
+      );
     }
   }
 }

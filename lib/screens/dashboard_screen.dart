@@ -796,13 +796,17 @@ class _DashboardRecentActivity extends ConsumerWidget {
                               ref.invalidate(invoiceListProvider);
                             } else if (value == 'print') {
                               final profile = ref.read(businessProfileProvider);
-                              final pdfBytes = await generateInvoicePdf(
-                                inv,
-                                profile,
-                              );
-                              await Printing.layoutPdf(
-                                onLayout: (_) => pdfBytes,
-                              );
+                              try {
+                                final pdfBytes = await generateInvoicePdf(
+                                  inv,
+                                  profile,
+                                );
+                                await Printing.layoutPdf(
+                                  onLayout: (_) => pdfBytes,
+                                );
+                              } catch (e) {
+                                debugPrint("Error printing from dashboard: $e");
+                              }
                             }
                           },
                           itemBuilder: (final context) => [

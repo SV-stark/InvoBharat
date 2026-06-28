@@ -91,20 +91,24 @@ class RecurringService {
 
       if (DateTime.now().isAfter(profile.nextRunDate) ||
           DateTime.now().isAtSameMomentAs(profile.nextRunDate)) {
-        // Time to generate!
-        await _generateInvoice(profile);
-        generatedCount++;
+        try {
+          // Time to generate!
+          await _generateInvoice(profile);
+          generatedCount++;
 
-        // Update profile
-        final nextDate = calculateNextDate(
-          profile.nextRunDate,
-          profile.interval,
-        );
-        final updatedProfile = profile.copyWith(
-          lastRunDate: DateTime.now(),
-          nextRunDate: nextDate,
-        );
-        await repo.saveProfile(updatedProfile);
+          // Update profile
+          final nextDate = calculateNextDate(
+            profile.nextRunDate,
+            profile.interval,
+          );
+          final updatedProfile = profile.copyWith(
+            lastRunDate: DateTime.now(),
+            nextRunDate: nextDate,
+          );
+          await repo.saveProfile(updatedProfile);
+        } catch (e) {
+          debugPrint("Failed to generate recurring invoice for profile ${profile.id}: $e");
+        }
       }
     }
 

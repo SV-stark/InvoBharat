@@ -83,11 +83,15 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
       dateRange: material.DateTimeRange(start: _startDate, end: _endDate),
     );
 
-    final pdfBytes = await generateClientStatement(params);
-    await Printing.layoutPdf(
-      onLayout: (_) => pdfBytes,
-      name: 'statement_${widget.client.name}.pdf',
-    );
+    try {
+      final pdfBytes = await generateClientStatement(params);
+      await Printing.layoutPdf(
+        onLayout: (_) => pdfBytes,
+        name: 'statement_${widget.client.name}.pdf',
+      );
+    } catch (e) {
+      debugPrint("Error printing statement: $e");
+    }
   }
 
   @override

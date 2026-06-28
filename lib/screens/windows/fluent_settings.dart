@@ -289,16 +289,20 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 Button(
                   child: const Text("Select Brand Logo"),
                   onPressed: () async {
-                    final picker = ImagePicker();
-                    final XFile? image = await picker.pickImage(
-                      source: ImageSource.gallery,
-                    );
-                    if (image != null) {
-                      ref
-                          .read(businessProfileListProvider.notifier)
-                          .updateProfile(
-                            profile.copyWith(logoPath: image.path),
-                          );
+                    try {
+                      final picker = ImagePicker();
+                      final XFile? image = await picker.pickImage(
+                        source: ImageSource.gallery,
+                      );
+                      if (image != null) {
+                        ref
+                            .read(businessProfileListProvider.notifier)
+                            .updateProfile(
+                              profile.copyWith(logoPath: image.path),
+                            );
+                      }
+                    } catch (e) {
+                      debugPrint("Error picking logo: $e");
                     }
                   },
                 ),
@@ -360,16 +364,20 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                         Button(
                           child: const Text("Upload Signature"),
                           onPressed: () async {
-                            final picker = ImagePicker();
-                            final XFile? image = await picker.pickImage(
-                              source: ImageSource.gallery,
-                            );
-                            if (image != null) {
-                              ref
-                                  .read(businessProfileListProvider.notifier)
-                                  .updateProfile(
-                                    profile.copyWith(signaturePath: image.path),
-                                  );
+                            try {
+                              final picker = ImagePicker();
+                              final XFile? image = await picker.pickImage(
+                                source: ImageSource.gallery,
+                              );
+                              if (image != null) {
+                                ref
+                                    .read(businessProfileListProvider.notifier)
+                                    .updateProfile(
+                                      profile.copyWith(signaturePath: image.path),
+                                    );
+                              }
+                            } catch (e) {
+                              debugPrint("Error picking signature: $e");
                             }
                           },
                         ),
@@ -433,16 +441,20 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                         Button(
                           child: const Text("Upload Stamp"),
                           onPressed: () async {
-                            final picker = ImagePicker();
-                            final XFile? image = await picker.pickImage(
-                              source: ImageSource.gallery,
-                            );
-                            if (image != null) {
-                              ref
-                                  .read(businessProfileListProvider.notifier)
-                                  .updateProfile(
-                                    profile.copyWith(stampPath: image.path),
-                                  );
+                            try {
+                              final picker = ImagePicker();
+                              final XFile? image = await picker.pickImage(
+                                source: ImageSource.gallery,
+                              );
+                              if (image != null) {
+                                ref
+                                    .read(businessProfileListProvider.notifier)
+                                    .updateProfile(
+                                      profile.copyWith(stampPath: image.path),
+                                    );
+                              }
+                            } catch (e) {
+                              debugPrint("Error picking stamp: $e");
                             }
                           },
                         ),
