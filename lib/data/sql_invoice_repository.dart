@@ -55,7 +55,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
       // 1. Resolve Client ID
       final client =
           await (database.select(database.clients)
-                ..where((final t) => t.name.equals(invoice.receiver.name)))
+                ..where((final t) =>
+                    t.name.equals(invoice.receiver.name) &
+                    t.profileId.equals(profileId)))
               .getSingleOrNull();
 
       // 2. Atomic Sequence Increment
@@ -264,8 +266,13 @@ class SqlInvoiceRepository implements InvoiceRepository {
       database.invoices,
     )..where((final t) => t.profileId.equals(profileId))).get();
     if (invoiceRows.isEmpty) return [];
-    final allItems = await database.select(database.invoiceItems).get();
-    final allPayments = await database.select(database.payments).get();
+    final invoiceIds = invoiceRows.map((final r) => r.id).toList();
+    final allItems = await (database.select(database.invoiceItems)
+          ..where((final t) => t.invoiceId.isIn(invoiceIds)))
+        .get();
+    final allPayments = await (database.select(database.payments)
+          ..where((final t) => t.invoiceId.isIn(invoiceIds)))
+        .get();
     return _mapInvoices(invoiceRows, allItems, allPayments);
   }
 
@@ -287,8 +294,12 @@ class SqlInvoiceRepository implements InvoiceRepository {
             .get();
     if (invoiceRows.isEmpty) return [];
     final invoiceIds = invoiceRows.map((final r) => r.id).toSet();
-    final allItems = await database.select(database.invoiceItems).get();
-    final allPayments = await database.select(database.payments).get();
+    final allItems = await (database.select(database.invoiceItems)
+          ..where((final t) => t.invoiceId.isIn(invoiceIds)))
+        .get();
+    final allPayments = await (database.select(database.payments)
+          ..where((final t) => t.invoiceId.isIn(invoiceIds)))
+        .get();
     final filteredItems = allItems
         .where((final i) => invoiceIds.contains(i.invoiceId))
         .toList();
