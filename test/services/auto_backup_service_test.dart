@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:archive/archive.dart';
 import 'package:drift/native.dart';
@@ -35,7 +34,7 @@ class FakePathProviderPlatform extends PathProviderPlatform
 
   @override
   Future<List<String>?> getExternalStoragePaths({
-    StorageDirectory? type,
+    final StorageDirectory? type,
   }) async => [Directory.systemTemp.path];
 
   @override
@@ -68,16 +67,16 @@ void main() {
   });
 
   void setupContainer({
-    required bool enabled,
-    required int frequencyIndex,
-    required String backupTime,
-    String? lastBackupStr,
+    required final bool enabled,
+    required final int frequencyIndex,
+    required final String backupTime,
+    final String? lastBackupStr,
   }) {
     SharedPreferences.setMockInitialValues({
       'auto_backup_enabled': enabled,
       'backup_frequency': frequencyIndex,
       'backup_time': backupTime,
-      if (lastBackupStr != null) 'last_auto_backup': lastBackupStr,
+      'last_auto_backup': ?lastBackupStr,
       'backup_path': tempBackupDir.path,
     });
 

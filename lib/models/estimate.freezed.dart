@@ -15,8 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Estimate {
 
- String get id; String get estimateNo; DateTime get date; DateTime? get expiryDate; Supplier get supplier; Receiver get receiver; List<InvoiceItem> get items; String get notes; String get terms; String? get status;// Draft, Sent, Accepted, Rejected, Converted
- String? get poNumber;
+ String get id; String get estimateNo; DateTime get date; DateTime? get expiryDate; Supplier get supplier; Receiver get receiver; List<InvoiceItem> get items; String get notes; String get terms; String? get status; String? get poNumber;
 /// Create a copy of Estimate
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -257,7 +256,6 @@ class _Estimate extends Estimate {
 @override@JsonKey() final  String notes;
 @override@JsonKey() final  String terms;
 @override@JsonKey() final  String? status;
-// Draft, Sent, Accepted, Rejected, Converted
 @override final  String? poNumber;
 
 /// Create a copy of Estimate

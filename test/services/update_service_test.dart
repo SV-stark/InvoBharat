@@ -30,7 +30,7 @@ class FakePathProviderPlatform extends PathProviderPlatform
 
   @override
   Future<List<String>?> getExternalStoragePaths({
-    StorageDirectory? type,
+    final StorageDirectory? type,
   }) async => [Directory.systemTemp.path];
 
   @override

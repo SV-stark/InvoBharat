@@ -4,7 +4,7 @@ import 'package:invobharat/widgets/revenue_chart.dart';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 
 void main() {
-  Widget createChartWidget(Map<String, double> monthlyData) {
+  Widget createChartWidget(final Map<String, double> monthlyData) {
     return fluent.FluentApp(
       home: fluent.ScaffoldPage(
         content: SizedBox(

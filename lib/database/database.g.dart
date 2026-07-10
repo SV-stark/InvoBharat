@@ -5835,10 +5835,7 @@ final class $$BusinessProfilesTableReferences
     _$AppDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.clients,
-    aliasName: $_aliasNameGenerator(
-      db.businessProfiles.id,
-      db.clients.profileId,
-    ),
+    aliasName: 'business_profiles__id__clients__profile_id',
   );
 
   $$ClientsTableProcessedTableManager get clientsRefs {
@@ -5857,10 +5854,7 @@ final class $$BusinessProfilesTableReferences
     _$AppDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.invoices,
-    aliasName: $_aliasNameGenerator(
-      db.businessProfiles.id,
-      db.invoices.profileId,
-    ),
+    aliasName: 'business_profiles__id__invoices__profile_id',
   );
 
   $$InvoicesTableProcessedTableManager get invoicesRefs {
@@ -5878,10 +5872,7 @@ final class $$BusinessProfilesTableReferences
   static MultiTypedResultKey<$BankAccountsTable, List<BankAccountData>>
   _bankAccountsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.bankAccounts,
-    aliasName: $_aliasNameGenerator(
-      db.businessProfiles.id,
-      db.bankAccounts.profileId,
-    ),
+    aliasName: 'business_profiles__id__bank_accounts__profile_id',
   );
 
   $$BankAccountsTableProcessedTableManager get bankAccountsRefs {
@@ -6746,10 +6737,9 @@ final class $$ClientsTableReferences
     extends BaseReferences<_$AppDatabase, $ClientsTable, Client> {
   $$ClientsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $BusinessProfilesTable _profileIdTable(_$AppDatabase db) =>
-      db.businessProfiles.createAlias(
-        $_aliasNameGenerator(db.clients.profileId, db.businessProfiles.id),
-      );
+  static $BusinessProfilesTable _profileIdTable(_$AppDatabase db) => db
+      .businessProfiles
+      .createAlias('clients__profile_id__business_profiles__id');
 
   $$BusinessProfilesTableProcessedTableManager get profileId {
     final $_column = $_itemColumn<String>('profile_id')!;
@@ -6769,7 +6759,7 @@ final class $$ClientsTableReferences
     _$AppDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.invoices,
-    aliasName: $_aliasNameGenerator(db.clients.id, db.invoices.clientId),
+    aliasName: 'clients__id__invoices__client_id',
   );
 
   $$InvoicesTableProcessedTableManager get invoicesRefs {
@@ -7289,10 +7279,9 @@ final class $$InvoicesTableReferences
     extends BaseReferences<_$AppDatabase, $InvoicesTable, Invoice> {
   $$InvoicesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $BusinessProfilesTable _profileIdTable(_$AppDatabase db) =>
-      db.businessProfiles.createAlias(
-        $_aliasNameGenerator(db.invoices.profileId, db.businessProfiles.id),
-      );
+  static $BusinessProfilesTable _profileIdTable(_$AppDatabase db) => db
+      .businessProfiles
+      .createAlias('invoices__profile_id__business_profiles__id');
 
   $$BusinessProfilesTableProcessedTableManager get profileId {
     final $_column = $_itemColumn<String>('profile_id')!;
@@ -7308,8 +7297,8 @@ final class $$InvoicesTableReferences
     );
   }
 
-  static $ClientsTable _clientIdTable(_$AppDatabase db) => db.clients
-      .createAlias($_aliasNameGenerator(db.invoices.clientId, db.clients.id));
+  static $ClientsTable _clientIdTable(_$AppDatabase db) =>
+      db.clients.createAlias('invoices__client_id__clients__id');
 
   $$ClientsTableProcessedTableManager? get clientId {
     final $_column = $_itemColumn<String>('client_id');
@@ -7328,7 +7317,7 @@ final class $$InvoicesTableReferences
   static MultiTypedResultKey<$InvoiceItemsTable, List<InvoiceItem>>
   _invoiceItemsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.invoiceItems,
-    aliasName: $_aliasNameGenerator(db.invoices.id, db.invoiceItems.invoiceId),
+    aliasName: 'invoices__id__invoice_items__invoice_id',
   );
 
   $$InvoiceItemsTableProcessedTableManager get invoiceItemsRefs {
@@ -7347,7 +7336,7 @@ final class $$InvoicesTableReferences
     _$AppDatabase db,
   ) => MultiTypedResultKey.fromTable(
     db.payments,
-    aliasName: $_aliasNameGenerator(db.invoices.id, db.payments.invoiceId),
+    aliasName: 'invoices__id__payments__invoice_id',
   );
 
   $$PaymentsTableProcessedTableManager get paymentsRefs {
@@ -8437,9 +8426,7 @@ final class $$InvoiceItemsTableReferences
   $$InvoiceItemsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $InvoicesTable _invoiceIdTable(_$AppDatabase db) =>
-      db.invoices.createAlias(
-        $_aliasNameGenerator(db.invoiceItems.invoiceId, db.invoices.id),
-      );
+      db.invoices.createAlias('invoice_items__invoice_id__invoices__id');
 
   $$InvoicesTableProcessedTableManager get invoiceId {
     final $_column = $_itemColumn<String>('invoice_id')!;
@@ -8861,8 +8848,8 @@ final class $$PaymentsTableReferences
     extends BaseReferences<_$AppDatabase, $PaymentsTable, Payment> {
   $$PaymentsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $InvoicesTable _invoiceIdTable(_$AppDatabase db) => db.invoices
-      .createAlias($_aliasNameGenerator(db.payments.invoiceId, db.invoices.id));
+  static $InvoicesTable _invoiceIdTable(_$AppDatabase db) =>
+      db.invoices.createAlias('payments__invoice_id__invoices__id');
 
   $$InvoicesTableProcessedTableManager get invoiceId {
     final $_column = $_itemColumn<String>('invoice_id')!;
@@ -9199,10 +9186,9 @@ final class $$BankAccountsTableReferences
     extends BaseReferences<_$AppDatabase, $BankAccountsTable, BankAccountData> {
   $$BankAccountsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $BusinessProfilesTable _profileIdTable(_$AppDatabase db) =>
-      db.businessProfiles.createAlias(
-        $_aliasNameGenerator(db.bankAccounts.profileId, db.businessProfiles.id),
-      );
+  static $BusinessProfilesTable _profileIdTable(_$AppDatabase db) => db
+      .businessProfiles
+      .createAlias('bank_accounts__profile_id__business_profiles__id');
 
   $$BusinessProfilesTableProcessedTableManager get profileId {
     final $_column = $_itemColumn<String>('profile_id')!;
