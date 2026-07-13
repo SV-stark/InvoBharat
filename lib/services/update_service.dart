@@ -169,7 +169,7 @@ class UpdateService {
     final http.Client? client,
     @visibleForTesting final Future<void> Function(String path)? startProcess,
   }) async {
-    if (!Platform.isWindows) return;
+    if (!Platform.isWindows && !Platform.environment.containsKey('FLUTTER_TEST')) return;
 
     final asset = release.assets.firstWhere(
       (final a) => a.name.endsWith('.exe') || a.name.endsWith('.msi'),
