@@ -1,5 +1,6 @@
 import 'dart:isolate';
 import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/utils/gst_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:csv/csv.dart';
 
@@ -21,6 +22,9 @@ class GstrService {
       'Invoice Value',
       'GST%',
       'Taxable Value',
+      'CGST',
+      'SGST',
+      'IGST',
       'CESS',
       'Place Of Supply',
       'RCM Applicable',
@@ -34,9 +38,19 @@ class GstrService {
       final receiverName = inv.receiver.name;
       final gstin = inv.receiver.gstin;
       final invoiceValue = inv.grandTotal;
-      final placeOfSupply = inv.receiver.state.isEmpty
+
+      final state = inv.receiver.state.isEmpty
           ? inv.placeOfSupply
           : inv.receiver.state;
+
+      final stateCode = inv.receiver.stateCode.trim().isNotEmpty
+          ? inv.receiver.stateCode.trim()
+          : (gstin.length >= 2 ? GstUtils.getStateCode(gstin) : null);
+
+      final placeOfSupply = (stateCode != null && stateCode.isNotEmpty)
+          ? "$stateCode-$state"
+          : state;
+
       final rcm = inv.reverseCharge;
       const cess = "0.00";
       final type = gstin.trim().isNotEmpty ? 'B2B' : 'B2C';
@@ -51,6 +65,9 @@ class GstrService {
           invoiceValue.toStringAsFixed(2),
           0,
           0.00,
+          0.00,
+          0.00,
+          0.00,
           cess,
           placeOfSupply,
           rcm,
@@ -62,6 +79,9 @@ class GstrService {
         for (final item in inv.items) {
           final gstRate = item.gstRate;
           final taxableValue = item.netAmount;
+          final cgst = item.calculateCgst(inv.isInterState);
+          final sgst = item.calculateSgst(inv.isInterState);
+          final igst = item.calculateIgst(inv.isInterState);
           final hsnDesc = item.description;
           final hsnDetails = item.sacCode;
 
@@ -73,6 +93,9 @@ class GstrService {
             invoiceValue.toStringAsFixed(2),
             gstRate.toStringAsFixed(2),
             taxableValue.toStringAsFixed(2),
+            cgst.toStringAsFixed(2),
+            sgst.toStringAsFixed(2),
+            igst.toStringAsFixed(2),
             cess,
             placeOfSupply,
             rcm,
