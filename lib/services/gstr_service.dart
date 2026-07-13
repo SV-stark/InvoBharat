@@ -26,6 +26,7 @@ class GstrService {
       'RCM Applicable',
       'HSN Details',
       'HSN Description',
+      'type',
     ]);
 
     for (final inv in invoices) {
@@ -38,6 +39,7 @@ class GstrService {
           : inv.receiver.state;
       final rcm = inv.reverseCharge;
       const cess = "0.00";
+      final type = gstin.trim().isNotEmpty ? 'B2B' : 'B2C';
 
       if (inv.items.isEmpty) {
         // Fallback for empty invoice (though unlikely)
@@ -54,6 +56,7 @@ class GstrService {
           rcm,
           '',
           '',
+          type,
         ]);
       } else {
         for (final item in inv.items) {
@@ -75,6 +78,7 @@ class GstrService {
             rcm,
             hsnDetails,
             hsnDesc,
+            type,
           ]);
         }
       }
