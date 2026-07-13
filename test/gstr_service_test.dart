@@ -52,14 +52,12 @@ void main() {
       receiver: const Receiver(
         name: 'Jane Doe',
         state: 'Karnataka',
-        gstin: '',
       ),
       items: [
         const InvoiceItem(
           description: 'Item 2',
           sacCode: '998312',
           amount: 500,
-          quantity: 1,
         ),
       ],
     );
@@ -91,7 +89,6 @@ void main() {
           description: 'Item 3',
           sacCode: '998313',
           amount: 1000,
-          quantity: 1,
         ),
       ],
     );
