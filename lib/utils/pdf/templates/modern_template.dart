@@ -200,6 +200,7 @@ class ModernTemplate extends BasePdfTemplate {
             ],
           ),
           buildOriginalInvoiceInfo(invoice),
+          buildEwayBillAndEinvoiceInfo(invoice, font, fontBold),
           pw.SizedBox(height: 32),
 
           // Items

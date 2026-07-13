@@ -179,6 +179,7 @@ class ClassicTemplate extends BasePdfTemplate {
               ],
             ),
             buildOriginalInvoiceInfo(invoice),
+            buildEwayBillAndEinvoiceInfo(invoice, font, fontBold),
             pw.SizedBox(height: 20),
 
             // Items Table

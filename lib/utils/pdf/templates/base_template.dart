@@ -270,4 +270,64 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
       ),
     );
   }
+
+  pw.Widget buildEwayBillAndEinvoiceInfo(
+    final Invoice invoice,
+    final pw.Font font,
+    final pw.Font fontBold,
+  ) {
+    final hasEway = invoice.ewayBillNo != null && invoice.ewayBillNo!.isNotEmpty;
+    final hasVehicle = invoice.vehicleNo != null && invoice.vehicleNo!.isNotEmpty;
+    final hasIrn = invoice.irnNo != null && invoice.irnNo!.isNotEmpty;
+
+    if (!hasEway && !hasVehicle && !hasIrn) {
+      return pw.SizedBox();
+    }
+
+    return pw.Container(
+      margin: const pw.EdgeInsets.only(top: 8),
+      padding: const pw.EdgeInsets.all(8),
+      decoration: const pw.BoxDecoration(
+        color: PdfColors.grey100,
+        borderRadius: pw.BorderRadius.all(pw.Radius.circular(4)),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            "Transportation & E-Invoice Details",
+            style: pw.TextStyle(font: fontBold, fontSize: 9, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.SizedBox(height: 4),
+          pw.Row(
+            children: [
+              if (hasEway) ...[
+                pw.Text("E-Way Bill No: ", style: pw.TextStyle(font: fontBold, fontSize: 9)),
+                pw.Text(invoice.ewayBillNo!, style: pw.TextStyle(font: font, fontSize: 9)),
+                pw.SizedBox(width: 16),
+              ],
+              if (hasVehicle) ...[
+                pw.Text("Vehicle No: ", style: pw.TextStyle(font: fontBold, fontSize: 9)),
+                pw.Text(invoice.vehicleNo!, style: pw.TextStyle(font: font, fontSize: 9)),
+              ],
+            ],
+          ),
+          if (hasIrn) ...[
+            pw.SizedBox(height: 4),
+            pw.Row(
+              children: [
+                pw.Text("E-Invoice IRN: ", style: pw.TextStyle(font: fontBold, fontSize: 9)),
+                pw.Expanded(
+                  child: pw.Text(
+                    invoice.irnNo!,
+                    style: pw.TextStyle(font: font, fontSize: 8),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 }

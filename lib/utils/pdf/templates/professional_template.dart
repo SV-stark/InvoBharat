@@ -134,6 +134,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
             ],
           ),
           buildOriginalInvoiceInfo(invoice),
+          buildEwayBillAndEinvoiceInfo(invoice, font, fontBold),
           pw.SizedBox(height: 32),
 
           // Client and Payment Summary

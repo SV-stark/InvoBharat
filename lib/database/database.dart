@@ -28,7 +28,7 @@ class AppDatabase extends _$AppDatabase {
   static AppDatabase get instance => _instance ??= AppDatabase();
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration {
@@ -166,6 +166,9 @@ class AppDatabase extends _$AppDatabase {
                 'status',
                 'sent_at',
                 'receiver_phone',
+                'eway_bill_no',
+                'vehicle_no',
+                'irn_no',
               };
               final columnsToCopy = table.$columns
                   .map((final c) => c.name)
@@ -204,6 +207,11 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 10) {
           await m.addColumn(invoices, invoices.receiverPhone);
+        }
+        if (from < 11) {
+          await m.addColumn(invoices, invoices.ewayBillNo);
+          await m.addColumn(invoices, invoices.vehicleNo);
+          await m.addColumn(invoices, invoices.irnNo);
         }
       },
       beforeOpen: (final details) async {

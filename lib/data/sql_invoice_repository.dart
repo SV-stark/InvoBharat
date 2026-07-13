@@ -124,6 +124,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
               poNumber: Value(invoice.poNumber),
               status: Value(invoice.status),
               sentAt: Value(invoice.sentAt),
+              ewayBillNo: Value(invoice.ewayBillNo),
+              vehicleNo: Value(invoice.vehicleNo),
+              irnNo: Value(invoice.irnNo),
             ),
           );
 
@@ -257,6 +260,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
       poNumber: invoiceRow.poNumber,
       status: invoiceRow.status,
       sentAt: invoiceRow.sentAt,
+      ewayBillNo: invoiceRow.ewayBillNo,
+      vehicleNo: invoiceRow.vehicleNo,
+      irnNo: invoiceRow.irnNo,
     );
   }
 
@@ -396,6 +402,12 @@ class SqlInvoiceRepository implements InvoiceRepository {
         ),
         originalInvoiceNumber: row.originalInvoiceNumber,
         originalInvoiceDate: row.originalInvoiceDate,
+        poNumber: row.poNumber,
+        status: row.status,
+        sentAt: row.sentAt,
+        ewayBillNo: row.ewayBillNo,
+        vehicleNo: row.vehicleNo,
+        irnNo: row.irnNo,
       );
     }).toList();
   }

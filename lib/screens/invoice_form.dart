@@ -123,6 +123,9 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
                 posCtrl: posCtrl,
                 paymentTermsCtrl: paymentTermsCtrl,
                 poNumberCtrl: poNumberCtrl,
+                ewayBillCtrl: ewayBillCtrl,
+                vehicleNoCtrl: vehicleNoCtrl,
+                irnNoCtrl: irnNoCtrl,
               ),
               const SizedBox(height: 16),
               ClientDetailsSection(

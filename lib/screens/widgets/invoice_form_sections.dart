@@ -72,6 +72,9 @@ class InvoiceHeaderSection extends ConsumerWidget {
   final TextEditingController posCtrl;
   final TextEditingController paymentTermsCtrl;
   final TextEditingController poNumberCtrl;
+  final TextEditingController ewayBillCtrl;
+  final TextEditingController vehicleNoCtrl;
+  final TextEditingController irnNoCtrl;
 
   const InvoiceHeaderSection({
     super.key,
@@ -79,6 +82,9 @@ class InvoiceHeaderSection extends ConsumerWidget {
     required this.posCtrl,
     required this.paymentTermsCtrl,
     required this.poNumberCtrl,
+    required this.ewayBillCtrl,
+    required this.vehicleNoCtrl,
+    required this.irnNoCtrl,
   });
 
   @override
@@ -206,6 +212,27 @@ class InvoiceHeaderSection extends ConsumerWidget {
           label: "PO Number (Optional)",
           onChanged: (final val) =>
               ref.read(invoiceProvider.notifier).updatePoNumber(val),
+        ),
+        const Gap(16),
+        AppTextInput(
+          controller: ewayBillCtrl,
+          label: "E-Way Bill No (Optional)",
+          onChanged: (final val) =>
+              ref.read(invoiceProvider.notifier).updateEwayBillNo(val),
+        ),
+        const Gap(16),
+        AppTextInput(
+          controller: vehicleNoCtrl,
+          label: "Vehicle Number (Optional)",
+          onChanged: (final val) =>
+              ref.read(invoiceProvider.notifier).updateVehicleNo(val),
+        ),
+        const Gap(16),
+        AppTextInput(
+          controller: irnNoCtrl,
+          label: "E-Invoice IRN (Optional)",
+          onChanged: (final val) =>
+              ref.read(invoiceProvider.notifier).updateIrnNo(val),
         ),
       ],
     );

@@ -163,6 +163,9 @@ class AutoBackupService {
       if (await manifestFile.exists()) {
         await manifestFile.delete();
       }
+
+      // 4. Prune old backups to free disk space
+      await _pruneOldBackups(backupDir);
     } catch (e) {
       // Clean up on error
       final tempFile = File(tempDbPath);
@@ -174,6 +177,50 @@ class AutoBackupService {
         await manifestFile.delete();
       }
       rethrow;
+    }
+  }
+
+  Future<void> _pruneOldBackups(final Directory backupDir) async {
+    try {
+      if (!await backupDir.exists()) return;
+
+      final List<FileSystemEntity> entities = await backupDir.list().toList();
+      final List<MapEntry<File, DateTime>> backupsWithTime = [];
+
+      for (final entity in entities) {
+        if (entity is File &&
+            p.basename(entity.path).startsWith('invobharat_auto_backup_') &&
+            p.basename(entity.path).endsWith('.zip')) {
+          try {
+            final modTime = await entity.lastModified();
+            backupsWithTime.add(MapEntry(entity, modTime));
+          } catch (_) {}
+        }
+      }
+
+      // Sort by modified time (oldest first)
+      backupsWithTime.sort((final a, final b) => a.value.compareTo(b.value));
+
+      final now = DateTime.now();
+      const int maxBackups = 10;
+      final int keepThresholdIndex = backupsWithTime.length - maxBackups;
+
+      for (int i = 0; i < backupsWithTime.length; i++) {
+        final entry = backupsWithTime[i];
+        final file = entry.key;
+        final age = now.difference(entry.value);
+
+        if (i < keepThresholdIndex || age.inDays > 30) {
+          try {
+            await file.delete();
+            debugPrint("Pruned old auto-backup: ${file.path}");
+          } catch (e) {
+            debugPrint("Failed to delete file ${file.path}: $e");
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Failed to prune old auto-backups: $e");
     }
   }
 }

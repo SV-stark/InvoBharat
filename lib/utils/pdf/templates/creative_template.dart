@@ -251,6 +251,7 @@ class CreativeTemplate extends BasePdfTemplate {
                             ],
                           ),
                           buildOriginalInvoiceInfo(invoice),
+                          buildEwayBillAndEinvoiceInfo(invoice, font, fontBold),
                           pw.SizedBox(height: 30),
 
                           // Items

@@ -14,4 +14,25 @@ class AppConstants {
     'Cheque',
     'Other',
   ];
+  static const List<String> uqcs = [
+    'NOS - Numbers',
+    'PCS - Pieces',
+    'KGS - Kilograms',
+    'BOX - Box',
+    'LTR - Litres',
+    'MTR - Metres',
+    'OTH - Others',
+    'BAG - Bags',
+    'BTL - Bottles',
+    'CAN - Cans',
+    'CTN - Cartons',
+    'DOZ - Dozens',
+    'PAC - Packs',
+    'SET - Sets',
+    'SQF - Square Feet',
+    'SQM - Square Metres',
+    'TBS - Tablets',
+    'TON - Tonnes',
+    'YDS - Yards',
+  ];
 }

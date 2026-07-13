@@ -39,6 +39,9 @@ abstract class Invoice with _$Invoice {
     final String? poNumber,
     @Default('Draft') final String status,
     final DateTime? sentAt,
+    final String? ewayBillNo,
+    final String? vehicleNo,
+    final String? irnNo,
   }) = _Invoice;
 
   factory Invoice.fromJson(final Map<String, dynamic> json) =>

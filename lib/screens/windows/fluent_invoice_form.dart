@@ -176,6 +176,40 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                 ],
               ),
               const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppTextInput(
+                      label: "E-Way Bill No",
+                      controller: ewayBillCtrl,
+                      onChanged: (final val) => ref
+                          .read(invoiceProvider.notifier)
+                          .updateEwayBillNo(val),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: AppTextInput(
+                      label: "Vehicle Number",
+                      controller: vehicleNoCtrl,
+                      onChanged: (final val) => ref
+                          .read(invoiceProvider.notifier)
+                          .updateVehicleNo(val),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: AppTextInput(
+                      label: "E-Invoice IRN",
+                      controller: irnNoCtrl,
+                      onChanged: (final val) => ref
+                          .read(invoiceProvider.notifier)
+                          .updateIrnNo(val),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
               InfoLabel(
                 label: "Place of Supply",
                 child: AutoSuggestBox<String>(

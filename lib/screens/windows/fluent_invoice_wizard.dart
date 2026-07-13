@@ -316,6 +316,33 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
               ),
               const SizedBox(height: 10),
               InfoLabel(
+                label: "E-Way Bill No",
+                child: TextBox(
+                  placeholder: "12-digit number",
+                  controller: ewayBillCtrl,
+                  onChanged: (final v) => notifier.updateEwayBillNo(v),
+                ),
+              ),
+              const SizedBox(height: 10),
+              InfoLabel(
+                label: "Vehicle Number",
+                child: TextBox(
+                  placeholder: "e.g. KA-01-AB-1234",
+                  controller: vehicleNoCtrl,
+                  onChanged: (final v) => notifier.updateVehicleNo(v),
+                ),
+              ),
+              const SizedBox(height: 10),
+              InfoLabel(
+                label: "E-Invoice IRN",
+                child: TextBox(
+                  placeholder: "64-character hash",
+                  controller: irnNoCtrl,
+                  onChanged: (final v) => notifier.updateIrnNo(v),
+                ),
+              ),
+              const SizedBox(height: 10),
+              InfoLabel(
                 label: "Invoice Date",
                 child: DatePicker(
                   selected: invoice.invoiceDate,

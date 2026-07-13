@@ -2428,6 +2428,37 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _ewayBillNoMeta = const VerificationMeta(
+    'ewayBillNo',
+  );
+  @override
+  late final GeneratedColumn<String> ewayBillNo = GeneratedColumn<String>(
+    'eway_bill_no',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _vehicleNoMeta = const VerificationMeta(
+    'vehicleNo',
+  );
+  @override
+  late final GeneratedColumn<String> vehicleNo = GeneratedColumn<String>(
+    'vehicle_no',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _irnNoMeta = const VerificationMeta('irnNo');
+  @override
+  late final GeneratedColumn<String> irnNo = GeneratedColumn<String>(
+    'irn_no',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2464,6 +2495,9 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
     poNumber,
     status,
     sentAt,
+    ewayBillNo,
+    vehicleNo,
+    irnNo,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2757,6 +2791,27 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
         sentAt.isAcceptableOrUnknown(data['sent_at']!, _sentAtMeta),
       );
     }
+    if (data.containsKey('eway_bill_no')) {
+      context.handle(
+        _ewayBillNoMeta,
+        ewayBillNo.isAcceptableOrUnknown(
+          data['eway_bill_no']!,
+          _ewayBillNoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('vehicle_no')) {
+      context.handle(
+        _vehicleNoMeta,
+        vehicleNo.isAcceptableOrUnknown(data['vehicle_no']!, _vehicleNoMeta),
+      );
+    }
+    if (data.containsKey('irn_no')) {
+      context.handle(
+        _irnNoMeta,
+        irnNo.isAcceptableOrUnknown(data['irn_no']!, _irnNoMeta),
+      );
+    }
     return context;
   }
 
@@ -2902,6 +2957,18 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}sent_at'],
       ),
+      ewayBillNo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}eway_bill_no'],
+      ),
+      vehicleNo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}vehicle_no'],
+      ),
+      irnNo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}irn_no'],
+      ),
     );
   }
 
@@ -2946,6 +3013,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
   final String? poNumber;
   final String status;
   final DateTime? sentAt;
+  final String? ewayBillNo;
+  final String? vehicleNo;
+  final String? irnNo;
   const Invoice({
     required this.id,
     required this.profileId,
@@ -2981,6 +3051,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     this.poNumber,
     required this.status,
     this.sentAt,
+    this.ewayBillNo,
+    this.vehicleNo,
+    this.irnNo,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3056,6 +3129,15 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     map['status'] = Variable<String>(status);
     if (!nullToAbsent || sentAt != null) {
       map['sent_at'] = Variable<DateTime>(sentAt);
+    }
+    if (!nullToAbsent || ewayBillNo != null) {
+      map['eway_bill_no'] = Variable<String>(ewayBillNo);
+    }
+    if (!nullToAbsent || vehicleNo != null) {
+      map['vehicle_no'] = Variable<String>(vehicleNo);
+    }
+    if (!nullToAbsent || irnNo != null) {
+      map['irn_no'] = Variable<String>(irnNo);
     }
     return map;
   }
@@ -3134,6 +3216,15 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       sentAt: sentAt == null && nullToAbsent
           ? const Value.absent()
           : Value(sentAt),
+      ewayBillNo: ewayBillNo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ewayBillNo),
+      vehicleNo: vehicleNo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(vehicleNo),
+      irnNo: irnNo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(irnNo),
     );
   }
 
@@ -3183,6 +3274,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       poNumber: serializer.fromJson<String?>(json['poNumber']),
       status: serializer.fromJson<String>(json['status']),
       sentAt: serializer.fromJson<DateTime?>(json['sentAt']),
+      ewayBillNo: serializer.fromJson<String?>(json['ewayBillNo']),
+      vehicleNo: serializer.fromJson<String?>(json['vehicleNo']),
+      irnNo: serializer.fromJson<String?>(json['irnNo']),
     );
   }
   @override
@@ -3225,6 +3319,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       'poNumber': serializer.toJson<String?>(poNumber),
       'status': serializer.toJson<String>(status),
       'sentAt': serializer.toJson<DateTime?>(sentAt),
+      'ewayBillNo': serializer.toJson<String?>(ewayBillNo),
+      'vehicleNo': serializer.toJson<String?>(vehicleNo),
+      'irnNo': serializer.toJson<String?>(irnNo),
     };
   }
 
@@ -3263,6 +3360,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     Value<String?> poNumber = const Value.absent(),
     String? status,
     Value<DateTime?> sentAt = const Value.absent(),
+    Value<String?> ewayBillNo = const Value.absent(),
+    Value<String?> vehicleNo = const Value.absent(),
+    Value<String?> irnNo = const Value.absent(),
   }) => Invoice(
     id: id ?? this.id,
     profileId: profileId ?? this.profileId,
@@ -3322,6 +3422,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     poNumber: poNumber.present ? poNumber.value : this.poNumber,
     status: status ?? this.status,
     sentAt: sentAt.present ? sentAt.value : this.sentAt,
+    ewayBillNo: ewayBillNo.present ? ewayBillNo.value : this.ewayBillNo,
+    vehicleNo: vehicleNo.present ? vehicleNo.value : this.vehicleNo,
+    irnNo: irnNo.present ? irnNo.value : this.irnNo,
   );
   Invoice copyWithCompanion(InvoicesCompanion data) {
     return Invoice(
@@ -3397,6 +3500,11 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       poNumber: data.poNumber.present ? data.poNumber.value : this.poNumber,
       status: data.status.present ? data.status.value : this.status,
       sentAt: data.sentAt.present ? data.sentAt.value : this.sentAt,
+      ewayBillNo: data.ewayBillNo.present
+          ? data.ewayBillNo.value
+          : this.ewayBillNo,
+      vehicleNo: data.vehicleNo.present ? data.vehicleNo.value : this.vehicleNo,
+      irnNo: data.irnNo.present ? data.irnNo.value : this.irnNo,
     );
   }
 
@@ -3436,7 +3544,10 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           ..write('originalInvoiceDate: $originalInvoiceDate, ')
           ..write('poNumber: $poNumber, ')
           ..write('status: $status, ')
-          ..write('sentAt: $sentAt')
+          ..write('sentAt: $sentAt, ')
+          ..write('ewayBillNo: $ewayBillNo, ')
+          ..write('vehicleNo: $vehicleNo, ')
+          ..write('irnNo: $irnNo')
           ..write(')'))
         .toString();
   }
@@ -3477,6 +3588,9 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     poNumber,
     status,
     sentAt,
+    ewayBillNo,
+    vehicleNo,
+    irnNo,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -3515,7 +3629,10 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           other.originalInvoiceDate == this.originalInvoiceDate &&
           other.poNumber == this.poNumber &&
           other.status == this.status &&
-          other.sentAt == this.sentAt);
+          other.sentAt == this.sentAt &&
+          other.ewayBillNo == this.ewayBillNo &&
+          other.vehicleNo == this.vehicleNo &&
+          other.irnNo == this.irnNo);
 }
 
 class InvoicesCompanion extends UpdateCompanion<Invoice> {
@@ -3553,6 +3670,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
   final Value<String?> poNumber;
   final Value<String> status;
   final Value<DateTime?> sentAt;
+  final Value<String?> ewayBillNo;
+  final Value<String?> vehicleNo;
+  final Value<String?> irnNo;
   final Value<int> rowid;
   const InvoicesCompanion({
     this.id = const Value.absent(),
@@ -3589,6 +3709,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     this.poNumber = const Value.absent(),
     this.status = const Value.absent(),
     this.sentAt = const Value.absent(),
+    this.ewayBillNo = const Value.absent(),
+    this.vehicleNo = const Value.absent(),
+    this.irnNo = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   InvoicesCompanion.insert({
@@ -3626,6 +3749,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     this.poNumber = const Value.absent(),
     this.status = const Value.absent(),
     this.sentAt = const Value.absent(),
+    this.ewayBillNo = const Value.absent(),
+    this.vehicleNo = const Value.absent(),
+    this.irnNo = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        profileId = Value(profileId),
@@ -3673,6 +3799,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     Expression<String>? poNumber,
     Expression<String>? status,
     Expression<DateTime>? sentAt,
+    Expression<String>? ewayBillNo,
+    Expression<String>? vehicleNo,
+    Expression<String>? irnNo,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3712,6 +3841,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
       if (poNumber != null) 'po_number': poNumber,
       if (status != null) 'status': status,
       if (sentAt != null) 'sent_at': sentAt,
+      if (ewayBillNo != null) 'eway_bill_no': ewayBillNo,
+      if (vehicleNo != null) 'vehicle_no': vehicleNo,
+      if (irnNo != null) 'irn_no': irnNo,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3751,6 +3883,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     Value<String?>? poNumber,
     Value<String>? status,
     Value<DateTime?>? sentAt,
+    Value<String?>? ewayBillNo,
+    Value<String?>? vehicleNo,
+    Value<String?>? irnNo,
     Value<int>? rowid,
   }) {
     return InvoicesCompanion(
@@ -3789,6 +3924,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
       poNumber: poNumber ?? this.poNumber,
       status: status ?? this.status,
       sentAt: sentAt ?? this.sentAt,
+      ewayBillNo: ewayBillNo ?? this.ewayBillNo,
+      vehicleNo: vehicleNo ?? this.vehicleNo,
+      irnNo: irnNo ?? this.irnNo,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3902,6 +4040,15 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     if (sentAt.present) {
       map['sent_at'] = Variable<DateTime>(sentAt.value);
     }
+    if (ewayBillNo.present) {
+      map['eway_bill_no'] = Variable<String>(ewayBillNo.value);
+    }
+    if (vehicleNo.present) {
+      map['vehicle_no'] = Variable<String>(vehicleNo.value);
+    }
+    if (irnNo.present) {
+      map['irn_no'] = Variable<String>(irnNo.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3945,6 +4092,9 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
           ..write('poNumber: $poNumber, ')
           ..write('status: $status, ')
           ..write('sentAt: $sentAt, ')
+          ..write('ewayBillNo: $ewayBillNo, ')
+          ..write('vehicleNo: $vehicleNo, ')
+          ..write('irnNo: $irnNo, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -7234,6 +7384,9 @@ typedef $$InvoicesTableCreateCompanionBuilder =
       Value<String?> poNumber,
       Value<String> status,
       Value<DateTime?> sentAt,
+      Value<String?> ewayBillNo,
+      Value<String?> vehicleNo,
+      Value<String?> irnNo,
       Value<int> rowid,
     });
 typedef $$InvoicesTableUpdateCompanionBuilder =
@@ -7272,6 +7425,9 @@ typedef $$InvoicesTableUpdateCompanionBuilder =
       Value<String?> poNumber,
       Value<String> status,
       Value<DateTime?> sentAt,
+      Value<String?> ewayBillNo,
+      Value<String?> vehicleNo,
+      Value<String?> irnNo,
       Value<int> rowid,
     });
 
@@ -7518,6 +7674,21 @@ class $$InvoicesTableFilterComposer
 
   ColumnFilters<DateTime> get sentAt => $composableBuilder(
     column: $table.sentAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ewayBillNo => $composableBuilder(
+    column: $table.ewayBillNo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get vehicleNo => $composableBuilder(
+    column: $table.vehicleNo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get irnNo => $composableBuilder(
+    column: $table.irnNo,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7787,6 +7958,21 @@ class $$InvoicesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get ewayBillNo => $composableBuilder(
+    column: $table.ewayBillNo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get vehicleNo => $composableBuilder(
+    column: $table.vehicleNo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get irnNo => $composableBuilder(
+    column: $table.irnNo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$BusinessProfilesTableOrderingComposer get profileId {
     final $$BusinessProfilesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -7977,6 +8163,17 @@ class $$InvoicesTableAnnotationComposer
   GeneratedColumn<DateTime> get sentAt =>
       $composableBuilder(column: $table.sentAt, builder: (column) => column);
 
+  GeneratedColumn<String> get ewayBillNo => $composableBuilder(
+    column: $table.ewayBillNo,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get vehicleNo =>
+      $composableBuilder(column: $table.vehicleNo, builder: (column) => column);
+
+  GeneratedColumn<String> get irnNo =>
+      $composableBuilder(column: $table.irnNo, builder: (column) => column);
+
   $$BusinessProfilesTableAnnotationComposer get profileId {
     final $$BusinessProfilesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -8141,6 +8338,9 @@ class $$InvoicesTableTableManager
                 Value<String?> poNumber = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<DateTime?> sentAt = const Value.absent(),
+                Value<String?> ewayBillNo = const Value.absent(),
+                Value<String?> vehicleNo = const Value.absent(),
+                Value<String?> irnNo = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => InvoicesCompanion(
                 id: id,
@@ -8177,6 +8377,9 @@ class $$InvoicesTableTableManager
                 poNumber: poNumber,
                 status: status,
                 sentAt: sentAt,
+                ewayBillNo: ewayBillNo,
+                vehicleNo: vehicleNo,
+                irnNo: irnNo,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -8215,6 +8418,9 @@ class $$InvoicesTableTableManager
                 Value<String?> poNumber = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<DateTime?> sentAt = const Value.absent(),
+                Value<String?> ewayBillNo = const Value.absent(),
+                Value<String?> vehicleNo = const Value.absent(),
+                Value<String?> irnNo = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => InvoicesCompanion.insert(
                 id: id,
@@ -8251,6 +8457,9 @@ class $$InvoicesTableTableManager
                 poNumber: poNumber,
                 status: status,
                 sentAt: sentAt,
+                ewayBillNo: ewayBillNo,
+                vehicleNo: vehicleNo,
+                irnNo: irnNo,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

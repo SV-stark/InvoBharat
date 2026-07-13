@@ -32,6 +32,9 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   late TextEditingController deliveryAddressCtrl;
   late TextEditingController paymentTermsCtrl;
   late TextEditingController originalInvoiceNoCtrl;
+  late TextEditingController ewayBillCtrl;
+  late TextEditingController vehicleNoCtrl;
+  late TextEditingController irnNoCtrl;
 
   void initInvoiceControllers([final Invoice? invoice]) {
     invoiceNoCtrl = TextEditingController(text: invoice?.invoiceNo);
@@ -52,6 +55,9 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     originalInvoiceNoCtrl = TextEditingController(
       text: invoice?.originalInvoiceNumber,
     );
+    ewayBillCtrl = TextEditingController(text: invoice?.ewayBillNo);
+    vehicleNoCtrl = TextEditingController(text: invoice?.vehicleNo);
+    irnNoCtrl = TextEditingController(text: invoice?.irnNo);
   }
 
   void disposeInvoiceControllers() {
@@ -67,6 +73,9 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     deliveryAddressCtrl.dispose();
     paymentTermsCtrl.dispose();
     originalInvoiceNoCtrl.dispose();
+    ewayBillCtrl.dispose();
+    vehicleNoCtrl.dispose();
+    irnNoCtrl.dispose();
   }
 
   /// Syncs controllers with provider state.
@@ -107,6 +116,15 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     }
     if (originalInvoiceNoCtrl.text != (invoice.originalInvoiceNumber ?? '')) {
       originalInvoiceNoCtrl.text = invoice.originalInvoiceNumber ?? '';
+    }
+    if (ewayBillCtrl.text != (invoice.ewayBillNo ?? '')) {
+      ewayBillCtrl.text = invoice.ewayBillNo ?? '';
+    }
+    if (vehicleNoCtrl.text != (invoice.vehicleNo ?? '')) {
+      vehicleNoCtrl.text = invoice.vehicleNo ?? '';
+    }
+    if (irnNoCtrl.text != (invoice.irnNo ?? '')) {
+      irnNoCtrl.text = invoice.irnNo ?? '';
     }
   }
 

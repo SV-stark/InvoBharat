@@ -105,6 +105,11 @@ class Invoices extends Table {
   TextColumn get status => text().withDefault(const Constant('Draft'))();
   DateTimeColumn get sentAt => dateTime().nullable()();
 
+  // E-Way Bill & E-Invoicing Fields (V11)
+  TextColumn get ewayBillNo => text().nullable()();
+  TextColumn get vehicleNo => text().nullable()();
+  TextColumn get irnNo => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 

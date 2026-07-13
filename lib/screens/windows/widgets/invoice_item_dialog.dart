@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/hsn_code.dart';
 import 'package:invobharat/data/hsn_repository.dart';
+import 'package:invobharat/utils/constants.dart';
 
 class InvoiceItemDialog extends StatefulWidget {
   final InvoiceItem? item;
@@ -104,9 +105,21 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
               Expanded(
                 child: InfoLabel(
                   label: "Unit",
-                  child: TextBox(
-                    placeholder: "Nos, Kg...",
+                  child: AutoSuggestBox<String>(
                     controller: _unitCtrl,
+                    placeholder: "e.g. NOS",
+                    items: AppConstants.uqcs.map((final e) {
+                      return AutoSuggestBoxItem<String>(
+                        value: e.split(' - ').first,
+                        label: e,
+                        onSelected: () {
+                          _unitCtrl.text = e.split(' - ').first;
+                        },
+                      );
+                    }).toList(),
+                    onChanged: (final text, final reason) {
+                      // No action needed, controller handles user-typed values
+                    },
                   ),
                 ),
               ),
