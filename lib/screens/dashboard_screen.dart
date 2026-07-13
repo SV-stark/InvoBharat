@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/recurring_provider.dart';
+import 'package:invobharat/providers/app_config_provider.dart';
 
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/models/invoice.dart';
@@ -797,9 +798,11 @@ class _DashboardRecentActivity extends ConsumerWidget {
                             } else if (value == 'print') {
                               final profile = ref.read(businessProfileProvider);
                               try {
+                                final showHsn = ref.read(appConfigProvider).showHsnSummaryInPdf;
                                 final pdfBytes = await generateInvoicePdf(
                                   inv,
                                   profile,
+                                  showHsnSummary: showHsn,
                                 );
                                 await Printing.layoutPdf(
                                   onLayout: (_) => pdfBytes,

@@ -10,6 +10,8 @@ import 'dart:async';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/client_provider.dart';
+import 'package:invobharat/providers/app_config_provider.dart';
+import 'package:invobharat/providers/invoice_series_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/providers/item_template_provider.dart';
 import 'package:invobharat/utils/pdf_generator.dart';
@@ -297,13 +299,46 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                 ),
               ],
               const SizedBox(height: 10),
-              InfoLabel(
-                label: "Invoice Number",
-                child: TextBox(
-                  placeholder: "INV-001",
-                  controller: invoiceNoCtrl, // Mixin Controller
-                  onChanged: (final v) => notifier.updateInvoiceNo(v),
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: InfoLabel(
+                      label: "Series Prefix",
+                      child: ComboBox<String>(
+                        value: ref.watch(invoiceSeriesProvider).any((final s) => invoice.invoiceNo.startsWith(s.prefix))
+                            ? ref.watch(invoiceSeriesProvider).firstWhere((final s) => invoice.invoiceNo.startsWith(s.prefix)).prefix
+                            : (ref.watch(invoiceSeriesProvider).isNotEmpty
+                                ? ref.watch(invoiceSeriesProvider).first.prefix
+                                : ""),
+                        items: ref.watch(invoiceSeriesProvider).map((final s) => ComboBoxItem(
+                          value: s.prefix,
+                          child: Text(s.prefix),
+                        )).toList(),
+                        onChanged: (final val) {
+                          if (val != null) {
+                            final selectedSeries = ref.read(invoiceSeriesProvider).firstWhere((final s) => s.prefix == val);
+                            final nextNo = "${selectedSeries.prefix}${selectedSeries.sequence.toString().padLeft(3, '0')}";
+                            invoiceNoCtrl.text = nextNo;
+                            notifier.updateInvoiceNo(nextNo);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 3,
+                    child: InfoLabel(
+                      label: "Invoice Number",
+                      child: TextBox(
+                        placeholder: "INV-001",
+                        controller: invoiceNoCtrl, // Mixin Controller
+                        onChanged: (final v) => notifier.updateInvoiceNo(v),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 10),
               InfoLabel(
@@ -918,7 +953,11 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
           constraints: const BoxConstraints(maxWidth: 1000, maxHeight: 800),
           title: const Text("Invoice Preview"),
           content: PdfPreview(
-            build: (final format) => generateInvoicePdf(invoice, profile),
+            build: (final format) => generateInvoicePdf(
+              invoice,
+              profile,
+              showHsnSummary: ref.read(appConfigProvider).showHsnSummaryInPdf,
+            ),
             canChangeOrientation: false,
             canChangePageFormat: false,
             canDebug: false,

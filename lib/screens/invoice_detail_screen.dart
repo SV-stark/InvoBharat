@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/app_config_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:io'; // NEW
@@ -107,7 +108,8 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             onPressed: () async {
               try {
                 final profile = ref.read(businessProfileProvider);
-                final bytes = await generateInvoicePdf(_invoice, profile);
+                final showHsn = ref.read(appConfigProvider).showHsnSummaryInPdf;
+                final bytes = await generateInvoicePdf(_invoice, profile, showHsnSummary: showHsn);
                 await Printing.sharePdf(
                   bytes: bytes,
                   filename: 'invoice_${_invoice.invoiceNo}.pdf',
@@ -632,7 +634,8 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
 
     try {
       final profile = ref.read(businessProfileProvider);
-      final pdfBytes = await generateInvoicePdf(_invoice, profile);
+      final showHsn = ref.read(appConfigProvider).showHsnSummaryInPdf;
+      final pdfBytes = await generateInvoicePdf(_invoice, profile, showHsnSummary: showHsn);
 
       // Save temp file and send email
       final tempDir = await getTemporaryDirectory();

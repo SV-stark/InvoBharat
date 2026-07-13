@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/invoice_series_provider.dart';
 import 'package:uuid/uuid.dart';
 
 class InvoiceActions {
@@ -10,7 +11,20 @@ class InvoiceActions {
     final WidgetRef ref,
     final Invoice invoice,
   ) async {
+    final isNew = invoice.id == null || invoice.id!.isEmpty;
     await ref.read(invoiceRepositoryProvider).saveInvoice(invoice);
+
+    if (isNew) {
+      final seriesList = ref.read(invoiceSeriesProvider);
+      for (final series in seriesList) {
+        final expectedNo = "${series.prefix}${series.sequence.toString().padLeft(3, '0')}";
+        if (invoice.invoiceNo == expectedNo) {
+          await ref.read(invoiceSeriesProvider.notifier).incrementSequence(series.prefix);
+          break;
+        }
+      }
+    }
+
     ref.invalidate(invoiceListProvider);
   }
 
@@ -19,10 +33,19 @@ class InvoiceActions {
     final Invoice invoice,
   ) async {
     final profile = ref.read(businessProfileProvider);
+    final seriesList = ref.read(invoiceSeriesProvider);
+    final defaultSeries = seriesList.isNotEmpty
+        ? seriesList.first
+        : InvoiceSeries(
+            prefix: profile.invoiceSeries,
+            sequence: profile.invoiceSequence,
+          );
+    final invoiceNo =
+        "${defaultSeries.prefix}${defaultSeries.sequence.toString().padLeft(3, '0')}";
 
     final newInvoice = invoice.copyWith(
       id: const Uuid().v4(),
-      invoiceNo: '${profile.invoiceSeries}${profile.invoiceSequence}',
+      invoiceNo: invoiceNo,
       invoiceDate: DateTime.now(),
       payments: [],
       items: invoice.items
@@ -32,8 +55,8 @@ class InvoiceActions {
 
     await ref.read(invoiceRepositoryProvider).saveInvoice(newInvoice);
     await ref
-        .read(businessProfileListProvider.notifier)
-        .incrementInvoiceSequence(profile.id);
+        .read(invoiceSeriesProvider.notifier)
+        .incrementSequence(defaultSeries.prefix);
     ref.invalidate(invoiceListProvider);
   }
 

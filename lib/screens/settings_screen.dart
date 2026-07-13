@@ -9,6 +9,7 @@ import 'package:gap/gap.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/invoice_series_provider.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/services/backup_service.dart';
@@ -343,6 +344,84 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const Gap(16),
             _buildTextField("Default Terms", _termsController, maxLines: 4),
             _buildTextField("Default Notes", _notesController, maxLines: 2),
+            const Gap(16),
+            SwitchListTile(
+              title: const Text("Show HSN-wise tax summary in PDF footer"),
+              value: ref.watch(appConfigProvider).showHsnSummaryInPdf,
+              onChanged: (final v) {
+                ref.read(appConfigProvider.notifier).setShowHsnSummaryInPdf(v);
+              },
+            ),
+            const Gap(24),
+            _buildSectionHeader("Invoice Series Prefixes"),
+            ...ref.watch(invoiceSeriesProvider).map((final s) => ListTile(
+              title: Text("Prefix: ${s.prefix}"),
+              subtitle: Text("Next sequence: ${s.sequence}"),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () async {
+                      final controller = TextEditingController(text: s.sequence.toString());
+                      final val = await showDialog<String>(
+                        context: context,
+                        builder: (final context) => AlertDialog(
+                          title: Text("Update ${s.prefix} sequence"),
+                          content: TextField(
+                            controller: controller,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(labelText: "Next sequence"),
+                          ),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+                            TextButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text("Update")),
+                          ],
+                        ),
+                      );
+                      if (val != null) {
+                        final seq = int.tryParse(val) ?? s.sequence;
+                        await ref.read(invoiceSeriesProvider.notifier).updateSequence(s.prefix, seq);
+                      }
+                    },
+                  ),
+                  if (ref.watch(invoiceSeriesProvider).length > 1)
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async => await ref.read(invoiceSeriesProvider.notifier).removeSeries(s.prefix),
+                    ),
+                ],
+              ),
+            )),
+            TextButton.icon(
+              icon: const Icon(Icons.add),
+              label: const Text("Add Series Prefix"),
+              onPressed: () async {
+                final prefixCtrl = TextEditingController();
+                final seqCtrl = TextEditingController(text: "1");
+                final added = await showDialog<bool>(
+                  context: context,
+                  builder: (final context) => AlertDialog(
+                    title: const Text("Add New Invoice Series"),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(controller: prefixCtrl, decoration: const InputDecoration(labelText: "Prefix (e.g. SRV/)")),
+                        TextField(controller: seqCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: "Starting sequence")),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+                      TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Add")),
+                    ],
+                  ),
+                );
+                if (added == true && prefixCtrl.text.isNotEmpty) {
+                  final seq = int.tryParse(seqCtrl.text) ?? 1;
+                  await ref.read(invoiceSeriesProvider.notifier).addSeries(prefixCtrl.text, seq);
+                }
+              },
+            ),
             const Gap(24),
             _buildSectionHeader("UPI Details"),
             _buildTextField("UPI ID (VPA)", _upiIdController),

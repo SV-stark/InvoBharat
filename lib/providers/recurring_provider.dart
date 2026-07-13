@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import 'package:invobharat/models/recurring_profile.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:invobharat/providers/invoice_series_provider.dart';
 
 class RecurringRepository {
   Future<String> get _localPath async {
@@ -147,12 +148,6 @@ class RecurringService {
     // Get Business Profile for sequence
     // Use read, but we might be in background? We should be careful.
     // We assume this runs in foreground.
-    final businessProfileNotifier = ref.read(
-      businessProfileListProvider.notifier,
-    );
-    // getting active profile from provider might be tricky if we are passing specific ID.
-    // Ideally we fetch the specific profile.
-
     // Logic hack: we can't easily get 'sequence' for arbitrary profile ID without loading it.
     // For now, let's assume we run this for the active profile primarily.
     // If not active, we might desync sequence?
@@ -166,8 +161,15 @@ class RecurringService {
 
     final businessProfile = profiles[index];
 
+    final seriesList = ref.read(invoiceSeriesProvider);
+    final defaultSeries = seriesList.isNotEmpty
+        ? seriesList.first
+        : InvoiceSeries(
+            prefix: businessProfile.invoiceSeries,
+            sequence: businessProfile.invoiceSequence,
+          );
     final invoiceNo =
-        "${businessProfile.invoiceSeries}${businessProfile.invoiceSequence.toString().padLeft(3, '0')}";
+        "${defaultSeries.prefix}${defaultSeries.sequence.toString().padLeft(3, '0')}";
 
     // Create Invoice
     final newInvoice = profile.baseInvoice.copyWith(
@@ -184,10 +186,9 @@ class RecurringService {
     await ref.read(invoiceRepositoryProvider).saveInvoice(newInvoice);
 
     // Increment Sequence
-    final updatedBusinessProfile = businessProfile.copyWith(
-      invoiceSequence: businessProfile.invoiceSequence + 1,
-    );
-    await businessProfileNotifier.updateProfile(updatedBusinessProfile);
+    await ref
+        .read(invoiceSeriesProvider.notifier)
+        .incrementSequence(defaultSeries.prefix);
   }
 }
 

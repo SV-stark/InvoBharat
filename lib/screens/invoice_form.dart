@@ -8,6 +8,7 @@ import 'package:invobharat/utils/pdf_generator.dart';
 import 'package:invobharat/utils/gst_utils.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/client_provider.dart';
+import 'package:invobharat/providers/app_config_provider.dart';
 import 'package:invobharat/providers/invoice_provider.dart';
 import 'package:invobharat/providers/item_template_provider.dart';
 import 'package:invobharat/providers/bank_provider.dart';
@@ -568,7 +569,11 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
         return Dialog(
           insetPadding: const EdgeInsets.all(20),
           child: PdfPreview(
-            build: (final format) => generateInvoicePdf(invoice, profile),
+            build: (final format) => generateInvoicePdf(
+              invoice,
+              profile,
+              showHsnSummary: ref.read(appConfigProvider).showHsnSummaryInPdf,
+            ),
             useActions: false,
           ),
         );

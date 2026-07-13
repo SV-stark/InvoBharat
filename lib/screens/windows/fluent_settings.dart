@@ -10,6 +10,7 @@ import 'package:indian_formatters/indian_formatters.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/providers/app_config_provider.dart';
+import 'package:invobharat/providers/invoice_series_provider.dart';
 import 'package:invobharat/providers/client_provider.dart';
 import 'package:invobharat/providers/estimate_provider.dart';
 import 'package:invobharat/providers/recurring_provider.dart';
@@ -648,7 +649,112 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 .updateProfile(profile.copyWith(termsAndConditions: v)),
           ),
         ),
+        const Gap(16),
+        const Text("PDF Invoice Configuration", style: TextStyle(fontWeight: FontWeight.bold)),
+        const Gap(10),
+        ToggleSwitch(
+          checked: ref.watch(appConfigProvider).showHsnSummaryInPdf,
+          content: const Text("Show HSN-wise tax summary in PDF footer"),
+          onChanged: (final v) {
+            ref.read(appConfigProvider.notifier).setShowHsnSummaryInPdf(v);
+          },
+        ),
+        const Gap(24),
+        const Text("Invoice Number Sequences", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const Gap(10),
+        ...ref.watch(invoiceSeriesProvider).map((final s) => Padding(
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: InfoLabel(
+                  label: "Prefix",
+                  child: TextFormBox(
+                    initialValue: s.prefix,
+                    readOnly: true,
+                  ),
+                ),
+              ),
+              const Gap(10),
+              Expanded(
+                child: InfoLabel(
+                  label: "Next Sequence No",
+                  child: NumberBox(
+                    value: s.sequence,
+                    onChanged: (final val) {
+                      if (val != null) {
+                        ref.read(invoiceSeriesProvider.notifier).updateSequence(s.prefix, val);
+                      }
+                    },
+                  ),
+                ),
+              ),
+              const Gap(10),
+              if (ref.watch(invoiceSeriesProvider).length > 1)
+                Padding(
+                  padding: const EdgeInsets.only(top: 18.0),
+                  child: Button(
+                    child: Icon(FluentIcons.delete, color: Colors.red),
+                    onPressed: () => ref.read(invoiceSeriesProvider.notifier).removeSeries(s.prefix),
+                  ),
+                ),
+            ],
+          ),
+        )),
+        const Gap(10),
+        Button(
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [Icon(FluentIcons.add), Gap(8), Text("Add Series Prefix")],
+          ),
+          onPressed: () => _showAddSeriesDialog(context),
+        ),
       ],
+    );
+  }
+
+  Future<void> _showAddSeriesDialog(final BuildContext context) async {
+    final prefixCtrl = TextEditingController();
+    final seqCtrl = TextEditingController(text: "1");
+    await showDialog(
+      context: context,
+      builder: (final context) => ContentDialog(
+        title: const Text("Add New Invoice Series"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InfoLabel(
+              label: "Prefix (e.g. SRV/)",
+              child: TextBox(
+                controller: prefixCtrl,
+              ),
+            ),
+            const Gap(10),
+            InfoLabel(
+              label: "Starting Sequence",
+              child: TextBox(
+                controller: seqCtrl,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Button(
+            child: const Text("Cancel"),
+            onPressed: () => Navigator.pop(context),
+          ),
+          FilledButton(
+            child: const Text("Add"),
+            onPressed: () {
+              if (prefixCtrl.text.isNotEmpty) {
+                final seq = int.tryParse(seqCtrl.text) ?? 1;
+                ref.read(invoiceSeriesProvider.notifier).addSeries(prefixCtrl.text, seq);
+                Navigator.pop(context);
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 

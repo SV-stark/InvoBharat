@@ -18,6 +18,7 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
     final pw.Font font,
     final pw.Font fontBold, {
     final String? title,
+    final bool showHsnSummary = true,
   });
 
   pw.Widget buildItemsTable(
@@ -328,6 +329,84 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
           ],
         ],
       ),
+    );
+  }
+
+  pw.Widget buildHsnSummaryTable(final Invoice invoice, final pw.Font font, final pw.Font fontBold) {
+    // 1. Group items by HSN Code
+    final Map<String, List<InvoiceItem>> grouped = {};
+    for (final item in invoice.items) {
+      final code = item.cleanSacCode.isEmpty ? 'N/A' : item.cleanSacCode;
+      grouped.putIfAbsent(code, () => []).add(item);
+    }
+
+    final headers = ['HSN/SAC', 'Taxable Value', 'CGST %', 'CGST Amt', 'SGST %', 'SGST Amt', 'IGST %', 'IGST Amt', 'Total Tax'];
+    final isInterState = invoice.isInterState;
+
+    final data = grouped.entries.map((final entry) {
+      final code = entry.key;
+      final items = entry.value;
+      
+      double taxableVal = 0;
+      double cgstAmt = 0;
+      double sgstAmt = 0;
+      double igstAmt = 0;
+      double gstRate = 0;
+
+      for (final item in items) {
+        taxableVal += item.netAmount;
+        gstRate = item.gstRate; // Assumes same HSN has same rate, standard
+        cgstAmt += item.calculateCgst(isInterState);
+        sgstAmt += item.calculateSgst(isInterState);
+        igstAmt += item.calculateIgst(isInterState);
+      }
+
+      final totalTax = cgstAmt + sgstAmt + igstAmt;
+
+      return [
+        code,
+        taxableVal.toIndianFormat(),
+        isInterState ? '0%' : '${(gstRate / 2).toStringAsFixed(1)}%',
+        cgstAmt.toIndianFormat(),
+        isInterState ? '0%' : '${(gstRate / 2).toStringAsFixed(1)}%',
+        sgstAmt.toIndianFormat(),
+        !isInterState ? '0%' : '${gstRate.toStringAsFixed(1)}%',
+        igstAmt.toIndianFormat(),
+        totalTax.toIndianFormat(),
+      ];
+    }).toList();
+
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.SizedBox(height: 10),
+        pw.Text("HSN/SAC Tax Summary", style: pw.TextStyle(font: fontBold, fontSize: 9, fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 4),
+        pw.TableHelper.fromTextArray(
+          headers: headers,
+          data: data,
+          border: const pw.TableBorder(
+            top: pw.BorderSide(color: PdfColors.grey300),
+            bottom: pw.BorderSide(color: PdfColors.grey300),
+            horizontalInside: pw.BorderSide(color: PdfColors.grey200),
+            verticalInside: pw.BorderSide(color: PdfColors.grey200),
+          ),
+          headerStyle: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold, font: fontBold),
+          cellStyle: pw.TextStyle(fontSize: 7, font: font),
+          cellAlignments: {
+            0: pw.Alignment.centerLeft,
+            1: pw.Alignment.centerRight,
+            2: pw.Alignment.centerRight,
+            3: pw.Alignment.centerRight,
+            4: pw.Alignment.centerRight,
+            5: pw.Alignment.centerRight,
+            6: pw.Alignment.centerRight,
+            7: pw.Alignment.centerRight,
+            8: pw.Alignment.centerRight,
+          },
+          cellPadding: const pw.EdgeInsets.symmetric(vertical: 2, horizontal: 3),
+        ),
+      ]
     );
   }
 }

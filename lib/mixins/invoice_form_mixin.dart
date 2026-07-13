@@ -11,6 +11,7 @@ import 'package:invobharat/providers/invoice_provider.dart';
 import 'package:invobharat/providers/estimate_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/app_config_provider.dart';
 
 /// Mixin to handle form logic for creating/editing Invoices.
 /// Standardizes controller management and common actions.
@@ -190,7 +191,8 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     final BusinessProfile profile,
   ) async {
     try {
-      final pdfBytes = await generateInvoicePdf(invoice, profile);
+      final showHsn = ref.read(appConfigProvider).showHsnSummaryInPdf;
+      final pdfBytes = await generateInvoicePdf(invoice, profile, showHsnSummary: showHsn);
       await Printing.layoutPdf(onLayout: (_) => pdfBytes);
     } catch (e) {
       debugPrint("Error printing invoice: $e");

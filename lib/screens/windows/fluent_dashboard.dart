@@ -8,6 +8,7 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/app_config_provider.dart';
 import 'package:invobharat/widgets/profile_switcher_sheet.dart';
 import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/services/gstr_service.dart';
@@ -1070,7 +1071,8 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
   void _emailInvoice(final BuildContext context, final Invoice invoice) async {
     try {
       final profile = ref.read(businessProfileProvider);
-      final pdfBytes = await generateInvoicePdf(invoice, profile);
+      final showHsn = ref.read(appConfigProvider).showHsnSummaryInPdf;
+      final pdfBytes = await generateInvoicePdf(invoice, profile, showHsnSummary: showHsn);
       final filename =
           'Invoice_${invoice.invoiceNo.replaceAll(RegExp(r'[^\w\s]+'), '_')}.pdf';
 

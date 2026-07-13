@@ -11,5 +11,6 @@ abstract class InvoiceTemplate {
     final pw.Font font,
     final pw.Font fontBold, {
     final String? title,
+    final bool showHsnSummary = true,
   });
 }

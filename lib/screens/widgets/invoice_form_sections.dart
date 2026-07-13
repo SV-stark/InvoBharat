@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/providers/invoice_provider.dart';
+import 'package:invobharat/providers/invoice_series_provider.dart';
 import 'package:invobharat/widgets/adaptive_widgets.dart';
 import 'package:invobharat/utils/formatters.dart';
 
@@ -112,6 +113,28 @@ class InvoiceHeaderSection extends ConsumerWidget {
         Row(
           children: [
             Expanded(
+              flex: 3,
+              child: _buildDropdownField(
+                label: "Series Prefix",
+                value: ref.watch(invoiceSeriesProvider).any((final s) => invoice.invoiceNo.startsWith(s.prefix))
+                    ? ref.watch(invoiceSeriesProvider).firstWhere((final s) => invoice.invoiceNo.startsWith(s.prefix)).prefix
+                    : (ref.watch(invoiceSeriesProvider).isNotEmpty
+                        ? ref.watch(invoiceSeriesProvider).first.prefix
+                        : ""),
+                items: ref.watch(invoiceSeriesProvider).map((final s) => s.prefix).toList(),
+                onChanged: (final val) {
+                  if (val != null) {
+                    final selectedSeries = ref.read(invoiceSeriesProvider).firstWhere((final s) => s.prefix == val);
+                    final nextNo = "${selectedSeries.prefix}${selectedSeries.sequence.toString().padLeft(3, '0')}";
+                    invoiceNoCtrl.text = nextNo;
+                    ref.read(invoiceProvider.notifier).updateInvoiceNo(nextNo);
+                  }
+                },
+              ),
+            ),
+            const Gap(16),
+            Expanded(
+              flex: 4,
               child: AppTextInput(
                 controller: invoiceNoCtrl,
                 label: "Invoice No",
@@ -123,6 +146,7 @@ class InvoiceHeaderSection extends ConsumerWidget {
             ),
             const Gap(16),
             Expanded(
+              flex: 4,
               child: _buildDateField(
                 context: context,
                 label: "Date",

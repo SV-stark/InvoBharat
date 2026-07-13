@@ -18,6 +18,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
     final pw.Font font,
     final pw.Font fontBold, {
     final String? title,
+    final bool showHsnSummary = true,
   }) async {
     final pdf = pw.Document();
 
@@ -260,6 +261,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
             headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
             border: pw.TableBorder.all(color: PdfColors.grey400, width: 0.5),
           ),
+          if (showHsnSummary) buildHsnSummaryTable(invoice, font, fontBold),
           pw.SizedBox(height: 24),
 
           // Amount in Words

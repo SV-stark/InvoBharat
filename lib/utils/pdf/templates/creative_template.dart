@@ -18,6 +18,7 @@ class CreativeTemplate extends BasePdfTemplate {
     final pw.Font font,
     final pw.Font fontBold, {
     final String? title,
+    final bool showHsnSummary = true,
   }) async {
     final pdf = pw.Document(
       theme: pw.ThemeData.withFont(base: font, bold: fontBold),
@@ -250,7 +251,7 @@ class CreativeTemplate extends BasePdfTemplate {
                               ),
                             ],
                           ),
-                          buildOriginalInvoiceInfo(invoice),
+                        buildOriginalInvoiceInfo(invoice),
                           buildEwayBillAndEinvoiceInfo(invoice, font, fontBold),
                           pw.SizedBox(height: 30),
 
@@ -268,6 +269,8 @@ class CreativeTemplate extends BasePdfTemplate {
                               fontSize: 9,
                             ),
                           ),
+                          if (showHsnSummary)
+                            buildHsnSummaryTable(invoice, font, fontBold),
                           buildAmountInWords(invoice.grandTotal),
                           pw.SizedBox(height: 30),
 

@@ -8,6 +8,8 @@ import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/invoice_provider.dart';
+import 'package:invobharat/providers/app_config_provider.dart';
+import 'package:invobharat/providers/invoice_series_provider.dart';
 
 import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/client_provider.dart';
@@ -144,6 +146,33 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
               Row(
                 children: [
                   Expanded(
+                    flex: 2,
+                    child: InfoLabel(
+                      label: "Series Prefix",
+                      child: ComboBox<String>(
+                        value: ref.watch(invoiceSeriesProvider).any((final s) => invoice.invoiceNo.startsWith(s.prefix))
+                            ? ref.watch(invoiceSeriesProvider).firstWhere((final s) => invoice.invoiceNo.startsWith(s.prefix)).prefix
+                            : (ref.watch(invoiceSeriesProvider).isNotEmpty
+                                ? ref.watch(invoiceSeriesProvider).first.prefix
+                                : ""),
+                        items: ref.watch(invoiceSeriesProvider).map((final s) => ComboBoxItem(
+                          value: s.prefix,
+                          child: Text(s.prefix),
+                        )).toList(),
+                        onChanged: (final val) {
+                          if (val != null) {
+                            final selectedSeries = ref.read(invoiceSeriesProvider).firstWhere((final s) => s.prefix == val);
+                            final nextNo = "${selectedSeries.prefix}${selectedSeries.sequence.toString().padLeft(3, '0')}";
+                            invoiceNoCtrl.text = nextNo;
+                            ref.read(invoiceProvider.notifier).updateInvoiceNo(nextNo);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 3,
                     child: AppTextInput(
                       label: "Invoice No",
                       controller: invoiceNoCtrl,
@@ -644,7 +673,11 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
             ),
           ),
           content: PdfPreview(
-            build: (final format) => generateInvoicePdf(invoice, profile),
+            build: (final format) => generateInvoicePdf(
+              invoice,
+              profile,
+              showHsnSummary: ref.read(appConfigProvider).showHsnSummaryInPdf,
+            ),
             canChangePageFormat: false,
             initialPageFormat: PdfPageFormat.a4,
             pdfPreviewPageDecoration: BoxDecoration(

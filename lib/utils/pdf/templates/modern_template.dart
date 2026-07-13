@@ -18,6 +18,7 @@ class ModernTemplate extends BasePdfTemplate {
     final pw.Font font,
     final pw.Font fontBold, {
     final String? title,
+    final bool showHsnSummary = true,
   }) async {
     final pdf = pw.Document();
 
@@ -213,6 +214,7 @@ class ModernTemplate extends BasePdfTemplate {
             ),
             headerDecoration: pw.BoxDecoration(color: themeColor),
           ),
+          if (showHsnSummary) buildHsnSummaryTable(invoice, font, fontBold),
           pw.SizedBox(height: 16),
 
           // Summary

@@ -18,6 +18,7 @@ class ClassicTemplate extends BasePdfTemplate {
     final pw.Font font,
     final pw.Font fontBold, {
     final String? title,
+    final bool showHsnSummary = true,
   }) async {
     final pdf = pw.Document(
       theme: pw.ThemeData.withFont(base: font, bold: fontBold),
@@ -195,7 +196,7 @@ class ClassicTemplate extends BasePdfTemplate {
                 color: PdfColors.grey200,
               ),
             ),
-
+            if (showHsnSummary) buildHsnSummaryTable(invoice, font, fontBold),
             buildAmountInWords(invoice.grandTotal),
 
             pw.SizedBox(height: 10),
