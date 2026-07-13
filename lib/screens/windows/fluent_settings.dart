@@ -11,6 +11,7 @@ import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/providers/app_config_provider.dart';
 import 'package:invobharat/providers/invoice_series_provider.dart';
+import 'package:invobharat/services/email_service.dart';
 import 'package:invobharat/providers/client_provider.dart';
 import 'package:invobharat/providers/estimate_provider.dart';
 import 'package:invobharat/providers/recurring_provider.dart';
@@ -52,6 +53,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
     {'icon': FluentIcons.shop, 'label': 'Business Info'},
     {'icon': FluentIcons.edit_mail, 'label': 'Invoice Style'},
     {'icon': FluentIcons.bank, 'label': 'Banking'},
+    {'icon': FluentIcons.mail, 'label': 'Email Settings'},
     {'icon': FluentIcons.database, 'label': 'My Data'},
   ];
 
@@ -134,6 +136,8 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
       case 4:
         return _buildBankingSection();
       case 5:
+        return const _EmailSettingsSection();
+      case 6:
         return _buildDataSection();
       default:
         return Container();
@@ -1550,6 +1554,189 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           Text(
             "${data.length} Items",
             style: FluentTheme.of(context).typography.bodyLarge,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmailSettingsSection extends ConsumerStatefulWidget {
+  const _EmailSettingsSection();
+
+  @override
+  ConsumerState<_EmailSettingsSection> createState() => _EmailSettingsSectionState();
+}
+
+class _EmailSettingsSectionState extends ConsumerState<_EmailSettingsSection> {
+  final _formKey = GlobalKey<FormState>();
+  final _hostController = TextEditingController();
+  final _portController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isSecure = true;
+  bool _obscurePassword = true;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  @override
+  void dispose() {
+    _hostController.dispose();
+    _portController.dispose();
+    _emailController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadSettings() async {
+    final settings = await EmailService.getSettingsStatic();
+    if (settings != null) {
+      if (mounted) {
+        setState(() {
+          _hostController.text = settings.smtpHost;
+          _portController.text = settings.smtpPort.toString();
+          _emailController.text = settings.email;
+          _usernameController.text = settings.username;
+          _passwordController.text = settings.password ?? '';
+          _isSecure = settings.isSecure;
+          _isLoading = false;
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _saveSettings() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final settings = EmailSettings(
+        smtpHost: _hostController.text.trim(),
+        smtpPort: int.tryParse(_portController.text.trim()) ?? 587,
+        email: _emailController.text.trim(),
+        username: _usernameController.text.trim(),
+        password: _passwordController.text.trim(),
+        isSecure: _isSecure,
+      );
+
+      await EmailService.saveSettingsStatic(settings);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        displayInfoBar(
+          context,
+          builder: (final context, final close) => const InfoBar(
+            title: Text("Success"),
+            content: Text("Email settings saved successfully!"),
+            severity: InfoBarSeverity.success,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(final BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: ProgressRing());
+    }
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "SMTP Configuration",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const Gap(8),
+          const Text(
+            "Configure your email provider to send invoices directly from InvoBharat.",
+            style: TextStyle(color: Colors.grey, fontSize: 13),
+          ),
+          const Gap(24),
+          InfoLabel(
+            label: "SMTP Host",
+            child: TextBox(
+              controller: _hostController,
+              placeholder: "e.g. smtp.gmail.com",
+            ),
+          ),
+          const Gap(16),
+          Row(
+            children: [
+              Expanded(
+                child: InfoLabel(
+                  label: "SMTP Port",
+                  child: TextBox(
+                    controller: _portController,
+                    placeholder: "e.g. 587 or 465",
+                  ),
+                ),
+              ),
+              const Gap(16),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 20.0),
+                  child: ToggleSwitch(
+                    checked: _isSecure,
+                    content: Text(_isSecure ? "Secure Connection (SSL/TLS)" : "Insecure Connection"),
+                    onChanged: (final v) => setState(() => _isSecure = v),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Gap(16),
+          InfoLabel(
+            label: "Email Address",
+            child: TextBox(
+              controller: _emailController,
+              placeholder: "youremail@domain.com",
+            ),
+          ),
+          const Gap(16),
+          InfoLabel(
+            label: "Username",
+            child: TextBox(
+              controller: _usernameController,
+              placeholder: "Typically same as email",
+            ),
+          ),
+          const Gap(16),
+          InfoLabel(
+            label: "App Password",
+            child: TextBox(
+              controller: _passwordController,
+              obscureText: _obscurePassword,
+              placeholder: "16-character app password",
+              suffix: IconButton(
+                icon: Icon(_obscurePassword ? FluentIcons.hide : FluentIcons.red_eye),
+                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+              ),
+            ),
+          ),
+          const Gap(24),
+          FilledButton(
+            onPressed: _saveSettings,
+            child: const Text("Save Email Settings"),
           ),
         ],
       ),
