@@ -41,7 +41,7 @@ Generates beautiful, professional PDFs in seconds. No internet required. No subs
 | **📥 GSTR Data Import** | Import historic **GSTR-1 JSON** files from other software or government portals for seamless migration. |
 | **⏱️ Automated Backups** | **AutoBackupService** handles daily, weekly, or monthly background backups for hands-free data safety. |
 | **🔄 OTA Updates** | Built-in update service checks for new releases and seamlessly runs installers for Windows users. |
-| **🇮🇳 India Ready** | **Number-to-Words** conversion (e.g., "Rupees One Thousand Only"). **GSTR-1 & GSTR-3B** compatible CSV exports for easy filing. |
+| **🇮🇳 India Ready** | **Number-to-Words** conversion (e.g., "Rupees One Thousand Only"). **GSTR-1 & GSTR-3B** compatible CSV exports (including HSN Details and HSN Description) for easy filing. |
 | **📝 Audit Logs** | Track all changes to invoices and profiles for better financial accountability and compliance. |
 | **🎨 Native Experience** | **Desktop**: Fluent UI experience. **Android**: Dynamic Material You theming. Dark mode support on all platforms. |
 | **🖨️ Professional Output** | High-resolution A4 PDFs with your brand logo. Full-screen print preview and layout customization. |

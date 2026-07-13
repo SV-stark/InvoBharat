@@ -24,6 +24,7 @@ class GstrService {
       'CESS',
       'Place Of Supply',
       'RCM Applicable',
+      'HSN Details',
       'HSN Description',
     ]);
 
@@ -52,12 +53,14 @@ class GstrService {
           placeOfSupply,
           rcm,
           '',
+          '',
         ]);
       } else {
         for (final item in inv.items) {
           final gstRate = item.gstRate;
           final taxableValue = item.netAmount;
           final hsnDesc = item.description;
+          final hsnDetails = item.sacCode;
 
           rows.add([
             gstin,
@@ -70,6 +73,7 @@ class GstrService {
             cess,
             placeOfSupply,
             rcm,
+            hsnDetails,
             hsnDesc,
           ]);
         }
