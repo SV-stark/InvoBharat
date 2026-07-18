@@ -214,6 +214,7 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(invoices, invoices.irnNo);
         }
         if (from < 12) {
+          await m.database.customStatement('PRAGMA foreign_keys = OFF;');
           await m.database.transaction(() async {
             final table = clients;
             final tableName = table.actualTableName;
@@ -241,6 +242,7 @@ class AppDatabase extends _$AppDatabase {
               'CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != "" AND gstin != "null"',
             );
           });
+          await m.database.customStatement('PRAGMA foreign_keys = ON;');
         }
       },
       beforeOpen: (final details) async {
