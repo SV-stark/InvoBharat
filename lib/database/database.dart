@@ -28,7 +28,7 @@ class AppDatabase extends _$AppDatabase {
   static AppDatabase get instance => _instance ??= AppDatabase();
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration {
@@ -212,6 +212,35 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(invoices, invoices.ewayBillNo);
           await m.addColumn(invoices, invoices.vehicleNo);
           await m.addColumn(invoices, invoices.irnNo);
+        }
+        if (from < 12) {
+          await m.database.transaction(() async {
+            final table = clients;
+            final tableName = table.actualTableName;
+            final tempName = '${tableName}_temp';
+
+            // 1. Rename existing table to temp
+            await m.database.customStatement(
+              'ALTER TABLE `$tableName` RENAME TO `$tempName`',
+            );
+
+            // 2. Create new table with updated constraints (no UNIQUE constraint)
+            await m.createTable(table);
+
+            // 3. Copy all columns
+            final columnsToCopy = table.$columns.map((final c) => c.name).join(', ');
+            await m.database.customStatement(
+              'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
+            );
+
+            // 4. Drop temp table
+            await m.database.customStatement('DROP TABLE `$tempName`');
+
+            // 5. Create partial unique index where gstin is not empty/null
+            await m.database.customStatement(
+              'CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != "" AND gstin != "null"',
+            );
+          });
         }
       },
       beforeOpen: (final details) async {

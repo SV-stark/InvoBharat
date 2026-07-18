@@ -73,6 +73,27 @@ void main() {
       expect(client?.gstin, testClient.gstin);
     });
 
+    test('saving multiple clients with empty gstin should not overwrite each other', () async {
+      final client1 = const model.Client(
+        id: 'c1',
+        profileId: 'p1',
+        name: 'Client 1',
+        gstin: '',
+      );
+      final client2 = const model.Client(
+        id: 'c2',
+        profileId: 'p1',
+        name: 'Client 2',
+        gstin: '',
+      );
+
+      await repository.saveClient(client1);
+      await repository.saveClient(client2);
+
+      final clients = await repository.getAllClients();
+      expect(clients.length, 2);
+    });
+
     test('getAllClients', () async {
       await repository.saveClient(testClient);
       final clients = await repository.getAllClients();
