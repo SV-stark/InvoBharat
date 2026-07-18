@@ -5,6 +5,7 @@ import 'package:invobharat/providers/client_form_provider.dart';
 import 'package:invobharat/widgets/adaptive_widgets.dart';
 import 'package:indian_formatters/indian_formatters.dart';
 import 'package:invobharat/utils/formatters.dart';
+import 'package:invobharat/utils/gst_utils.dart';
 
 class MaterialClientFormDialog extends ConsumerStatefulWidget {
   final Client? client;
@@ -27,6 +28,7 @@ class _MaterialClientFormDialogState
   late final TextEditingController _phoneController;
   late final TextEditingController _contactController;
   late final TextEditingController _notesController;
+  late final TextEditingController _panController;
 
   @override
   void initState() {
@@ -50,6 +52,7 @@ class _MaterialClientFormDialogState
       text: widget.client?.primaryContact ?? '',
     );
     _notesController = TextEditingController(text: widget.client?.notes ?? '');
+    _panController = TextEditingController(text: widget.client?.pan ?? '');
 
     // Sync controllers to provider
     _nameController.addListener(() {
@@ -80,6 +83,9 @@ class _MaterialClientFormDialogState
     _notesController.addListener(() {
       ref.read(clientFormProvider.notifier).updateNotes(_notesController.text);
     });
+    _panController.addListener(() {
+      ref.read(clientFormProvider.notifier).updatePan(_panController.text);
+    });
   }
 
   @override
@@ -92,6 +98,7 @@ class _MaterialClientFormDialogState
     _phoneController.dispose();
     _contactController.dispose();
     _notesController.dispose();
+    _panController.dispose();
     super.dispose();
   }
 
@@ -149,6 +156,14 @@ class _MaterialClientFormDialogState
                   if (state != null) {
                     _stateController.text = state;
                   }
+                  final pan = GstUtils.getPan(val);
+                  if (pan != null) {
+                    _panController.text = pan;
+                  }
+                  final stateCode = GstUtils.getStateCode(val);
+                  if (stateCode != null) {
+                    ref.read(clientFormProvider.notifier).updateStateCode(stateCode);
+                  }
                 },
               ),
               const SizedBox(height: 16),
@@ -158,10 +173,24 @@ class _MaterialClientFormDialogState
                 maxLines: 3,
               ),
               const SizedBox(height: 16),
-              AppTextInput(
-                controller: _stateController,
-                label: 'State',
-                placeholder: 'e.g. Maharashtra',
+              Row(
+                children: [
+                  Expanded(
+                    child: AppTextInput(
+                      controller: _stateController,
+                      label: 'State',
+                      placeholder: 'e.g. Maharashtra',
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: AppTextInput(
+                      controller: _panController,
+                      label: 'PAN',
+                      placeholder: 'Auto-extracted',
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               Row(

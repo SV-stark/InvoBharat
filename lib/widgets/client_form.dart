@@ -7,6 +7,7 @@ import 'package:invobharat/widgets/adaptive_widgets.dart';
 import 'package:invobharat/utils/validators.dart';
 import 'package:indian_formatters/indian_formatters.dart';
 import 'package:invobharat/utils/formatters.dart';
+import 'package:invobharat/utils/gst_utils.dart';
 
 class ClientFormDialog extends ConsumerStatefulWidget {
   final Client? client;
@@ -27,6 +28,7 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
   late final TextEditingController _phoneController;
   late final TextEditingController _contactController;
   late final TextEditingController _notesController;
+  late final TextEditingController _panController;
 
   @override
   void initState() {
@@ -50,6 +52,7 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
       text: widget.client?.primaryContact ?? '',
     );
     _notesController = TextEditingController(text: widget.client?.notes ?? '');
+    _panController = TextEditingController(text: widget.client?.pan ?? '');
 
     // Sync controllers to provider
     _nameController.addListener(() {
@@ -80,6 +83,9 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
     _notesController.addListener(() {
       ref.read(clientFormProvider.notifier).updateNotes(_notesController.text);
     });
+    _panController.addListener(() {
+      ref.read(clientFormProvider.notifier).updatePan(_panController.text);
+    });
   }
 
   @override
@@ -92,6 +98,7 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
     _phoneController.dispose();
     _contactController.dispose();
     _notesController.dispose();
+    _panController.dispose();
     super.dispose();
   }
 
@@ -158,6 +165,14 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
                   if (state != null) {
                     _stateController.text = state;
                   }
+                  final pan = GstUtils.getPan(val);
+                  if (pan != null) {
+                    _panController.text = pan;
+                  }
+                  final stateCode = GstUtils.getStateCode(val);
+                  if (stateCode != null) {
+                    ref.read(clientFormProvider.notifier).updateStateCode(stateCode);
+                  }
                 },
               ),
               const SizedBox(height: 8),
@@ -168,10 +183,24 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
                 maxLines: 3,
               ),
               const SizedBox(height: 8),
-              AppTextInput(
-                label: 'State',
-                controller: _stateController,
-                placeholder: 'e.g. Maharashtra',
+              Row(
+                children: [
+                  Expanded(
+                    child: AppTextInput(
+                      label: 'State',
+                      controller: _stateController,
+                      placeholder: 'e.g. Maharashtra',
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: AppTextInput(
+                      label: 'PAN',
+                      controller: _panController,
+                      placeholder: 'Auto-extracted',
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               Row(
