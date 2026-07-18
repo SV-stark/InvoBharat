@@ -78,13 +78,11 @@ void main() {
         id: 'c1',
         profileId: 'p1',
         name: 'Client 1',
-        gstin: '',
       );
       final client2 = const model.Client(
         id: 'c2',
         profileId: 'p1',
         name: 'Client 2',
-        gstin: '',
       );
 
       await repository.saveClient(client1);
