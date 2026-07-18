@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/client_form_provider.dart';
 import 'package:invobharat/widgets/adaptive_widgets.dart';
+import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
 
 class MaterialClientFormDialog extends ConsumerStatefulWidget {
   final Client? client;
@@ -141,6 +143,13 @@ class _MaterialClientFormDialogState
                 controller: _gstinController,
                 label: 'GSTIN',
                 placeholder: 'e.g. 29ABCDE1234F1Z5',
+                inputFormatters: [GSTNumberFormatter()],
+                onChanged: (final val) {
+                  final state = IndianValidators.getGSTState(val);
+                  if (state != null) {
+                    _stateController.text = state;
+                  }
+                },
               ),
               const SizedBox(height: 16),
               AppTextInput(

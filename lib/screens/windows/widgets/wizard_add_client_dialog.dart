@@ -5,6 +5,8 @@ import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/client_provider.dart';
 import 'package:invobharat/utils/validators.dart';
 import 'package:invobharat/utils/constants.dart';
+import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
 
 class WizardAddClientDialog extends ConsumerStatefulWidget {
   final Function(Client) onClientAdded;
@@ -81,7 +83,17 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
                       placeholder: "Optional",
                       validator: Validators.gstin,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
-                      onChanged: (final v) => gstin = v,
+                      inputFormatters: [GSTNumberFormatter()],
+                      onChanged: (final v) {
+                        gstin = v;
+                        final stateName = IndianValidators.getGSTState(v);
+                        if (stateName != null) {
+                          setState(() {
+                            state = stateName;
+                            _stateCtrl.text = stateName;
+                          });
+                        }
+                      },
                     ),
                   ),
                 ),
