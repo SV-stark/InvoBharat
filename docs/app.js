@@ -231,7 +231,7 @@ function runCalculations() {
     document.getElementById('display-igst').textContent = formatIndianCurrency(gstAmount);
   } else {
     displaySupplyType.textContent = 'Intra-State (CGST + SGST)';
-    displaySupplyType.className = 'text-gradient-indigo';
+    displaySupplyType.className = 'text-gradient-teal';
     displayGstLogic.textContent = `Seller and Client are both located in ${senderName.split(' ')[0]}.`;
 
     cgstRow.classList.remove('hidden');

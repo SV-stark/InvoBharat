@@ -14,12 +14,12 @@
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
   
-  --accent-primary: #6366f1; /* Indigo */
-  --accent-secondary: #a855f7; /* Violet */
-  --accent-glow: rgba(99, 102, 241, 0.15);
+  --accent-primary: #0d9488; /* Teal */
+  --accent-secondary: #10b981; /* Emerald */
+  --accent-glow: rgba(13, 148, 136, 0.15);
   
-  --success: #10b981; /* Emerald */
-  --success-glow: rgba(16, 185, 129, 0.15);
+  --success: #059669; /* Darker Emerald */
+  --success-glow: rgba(5, 150, 105, 0.15);
   
   --warning: #f59e0b; /* Amber */
   --error: #ef4444;
@@ -55,9 +55,9 @@
   --text-secondary: #475569;
   --text-muted: #94a3b8;
   
-  --accent-primary: #4f46e5;
-  --accent-secondary: #9333ea;
-  --accent-glow: rgba(79, 70, 229, 0.08);
+  --accent-primary: #0f766e;
+  --accent-secondary: #047857;
+  --accent-glow: rgba(15, 118, 110, 0.08);
   
   --gradient-dark: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
   --gradient-card: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(241, 245, 249, 0.8) 100%);
@@ -130,8 +130,8 @@ a {
   -webkit-text-fill-color: transparent;
 }
 
-.text-gradient-indigo {
-  background: linear-gradient(135deg, var(--accent-primary) 0%, #3b82f6 100%);
+.text-gradient-teal {
+  background: linear-gradient(135deg, var(--accent-primary) 0%, #06b6d4 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -203,11 +203,11 @@ a {
 .btn-primary {
   background: var(--gradient-primary);
   color: #ffffff;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 20px rgba(13, 148, 136, 0.3);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.45);
+  box-shadow: 0 6px 24px rgba(13, 148, 136, 0.45);
 }
 
 .btn-secondary {
@@ -358,7 +358,7 @@ a {
   gap: 8px;
   padding: 6px 14px;
   background: var(--accent-glow);
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  border: 1px solid rgba(13, 148, 136, 0.25);
   color: var(--accent-primary);
   font-size: 0.85rem;
   font-weight: 600;
@@ -502,8 +502,8 @@ a {
 
 .pillar-card:hover {
   transform: translateY(-8px);
-  border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 15px 35px rgba(99, 102, 241, 0.1);
+  border-color: rgba(13, 148, 136, 0.4);
+  box-shadow: 0 15px 35px rgba(13, 148, 136, 0.15);
 }
 
 .pillar-icon {
@@ -529,9 +529,9 @@ a {
 }
 
 /* Colored glow modifications */
-.card-glow-indigo:hover {
-  border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 15px 35px rgba(99, 102, 241, 0.1);
+.card-glow-teal:hover {
+  border-color: rgba(13, 148, 136, 0.4);
+  box-shadow: 0 15px 35px rgba(13, 148, 136, 0.15);
 }
 .card-glow-success:hover {
   border-color: rgba(16, 185, 129, 0.4);
@@ -644,7 +644,7 @@ input, select {
 
 input:focus, select:focus {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
 }
 
 .amount-ranges {
@@ -684,8 +684,8 @@ input:focus, select:focus {
 }
 
 .alert-info {
-  background: rgba(99, 102, 241, 0.08);
-  border: 1px solid rgba(99, 102, 241, 0.18);
+  background: rgba(13, 148, 136, 0.08);
+  border: 1px solid rgba(13, 148, 136, 0.18);
   color: var(--text-secondary);
 }
 
@@ -906,7 +906,7 @@ input:focus, select:focus {
   background: var(--gradient-primary);
   color: #ffffff;
   border-color: transparent;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 4px 15px rgba(13, 148, 136, 0.25);
 }
 
 .showcase-window {
@@ -1188,8 +1188,8 @@ input:focus, select:focus {
 
 /* Accentuating the Primary download Card */
 .accent-card {
-  border-color: rgba(99, 102, 241, 0.35);
-  box-shadow: 0 10px 40px rgba(99, 102, 241, 0.1);
+  border-color: rgba(13, 148, 136, 0.35);
+  box-shadow: 0 10px 40px rgba(13, 148, 136, 0.1);
 }
 
 .accent-card .card-glow-element {
