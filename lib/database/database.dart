@@ -239,7 +239,7 @@ class AppDatabase extends _$AppDatabase {
 
             // 5. Create partial unique index where gstin is not empty/null
             await m.database.customStatement(
-              'CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != "" AND gstin != "null"',
+              "CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null'",
             );
           });
           await m.database.customStatement('PRAGMA foreign_keys = ON;');
