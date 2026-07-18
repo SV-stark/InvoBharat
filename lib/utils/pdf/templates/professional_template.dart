@@ -21,6 +21,13 @@ class ProfessionalTemplate extends BasePdfTemplate {
     final bool showHsnSummary = true,
   }) async {
     final pdf = pw.Document();
+    final themeColor = PdfColor.fromInt(profile.colorValue);
+    final themeFaint = PdfColor(
+      themeColor.red,
+      themeColor.green,
+      themeColor.blue,
+      0.12,
+    );
 
     pdf.addPage(
       pw.MultiPage(
@@ -93,7 +100,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                       style: pw.TextStyle(
                         fontSize: 22,
                         fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.blueGrey800,
+                        color: themeColor,
                       ),
                     ),
                     pw.SizedBox(height: 8),
@@ -152,14 +159,18 @@ class ProfessionalTemplate extends BasePdfTemplate {
                         vertical: 4,
                         horizontal: 8,
                       ),
-                      decoration: const pw.BoxDecoration(
-                        color: PdfColors.grey200,
+                      decoration: pw.BoxDecoration(
+                        color: themeFaint,
+                        border: pw.Border(
+                          left: pw.BorderSide(color: themeColor, width: 3),
+                        ),
                       ),
                       child: pw.Text(
                         "BILL TO",
                         style: pw.TextStyle(
                           fontSize: 10,
                           fontWeight: pw.FontWeight.bold,
+                          color: themeColor,
                         ),
                       ),
                     ),
@@ -199,8 +210,11 @@ class ProfessionalTemplate extends BasePdfTemplate {
                         vertical: 4,
                         horizontal: 8,
                       ),
-                      decoration: const pw.BoxDecoration(
-                        color: PdfColors.grey200,
+                      decoration: pw.BoxDecoration(
+                        color: themeFaint,
+                        border: pw.Border(
+                          left: pw.BorderSide(color: themeColor, width: 3),
+                        ),
                       ),
                       width: double.infinity,
                       child: pw.Text(
@@ -208,6 +222,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                         style: pw.TextStyle(
                           fontSize: 10,
                           fontWeight: pw.FontWeight.bold,
+                          color: themeColor,
                         ),
                       ),
                     ),
@@ -258,8 +273,13 @@ class ProfessionalTemplate extends BasePdfTemplate {
           // Items Table
           buildItemsTable(
             invoice,
-            headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
-            border: pw.TableBorder.all(color: PdfColors.grey400, width: 0.5),
+            headerDecoration: pw.BoxDecoration(color: themeColor),
+            headerStyle: pw.TextStyle(
+              color: PdfColors.white,
+              fontWeight: pw.FontWeight.bold,
+              fontSize: 9,
+            ),
+            border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
           ),
           if (showHsnSummary) buildHsnSummaryTable(invoice, font, fontBold),
           pw.SizedBox(height: 24),
@@ -282,7 +302,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                       style: pw.TextStyle(
                         fontSize: 9,
                         fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.grey700,
+                        color: themeColor,
                       ),
                     ),
                     pw.SizedBox(height: 4),
@@ -299,7 +319,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                         style: pw.TextStyle(
                           fontSize: 9,
                           fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.grey700,
+                          color: themeColor,
                         ),
                       ),
                       pw.SizedBox(height: 4),
@@ -323,7 +343,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                       style: pw.TextStyle(
                         fontSize: 9,
                         fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.grey700,
+                        color: themeColor,
                       ),
                     ),
                     pw.SizedBox(height: 4),

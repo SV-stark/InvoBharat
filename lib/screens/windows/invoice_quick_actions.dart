@@ -9,6 +9,7 @@ class InvoiceQuickActions extends StatefulWidget {
   final Function(BuildContext, Invoice) onDuplicate; // New
   final Function(BuildContext, Invoice) onEmail; // New
   final Function(BuildContext, Invoice) onMarkSent; // New
+  final Function(BuildContext, Invoice) onExportEInvoiceJson;
 
   const InvoiceQuickActions({
     super.key,
@@ -19,6 +20,7 @@ class InvoiceQuickActions extends StatefulWidget {
     required this.onDuplicate, // New
     required this.onEmail, // New
     required this.onMarkSent, // New
+    required this.onExportEInvoiceJson,
   });
 
   @override
@@ -90,6 +92,14 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
                     onPressed: () {
                       Flyout.of(flyoutContext).close();
                       widget.onEmail(context, widget.invoice);
+                    },
+                  ),
+                  MenuFlyoutItem(
+                    text: const Text('Export E-Invoice JSON'),
+                    leading: const Icon(FluentIcons.download),
+                    onPressed: () {
+                      Flyout.of(flyoutContext).close();
+                      widget.onExportEInvoiceJson(context, widget.invoice);
                     },
                   ),
                   const MenuFlyoutSeparator(),

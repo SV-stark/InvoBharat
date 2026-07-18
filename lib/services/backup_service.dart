@@ -72,15 +72,14 @@ class DefaultFilePickerWrapper implements FilePickerWrapper {
 class BackupService {
   final FilePickerWrapper _filePicker;
   final CsvExportService _csvService;
-  final AppDatabase? _db;
+  final AppDatabase? db;
 
   BackupService({
-    final FilePickerWrapper? filePicker,
-    final CsvExportService? csvService,
-    final AppDatabase? db,
+    FilePickerWrapper? filePicker,
+    CsvExportService? csvService,
+    this.db,
   }) : _filePicker = filePicker ?? DefaultFilePickerWrapper(),
-       _csvService = csvService ?? CsvExportService(),
-       _db = db;
+       _csvService = csvService ?? CsvExportService();
 
   Future<String> exportData(final SqlInvoiceRepository repository) async {
     try {
@@ -147,9 +146,10 @@ class BackupService {
 
       try {
         File dbFile;
-        if (_db != null) {
+        final currentDb = db;
+        if (currentDb != null) {
           // Safe path: VACUUM INTO gives a consistent snapshot including WAL data
-          await _db.vacuumInto(tempDbPath);
+          await currentDb.vacuumInto(tempDbPath);
           dbFile = File(tempDbPath);
         } else {
           // Fallback: zip the raw file (legacy behaviour, WAL not guaranteed)
@@ -160,7 +160,7 @@ class BackupService {
           }
         }
 
-        final schemaVersion = _db?.schemaVersion ?? 10;
+        final schemaVersion = db?.schemaVersion ?? 10;
         final tempManifestPath = p.join(
           Directory.systemTemp.path,
           'invobharat_manifest_$timestamp.json',
@@ -234,8 +234,9 @@ class BackupService {
         final dbPath = await _getDbPath();
         final dbDestFile = File(dbPath);
 
-        if (_db != null) {
-          await _db.close();
+        final currentDb = db;
+        if (currentDb != null) {
+          await currentDb.close();
         }
 
         String? backupPath;

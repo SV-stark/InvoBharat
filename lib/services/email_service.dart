@@ -36,8 +36,7 @@ class EmailService {
 
   final AppSettingsService _settingsService;
 
-  EmailService({required final AppSettingsService settingsService})
-    : _settingsService = settingsService;
+  EmailService({required this._settingsService});
 
   Future<void> saveSettings(final EmailSettings settings) async {
     await _settingsService.setSetting(_keyHost, settings.smtpHost);
@@ -134,9 +133,7 @@ class EmailService {
         "Email failed: ${e.message}\nCheck settings or internet.",
       );
     } catch (e) {
-      throw Exception(
-        "Email failed: $e\nCheck settings or internet.",
-      );
+      throw Exception("Email failed: $e\nCheck settings or internet.");
     }
   }
 }

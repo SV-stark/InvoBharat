@@ -23,6 +23,7 @@ import 'package:invobharat/services/email_service.dart'; // NEW
 import 'package:invobharat/utils/pdf_generator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:invobharat/services/invoice_actions.dart';
+import 'package:invobharat/utils/einvoice_exporter.dart';
 
 class InvoiceDetailScreen extends ConsumerStatefulWidget {
   final Invoice invoice;
@@ -126,6 +127,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
               if (val == 'archive') _toggleArchive();
               if (val == 'mark_sent') _markAsSent();
               if (val == 'delete') _deleteInvoice();
+              if (val == 'export_einvoice') _exportEInvoice();
             },
             itemBuilder: (final context) => [
               const PopupMenuItem(
@@ -151,6 +153,16 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
               const PopupMenuItem(
                 value: 'mark_sent',
                 child: Text("Mark as Sent"),
+              ),
+              const PopupMenuItem(
+                value: 'export_einvoice',
+                child: Row(
+                  children: [
+                    Icon(Icons.file_download, size: 20),
+                    SizedBox(width: 8),
+                    Text("Export E-Invoice JSON"),
+                  ],
+                ),
               ),
               const PopupMenuItem(
                 value: 'delete',
@@ -570,6 +582,24 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text("Invoice deleted")));
+      }
+    }
+  }
+
+  void _exportEInvoice() async {
+    try {
+      final profile = ref.read(businessProfileProvider);
+      final path = await EInvoiceExporter.exportEInvoice(_invoice, profile);
+      if (mounted && path != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("E-Invoice exported successfully to $path")),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to export E-Invoice: $e")),
+        );
       }
     }
   }

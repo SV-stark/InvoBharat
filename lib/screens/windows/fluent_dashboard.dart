@@ -21,6 +21,7 @@ import 'dart:typed_data';
 import 'dart:io';
 
 import 'package:invobharat/services/invoice_actions.dart';
+import 'package:invobharat/utils/einvoice_exporter.dart';
 
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/payment_transaction.dart';
@@ -564,6 +565,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                                       onDuplicate: _duplicateInvoice,
                                       onEmail: _emailInvoice,
                                       onMarkSent: _markAsSent,
+                                      onExportEInvoiceJson: _exportEInvoiceJson,
                                     ),
                                   ),
                                 ],
@@ -1090,6 +1092,36 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
           builder: (final context, final close) => InfoBar(
             title: const Text("Error Sharing"),
             content: Text(e.toString()),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          ),
+        );
+      }
+    }
+  }
+
+  void _exportEInvoiceJson(final BuildContext context, final Invoice invoice) async {
+    try {
+      final profile = ref.read(businessProfileProvider);
+      final path = await EInvoiceExporter.exportEInvoice(invoice, profile);
+      if (context.mounted && path != null) {
+        displayInfoBar(
+          context,
+          builder: (final context, final close) => InfoBar(
+            title: const Text("Success"),
+            content: Text("E-Invoice exported successfully to $path"),
+            severity: InfoBarSeverity.success,
+            onClose: close,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        displayInfoBar(
+          context,
+          builder: (final context, final close) => InfoBar(
+            title: const Text("Error"),
+            content: Text("Failed to export E-Invoice: $e"),
             severity: InfoBarSeverity.error,
             onClose: close,
           ),

@@ -21,6 +21,7 @@ class MinimalTemplate extends BasePdfTemplate {
     final bool showHsnSummary = true,
   }) async {
     final pdf = pw.Document();
+    final themeColor = PdfColor.fromInt(profile.colorValue);
 
     pdf.addPage(
       pw.MultiPage(
@@ -75,7 +76,7 @@ class MinimalTemplate extends BasePdfTemplate {
                       style: pw.TextStyle(
                         fontSize: 24,
                         fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.grey700,
+                        color: themeColor,
                       ),
                     ),
                     pw.SizedBox(height: 8),
@@ -127,10 +128,10 @@ class MinimalTemplate extends BasePdfTemplate {
                       style: pw.TextStyle(
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.grey700,
+                        color: themeColor,
                       ),
                     ),
-                    pw.Divider(thickness: 1, color: PdfColors.grey300),
+                    pw.Divider(thickness: 1, color: themeColor),
                     pw.SizedBox(height: 4),
                     pw.Text(
                       invoice.receiver.name,
@@ -154,10 +155,10 @@ class MinimalTemplate extends BasePdfTemplate {
                       style: pw.TextStyle(
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.grey700,
+                        color: themeColor,
                       ),
                     ),
-                    pw.Divider(thickness: 1, color: PdfColors.grey300),
+                    pw.Divider(thickness: 1, color: themeColor),
                     pw.SizedBox(height: 4),
                     pw.Text(invoice.placeOfSupply),
                     if (invoice.reverseCharge == 'Y')
@@ -285,6 +286,7 @@ class MinimalTemplate extends BasePdfTemplate {
                         style: pw.TextStyle(
                           fontSize: 8,
                           fontWeight: pw.FontWeight.bold,
+                          color: themeColor,
                         ),
                       ),
                       pw.SizedBox(height: 4),
