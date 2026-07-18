@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InvoBharat - Offline-First GST Invoicing for India</title>
+  <meta name="description" content="InvoBharat is a premium, offline-first invoice generator designed for freelancers and small businesses in India. Generate GST-compliant invoices with UPI QR codes, HSN lookups, and auto calculations—completely offline.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- FontAwesome Icons for modern aesthetic -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Background Glows -->
+  <div class="glow-bg glow-1"></div>
+  <div class="glow-bg glow-2"></div>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="#" class="nav-logo">
+        <img src="assets/logo.png" alt="InvoBharat Logo" class="logo-img">
+        <span class="logo-text">InvoBharat <span class="flag-emoji">🇮🇳</span></span>
+      </a>
+      <nav class="nav-menu">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#demo" class="nav-link">Live Simulator</a>
+        <a href="#showcase" class="nav-link">Showcase</a>
+        <a href="#download" class="nav-link">Download</a>
+        <a href="#developer" class="nav-link">Developers</a>
+      </nav>
+      <div class="nav-actions">
+        <button id="theme-toggle" class="btn-icon" aria-label="Toggle theme">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <a href="https://github.com/SV-stark/InvoBharat" target="_blank" rel="noopener" class="btn btn-secondary btn-sm nav-github">
+          <i class="fa-brands fa-github"></i> Star
+        </a>
+      </div>
+      <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container grid hero-grid">
+      <div class="hero-content">
+        <div class="badge-row">
+          <span class="pill-badge"><i class="fa-solid fa-shield-halved"></i> 100% Offline-First</span>
+          <span class="pill-badge"><i class="fa-solid fa-wallet"></i> Completely Free & Open Source</span>
+        </div>
+        <h1 class="hero-title">
+          Professional Invoicing, <br>
+          <span class="text-gradient">Tailored for India.</span>
+        </h1>
+        <p class="hero-description">
+          Ditch complex subscription billing systems. InvoBharat generates beautiful, GST-compliant A4 invoices with dynamic UPI QR codes in seconds. Your data never leaves your device.
+        </p>
+        <div class="hero-actions">
+          <a href="#download" class="btn btn-primary">
+            <i class="fa-solid fa-download"></i> Get Free Download
+          </a>
+          <a href="#demo" class="btn btn-secondary">
+            <i class="fa-solid fa-calculator"></i> Try Live Calculator
+          </a>
+        </div>
+        <div class="platform-support">
+          <span>Supported platforms:</span>
+          <div class="platform-icons">
+            <i class="fa-brands fa-windows" title="Windows"></i>
+            <i class="fa-brands fa-linux" title="Linux"></i>
+            <i class="fa-brands fa-android" title="Android Mobile"></i>
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="glass-card hero-mock-container">
+          <img src="assets/dashboard_mock.png" alt="InvoBharat Dashboard Mockup" class="mockup-img active">
+          <div class="visual-badge visual-badge-1">
+            <i class="fa-solid fa-chart-line"></i>
+            <div>
+              <span class="v-badge-title">Local Analytics</span>
+              <span class="v-badge-desc">Zero cloud dependency</span>
+            </div>
+          </div>
+          <div class="visual-badge visual-badge-2">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+            <div>
+              <span class="v-badge-title">GST-Ready</span>
+              <span class="v-badge-desc">Instant IGST/CGST/SGST</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Pillars -->
+  <section class="pillars-section">
+    <div class="container grid pillars-grid">
+      <div class="pillar-card card-glow-indigo">
+        <div class="pillar-icon"><i class="fa-solid fa-lock"></i></div>
+        <h3>Absolute Privacy</h3>
+        <p>Your financial accounts belong to you. Powered by SQLite and Drift, InvoBharat stores all database files locally. No tracking, no cloud servers, and no data leaks.</p>
+      </div>
+      <div class="pillar-card card-glow-success">
+        <div class="pillar-icon"><i class="fa-solid fa-gavel"></i></div>
+        <h3>India GST Compliance</h3>
+        <p>Automatic inter-state vs intra-state GST splits based on GSTIN prefixes. HSN lookup lists, dynamic Lakh/Crore formatting, Indian number-to-words, and GSTR CSV exports.</p>
+      </div>
+      <div class="pillar-card card-glow-orange">
+        <div class="pillar-icon"><i class="fa-solid fa-cubes"></i></div>
+        <h3>Native Fluid UX</h3>
+        <p>Beautiful Fluent UI interface for Windows and Linux that feels right at home, paired with a Material 3 design for Android supporting dynamic colors.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive GST and Number-to-Words Simulator -->
+  <section id="demo" class="demo-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Interactive Preview</span>
+        <h2>Try the Magic Billing Simulator</h2>
+        <p>Experience how InvoBharat automatically calculates taxes, determines CGST/SGST vs IGST, and formats numbers under the hood.</p>
+      </div>
+
+      <div class="glass-card simulator-container grid">
+        <!-- Simulator Inputs -->
+        <div class="sim-inputs">
+          <h3 class="sim-heading"><i class="fa-solid fa-sliders"></i> Adjust Invoice Values</h3>
+          
+          <div class="input-group">
+            <label for="sim-subtotal">Subtotal Amount (INR)</label>
+            <div class="input-with-icon">
+              <span class="currency-symbol">₹</span>
+              <input type="number" id="sim-subtotal" value="150000" min="0" step="500">
+            </div>
+            <div class="amount-ranges">
+              <button onclick="setSimAmount(10000)">₹10k</button>
+              <button onclick="setSimAmount(50000)">₹50k</button>
+              <button onclick="setSimAmount(150000)">₹1.5 Lakh</button>
+              <button onclick="setSimAmount(500000)">₹5 Lakh</button>
+            </div>
+          </div>
+
+          <div class="input-grid">
+            <div class="input-group">
+              <label for="sim-gst-rate">GST Rate Slab</label>
+              <select id="sim-gst-rate">
+                <option value="0">0% (Exempt)</option>
+                <option value="5">5% (Essential)</option>
+                <option value="12">12% (Standard Lower)</option>
+                <option value="18" selected>18% (Standard Rate)</option>
+                <option value="28">28% (Luxury/Demerit)</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="sim-is-interstate">Supply Location Type</label>
+              <select id="sim-is-interstate">
+                <option value="false" selected>Intra-State (Same State)</option>
+                <option value="true">Inter-State (Different State)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="input-grid">
+            <div class="input-group">
+              <label for="sim-sender-state">Seller State (Source)</label>
+              <select id="sim-sender-state">
+                <option value="27" selected>Maharashtra (27)</option>
+                <option value="29">Karnataka (29)</option>
+                <option value="07">Delhi (07)</option>
+                <option value="33">Tamil Nadu (33)</option>
+                <option value="09">Uttar Pradesh (09)</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="sim-receiver-state">Client State (Destination)</label>
+              <select id="sim-receiver-state">
+                <option value="27" selected>Maharashtra (27)</option>
+                <option value="29">Karnataka (29)</option>
+                <option value="07">Delhi (07)</option>
+                <option value="33">Tamil Nadu (33)</option>
+                <option value="09">Uttar Pradesh (09)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="alert alert-info">
+            <i class="fa-solid fa-lightbulb"></i>
+            <span>Changing Client State automatically adjusts between Intra-State (CGST + SGST) and Inter-State (IGST) models based on code prefixes.</span>
+          </div>
+        </div>
+
+        <!-- Simulator Live PDF/Invoice View -->
+        <div class="sim-outputs">
+          <div class="mini-invoice">
+            <div class="mini-invoice-header">
+              <div>
+                <span class="mini-logo">InvoBharat 🧾</span>
+                <p class="mini-meta">Simulation Invoice Ledger</p>
+              </div>
+              <div class="right-align">
+                <span class="status-pill status-paid">PAID</span>
+              </div>
+            </div>
+            
+            <hr class="mini-divider">
+            
+            <div class="mini-invoice-details">
+              <div class="flex-justify">
+                <span>Supply Classification:</span>
+                <strong id="display-supply-type" class="text-gradient-indigo">Intra-State</strong>
+              </div>
+              <div class="flex-justify">
+                <span>GSTIN State Logic:</span>
+                <span id="display-gst-logic">Seller Code 27 matches Client Code 27</span>
+              </div>
+            </div>
+
+            <hr class="mini-divider">
+
+            <div class="billing-breakdown">
+              <div class="flex-justify item-row">
+                <span>Subtotal (Base Value):</span>
+                <span id="display-subtotal">₹1,50,000.00</span>
+              </div>
+              
+              <div id="cgst-row" class="flex-justify item-row tax-row">
+                <span id="cgst-label">CGST (9%):</span>
+                <span id="display-cgst">₹13,500.00</span>
+              </div>
+
+              <div id="sgst-row" class="flex-justify item-row tax-row">
+                <span id="sgst-label">SGST (9%):</span>
+                <span id="display-sgst">₹13,500.00</span>
+              </div>
+
+              <div id="igst-row" class="flex-justify item-row tax-row hidden">
+                <span id="igst-label">IGST (18%):</span>
+                <span id="display-igst">₹0.00</span>
+              </div>
+
+              <hr class="mini-divider">
+
+              <div class="flex-justify grand-total-row">
+                <span>Grand Total:</span>
+                <span id="display-total" class="text-gradient">₹1,78,000.00</span>
+              </div>
+            </div>
+
+            <div class="words-container">
+              <p class="words-title">Amount in Words (Cheque Standard):</p>
+              <p id="display-words" class="words-text">Rupees One Lakh Seventy-Eight Thousand Only</p>
+            </div>
+
+            <div class="mini-qr-footer">
+              <div class="qr-placeholder">
+                <i class="fa-solid fa-qrcode"></i>
+                <span>Dynamic UPI QR Code</span>
+              </div>
+              <div class="qr-text">
+                <p><strong>Scan & Pay instantly</strong></p>
+                <p class="small-muted">Auto-binds UPI VPA & precise total</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Showcase / Tabbed Gallery -->
+  <section id="showcase" class="showcase-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Visual Walkthrough</span>
+        <h2>Explore the Interface</h2>
+        <p>InvoBharat features standard UI libraries compiled natively, giving responsive rendering and lightning speed.</p>
+      </div>
+
+      <!-- Tab Selectors -->
+      <div class="tabs-container">
+        <button class="tab-btn active" data-tab="dashboard">
+          <i class="fa-solid fa-chart-pie"></i> <span>Dashboard Analytics</span>
+        </button>
+        <button class="tab-btn" data-tab="editor">
+          <i class="fa-solid fa-keyboard"></i> <span>Invoice Builder</span>
+        </button>
+        <button class="tab-btn" data-tab="pdf">
+          <i class="fa-solid fa-file-pdf"></i> <span>A4 PDF Output</span>
+        </button>
+        <button class="tab-btn" data-tab="mobile">
+          <i class="fa-solid fa-mobile-screen-button"></i> <span>Material 3 Mobile</span>
+        </button>
+      </div>
+
+      <!-- Tab Display Window -->
+      <div class="showcase-window glass-card">
+        <div class="window-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <div class="window-title" id="showcase-title">Dashboard View (Windows Fluent Design)</div>
+        </div>
+        <div class="window-body">
+          <!-- Slide 1: Dashboard -->
+          <div class="showcase-slide active" id="slide-dashboard">
+            <img src="assets/dashboard_mock.png" alt="InvoBharat Dashboard View" class="slide-img">
+            <div class="slide-details">
+              <h4>Real-Time Financial Dashboard</h4>
+              <p>Keep a pulse on your business metrics. Real-time widgets show your revenue trends, dynamic tax liabilities (split clearly into CGST, SGST, IGST), and aging unpaid invoices directly on startup. Filters allow tracking by custom ranges, financial quarters, or months.</p>
+              <ul class="slide-bullets">
+                <li><i class="fa-solid fa-circle-check"></i> <strong>Visual Charts:</strong> Built-in fl_chart displays revenue and tax liability curves instantly.</li>
+                <li><i class="fa-solid fa-circle-check"></i> <strong>Safe SQLite backend:</strong> Direct local indexing yields instant query speeds even with thousands of invoices.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Slide 2: Editor -->
+          <div class="showcase-slide" id="slide-editor">
+            <img src="assets/invoice_editor_mock.png" alt="InvoBharat Invoice Editor View" class="slide-img">
+            <div class="slide-details">
+              <h4>Compliant & Clean Editor</h4>
+              <p>The billing dashboard automates tax configuration. Enter client GSTIN or Select Client to auto-populate GST details, check state code, extract PAN, and determine if CGST/SGST or IGST should apply.</p>
+              <ul class="slide-bullets">
+                <li><i class="fa-solid fa-circle-check"></i> <strong>Series Sequences:</strong> Maintain distinct invoicing streams (e.g., `INV-` for retail, `SRV-` for service contracts).</li>
+                <li><i class="fa-solid fa-circle-check"></i> <strong>HSN/SAC Lookups:</strong> Built-in search directory of standard tax codes with automatic slab assignment.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Slide 3: PDF -->
+          <div class="showcase-slide" id="slide-pdf">
+            <div class="pdf-slide-container">
+              <img src="assets/pdf_invoice_mock.png" alt="InvoBharat PDF Invoice Output" class="slide-img pdf-img">
+            </div>
+            <div class="slide-details">
+              <h4>Professional Printed Invoices</h4>
+              <p>Generate highly-polished, customer-facing PDF sheets in standard A4 format. Customize layout features directly from the settings drawer, including letterhead configurations, custom signatures, notes, and terms conditions.</p>
+              <ul class="slide-bullets">
+                <li><i class="fa-solid fa-circle-check"></i> <strong>Dynamic UPI QR Code:</strong> Renders scan-and-pay block containing invoice value, allowing customers to pay instantly.</li>
+                <li><i class="fa-solid fa-circle-check"></i> <strong>HSN Tax Summary:</strong> Generates GSTR-ready summary grids grouped by tax rates.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Slide 4: Mobile -->
+          <div class="showcase-slide" id="slide-mobile">
+            <img src="assets/mobile_app_mock.png" alt="InvoBharat Mobile App Material You View" class="slide-img mobile-img">
+            <div class="slide-details">
+              <h4>Android Companion App</h4>
+              <p>Billing on the go. compiles the core Drift SQLite database and Riverpod controllers natively on Android. Utilizes Material Design 3 guidelines featuring dynamic colors that harmonize with your operating system theme.</p>
+              <ul class="slide-bullets">
+                <li><i class="fa-solid fa-circle-check"></i> <strong>Seamless Backup Sync:</strong> Sync local files using secure database imports/exports.</li>
+                <li><i class="fa-solid fa-circle-check"></i> <strong>Android Share Sheets:</strong> Directly share invoice PDFs through WhatsApp, Telegram, or Gmail.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Detailed Feature Grid -->
+  <section id="features" class="features-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Feature Deep-Dive</span>
+        <h2>Engineered for Modern Indian Businesses</h2>
+        <p>InvoBharat packs powerful corporate tools inside a lightweight, standalone desktop client.</p>
+      </div>
+
+      <div class="grid features-grid">
+        <div class="feature-card">
+          <div class="feature-header">
+            <i class="fa-solid fa-building"></i>
+            <h3>Multi-Profile Business Management</h3>
+          </div>
+          <p>Run separate entities, freelancing profiles, or retail storefronts side-by-side. Each profile maintains independent clients, products, custom logos, GSTIN codes, sequences, and settings drawers.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-header">
+            <i class="fa-solid fa-barcode"></i>
+            <h3>Built-in HSN/SAC Directory</h3>
+          </div>
+          <p>Lookup typical HSN code values inside the product manager instantly. The library automatically associates tax slabs (5%, 12%, 18%, 28%) to catalog records, accelerating item selection during checkout.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-header">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <h3>Aging Receivables Reports</h3>
+          </div>
+          <p>Stay on top of liquidity. Visual analytics segment unpaid and partially paid balances into standard aging buckets (0-30 days, 31-60 days, 61-90 days, and 90+ days overdue) for quick follow-up.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-header">
+            <i class="fa-solid fa-repeat"></i>
+            <h3>Recurring Invoices</h3>
+          </div>
+          <p>Configure templates for ongoing agreements or monthly subscriptions. Set recurrence metrics and receive warnings or auto-generate increments on scheduling dates.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-header">
+            <i class="fa-solid fa-envelope-open-text"></i>
+            <h3>SMTP Direct E-Mailing</h3>
+          </div>
+          <p>Send generated PDFs as attachments directly through secure SMTP protocols. Set up custom connections with providers like Gmail and dispatch invoices without copying files to standalone clients.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-header">
+            <i class="fa-solid fa-shield-cat"></i>
+            <h3>Auto-Backup & Migration</h3>
+          </div>
+          <p>Configure automatic scheduled backups (daily, weekly, monthly) to local drives. GSTR-1 CSV exports and historic JSON data importers allow migrating database records seamlessly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download Section -->
+  <section id="download" class="download-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Get Started</span>
+        <h2>Download InvoBharat</h2>
+        <p>100% Free. No registrations, no hidden subscriptions, and no advertisements.</p>
+      </div>
+
+      <div class="grid download-grid">
+        <!-- Windows Download Card -->
+        <div class="download-card accent-card">
+          <div class="card-glow-element"></div>
+          <div class="download-card-header">
+            <i class="fa-brands fa-windows"></i>
+            <div>
+              <h3>Windows Desktop</h3>
+              <span class="release-ver">v1.1.0 Stable</span>
+            </div>
+          </div>
+          <p class="download-desc">Complies natively with modern Fluent UI style. Works offline with auto updates.</p>
+          <div class="download-actions">
+            <a href="https://github.com/SV-stark/InvoBharat/releases/latest" class="btn btn-primary btn-block">
+              <i class="fa-solid fa-circle-down"></i> Download Installer (.exe)
+            </a>
+            <a href="https://github.com/SV-stark/InvoBharat/releases/latest" class="btn btn-secondary btn-block">
+              <i class="fa-solid fa-file-archive"></i> Download Portable (.zip)
+            </a>
+          </div>
+          <div class="system-req">
+            <p><strong>System Requirements:</strong> Windows 10/11 (64-bit)</p>
+            <p class="vc-warning"><i class="fa-solid fa-circle-info"></i> Blank screen on startup? Install the <a href="https://aka.ms/vs/17/release/vc_redist.x64.exe" target="_blank" rel="noopener">Visual C++ Redistributable</a>.</p>
+          </div>
+        </div>
+
+        <!-- Linux Download Card -->
+        <div class="download-card">
+          <div class="download-card-header">
+            <i class="fa-brands fa-linux"></i>
+            <div>
+              <h3>Linux Systems</h3>
+              <span class="release-ver">v1.1.0 (AppImage)</span>
+            </div>
+          </div>
+          <p class="download-desc">Universal package for Ubuntu, Fedora, Arch, and more. Sandboxed and secure.</p>
+          <div class="download-actions">
+            <a href="https://github.com/SV-stark/InvoBharat/releases/latest" class="btn btn-secondary btn-block">
+              <i class="fa-solid fa-cubes"></i> Download AppImage
+            </a>
+          </div>
+          <div class="run-commands-box">
+            <p class="box-title">To run the AppImage:</p>
+            <code>chmod +x InvoBharat-Linux.AppImage</code>
+            <code>./InvoBharat-Linux.AppImage</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Developer Corner -->
+  <section id="developer" class="developer-section">
+    <div class="container">
+      <div class="glass-card dev-card grid">
+        <div class="dev-info">
+          <span class="section-tag">For Developers</span>
+          <h2>Open Source & Extensible</h2>
+          <p>InvoBharat is built using Flutter and Dart, backed by SQLite (via Drift) for cross-platform local database integrity. We welcome code contributions, bug reports, and features proposals.</p>
+          <div class="dev-badges">
+            <span class="dev-badge"><i class="fa-solid fa-code-fork"></i> AGPL-3.0 License</span>
+            <span class="dev-badge"><i class="fa-solid fa-microchip"></i> Flutter & Dart</span>
+            <span class="dev-badge"><i class="fa-solid fa-database"></i> SQLite (Drift)</span>
+          </div>
+          <a href="https://github.com/SV-stark/InvoBharat" target="_blank" rel="noopener" class="btn btn-secondary">
+            <i class="fa-brands fa-github"></i> Repository Code
+          </a>
+        </div>
+        <div class="dev-code">
+          <div class="code-header">
+            <span>Terminal Setup</span>
+            <button onclick="copyCode()" id="copy-code-btn" class="copy-btn"><i class="fa-regular fa-copy"></i> Copy</button>
+          </div>
+          <pre><code id="dev-commands"># 1. Clone repository
+git clone https://github.com/SV-stark/InvoBharat.git
+cd InvoBharat
+
+# 2. Get dependencies
+flutter pub get
+
+# 3. Generate Freezed/Drift code
+dart run build_runner build --delete-conflicting-outputs
+
+# 4. Run application
+flutter run -d windows # or linux</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 InvoBharat. Released under GNU AGPLv3. All rights reserved.</p>
+        <p class="credits">Made with <i class="fa-solid fa-heart text-gradient-indigo"></i> in India by <a href="https://github.com/SV-stark" target="_blank" rel="noopener">SV-stark</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- App Logic script -->
+  <script src="app.js"></script>
+</body>
+</html>
