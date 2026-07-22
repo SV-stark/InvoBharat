@@ -12,6 +12,7 @@ import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/services/audit_service.dart';
 import 'package:invobharat/services/gstr3b_service.dart';
 import 'package:invobharat/services/gstr_service.dart';
+import 'package:invobharat/services/excel_export_service.dart';
 import 'package:invobharat/utils/formatters.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
@@ -311,10 +312,22 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
                     children: [
                       const Icon(FluentIcons.download, size: 14),
                       const Gap(6),
-                      Text(_gstTab == 0 ? 'Export GSTR-1' : 'Export GSTR-3B'),
+                      Text(_gstTab == 0 ? 'Export GSTR-1 CSV' : 'Export GSTR-3B CSV'),
                     ],
                   ),
                   onPressed: () => _exportReport(context, filteredInvoices),
+                ),
+                const Gap(8),
+                FilledButton(
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(FluentIcons.excel_document, size: 14),
+                      Gap(6),
+                      Text('Export Excel (.xlsx)'),
+                    ],
+                  ),
+                  onPressed: () => _exportExcelReport(context, filteredInvoices),
                 ),
               ],
             ),
@@ -601,6 +614,46 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
             context,
             builder: (final context, final close) => InfoBar(
               title: const Text('Export Failed'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportExcelReport(
+    final BuildContext context,
+    final List<Invoice> invoices,
+  ) async {
+    try {
+      final excelBytes = await ExcelExportService().generateInvoiceExcel(invoices);
+      final savedPath = await ExcelExportService().saveExcelFile(
+        excelBytes,
+        'Invoices_Export_$_selectedMonth.xlsx',
+      );
+      if (savedPath != null && context.mounted) {
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (final context, final close) => InfoBar(
+              title: const Text('Excel Export Complete'),
+              content: Text('Workbook saved successfully to $savedPath'),
+              severity: InfoBarSeverity.success,
+              onClose: close,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (final context, final close) => InfoBar(
+              title: const Text('Excel Export Failed'),
               content: Text(e.toString()),
               severity: InfoBarSeverity.error,
               onClose: close,

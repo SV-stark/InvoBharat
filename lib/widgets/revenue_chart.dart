@@ -98,6 +98,30 @@ class RevenueChart extends StatelessWidget {
                   ),
                 ),
                 borderData: FlBorderData(show: false),
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipItems: (final touchedSpots) {
+                      return touchedSpots.map((final spot) {
+                        final index = spot.x.toInt();
+                        String label = index >= 0 && index < displayKeys.length
+                            ? displayKeys[index]
+                            : '';
+                        try {
+                          final date = DateFormat('yyyy-MM').parse(label);
+                          label = DateFormat('MMM yyyy').format(date);
+                        } catch (_) {}
+                        return LineTooltipItem(
+                          '$label\n₹${NumberFormat('#,##0.00').format(spot.y)}',
+                          const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
                 minX: 0,
                 maxX: (displayKeys.length - 1).toDouble(),
                 minY: 0,
@@ -113,7 +137,7 @@ class RevenueChart extends StatelessWidget {
                       show: true,
                       color: FluentTheme.of(
                         context,
-                      ).accentColor.withValues(alpha: 0.1),
+                      ).accentColor.withValues(alpha: 0.15),
                     ),
                   ),
                 ],

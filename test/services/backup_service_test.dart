@@ -184,7 +184,7 @@ void main() {
 
       final tempZipPath = p.join(Directory.systemTemp.path, 'test_restore_input_${DateTime.now().microsecondsSinceEpoch}.zip');
       final tempZipFile = File(tempZipPath);
-      await tempZipFile.writeAsBytes(zipBytes, flush: true);
+      await tempZipFile.writeAsBytes(zipBytes!, flush: true);
 
       // Mock picking this zip file
       when(
@@ -227,7 +227,7 @@ void main() {
 
       final tempZipPath = p.join(Directory.systemTemp.path, 'test_incompatible_${DateTime.now().microsecondsSinceEpoch}.zip');
       final tempZipFile = File(tempZipPath);
-      await tempZipFile.writeAsBytes(zipBytes, flush: true);
+      await tempZipFile.writeAsBytes(zipBytes!, flush: true);
 
       // Mock picking this zip file
       when(

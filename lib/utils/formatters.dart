@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:indian_formatters/indian_formatters.dart';
+import 'package:money2/money2.dart';
 
 class CurrencyFormatter {
   static final _indianFormat = NumberFormat.currency(
@@ -11,6 +12,11 @@ class CurrencyFormatter {
 
   static String format(final double amount) {
     return _indianFormat.format(amount);
+  }
+
+  static Money toMoney(final double amount, [final String currencyCode = 'INR']) {
+    final currency = Currencies().find(currencyCode) ?? CommonCurrencies().inr;
+    return Money.fromNumWithCurrency(amount, currency);
   }
 }
 
@@ -25,6 +31,14 @@ extension DoubleFormatter on double {
       decimalDigits: 2,
     );
     return fmt.format(this);
+  }
+
+  Money toMoney([final String currencyCode = 'INR']) {
+    return CurrencyFormatter.toMoney(this, currencyCode);
+  }
+
+  String toIndianWords() {
+    return IndianCurrencyFormatter.forCheque(this);
   }
 }
 

@@ -894,7 +894,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ],
           ),
-          const Gap(32),
+          const Gap(24),
+          Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.bug_report,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+              ),
+              title: const Text(
+                "System Diagnostics & Logs",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: const Text(
+                "Inspect live app logs, Riverpod state updates, and error traces with Talker UI",
+              ),
+              trailing: FilledButton.icon(
+                onPressed: () => context.push('/logs'),
+                icon: const Icon(Icons.receipt_long, size: 18),
+                label: const Text("View Logs"),
+              ),
+            ),
+          ),
+          const Gap(16),
           const Text(
             "Supports backing up all profiles and invoices.",
             style: TextStyle(color: Colors.grey),
