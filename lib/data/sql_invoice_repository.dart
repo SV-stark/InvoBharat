@@ -447,15 +447,17 @@ class SqlInvoiceRepository implements InvoiceRepository {
     final String invoiceNumber, {
     final String? excludeId,
   }) async {
+    if (invoiceNumber.trim().isEmpty) return false;
+
     final query = database.select(database.invoices)
       ..where(
         (final tbl) =>
-            tbl.invoiceNo.equals(invoiceNumber) &
+            tbl.invoiceNo.equals(invoiceNumber.trim()) &
             tbl.profileId.equals(profileId),
       );
 
-    if (excludeId != null) {
-      query.where((final tbl) => tbl.id.isNotValue(excludeId));
+    if (excludeId != null && excludeId.trim().isNotEmpty) {
+      query.where((final tbl) => tbl.id.equals(excludeId.trim()).not());
     }
 
     final result = await query.get();

@@ -201,21 +201,41 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     }
   }
 
-  /// Generates the next invoice number based on active series or business profile
+  /// Generates the next available unique invoice number based on active series or business profile
   Future<String> generateNextInvoiceNumber([final String? seriesPrefix]) async {
     final profile = ref.read(businessProfileProvider);
     final seriesList = ref.read(invoiceSeriesProvider);
-    final targetPrefix = seriesPrefix ?? profile.invoiceSeries;
+    final repository = ref.read(invoiceRepositoryProvider);
+
+    final targetPrefix = (seriesPrefix != null && seriesPrefix.isNotEmpty)
+        ? seriesPrefix
+        : (profile.invoiceSeries.isNotEmpty ? profile.invoiceSeries : 'INV-');
 
     final series = seriesList.firstWhere(
       (final s) => s.prefix == targetPrefix,
       orElse: () => InvoiceSeries(
         prefix: targetPrefix,
-        sequence: profile.invoiceSequence,
+        sequence: profile.invoiceSequence > 0 ? profile.invoiceSequence : 1,
       ),
     );
 
-    return '${series.prefix}${series.sequence.toString().padLeft(3, '0')}';
+    int currentSeq = series.sequence;
+    String candidate = '${series.prefix}${currentSeq.toString().padLeft(3, '0')}';
+
+    // Verify candidate against repository to guarantee uniqueness
+    while (await repository.checkInvoiceExists(candidate)) {
+      currentSeq++;
+      candidate = '${series.prefix}${currentSeq.toString().padLeft(3, '0')}';
+    }
+
+    // Sync sequence back if it was incremented past existing database records
+    if (currentSeq > series.sequence) {
+      await ref
+          .read(invoiceSeriesProvider.notifier)
+          .updateSequence(targetPrefix, currentSeq);
+    }
+
+    return candidate;
   }
 
   /// Calculates due date based on payment terms

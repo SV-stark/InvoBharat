@@ -53,6 +53,12 @@ void main() {
 
     // Default stubbing
     when(() => mockInvoiceRepo.getAllInvoices()).thenAnswer((_) async => []);
+    when(
+      () => mockInvoiceRepo.checkInvoiceExists(
+        any(),
+        excludeId: any(named: 'excludeId'),
+      ),
+    ).thenAnswer((_) async => false);
     when(() => mockClientRepo.getAllClients()).thenAnswer((_) async => []);
     when(
       () => mockProfileRepo.getAllProfiles(),

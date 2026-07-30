@@ -58,6 +58,12 @@ void main() {
 
     when(() => mockInvoiceRepo.getAllInvoices()).thenAnswer((_) async => []);
     when(
+      () => mockInvoiceRepo.checkInvoiceExists(
+        any(),
+        excludeId: any(named: 'excludeId'),
+      ),
+    ).thenAnswer((_) async => false);
+    when(
       () => mockProfileRepo.getAllProfiles(),
     ).thenAnswer((_) async => [testProfile]);
     when(() => mockClientRepo.getAllClients()).thenAnswer((_) async => []);

@@ -1115,7 +1115,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
     // Use invoice.invoiceNo, which is updated via provider
     final exists = await repository.checkInvoiceExists(
       invoice.invoiceNo,
-      excludeId: widget.invoiceToEdit?.id,
+      excludeId: invoice.id ?? widget.invoiceToEdit?.id,
     );
 
     if (!context.mounted) return;
