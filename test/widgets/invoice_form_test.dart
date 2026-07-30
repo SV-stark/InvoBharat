@@ -57,6 +57,7 @@ void main() {
       () => mockInvoiceRepo.checkInvoiceExists(
         any(),
         excludeId: any(named: 'excludeId'),
+        invoiceDate: any(named: 'invoiceDate'),
       ),
     ).thenAnswer((_) async => false);
     when(() => mockClientRepo.getAllClients()).thenAnswer((_) async => []);
