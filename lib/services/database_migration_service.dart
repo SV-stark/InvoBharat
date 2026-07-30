@@ -99,6 +99,14 @@ class DatabaseMigrationService {
             colorValue: const Value(4280391411),
             invoiceSeries: const Value('INV-'),
             invoiceSequence: Value(nextSeq),
+            termsAndConditions: const Value(''),
+            defaultNotes: const Value(''),
+            currencySymbol: const Value('₹'),
+            bankName: const Value(''),
+            accountNo: const Value(''),
+            ifscCode: const Value(''),
+            branch: const Value(''),
+            pan: const Value(''),
           ),
         );
         profiles = await database.select(database.businessProfiles).get();
