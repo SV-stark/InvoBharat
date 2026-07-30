@@ -2,23 +2,20 @@ import 'dart:async';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:printing/printing.dart';
-import 'package:pdf/pdf.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/invoice_provider.dart';
-import 'package:invobharat/providers/app_config_provider.dart';
 import 'package:invobharat/providers/invoice_series_provider.dart';
 
 import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/client_provider.dart';
 
-import 'package:invobharat/utils/pdf_generator.dart';
 import 'package:invobharat/utils/constants.dart';
 import 'package:invobharat/utils/validators.dart';
 import 'package:invobharat/mixins/invoice_form_mixin.dart';
 import 'package:invobharat/widgets/adaptive_widgets.dart'; // NEW Import
+import 'package:invobharat/widgets/dialogs/invoice_pdf_preview_dialog.dart';
 
 // Generates a unique ID
 
@@ -661,35 +658,10 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
     final Invoice invoice,
     final BusinessProfile profile,
   ) {
-    Navigator.push(
+    InvoicePdfPreviewDialog.show(
       context,
-      FluentPageRoute(
-        builder: (final context) => ScaffoldPage(
-          header: PageHeader(
-            title: const Text("Invoice Preview"),
-            leading: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: IconButton(
-                icon: const Icon(FluentIcons.back),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-          ),
-          content: PdfPreview(
-            build: (final format) => generateInvoicePdf(
-              invoice,
-              profile,
-              showHsnSummary: ref.read(appConfigProvider).showHsnSummaryInPdf,
-            ),
-            canChangePageFormat: false,
-            initialPageFormat: PdfPageFormat.a4,
-            pdfPreviewPageDecoration: BoxDecoration(
-              color: FluentTheme.of(context).cardColor,
-              boxShadow: const [BoxShadow(blurRadius: 4)],
-            ),
-          ),
-        ),
-      ),
+      invoice: invoice,
+      profile: profile,
     );
   }
 

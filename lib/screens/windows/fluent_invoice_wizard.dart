@@ -2,7 +2,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:printing/printing.dart';
 import 'package:flutter/services.dart';
 import 'package:invobharat/utils/formatters.dart';
 import 'dart:async';
@@ -10,18 +9,16 @@ import 'dart:async';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/client_provider.dart';
-import 'package:invobharat/providers/app_config_provider.dart';
 import 'package:invobharat/providers/invoice_series_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/providers/item_template_provider.dart';
-import 'package:invobharat/utils/pdf_generator.dart';
-import 'package:url_launcher/url_launcher.dart'; // New
 import 'package:invobharat/mixins/invoice_form_mixin.dart';
 import 'package:invobharat/providers/invoice_provider.dart';
 import 'package:invobharat/providers/bank_provider.dart';
 import 'package:invobharat/utils/constants.dart';
 import 'package:invobharat/screens/windows/widgets/wizard_add_client_dialog.dart';
 import 'package:invobharat/screens/windows/widgets/invoice_item_dialog.dart';
+import 'package:invobharat/widgets/dialogs/invoice_pdf_preview_dialog.dart';
 
 class FluentInvoiceWizard extends ConsumerStatefulWidget {
   final Invoice? invoiceToEdit;
@@ -945,83 +942,10 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
 
   void _showPreviewDialog(final Invoice invoice) {
     final profile = ref.read(businessProfileProvider);
-
-    showDialog(
-      context: context,
-      builder: (final context) {
-        return ContentDialog(
-          constraints: const BoxConstraints(maxWidth: 1000, maxHeight: 800),
-          title: const Text("Invoice Preview"),
-          content: PdfPreview(
-            build: (final format) => generateInvoicePdf(
-              invoice,
-              profile,
-              showHsnSummary: ref.read(appConfigProvider).showHsnSummaryInPdf,
-            ),
-            canChangeOrientation: false,
-            canChangePageFormat: false,
-            canDebug: false,
-            pdfFileName: "${invoice.invoiceNo}.pdf",
-          ),
-          actions: [
-            Button(
-              child: const Text("Close"),
-              onPressed: () => Navigator.pop(context),
-            ),
-            if (widget.invoiceToEdit != null)
-              Button(
-                child: const Text("Email Client"),
-                onPressed: () async {
-                  final email =
-                      invoice.receiver.email; // Now exists in Receiver model
-                  if (email.isEmpty) {
-                    displayInfoBar(
-                      context,
-                      builder: (final context, final close) {
-                        return InfoBar(
-                          title: const Text("Validation"),
-                          content: const Text("Client email is missing"),
-                          severity: InfoBarSeverity.warning,
-                          onClose: close,
-                        );
-                      },
-                    );
-                    return;
-                  }
-                  final Uri emailLaunchUri = Uri(
-                    scheme: 'mailto',
-                    path: email,
-                    query:
-                        'subject=Invoice ${invoice.invoiceNo}&body=Dear ${invoice.receiver.name},\n\nPlease find attached invoice ${invoice.invoiceNo}.\n\nRegards,\n${invoice.supplier.name}',
-                  );
-                  if (await canLaunchUrl(emailLaunchUri)) {
-                    await launchUrl(emailLaunchUri);
-                  } else {
-                    if (!context.mounted) return;
-                    displayInfoBar(
-                      context,
-                      builder: (final context, final close) {
-                        return InfoBar(
-                          title: const Text("Error"),
-                          content: const Text("Could not launch email client"),
-                          severity: InfoBarSeverity.error,
-                          onClose: close,
-                        );
-                      },
-                    );
-                  }
-                },
-              ),
-            FilledButton(
-              child: const Text("Save & Close"),
-              onPressed: () {
-                Navigator.pop(context);
-                _saveInvoice(invoice);
-              },
-            ),
-          ],
-        );
-      },
+    InvoicePdfPreviewDialog.show(
+      context,
+      invoice: invoice,
+      profile: profile,
     );
   }
 

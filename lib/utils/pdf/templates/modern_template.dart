@@ -70,14 +70,22 @@ class ModernTemplate extends BasePdfTemplate {
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
-                      pw.Text(
-                        title ?? "INVOICE",
-                        style: pw.TextStyle(
-                          fontSize: 20,
-                          fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.white,
-                        ),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.end,
+                        children: [
+                          buildStatusBadge(invoice, font: fontBold),
+                          pw.SizedBox(width: 8),
+                          pw.Text(
+                            title ?? "INVOICE",
+                            style: pw.TextStyle(
+                              fontSize: 20,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.white,
+                            ),
+                          ),
+                        ],
                       ),
+                      pw.SizedBox(height: 4),
                       pw.Text(
                         "No: ${invoice.invoiceNo}",
                         style: const pw.TextStyle(

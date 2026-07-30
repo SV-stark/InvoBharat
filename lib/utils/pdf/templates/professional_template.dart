@@ -95,13 +95,20 @@ class ProfessionalTemplate extends BasePdfTemplate {
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
                   children: [
-                    pw.Text(
-                      title ?? "TAX INVOICE",
-                      style: pw.TextStyle(
-                        fontSize: 22,
-                        fontWeight: pw.FontWeight.bold,
-                        color: themeColor,
-                      ),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.end,
+                      children: [
+                        buildStatusBadge(invoice, font: fontBold),
+                        pw.SizedBox(width: 8),
+                        pw.Text(
+                          title ?? "TAX INVOICE",
+                          style: pw.TextStyle(
+                            fontSize: 20,
+                            fontWeight: pw.FontWeight.bold,
+                            color: themeColor,
+                          ),
+                        ),
+                      ],
                     ),
                     pw.SizedBox(height: 8),
                     buildField(

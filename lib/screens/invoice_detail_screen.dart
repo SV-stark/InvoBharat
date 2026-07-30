@@ -24,6 +24,7 @@ import 'package:invobharat/utils/pdf_generator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:invobharat/services/invoice_actions.dart';
 import 'package:invobharat/utils/einvoice_exporter.dart';
+import 'package:invobharat/widgets/dialogs/invoice_pdf_preview_dialog.dart';
 
 class InvoiceDetailScreen extends ConsumerStatefulWidget {
   final Invoice invoice;
@@ -91,6 +92,18 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
           _invoice.invoiceNo.isEmpty ? "Invoice Details" : _invoice.invoiceNo,
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf),
+            tooltip: "Preview PDF",
+            onPressed: () {
+              final profile = ref.read(businessProfileProvider);
+              InvoicePdfPreviewDialog.show(
+                context,
+                invoice: _invoice,
+                profile: profile,
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.email),
             tooltip: "Send Email",

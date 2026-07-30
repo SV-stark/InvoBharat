@@ -82,13 +82,20 @@ class CorporateTemplate extends BasePdfTemplate {
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.end,
                       children: [
-                        pw.Text(
-                          supplyType,
-                          style: pw.TextStyle(
-                            color: white,
-                            fontSize: 22,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
+                        pw.Row(
+                          mainAxisAlignment: pw.MainAxisAlignment.end,
+                          children: [
+                            buildStatusBadge(invoice, font: fontBold),
+                            pw.SizedBox(width: 8),
+                            pw.Text(
+                              supplyType,
+                              style: pw.TextStyle(
+                                color: white,
+                                fontSize: 20,
+                                fontWeight: pw.FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                         pw.SizedBox(height: 5),
                         pw.Text(

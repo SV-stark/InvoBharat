@@ -21,6 +21,62 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
     final bool showHsnSummary = true,
   });
 
+  pw.Widget buildBadge(
+    final String text, {
+    final PdfColor bgColor = PdfColors.blue100,
+    final PdfColor textColor = PdfColors.blue800,
+    final double fontSize = 7.5,
+    final pw.Font? font,
+  }) {
+    return pw.Container(
+      padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+      decoration: pw.BoxDecoration(
+        color: bgColor,
+        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+      ),
+      child: pw.Text(
+        text.toUpperCase(),
+        style: pw.TextStyle(
+          font: font,
+          fontSize: fontSize,
+          fontWeight: pw.FontWeight.bold,
+          color: textColor,
+        ),
+      ),
+    );
+  }
+
+  pw.Widget buildStatusBadge(
+    final Invoice invoice, {
+    final pw.Font? font,
+  }) {
+    final balance = invoice.balanceDue;
+    final total = invoice.grandTotal;
+    String text = invoice.status.toUpperCase();
+    PdfColor bg = PdfColors.grey200;
+    PdfColor textCol = PdfColors.grey800;
+
+    if (balance <= 0 && total > 0) {
+      text = 'PAID';
+      bg = PdfColor.fromHex('#DCFCE7'); // Soft Emerald
+      textCol = PdfColor.fromHex('#166534');
+    } else if (invoice.payments.isNotEmpty && balance > 0) {
+      text = 'PARTIAL';
+      bg = PdfColor.fromHex('#FEF9C3'); // Soft Amber
+      textCol = PdfColor.fromHex('#854D0E');
+    } else if (invoice.dueDate != null && invoice.dueDate!.isBefore(DateTime.now()) && balance > 0) {
+      text = 'OVERDUE';
+      bg = PdfColor.fromHex('#FEE2E2'); // Soft Rose/Red
+      textCol = PdfColor.fromHex('#991B1B');
+    } else if (invoice.status.toLowerCase() == 'sent') {
+      text = 'SENT';
+      bg = PdfColor.fromHex('#DBEAFE'); // Soft Blue
+      textCol = PdfColor.fromHex('#1E40AF');
+    }
+
+    return buildBadge(text, bgColor: bg, textColor: textCol, font: font);
+  }
+
   pw.Widget buildItemsTable(
     final Invoice invoice, {
     final bool includeIndex = true,
@@ -91,8 +147,8 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
           headerStyle ??
           pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
       cellStyle: cellStyle ?? const pw.TextStyle(fontSize: 8),
-      headerDecoration: headerDecoration,
-      oddRowDecoration: oddRowDecoration,
+      headerDecoration: headerDecoration ?? const pw.BoxDecoration(color: PdfColors.grey100),
+      oddRowDecoration: oddRowDecoration ?? pw.BoxDecoration(color: PdfColor.fromHex('#FAFAFA')),
       columnWidths:
           columnWidths ??
           {
@@ -118,7 +174,7 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
           },
       cellPadding:
           cellPadding ??
-          const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+          const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 5),
     );
   }
 

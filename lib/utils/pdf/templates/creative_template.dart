@@ -145,13 +145,21 @@ class CreativeTemplate extends BasePdfTemplate {
                                 pw.MainAxisAlignment.spaceBetween,
                             children: [
                               pw.Expanded(
-                                child: pw.Text(
-                                  supplyType.toUpperCase(),
-                                  style: pw.TextStyle(
-                                    color: themeColor,
-                                    fontSize: 24,
-                                    fontWeight: pw.FontWeight.bold,
-                                  ),
+                                child: pw.Row(
+                                  children: [
+                                    buildStatusBadge(invoice, font: fontBold),
+                                    pw.SizedBox(width: 8),
+                                    pw.Expanded(
+                                      child: pw.Text(
+                                        supplyType.toUpperCase(),
+                                        style: pw.TextStyle(
+                                          color: themeColor,
+                                          fontSize: 20,
+                                          fontWeight: pw.FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               pw.SizedBox(width: 10),

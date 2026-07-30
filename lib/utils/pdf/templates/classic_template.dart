@@ -92,15 +92,21 @@ class ClassicTemplate extends BasePdfTemplate {
             pw.SizedBox(height: 10),
 
             // Title
-            pw.Center(
-              child: pw.Text(
-                supplyType,
-                style: pw.TextStyle(
-                  fontSize: 16,
-                  fontWeight: pw.FontWeight.bold,
-                  decoration: pw.TextDecoration.underline,
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.center,
+              mainAxisSize: pw.MainAxisSize.min,
+              children: [
+                buildStatusBadge(invoice, font: fontBold),
+                pw.SizedBox(width: 8),
+                pw.Text(
+                  supplyType,
+                  style: pw.TextStyle(
+                    fontSize: 16,
+                    fontWeight: pw.FontWeight.bold,
+                    decoration: pw.TextDecoration.underline,
+                  ),
                 ),
-              ),
+              ],
             ),
             pw.SizedBox(height: 20),
 
