@@ -122,12 +122,23 @@ class InvoiceHeaderSection extends ConsumerWidget {
                         ? ref.watch(invoiceSeriesProvider).first.prefix
                         : ""),
                 items: ref.watch(invoiceSeriesProvider).map((final s) => s.prefix).toList(),
-                onChanged: (final val) {
+                onChanged: (final val) async {
                   if (val != null) {
-                    final selectedSeries = ref.read(invoiceSeriesProvider).firstWhere((final s) => s.prefix == val);
-                    final nextNo = "${selectedSeries.prefix}${selectedSeries.sequence.toString().padLeft(3, '0')}";
-                    invoiceNoCtrl.text = nextNo;
-                    ref.read(invoiceProvider.notifier).updateInvoiceNo(nextNo);
+                    final repo = ref.read(invoiceRepositoryProvider);
+                    final profile = ref.read(businessProfileProvider);
+                    final seriesList = ref.read(invoiceSeriesProvider);
+                    final series = seriesList.firstWhere(
+                      (final s) => s.prefix == val,
+                      orElse: () => InvoiceSeries(prefix: val, sequence: profile.invoiceSequence > 0 ? profile.invoiceSequence : 1),
+                    );
+                    int seq = series.sequence;
+                    String candidate = '${series.prefix}${seq.toString().padLeft(3, '0')}';
+                    while (await repo.checkInvoiceExists(candidate)) {
+                      seq++;
+                      candidate = '${series.prefix}${seq.toString().padLeft(3, '0')}';
+                    }
+                    invoiceNoCtrl.text = candidate;
+                    ref.read(invoiceProvider.notifier).updateInvoiceNo(candidate);
                   }
                 },
               ),

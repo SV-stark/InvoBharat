@@ -79,6 +79,8 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
           debugPrint("Error setting default bank: $e");
         }
 
+        final nextNo = await generateNextInvoiceNumber();
+        ref.read(invoiceProvider.notifier).updateInvoiceNo(nextNo);
         syncInvoiceControllers(ref.read(invoiceProvider));
         _commentsCtrl.clear();
       });
@@ -312,10 +314,9 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                           value: s.prefix,
                           child: Text(s.prefix),
                         )).toList(),
-                        onChanged: (final val) {
+                        onChanged: (final val) async {
                           if (val != null) {
-                            final selectedSeries = ref.read(invoiceSeriesProvider).firstWhere((final s) => s.prefix == val);
-                            final nextNo = "${selectedSeries.prefix}${selectedSeries.sequence.toString().padLeft(3, '0')}";
+                            final nextNo = await generateNextInvoiceNumber(val);
                             invoiceNoCtrl.text = nextNo;
                             notifier.updateInvoiceNo(nextNo);
                           }
@@ -1110,35 +1111,8 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
       return;
     }
 
-    // Check for uniqueness
-    final repository = ref.read(invoiceRepositoryProvider);
-    // Use invoice.invoiceNo, which is updated via provider
-    final exists = await repository.checkInvoiceExists(
-      invoice.invoiceNo,
-      excludeId: invoice.id ?? widget.invoiceToEdit?.id,
-    );
-
-    if (!context.mounted) return;
-
-    if (exists) {
-      displayInfoBar(
-        context,
-        builder: (final context, final close) {
-          return InfoBar(
-            title: const Text("Duplicate Invoice Number"),
-            content: Text(
-              "Invoice number '${invoice.invoiceNo}' already exists.",
-            ),
-            severity: InfoBarSeverity.warning,
-            onClose: close,
-          );
-        },
-      );
-      return;
-    }
-
     try {
-      // Use Mixin's saveInvoice to centralize logic (handles uniqueness and marking estimate as converted)
+      // Use Mixin's saveInvoice to centralize logic (handles uniqueness, auto-recovery, and estimate conversion)
       await saveInvoice(
         invoice: invoice,
         estimateIdToMarkConverted: widget.estimateId,

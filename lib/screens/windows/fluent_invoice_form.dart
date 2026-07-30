@@ -46,8 +46,10 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
         syncInvoiceControllers(ref.read(invoiceProvider));
       });
     } else {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         ref.read(invoiceProvider.notifier).reset();
+        final nextInvoiceNo = await generateNextInvoiceNumber();
+        ref.read(invoiceProvider.notifier).updateInvoiceNo(nextInvoiceNo);
         syncInvoiceControllers(ref.read(invoiceProvider));
       });
     }
@@ -157,10 +159,9 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                           value: s.prefix,
                           child: Text(s.prefix),
                         )).toList(),
-                        onChanged: (final val) {
+                        onChanged: (final val) async {
                           if (val != null) {
-                            final selectedSeries = ref.read(invoiceSeriesProvider).firstWhere((final s) => s.prefix == val);
-                            final nextNo = "${selectedSeries.prefix}${selectedSeries.sequence.toString().padLeft(3, '0')}";
+                            final nextNo = await generateNextInvoiceNumber(val);
                             invoiceNoCtrl.text = nextNo;
                             ref.read(invoiceProvider.notifier).updateInvoiceNo(nextNo);
                           }

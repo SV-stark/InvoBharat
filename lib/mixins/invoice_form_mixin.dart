@@ -152,21 +152,28 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   }
 
   Future<bool> saveInvoice({
-    required final Invoice invoice,
+    required Invoice invoice,
     final String? estimateIdToMarkConverted,
-    required final BuildContext
-    context, // required for notifications if specific UI logic needed?
-    // Actually mixin shouldn't depend on UI widgets like ShowDialog if possible,
-    // but here we return status or throw error?
-    // Let's return success bool and let UI handle success message.
-    // Or simpler: Reuse the logic.
+    required final BuildContext context,
   }) async {
     try {
       final repository = ref.read(invoiceRepositoryProvider);
-      final exists = await repository.checkInvoiceExists(
+      var exists = await repository.checkInvoiceExists(
         invoice.invoiceNo,
         excludeId: invoice.id,
       );
+
+      // Auto-recover for new invoices if the generated candidate already exists
+      if (exists && (invoice.id == null || invoice.id!.isEmpty)) {
+        final uniqueNo = await generateNextInvoiceNumber();
+        invoice = invoice.copyWith(invoiceNo: uniqueNo);
+        ref.read(invoiceProvider.notifier).updateInvoiceNo(uniqueNo);
+        syncInvoiceControllers(invoice);
+        exists = await repository.checkInvoiceExists(
+          uniqueNo,
+          excludeId: invoice.id,
+        );
+      }
 
       if (exists) {
         throw Exception(
