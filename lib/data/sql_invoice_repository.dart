@@ -464,7 +464,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
     if (invoiceDate != null) {
       final fyStartYear =
           invoiceDate.month >= 4 ? invoiceDate.year : invoiceDate.year - 1;
-      final fyStart = DateTime(fyStartYear, 4, 1);
+      final fyStart = DateTime(fyStartYear, 4);
       final fyEnd = DateTime(fyStartYear + 1, 3, 31, 23, 59, 59);
 
       query.where(
