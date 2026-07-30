@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -259,6 +261,9 @@ class AppDatabase extends _$AppDatabase {
 }
 
 QueryExecutor _openConnection() {
+  if (Platform.environment.containsKey('FLUTTER_TEST')) {
+    return NativeDatabase.memory();
+  }
   return driftDatabase(name: 'db');
 }
 
