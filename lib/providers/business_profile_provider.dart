@@ -66,8 +66,7 @@ class BusinessProfileList extends _$BusinessProfileList {
         state = [legacyProfile];
         await prefs.remove('business_profile');
       } else {
-        final String newId = const Uuid().v4();
-        final defaultProfile = BusinessProfile.defaults().copyWith(id: newId);
+        final defaultProfile = BusinessProfile.defaults();
         await repository.saveProfile(defaultProfile);
         state = [defaultProfile];
       }
