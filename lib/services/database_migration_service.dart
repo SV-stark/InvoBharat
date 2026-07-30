@@ -87,14 +87,15 @@ class DatabaseMigrationService {
         final nextSeq = maxSeq > 0 ? maxSeq + 1 : 1;
 
         await database.into(database.businessProfiles).insert(
-          BusinessProfilesCompanion.insert(
+          BusinessProfilesCompanion(
             id: const Value('default'),
-            companyName: 'My Business',
+            companyName: const Value('My Business'),
             address: const Value(''),
             gstin: const Value(''),
             email: const Value(''),
             phone: const Value(''),
             state: const Value('Delhi'),
+            colorValue: const Value(4280391411),
             invoiceSeries: const Value('INV-'),
             invoiceSequence: Value(nextSeq),
           ),
