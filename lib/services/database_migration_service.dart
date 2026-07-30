@@ -87,27 +87,34 @@ class DatabaseMigrationService {
         }
         final nextSeq = maxSeq > 0 ? maxSeq + 1 : 1;
 
-        await database.into(database.businessProfiles).insert(
-          BusinessProfilesCompanion(
-            id: const Value('default'),
-            companyName: const Value('My Business'),
-            address: const Value(''),
-            gstin: const Value.absent(),
-            email: const Value.absent(),
-            phone: const Value.absent(),
-            state: const Value('Delhi'),
-            colorValue: const Value(4280391411),
-            invoiceSeries: const Value('INV-'),
-            invoiceSequence: Value(nextSeq),
-            termsAndConditions: const Value(''),
-            defaultNotes: const Value(''),
-            currencySymbol: const Value('₹'),
-            bankName: const Value(''),
-            accountNo: const Value.absent(),
-            ifscCode: const Value(''),
-            branch: const Value(''),
-            pan: const Value.absent(),
-          ),
+        await database.customStatement(
+          '''
+          INSERT OR IGNORE INTO business_profiles (
+            id, company_name, address, gstin, email, phone, state, color_value, 
+            invoice_series, invoice_sequence, terms_and_conditions, default_notes, 
+            currency_symbol, bank_name, account_no, ifsc_code, branch, pan
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ''',
+          [
+            'default',
+            'Your Company Name',
+            '',
+            '',
+            '',
+            '',
+            'Delhi',
+            4280391411,
+            'INV-',
+            nextSeq,
+            '',
+            '',
+            '₹',
+            '',
+            '',
+            '',
+            '',
+            '',
+          ],
         );
         profiles = await database.select(database.businessProfiles).get();
       }
