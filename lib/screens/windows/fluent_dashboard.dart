@@ -48,6 +48,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
   String _selectedPeriod = "This Financial Year";
   String _selectedType = "All";
   String _searchQuery = "";
+  String _sortBy = "date_desc";
   final Set<String> _selectedIds = {};
 
   @override
@@ -228,6 +229,33 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                   )
                   .toList();
             }
+
+            filteredInvoices = List.from(filteredInvoices);
+            filteredInvoices.sort((final a, final b) {
+              switch (_sortBy) {
+                case 'date_asc':
+                  return a.invoiceDate.compareTo(b.invoiceDate);
+                case 'amount_desc':
+                  return b.grandTotal.compareTo(a.grandTotal);
+                case 'amount_asc':
+                  return a.grandTotal.compareTo(b.grandTotal);
+                case 'number_asc':
+                  return a.invoiceNo.compareTo(b.invoiceNo);
+                case 'number_desc':
+                  return b.invoiceNo.compareTo(a.invoiceNo);
+                case 'client_asc':
+                  return a.receiver.name
+                      .toLowerCase()
+                      .compareTo(b.receiver.name.toLowerCase());
+                case 'client_desc':
+                  return b.receiver.name
+                      .toLowerCase()
+                      .compareTo(a.receiver.name.toLowerCase());
+                case 'date_desc':
+                default:
+                  return b.invoiceDate.compareTo(a.invoiceDate);
+              }
+            });
 
             final stats = DashboardActions.calculateStats(filteredInvoices);
             final totalRevenue = stats['revenue'] as double;
@@ -455,21 +483,61 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
 
                 const Gap(30),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  alignment: WrapAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: Text(
-                        "Recent Invoices",
-                        style: theme.typography.title,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    Text(
+                      "Recent Invoices",
+                      style: theme.typography.title,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const Gap(16),
+                    ComboBox<String>(
+                      value: _sortBy,
+                      items: const [
+                        ComboBoxItem(
+                          value: "date_desc",
+                          child: Text("Date: Newest First"),
+                        ),
+                        ComboBoxItem(
+                          value: "date_asc",
+                          child: Text("Date: Oldest First"),
+                        ),
+                        ComboBoxItem(
+                          value: "amount_desc",
+                          child: Text("Amount: High to Low"),
+                        ),
+                        ComboBoxItem(
+                          value: "amount_asc",
+                          child: Text("Amount: Low to High"),
+                        ),
+                        ComboBoxItem(
+                          value: "number_asc",
+                          child: Text("Invoice #: A-Z"),
+                        ),
+                        ComboBoxItem(
+                          value: "number_desc",
+                          child: Text("Invoice #: Z-A"),
+                        ),
+                        ComboBoxItem(
+                          value: "client_asc",
+                          child: Text("Client: A-Z"),
+                        ),
+                        ComboBoxItem(
+                          value: "client_desc",
+                          child: Text("Client: Z-A"),
+                        ),
+                      ],
+                      onChanged: (final v) {
+                        if (v != null) setState(() => _sortBy = v);
+                      },
+                    ),
                     SizedBox(
-                      width: 250,
+                      width: 160,
                       child: TextBox(
-                        placeholder: "Search invoices...",
+                        placeholder: "Search...",
                         prefix: const Padding(
                           padding: EdgeInsets.only(left: 8),
                           child: Icon(FluentIcons.search),

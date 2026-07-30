@@ -49,6 +49,7 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
   @override
   Widget build(final BuildContext context) {
     return ContentDialog(
+      constraints: const BoxConstraints(maxWidth: 600),
       title: Text(widget.item == null ? "Add Item" : "Edit Item"),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -73,23 +74,27 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
                         controller: _sacCtrl,
                         placeholder: "e.g. 998311",
                         items: HsnRepository.commonCodes.map((final e) {
+                          final labelText = "${e.code} - ${e.description}";
                           return AutoSuggestBoxItem<HsnCode>(
                             value: e,
-                            label: "${e.code} - ${e.description}",
+                            label: labelText,
+                            child: Text(
+                              labelText,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                             onSelected: () {
-                              // Auto-fill details if empty or user wants?
-                              // Usually we just set the code.
-                              // If description is empty, set it?
                               if (_descCtrl.text.isEmpty) {
                                 _descCtrl.text = e.description;
                               }
-                              // Suggest Rate?
                               if (gst == 0 || gst == 18) {
-                                // Only override if default
                                 setState(() {
                                   gst = e.rate;
                                 });
                               }
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                _sacCtrl.text = e.code;
+                              });
                             },
                           );
                         }).toList(),
@@ -112,8 +117,16 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
                       return AutoSuggestBoxItem<String>(
                         value: e.split(' - ').first,
                         label: e,
+                        child: Text(
+                          e,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                         onSelected: () {
-                          _unitCtrl.text = e.split(' - ').first;
+                          final unitVal = e.split(' - ').first;
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            _unitCtrl.text = unitVal;
+                          });
                         },
                       );
                     }).toList(),

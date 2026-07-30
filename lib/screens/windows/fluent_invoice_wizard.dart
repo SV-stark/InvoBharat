@@ -1221,16 +1221,9 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
         context: context,
       );
 
-      // Increment invoice sequence only for new invoices (not edits)
-      if (widget.invoiceToEdit == null) {
-        final currentProfile = ref.read(businessProfileProvider);
-        final updatedProfile = currentProfile.copyWith(
-          invoiceSequence: currentProfile.invoiceSequence + 1,
-        );
-        await ref
-            .read(businessProfileListProvider.notifier)
-            .updateProfile(updatedProfile);
-      }
+      // Reset invoice provider so next new invoice gets fresh auto-incremented sequence
+      ref.read(invoiceProvider.notifier).reset();
+      syncInvoiceControllers(ref.read(invoiceProvider));
 
       // Invalidate invoice list so dashboard refreshes
       ref.invalidate(invoiceListProvider);
@@ -1249,7 +1242,9 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
         },
       );
 
-      Navigator.pop(context); // Go back to dashboard/list
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
     } catch (e) {
       final context = this.context;
       if (!context.mounted) return;

@@ -289,6 +289,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
         estimateIdToMarkConverted: widget.estimateId,
         context: context,
       );
+      ref.read(invoiceProvider.notifier).reset();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Invoice saved successfully")),

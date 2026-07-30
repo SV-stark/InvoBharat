@@ -71,7 +71,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
           final expectedNo =
               "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}";
 
-          if (finalInvoiceNo == expectedNo) {
+          if (finalInvoiceNo == expectedNo ||
+              (profile.invoiceSeries.isNotEmpty &&
+                  finalInvoiceNo.startsWith(profile.invoiceSeries))) {
             await (database.update(
               database.businessProfiles,
             )..where((final t) => t.id.equals(profileId))).write(
@@ -270,7 +272,15 @@ class SqlInvoiceRepository implements InvoiceRepository {
   Future<List<model.Invoice>> getAllInvoices() async {
     final invoiceRows = await (database.select(
       database.invoices,
-    )..where((final t) => t.profileId.equals(profileId))).get();
+    )
+          ..where((final t) => t.profileId.equals(profileId))
+          ..orderBy([
+            (final t) => OrderingTerm(
+                  expression: t.invoiceDate,
+                  mode: OrderingMode.desc,
+                ),
+          ]))
+        .get();
     if (invoiceRows.isEmpty) return [];
     final invoiceIds = invoiceRows.map((final r) => r.id).toList();
     final allItems = await (database.select(database.invoiceItems)

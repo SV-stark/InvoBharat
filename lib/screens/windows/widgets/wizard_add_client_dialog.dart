@@ -56,6 +56,7 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
   @override
   Widget build(final BuildContext context) {
     return ContentDialog(
+      constraints: const BoxConstraints(maxWidth: 600),
       title: const Text("Add New Client"),
       content: Form(
         key: _formKey,
@@ -121,8 +122,15 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
                       controller: _stateCtrl,
                       items: AppStates.states
                           .map(
-                            (final e) =>
-                                AutoSuggestBoxItem<String>(value: e, label: e),
+                            (final e) => AutoSuggestBoxItem<String>(
+                              value: e,
+                              label: e,
+                              child: Text(
+                                e,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           )
                           .toList(),
                       onSelected: (final item) {

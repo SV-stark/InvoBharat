@@ -15,13 +15,31 @@ class InvoiceActions {
     await ref.read(invoiceRepositoryProvider).saveInvoice(invoice);
 
     if (isNew) {
+      final profile = ref.read(businessProfileProvider);
       final seriesList = ref.read(invoiceSeriesProvider);
+
+      String? matchedPrefix;
       for (final series in seriesList) {
-        final expectedNo = "${series.prefix}${series.sequence.toString().padLeft(3, '0')}";
-        if (invoice.invoiceNo == expectedNo) {
-          await ref.read(invoiceSeriesProvider.notifier).incrementSequence(series.prefix);
+        if (invoice.invoiceNo.startsWith(series.prefix)) {
+          matchedPrefix = series.prefix;
           break;
         }
+      }
+
+      if (matchedPrefix != null) {
+        await ref
+            .read(invoiceSeriesProvider.notifier)
+            .incrementSequence(matchedPrefix);
+      } else if (seriesList.isNotEmpty) {
+        await ref
+            .read(invoiceSeriesProvider.notifier)
+            .incrementSequence(seriesList.first.prefix);
+      }
+
+      if (profile.id.isNotEmpty) {
+        await ref
+            .read(businessProfileListProvider.notifier)
+            .incrementInvoiceSequence(profile.id);
       }
     }
 

@@ -448,6 +448,7 @@ class _FluentItemEditDialogState extends State<_FluentItemEditDialog> {
   @override
   Widget build(final BuildContext context) {
     return ContentDialog(
+      constraints: const BoxConstraints(maxWidth: 600),
       title: const Text("Edit Item"),
       content: Column(
         mainAxisSize: MainAxisSize.min,

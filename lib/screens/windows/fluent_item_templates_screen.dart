@@ -150,6 +150,7 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
       context: context,
       builder: (final context) => StatefulBuilder(
         builder: (final context, final setState) => ContentDialog(
+          constraints: const BoxConstraints(maxWidth: 600),
           title: Text(template == null ? "New Template" : "Edit Template"),
           content: Column(
             mainAxisSize: MainAxisSize.min,

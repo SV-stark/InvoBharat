@@ -50,6 +50,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
       });
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(invoiceProvider.notifier).reset();
         syncInvoiceControllers(ref.read(invoiceProvider));
       });
     }
@@ -617,6 +618,8 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
         estimateIdToMarkConverted: widget.estimateIdToMarkConverted,
         context: context,
       );
+
+      ref.read(invoiceProvider.notifier).reset();
 
       if (context.mounted) {
         unawaited(

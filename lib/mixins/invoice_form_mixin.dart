@@ -13,6 +13,8 @@ import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/app_config_provider.dart';
 
+import 'package:invobharat/providers/invoice_series_provider.dart';
+
 /// Mixin to handle form logic for creating/editing Invoices.
 /// Standardizes controller management and common actions.
 mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
@@ -199,12 +201,21 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     }
   }
 
-  /// Generates the next invoice number based on existing invoices
-  Future<String> generateNextInvoiceNumber() async {
+  /// Generates the next invoice number based on active series or business profile
+  Future<String> generateNextInvoiceNumber([final String? seriesPrefix]) async {
     final profile = ref.read(businessProfileProvider);
-    final nextSeq = profile.invoiceSequence;
-    final series = profile.invoiceSeries;
-    return '$series${nextSeq.toString().padLeft(3, '0')}';
+    final seriesList = ref.read(invoiceSeriesProvider);
+    final targetPrefix = seriesPrefix ?? profile.invoiceSeries;
+
+    final series = seriesList.firstWhere(
+      (final s) => s.prefix == targetPrefix,
+      orElse: () => InvoiceSeries(
+        prefix: targetPrefix,
+        sequence: profile.invoiceSequence,
+      ),
+    );
+
+    return '${series.prefix}${series.sequence.toString().padLeft(3, '0')}';
   }
 
   /// Calculates due date based on payment terms
