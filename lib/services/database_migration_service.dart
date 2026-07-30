@@ -73,21 +73,48 @@ class DatabaseMigrationService {
 
   Future<void> fixOrphanData() async {
     try {
-      final profiles = await database.select(database.businessProfiles).get();
+      var profiles = await database.select(database.businessProfiles).get();
+      if (profiles.isEmpty) {
+        int maxSeq = 0;
+        final invoices = await database.select(database.invoices).get();
+        for (final inv in invoices) {
+          final match = RegExp(r'(\d+)$').firstMatch(inv.invoiceNo);
+          if (match != null) {
+            final num = int.tryParse(match.group(1) ?? '0') ?? 0;
+            if (num > maxSeq) maxSeq = num;
+          }
+        }
+        final nextSeq = maxSeq > 0 ? maxSeq + 1 : 1;
+
+        await database.into(database.businessProfiles).insert(
+          BusinessProfilesCompanion.insert(
+            id: const Value('default'),
+            companyName: 'My Business',
+            address: const Value(''),
+            gstin: const Value(''),
+            email: const Value(''),
+            phone: const Value(''),
+            state: const Value('Delhi'),
+            invoiceSeries: const Value('INV-'),
+            invoiceSequence: Value(nextSeq),
+          ),
+        );
+        profiles = await database.select(database.businessProfiles).get();
+      }
+
       if (profiles.isEmpty) return;
+      final targetProfileId = profiles.first.id;
 
-      final firstProfileId = profiles.first.id;
-
-      // Update invoices with empty profileId
+      // Update invoices with empty or orphan profileId
       await database.customStatement(
         'UPDATE invoices SET profile_id = ? WHERE profile_id = ? OR profile_id IS NULL',
-        [firstProfileId, ''],
+        [targetProfileId, ''],
       );
 
-      // Update clients with empty profileId
+      // Update clients with empty or orphan profileId
       await database.customStatement(
         'UPDATE clients SET profile_id = ? WHERE profile_id = ? OR profile_id IS NULL',
-        [firstProfileId, ''],
+        [targetProfileId, ''],
       );
     } catch (e) {
       if (kDebugMode) print("Error fixing orphan data: $e");
