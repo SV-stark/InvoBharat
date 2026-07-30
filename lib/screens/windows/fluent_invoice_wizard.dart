@@ -316,7 +316,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                         )).toList(),
                         onChanged: (final val) async {
                           if (val != null) {
-                            final nextNo = await generateNextInvoiceNumber(val);
+                            final nextNo = await generateNextInvoiceNumber(seriesPrefix: val);
                             invoiceNoCtrl.text = nextNo;
                             notifier.updateInvoiceNo(nextNo);
                           }

@@ -446,6 +446,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
   Future<bool> checkInvoiceExists(
     final String invoiceNumber, {
     final String? excludeId,
+    final DateTime? invoiceDate,
   }) async {
     if (invoiceNumber.trim().isEmpty) return false;
 
@@ -458,6 +459,17 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
     if (excludeId != null && excludeId.trim().isNotEmpty) {
       query.where((final tbl) => tbl.id.equals(excludeId.trim()).not());
+    }
+
+    if (invoiceDate != null) {
+      final fyStartYear =
+          invoiceDate.month >= 4 ? invoiceDate.year : invoiceDate.year - 1;
+      final fyStart = DateTime(fyStartYear, 4, 1);
+      final fyEnd = DateTime(fyStartYear + 1, 3, 31, 23, 59, 59);
+
+      query.where(
+        (final tbl) => tbl.invoiceDate.isBetweenValues(fyStart, fyEnd),
+      );
     }
 
     final result = await query.get();

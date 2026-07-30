@@ -17,6 +17,7 @@ abstract class InvoiceRepository {
   Future<bool> checkInvoiceExists(
     final String invoiceNumber, {
     final String? excludeId,
+    final DateTime? invoiceDate,
   });
 
   // Estimates

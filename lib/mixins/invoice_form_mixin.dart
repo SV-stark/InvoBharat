@@ -161,23 +161,27 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
       var exists = await repository.checkInvoiceExists(
         invoice.invoiceNo,
         excludeId: invoice.id,
+        invoiceDate: invoice.invoiceDate,
       );
 
-      // Auto-recover for new invoices if the generated candidate already exists
+      // Auto-recover for new invoices if the generated candidate already exists in same FY
       if (exists && (invoice.id == null || invoice.id!.isEmpty)) {
-        final uniqueNo = await generateNextInvoiceNumber();
+        final uniqueNo = await generateNextInvoiceNumber(
+          invoiceDate: invoice.invoiceDate,
+        );
         invoice = invoice.copyWith(invoiceNo: uniqueNo);
         ref.read(invoiceProvider.notifier).updateInvoiceNo(uniqueNo);
         syncInvoiceControllers(invoice);
         exists = await repository.checkInvoiceExists(
           uniqueNo,
           excludeId: invoice.id,
+          invoiceDate: invoice.invoiceDate,
         );
       }
 
       if (exists) {
         throw Exception(
-          "Invoice number '${invoice.invoiceNo}' already exists.",
+          "Invoice number '${invoice.invoiceNo}' already exists for this financial year.",
         );
       }
 
@@ -209,7 +213,10 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   }
 
   /// Generates the next available unique invoice number based on active series or business profile
-  Future<String> generateNextInvoiceNumber([final String? seriesPrefix]) async {
+  Future<String> generateNextInvoiceNumber({
+    final String? seriesPrefix,
+    final DateTime? invoiceDate,
+  }) async {
     final profile = ref.read(businessProfileProvider);
     final seriesList = ref.read(invoiceSeriesProvider);
     final repository = ref.read(invoiceRepositoryProvider);
@@ -229,8 +236,10 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     int currentSeq = series.sequence;
     String candidate = '${series.prefix}${currentSeq.toString().padLeft(3, '0')}';
 
-    // Verify candidate against repository to guarantee uniqueness
-    while (await repository.checkInvoiceExists(candidate)) {
+    final targetDate = invoiceDate ?? DateTime.now();
+
+    // Verify candidate against repository to guarantee uniqueness within financial year
+    while (await repository.checkInvoiceExists(candidate, invoiceDate: targetDate)) {
       currentSeq++;
       candidate = '${series.prefix}${currentSeq.toString().padLeft(3, '0')}';
     }

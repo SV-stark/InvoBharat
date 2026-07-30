@@ -161,7 +161,7 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                         )).toList(),
                         onChanged: (final val) async {
                           if (val != null) {
-                            final nextNo = await generateNextInvoiceNumber(val);
+                            final nextNo = await generateNextInvoiceNumber(seriesPrefix: val);
                             invoiceNoCtrl.text = nextNo;
                             ref.read(invoiceProvider.notifier).updateInvoiceNo(nextNo);
                           }
