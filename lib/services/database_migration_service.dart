@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:invobharat/models/client.dart' as model_client;
 import 'package:invobharat/models/invoice.dart' as model_invoice;
+import 'package:invobharat/models/estimate.dart' as model_estimate;
+import 'package:invobharat/models/recurring_profile.dart' as model_recurring;
 import 'package:invobharat/data/sql_invoice_repository.dart';
 import 'package:invobharat/data/sql_client_repository.dart';
 
@@ -20,6 +22,23 @@ class DatabaseMigrationService {
     await fixOrphanData();
 
     final prefs = await SharedPreferences.getInstance();
+
+    // Migrate JSON Estimates and Recurring profiles into SQLite if not done yet
+    final isV13Migrated = prefs.getBool('db_migration_completed_v13') ?? false;
+    if (!isV13Migrated) {
+      try {
+        final sqliteProfiles =
+            await database.select(database.businessProfiles).get();
+        for (final profile in sqliteProfiles) {
+          await _migrateEstimates(profile.id, onProgress);
+          await _migrateRecurring(profile.id, onProgress);
+        }
+        await prefs.setBool('db_migration_completed_v13', true);
+      } catch (e) {
+        if (kDebugMode) print("V13 migration scan error: $e");
+      }
+    }
+
     final isMigrated = prefs.getBool('db_migration_completed_v1') ?? false;
 
     if (isMigrated) {
@@ -57,6 +76,12 @@ class DatabaseMigrationService {
 
         // 3. Migrate Invoices
         await _migrateInvoices(profileId, onProgress);
+
+        // 4. Migrate Estimates
+        await _migrateEstimates(profileId, onProgress);
+
+        // 5. Migrate Recurring Profiles
+        await _migrateRecurring(profileId, onProgress);
       }
 
       onProgress("Finalizing Migration...");
@@ -217,6 +242,77 @@ class DatabaseMigrationService {
       if (kDebugMode) print("Migrated $count invoices.");
     } catch (e) {
       if (kDebugMode) print("Error accessing invoice directory: $e");
+    }
+  }
+
+  Future<void> _migrateEstimates(
+    final String profileId,
+    final Function(String) onProgress,
+  ) async {
+    final sqlRepo = SqlInvoiceRepository(database, profileId);
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final path =
+          '${directory.path}/InvoBharat/profiles/$profileId/estimates';
+      final dir = Directory(path);
+      if (!await dir.exists()) return;
+
+      int count = 0;
+      await for (final file in dir.list(followLinks: false)) {
+        if (file is File && file.path.endsWith('.json')) {
+          try {
+            final String contents = await file.readAsString();
+            final estimate = model_estimate.Estimate.fromJson(
+              jsonDecode(contents),
+            );
+            await sqlRepo.saveEstimate(estimate);
+            count++;
+          } catch (e) {
+            if (kDebugMode) {
+              print("Error migrating estimate file ${file.path}: $e");
+            }
+          }
+        }
+      }
+      if (kDebugMode) print("Migrated $count estimates.");
+    } catch (e) {
+      if (kDebugMode) print("Error accessing estimates directory: $e");
+    }
+  }
+
+  Future<void> _migrateRecurring(
+    final String profileId,
+    final Function(String) onProgress,
+  ) async {
+    final sqlRepo = SqlInvoiceRepository(database, profileId);
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final path = '${directory.path}/InvoBharat/recurring';
+      final dir = Directory(path);
+      if (!await dir.exists()) return;
+
+      int count = 0;
+      await for (final file in dir.list(followLinks: false)) {
+        if (file is File && file.path.endsWith('.json')) {
+          try {
+            final String contents = await file.readAsString();
+            final rec = model_recurring.RecurringProfile.fromJson(
+              jsonDecode(contents),
+            );
+            if (rec.profileId == profileId) {
+              await sqlRepo.saveRecurringProfile(rec);
+              count++;
+            }
+          } catch (e) {
+            if (kDebugMode) {
+              print("Error migrating recurring file ${file.path}: $e");
+            }
+          }
+        }
+      }
+      if (kDebugMode) print("Migrated $count recurring profiles.");
+    } catch (e) {
+      if (kDebugMode) print("Error accessing recurring directory: $e");
     }
   }
 

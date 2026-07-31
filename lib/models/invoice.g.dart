@@ -8,6 +8,7 @@ part of 'invoice.dart';
 
 _Invoice _$InvoiceFromJson(Map<String, dynamic> json) => _Invoice(
   id: json['id'] as String?,
+  profileId: json['profileId'] as String?,
   style: json['style'] as String? ?? 'Modern',
   supplier: Supplier.fromJson(json['supplier'] as Map<String, dynamic>),
   receiver: Receiver.fromJson(json['receiver'] as Map<String, dynamic>),
@@ -57,6 +58,7 @@ _Invoice _$InvoiceFromJson(Map<String, dynamic> json) => _Invoice(
 
 Map<String, dynamic> _$InvoiceToJson(_Invoice instance) => <String, dynamic>{
   'id': instance.id,
+  'profileId': instance.profileId,
   'style': instance.style,
   'supplier': instance.supplier,
   'receiver': instance.receiver,

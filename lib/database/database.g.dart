@@ -5837,6 +5837,2546 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   }
 }
 
+class $EstimatesTable extends Estimates
+    with TableInfo<$EstimatesTable, Estimate> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EstimatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _profileIdMeta = const VerificationMeta(
+    'profileId',
+  );
+  @override
+  late final GeneratedColumn<String> profileId = GeneratedColumn<String>(
+    'profile_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES business_profiles (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _estimateNoMeta = const VerificationMeta(
+    'estimateNo',
+  );
+  @override
+  late final GeneratedColumn<String> estimateNo = GeneratedColumn<String>(
+    'estimate_no',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _expiryDateMeta = const VerificationMeta(
+    'expiryDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> expiryDate = GeneratedColumn<DateTime>(
+    'expiry_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('Draft'),
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _termsMeta = const VerificationMeta('terms');
+  @override
+  late final GeneratedColumn<String> terms = GeneratedColumn<String>(
+    'terms',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _poNumberMeta = const VerificationMeta(
+    'poNumber',
+  );
+  @override
+  late final GeneratedColumn<String> poNumber = GeneratedColumn<String>(
+    'po_number',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _supplierNameMeta = const VerificationMeta(
+    'supplierName',
+  );
+  @override
+  late final GeneratedColumn<String> supplierName = GeneratedColumn<String>(
+    'supplier_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _supplierAddressMeta = const VerificationMeta(
+    'supplierAddress',
+  );
+  @override
+  late final GeneratedColumn<String> supplierAddress = GeneratedColumn<String>(
+    'supplier_address',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _supplierGstinMeta = const VerificationMeta(
+    'supplierGstin',
+  );
+  @override
+  late final GeneratedColumn<String> supplierGstin = GeneratedColumn<String>(
+    'supplier_gstin',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _supplierEmailMeta = const VerificationMeta(
+    'supplierEmail',
+  );
+  @override
+  late final GeneratedColumn<String> supplierEmail = GeneratedColumn<String>(
+    'supplier_email',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _supplierPhoneMeta = const VerificationMeta(
+    'supplierPhone',
+  );
+  @override
+  late final GeneratedColumn<String> supplierPhone = GeneratedColumn<String>(
+    'supplier_phone',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _supplierStateMeta = const VerificationMeta(
+    'supplierState',
+  );
+  @override
+  late final GeneratedColumn<String> supplierState = GeneratedColumn<String>(
+    'supplier_state',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _receiverNameMeta = const VerificationMeta(
+    'receiverName',
+  );
+  @override
+  late final GeneratedColumn<String> receiverName = GeneratedColumn<String>(
+    'receiver_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _receiverAddressMeta = const VerificationMeta(
+    'receiverAddress',
+  );
+  @override
+  late final GeneratedColumn<String> receiverAddress = GeneratedColumn<String>(
+    'receiver_address',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _receiverGstinMeta = const VerificationMeta(
+    'receiverGstin',
+  );
+  @override
+  late final GeneratedColumn<String> receiverGstin = GeneratedColumn<String>(
+    'receiver_gstin',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _receiverPanMeta = const VerificationMeta(
+    'receiverPan',
+  );
+  @override
+  late final GeneratedColumn<String> receiverPan = GeneratedColumn<String>(
+    'receiver_pan',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _receiverStateMeta = const VerificationMeta(
+    'receiverState',
+  );
+  @override
+  late final GeneratedColumn<String> receiverState = GeneratedColumn<String>(
+    'receiver_state',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _receiverStateCodeMeta = const VerificationMeta(
+    'receiverStateCode',
+  );
+  @override
+  late final GeneratedColumn<String> receiverStateCode =
+      GeneratedColumn<String>(
+        'receiver_state_code',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _receiverEmailMeta = const VerificationMeta(
+    'receiverEmail',
+  );
+  @override
+  late final GeneratedColumn<String> receiverEmail = GeneratedColumn<String>(
+    'receiver_email',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _receiverPhoneMeta = const VerificationMeta(
+    'receiverPhone',
+  );
+  @override
+  late final GeneratedColumn<String> receiverPhone = GeneratedColumn<String>(
+    'receiver_phone',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    profileId,
+    estimateNo,
+    date,
+    expiryDate,
+    status,
+    notes,
+    terms,
+    poNumber,
+    supplierName,
+    supplierAddress,
+    supplierGstin,
+    supplierEmail,
+    supplierPhone,
+    supplierState,
+    receiverName,
+    receiverAddress,
+    receiverGstin,
+    receiverPan,
+    receiverState,
+    receiverStateCode,
+    receiverEmail,
+    receiverPhone,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'estimates';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Estimate> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('profile_id')) {
+      context.handle(
+        _profileIdMeta,
+        profileId.isAcceptableOrUnknown(data['profile_id']!, _profileIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_profileIdMeta);
+    }
+    if (data.containsKey('estimate_no')) {
+      context.handle(
+        _estimateNoMeta,
+        estimateNo.isAcceptableOrUnknown(data['estimate_no']!, _estimateNoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_estimateNoMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('expiry_date')) {
+      context.handle(
+        _expiryDateMeta,
+        expiryDate.isAcceptableOrUnknown(data['expiry_date']!, _expiryDateMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_notesMeta);
+    }
+    if (data.containsKey('terms')) {
+      context.handle(
+        _termsMeta,
+        terms.isAcceptableOrUnknown(data['terms']!, _termsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_termsMeta);
+    }
+    if (data.containsKey('po_number')) {
+      context.handle(
+        _poNumberMeta,
+        poNumber.isAcceptableOrUnknown(data['po_number']!, _poNumberMeta),
+      );
+    }
+    if (data.containsKey('supplier_name')) {
+      context.handle(
+        _supplierNameMeta,
+        supplierName.isAcceptableOrUnknown(
+          data['supplier_name']!,
+          _supplierNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('supplier_address')) {
+      context.handle(
+        _supplierAddressMeta,
+        supplierAddress.isAcceptableOrUnknown(
+          data['supplier_address']!,
+          _supplierAddressMeta,
+        ),
+      );
+    }
+    if (data.containsKey('supplier_gstin')) {
+      context.handle(
+        _supplierGstinMeta,
+        supplierGstin.isAcceptableOrUnknown(
+          data['supplier_gstin']!,
+          _supplierGstinMeta,
+        ),
+      );
+    }
+    if (data.containsKey('supplier_email')) {
+      context.handle(
+        _supplierEmailMeta,
+        supplierEmail.isAcceptableOrUnknown(
+          data['supplier_email']!,
+          _supplierEmailMeta,
+        ),
+      );
+    }
+    if (data.containsKey('supplier_phone')) {
+      context.handle(
+        _supplierPhoneMeta,
+        supplierPhone.isAcceptableOrUnknown(
+          data['supplier_phone']!,
+          _supplierPhoneMeta,
+        ),
+      );
+    }
+    if (data.containsKey('supplier_state')) {
+      context.handle(
+        _supplierStateMeta,
+        supplierState.isAcceptableOrUnknown(
+          data['supplier_state']!,
+          _supplierStateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('receiver_name')) {
+      context.handle(
+        _receiverNameMeta,
+        receiverName.isAcceptableOrUnknown(
+          data['receiver_name']!,
+          _receiverNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('receiver_address')) {
+      context.handle(
+        _receiverAddressMeta,
+        receiverAddress.isAcceptableOrUnknown(
+          data['receiver_address']!,
+          _receiverAddressMeta,
+        ),
+      );
+    }
+    if (data.containsKey('receiver_gstin')) {
+      context.handle(
+        _receiverGstinMeta,
+        receiverGstin.isAcceptableOrUnknown(
+          data['receiver_gstin']!,
+          _receiverGstinMeta,
+        ),
+      );
+    }
+    if (data.containsKey('receiver_pan')) {
+      context.handle(
+        _receiverPanMeta,
+        receiverPan.isAcceptableOrUnknown(
+          data['receiver_pan']!,
+          _receiverPanMeta,
+        ),
+      );
+    }
+    if (data.containsKey('receiver_state')) {
+      context.handle(
+        _receiverStateMeta,
+        receiverState.isAcceptableOrUnknown(
+          data['receiver_state']!,
+          _receiverStateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('receiver_state_code')) {
+      context.handle(
+        _receiverStateCodeMeta,
+        receiverStateCode.isAcceptableOrUnknown(
+          data['receiver_state_code']!,
+          _receiverStateCodeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('receiver_email')) {
+      context.handle(
+        _receiverEmailMeta,
+        receiverEmail.isAcceptableOrUnknown(
+          data['receiver_email']!,
+          _receiverEmailMeta,
+        ),
+      );
+    }
+    if (data.containsKey('receiver_phone')) {
+      context.handle(
+        _receiverPhoneMeta,
+        receiverPhone.isAcceptableOrUnknown(
+          data['receiver_phone']!,
+          _receiverPhoneMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Estimate map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Estimate(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      profileId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}profile_id'],
+      )!,
+      estimateNo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}estimate_no'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date'],
+      )!,
+      expiryDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}expiry_date'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      )!,
+      terms: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}terms'],
+      )!,
+      poNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}po_number'],
+      ),
+      supplierName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}supplier_name'],
+      ),
+      supplierAddress: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}supplier_address'],
+      ),
+      supplierGstin: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}supplier_gstin'],
+      ),
+      supplierEmail: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}supplier_email'],
+      ),
+      supplierPhone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}supplier_phone'],
+      ),
+      supplierState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}supplier_state'],
+      ),
+      receiverName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}receiver_name'],
+      ),
+      receiverAddress: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}receiver_address'],
+      ),
+      receiverGstin: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}receiver_gstin'],
+      ),
+      receiverPan: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}receiver_pan'],
+      ),
+      receiverState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}receiver_state'],
+      ),
+      receiverStateCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}receiver_state_code'],
+      ),
+      receiverEmail: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}receiver_email'],
+      ),
+      receiverPhone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}receiver_phone'],
+      ),
+    );
+  }
+
+  @override
+  $EstimatesTable createAlias(String alias) {
+    return $EstimatesTable(attachedDatabase, alias);
+  }
+}
+
+class Estimate extends DataClass implements Insertable<Estimate> {
+  final String id;
+  final String profileId;
+  final String estimateNo;
+  final DateTime date;
+  final DateTime? expiryDate;
+  final String status;
+  final String notes;
+  final String terms;
+  final String? poNumber;
+  final String? supplierName;
+  final String? supplierAddress;
+  final String? supplierGstin;
+  final String? supplierEmail;
+  final String? supplierPhone;
+  final String? supplierState;
+  final String? receiverName;
+  final String? receiverAddress;
+  final String? receiverGstin;
+  final String? receiverPan;
+  final String? receiverState;
+  final String? receiverStateCode;
+  final String? receiverEmail;
+  final String? receiverPhone;
+  const Estimate({
+    required this.id,
+    required this.profileId,
+    required this.estimateNo,
+    required this.date,
+    this.expiryDate,
+    required this.status,
+    required this.notes,
+    required this.terms,
+    this.poNumber,
+    this.supplierName,
+    this.supplierAddress,
+    this.supplierGstin,
+    this.supplierEmail,
+    this.supplierPhone,
+    this.supplierState,
+    this.receiverName,
+    this.receiverAddress,
+    this.receiverGstin,
+    this.receiverPan,
+    this.receiverState,
+    this.receiverStateCode,
+    this.receiverEmail,
+    this.receiverPhone,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['profile_id'] = Variable<String>(profileId);
+    map['estimate_no'] = Variable<String>(estimateNo);
+    map['date'] = Variable<DateTime>(date);
+    if (!nullToAbsent || expiryDate != null) {
+      map['expiry_date'] = Variable<DateTime>(expiryDate);
+    }
+    map['status'] = Variable<String>(status);
+    map['notes'] = Variable<String>(notes);
+    map['terms'] = Variable<String>(terms);
+    if (!nullToAbsent || poNumber != null) {
+      map['po_number'] = Variable<String>(poNumber);
+    }
+    if (!nullToAbsent || supplierName != null) {
+      map['supplier_name'] = Variable<String>(supplierName);
+    }
+    if (!nullToAbsent || supplierAddress != null) {
+      map['supplier_address'] = Variable<String>(supplierAddress);
+    }
+    if (!nullToAbsent || supplierGstin != null) {
+      map['supplier_gstin'] = Variable<String>(supplierGstin);
+    }
+    if (!nullToAbsent || supplierEmail != null) {
+      map['supplier_email'] = Variable<String>(supplierEmail);
+    }
+    if (!nullToAbsent || supplierPhone != null) {
+      map['supplier_phone'] = Variable<String>(supplierPhone);
+    }
+    if (!nullToAbsent || supplierState != null) {
+      map['supplier_state'] = Variable<String>(supplierState);
+    }
+    if (!nullToAbsent || receiverName != null) {
+      map['receiver_name'] = Variable<String>(receiverName);
+    }
+    if (!nullToAbsent || receiverAddress != null) {
+      map['receiver_address'] = Variable<String>(receiverAddress);
+    }
+    if (!nullToAbsent || receiverGstin != null) {
+      map['receiver_gstin'] = Variable<String>(receiverGstin);
+    }
+    if (!nullToAbsent || receiverPan != null) {
+      map['receiver_pan'] = Variable<String>(receiverPan);
+    }
+    if (!nullToAbsent || receiverState != null) {
+      map['receiver_state'] = Variable<String>(receiverState);
+    }
+    if (!nullToAbsent || receiverStateCode != null) {
+      map['receiver_state_code'] = Variable<String>(receiverStateCode);
+    }
+    if (!nullToAbsent || receiverEmail != null) {
+      map['receiver_email'] = Variable<String>(receiverEmail);
+    }
+    if (!nullToAbsent || receiverPhone != null) {
+      map['receiver_phone'] = Variable<String>(receiverPhone);
+    }
+    return map;
+  }
+
+  EstimatesCompanion toCompanion(bool nullToAbsent) {
+    return EstimatesCompanion(
+      id: Value(id),
+      profileId: Value(profileId),
+      estimateNo: Value(estimateNo),
+      date: Value(date),
+      expiryDate: expiryDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(expiryDate),
+      status: Value(status),
+      notes: Value(notes),
+      terms: Value(terms),
+      poNumber: poNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(poNumber),
+      supplierName: supplierName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(supplierName),
+      supplierAddress: supplierAddress == null && nullToAbsent
+          ? const Value.absent()
+          : Value(supplierAddress),
+      supplierGstin: supplierGstin == null && nullToAbsent
+          ? const Value.absent()
+          : Value(supplierGstin),
+      supplierEmail: supplierEmail == null && nullToAbsent
+          ? const Value.absent()
+          : Value(supplierEmail),
+      supplierPhone: supplierPhone == null && nullToAbsent
+          ? const Value.absent()
+          : Value(supplierPhone),
+      supplierState: supplierState == null && nullToAbsent
+          ? const Value.absent()
+          : Value(supplierState),
+      receiverName: receiverName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiverName),
+      receiverAddress: receiverAddress == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiverAddress),
+      receiverGstin: receiverGstin == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiverGstin),
+      receiverPan: receiverPan == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiverPan),
+      receiverState: receiverState == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiverState),
+      receiverStateCode: receiverStateCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiverStateCode),
+      receiverEmail: receiverEmail == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiverEmail),
+      receiverPhone: receiverPhone == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiverPhone),
+    );
+  }
+
+  factory Estimate.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Estimate(
+      id: serializer.fromJson<String>(json['id']),
+      profileId: serializer.fromJson<String>(json['profileId']),
+      estimateNo: serializer.fromJson<String>(json['estimateNo']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      expiryDate: serializer.fromJson<DateTime?>(json['expiryDate']),
+      status: serializer.fromJson<String>(json['status']),
+      notes: serializer.fromJson<String>(json['notes']),
+      terms: serializer.fromJson<String>(json['terms']),
+      poNumber: serializer.fromJson<String?>(json['poNumber']),
+      supplierName: serializer.fromJson<String?>(json['supplierName']),
+      supplierAddress: serializer.fromJson<String?>(json['supplierAddress']),
+      supplierGstin: serializer.fromJson<String?>(json['supplierGstin']),
+      supplierEmail: serializer.fromJson<String?>(json['supplierEmail']),
+      supplierPhone: serializer.fromJson<String?>(json['supplierPhone']),
+      supplierState: serializer.fromJson<String?>(json['supplierState']),
+      receiverName: serializer.fromJson<String?>(json['receiverName']),
+      receiverAddress: serializer.fromJson<String?>(json['receiverAddress']),
+      receiverGstin: serializer.fromJson<String?>(json['receiverGstin']),
+      receiverPan: serializer.fromJson<String?>(json['receiverPan']),
+      receiverState: serializer.fromJson<String?>(json['receiverState']),
+      receiverStateCode: serializer.fromJson<String?>(
+        json['receiverStateCode'],
+      ),
+      receiverEmail: serializer.fromJson<String?>(json['receiverEmail']),
+      receiverPhone: serializer.fromJson<String?>(json['receiverPhone']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'profileId': serializer.toJson<String>(profileId),
+      'estimateNo': serializer.toJson<String>(estimateNo),
+      'date': serializer.toJson<DateTime>(date),
+      'expiryDate': serializer.toJson<DateTime?>(expiryDate),
+      'status': serializer.toJson<String>(status),
+      'notes': serializer.toJson<String>(notes),
+      'terms': serializer.toJson<String>(terms),
+      'poNumber': serializer.toJson<String?>(poNumber),
+      'supplierName': serializer.toJson<String?>(supplierName),
+      'supplierAddress': serializer.toJson<String?>(supplierAddress),
+      'supplierGstin': serializer.toJson<String?>(supplierGstin),
+      'supplierEmail': serializer.toJson<String?>(supplierEmail),
+      'supplierPhone': serializer.toJson<String?>(supplierPhone),
+      'supplierState': serializer.toJson<String?>(supplierState),
+      'receiverName': serializer.toJson<String?>(receiverName),
+      'receiverAddress': serializer.toJson<String?>(receiverAddress),
+      'receiverGstin': serializer.toJson<String?>(receiverGstin),
+      'receiverPan': serializer.toJson<String?>(receiverPan),
+      'receiverState': serializer.toJson<String?>(receiverState),
+      'receiverStateCode': serializer.toJson<String?>(receiverStateCode),
+      'receiverEmail': serializer.toJson<String?>(receiverEmail),
+      'receiverPhone': serializer.toJson<String?>(receiverPhone),
+    };
+  }
+
+  Estimate copyWith({
+    String? id,
+    String? profileId,
+    String? estimateNo,
+    DateTime? date,
+    Value<DateTime?> expiryDate = const Value.absent(),
+    String? status,
+    String? notes,
+    String? terms,
+    Value<String?> poNumber = const Value.absent(),
+    Value<String?> supplierName = const Value.absent(),
+    Value<String?> supplierAddress = const Value.absent(),
+    Value<String?> supplierGstin = const Value.absent(),
+    Value<String?> supplierEmail = const Value.absent(),
+    Value<String?> supplierPhone = const Value.absent(),
+    Value<String?> supplierState = const Value.absent(),
+    Value<String?> receiverName = const Value.absent(),
+    Value<String?> receiverAddress = const Value.absent(),
+    Value<String?> receiverGstin = const Value.absent(),
+    Value<String?> receiverPan = const Value.absent(),
+    Value<String?> receiverState = const Value.absent(),
+    Value<String?> receiverStateCode = const Value.absent(),
+    Value<String?> receiverEmail = const Value.absent(),
+    Value<String?> receiverPhone = const Value.absent(),
+  }) => Estimate(
+    id: id ?? this.id,
+    profileId: profileId ?? this.profileId,
+    estimateNo: estimateNo ?? this.estimateNo,
+    date: date ?? this.date,
+    expiryDate: expiryDate.present ? expiryDate.value : this.expiryDate,
+    status: status ?? this.status,
+    notes: notes ?? this.notes,
+    terms: terms ?? this.terms,
+    poNumber: poNumber.present ? poNumber.value : this.poNumber,
+    supplierName: supplierName.present ? supplierName.value : this.supplierName,
+    supplierAddress: supplierAddress.present
+        ? supplierAddress.value
+        : this.supplierAddress,
+    supplierGstin: supplierGstin.present
+        ? supplierGstin.value
+        : this.supplierGstin,
+    supplierEmail: supplierEmail.present
+        ? supplierEmail.value
+        : this.supplierEmail,
+    supplierPhone: supplierPhone.present
+        ? supplierPhone.value
+        : this.supplierPhone,
+    supplierState: supplierState.present
+        ? supplierState.value
+        : this.supplierState,
+    receiverName: receiverName.present ? receiverName.value : this.receiverName,
+    receiverAddress: receiverAddress.present
+        ? receiverAddress.value
+        : this.receiverAddress,
+    receiverGstin: receiverGstin.present
+        ? receiverGstin.value
+        : this.receiverGstin,
+    receiverPan: receiverPan.present ? receiverPan.value : this.receiverPan,
+    receiverState: receiverState.present
+        ? receiverState.value
+        : this.receiverState,
+    receiverStateCode: receiverStateCode.present
+        ? receiverStateCode.value
+        : this.receiverStateCode,
+    receiverEmail: receiverEmail.present
+        ? receiverEmail.value
+        : this.receiverEmail,
+    receiverPhone: receiverPhone.present
+        ? receiverPhone.value
+        : this.receiverPhone,
+  );
+  Estimate copyWithCompanion(EstimatesCompanion data) {
+    return Estimate(
+      id: data.id.present ? data.id.value : this.id,
+      profileId: data.profileId.present ? data.profileId.value : this.profileId,
+      estimateNo: data.estimateNo.present
+          ? data.estimateNo.value
+          : this.estimateNo,
+      date: data.date.present ? data.date.value : this.date,
+      expiryDate: data.expiryDate.present
+          ? data.expiryDate.value
+          : this.expiryDate,
+      status: data.status.present ? data.status.value : this.status,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      terms: data.terms.present ? data.terms.value : this.terms,
+      poNumber: data.poNumber.present ? data.poNumber.value : this.poNumber,
+      supplierName: data.supplierName.present
+          ? data.supplierName.value
+          : this.supplierName,
+      supplierAddress: data.supplierAddress.present
+          ? data.supplierAddress.value
+          : this.supplierAddress,
+      supplierGstin: data.supplierGstin.present
+          ? data.supplierGstin.value
+          : this.supplierGstin,
+      supplierEmail: data.supplierEmail.present
+          ? data.supplierEmail.value
+          : this.supplierEmail,
+      supplierPhone: data.supplierPhone.present
+          ? data.supplierPhone.value
+          : this.supplierPhone,
+      supplierState: data.supplierState.present
+          ? data.supplierState.value
+          : this.supplierState,
+      receiverName: data.receiverName.present
+          ? data.receiverName.value
+          : this.receiverName,
+      receiverAddress: data.receiverAddress.present
+          ? data.receiverAddress.value
+          : this.receiverAddress,
+      receiverGstin: data.receiverGstin.present
+          ? data.receiverGstin.value
+          : this.receiverGstin,
+      receiverPan: data.receiverPan.present
+          ? data.receiverPan.value
+          : this.receiverPan,
+      receiverState: data.receiverState.present
+          ? data.receiverState.value
+          : this.receiverState,
+      receiverStateCode: data.receiverStateCode.present
+          ? data.receiverStateCode.value
+          : this.receiverStateCode,
+      receiverEmail: data.receiverEmail.present
+          ? data.receiverEmail.value
+          : this.receiverEmail,
+      receiverPhone: data.receiverPhone.present
+          ? data.receiverPhone.value
+          : this.receiverPhone,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Estimate(')
+          ..write('id: $id, ')
+          ..write('profileId: $profileId, ')
+          ..write('estimateNo: $estimateNo, ')
+          ..write('date: $date, ')
+          ..write('expiryDate: $expiryDate, ')
+          ..write('status: $status, ')
+          ..write('notes: $notes, ')
+          ..write('terms: $terms, ')
+          ..write('poNumber: $poNumber, ')
+          ..write('supplierName: $supplierName, ')
+          ..write('supplierAddress: $supplierAddress, ')
+          ..write('supplierGstin: $supplierGstin, ')
+          ..write('supplierEmail: $supplierEmail, ')
+          ..write('supplierPhone: $supplierPhone, ')
+          ..write('supplierState: $supplierState, ')
+          ..write('receiverName: $receiverName, ')
+          ..write('receiverAddress: $receiverAddress, ')
+          ..write('receiverGstin: $receiverGstin, ')
+          ..write('receiverPan: $receiverPan, ')
+          ..write('receiverState: $receiverState, ')
+          ..write('receiverStateCode: $receiverStateCode, ')
+          ..write('receiverEmail: $receiverEmail, ')
+          ..write('receiverPhone: $receiverPhone')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    id,
+    profileId,
+    estimateNo,
+    date,
+    expiryDate,
+    status,
+    notes,
+    terms,
+    poNumber,
+    supplierName,
+    supplierAddress,
+    supplierGstin,
+    supplierEmail,
+    supplierPhone,
+    supplierState,
+    receiverName,
+    receiverAddress,
+    receiverGstin,
+    receiverPan,
+    receiverState,
+    receiverStateCode,
+    receiverEmail,
+    receiverPhone,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Estimate &&
+          other.id == this.id &&
+          other.profileId == this.profileId &&
+          other.estimateNo == this.estimateNo &&
+          other.date == this.date &&
+          other.expiryDate == this.expiryDate &&
+          other.status == this.status &&
+          other.notes == this.notes &&
+          other.terms == this.terms &&
+          other.poNumber == this.poNumber &&
+          other.supplierName == this.supplierName &&
+          other.supplierAddress == this.supplierAddress &&
+          other.supplierGstin == this.supplierGstin &&
+          other.supplierEmail == this.supplierEmail &&
+          other.supplierPhone == this.supplierPhone &&
+          other.supplierState == this.supplierState &&
+          other.receiverName == this.receiverName &&
+          other.receiverAddress == this.receiverAddress &&
+          other.receiverGstin == this.receiverGstin &&
+          other.receiverPan == this.receiverPan &&
+          other.receiverState == this.receiverState &&
+          other.receiverStateCode == this.receiverStateCode &&
+          other.receiverEmail == this.receiverEmail &&
+          other.receiverPhone == this.receiverPhone);
+}
+
+class EstimatesCompanion extends UpdateCompanion<Estimate> {
+  final Value<String> id;
+  final Value<String> profileId;
+  final Value<String> estimateNo;
+  final Value<DateTime> date;
+  final Value<DateTime?> expiryDate;
+  final Value<String> status;
+  final Value<String> notes;
+  final Value<String> terms;
+  final Value<String?> poNumber;
+  final Value<String?> supplierName;
+  final Value<String?> supplierAddress;
+  final Value<String?> supplierGstin;
+  final Value<String?> supplierEmail;
+  final Value<String?> supplierPhone;
+  final Value<String?> supplierState;
+  final Value<String?> receiverName;
+  final Value<String?> receiverAddress;
+  final Value<String?> receiverGstin;
+  final Value<String?> receiverPan;
+  final Value<String?> receiverState;
+  final Value<String?> receiverStateCode;
+  final Value<String?> receiverEmail;
+  final Value<String?> receiverPhone;
+  final Value<int> rowid;
+  const EstimatesCompanion({
+    this.id = const Value.absent(),
+    this.profileId = const Value.absent(),
+    this.estimateNo = const Value.absent(),
+    this.date = const Value.absent(),
+    this.expiryDate = const Value.absent(),
+    this.status = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.terms = const Value.absent(),
+    this.poNumber = const Value.absent(),
+    this.supplierName = const Value.absent(),
+    this.supplierAddress = const Value.absent(),
+    this.supplierGstin = const Value.absent(),
+    this.supplierEmail = const Value.absent(),
+    this.supplierPhone = const Value.absent(),
+    this.supplierState = const Value.absent(),
+    this.receiverName = const Value.absent(),
+    this.receiverAddress = const Value.absent(),
+    this.receiverGstin = const Value.absent(),
+    this.receiverPan = const Value.absent(),
+    this.receiverState = const Value.absent(),
+    this.receiverStateCode = const Value.absent(),
+    this.receiverEmail = const Value.absent(),
+    this.receiverPhone = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  EstimatesCompanion.insert({
+    required String id,
+    required String profileId,
+    required String estimateNo,
+    required DateTime date,
+    this.expiryDate = const Value.absent(),
+    this.status = const Value.absent(),
+    required String notes,
+    required String terms,
+    this.poNumber = const Value.absent(),
+    this.supplierName = const Value.absent(),
+    this.supplierAddress = const Value.absent(),
+    this.supplierGstin = const Value.absent(),
+    this.supplierEmail = const Value.absent(),
+    this.supplierPhone = const Value.absent(),
+    this.supplierState = const Value.absent(),
+    this.receiverName = const Value.absent(),
+    this.receiverAddress = const Value.absent(),
+    this.receiverGstin = const Value.absent(),
+    this.receiverPan = const Value.absent(),
+    this.receiverState = const Value.absent(),
+    this.receiverStateCode = const Value.absent(),
+    this.receiverEmail = const Value.absent(),
+    this.receiverPhone = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       profileId = Value(profileId),
+       estimateNo = Value(estimateNo),
+       date = Value(date),
+       notes = Value(notes),
+       terms = Value(terms);
+  static Insertable<Estimate> custom({
+    Expression<String>? id,
+    Expression<String>? profileId,
+    Expression<String>? estimateNo,
+    Expression<DateTime>? date,
+    Expression<DateTime>? expiryDate,
+    Expression<String>? status,
+    Expression<String>? notes,
+    Expression<String>? terms,
+    Expression<String>? poNumber,
+    Expression<String>? supplierName,
+    Expression<String>? supplierAddress,
+    Expression<String>? supplierGstin,
+    Expression<String>? supplierEmail,
+    Expression<String>? supplierPhone,
+    Expression<String>? supplierState,
+    Expression<String>? receiverName,
+    Expression<String>? receiverAddress,
+    Expression<String>? receiverGstin,
+    Expression<String>? receiverPan,
+    Expression<String>? receiverState,
+    Expression<String>? receiverStateCode,
+    Expression<String>? receiverEmail,
+    Expression<String>? receiverPhone,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (profileId != null) 'profile_id': profileId,
+      if (estimateNo != null) 'estimate_no': estimateNo,
+      if (date != null) 'date': date,
+      if (expiryDate != null) 'expiry_date': expiryDate,
+      if (status != null) 'status': status,
+      if (notes != null) 'notes': notes,
+      if (terms != null) 'terms': terms,
+      if (poNumber != null) 'po_number': poNumber,
+      if (supplierName != null) 'supplier_name': supplierName,
+      if (supplierAddress != null) 'supplier_address': supplierAddress,
+      if (supplierGstin != null) 'supplier_gstin': supplierGstin,
+      if (supplierEmail != null) 'supplier_email': supplierEmail,
+      if (supplierPhone != null) 'supplier_phone': supplierPhone,
+      if (supplierState != null) 'supplier_state': supplierState,
+      if (receiverName != null) 'receiver_name': receiverName,
+      if (receiverAddress != null) 'receiver_address': receiverAddress,
+      if (receiverGstin != null) 'receiver_gstin': receiverGstin,
+      if (receiverPan != null) 'receiver_pan': receiverPan,
+      if (receiverState != null) 'receiver_state': receiverState,
+      if (receiverStateCode != null) 'receiver_state_code': receiverStateCode,
+      if (receiverEmail != null) 'receiver_email': receiverEmail,
+      if (receiverPhone != null) 'receiver_phone': receiverPhone,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  EstimatesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? profileId,
+    Value<String>? estimateNo,
+    Value<DateTime>? date,
+    Value<DateTime?>? expiryDate,
+    Value<String>? status,
+    Value<String>? notes,
+    Value<String>? terms,
+    Value<String?>? poNumber,
+    Value<String?>? supplierName,
+    Value<String?>? supplierAddress,
+    Value<String?>? supplierGstin,
+    Value<String?>? supplierEmail,
+    Value<String?>? supplierPhone,
+    Value<String?>? supplierState,
+    Value<String?>? receiverName,
+    Value<String?>? receiverAddress,
+    Value<String?>? receiverGstin,
+    Value<String?>? receiverPan,
+    Value<String?>? receiverState,
+    Value<String?>? receiverStateCode,
+    Value<String?>? receiverEmail,
+    Value<String?>? receiverPhone,
+    Value<int>? rowid,
+  }) {
+    return EstimatesCompanion(
+      id: id ?? this.id,
+      profileId: profileId ?? this.profileId,
+      estimateNo: estimateNo ?? this.estimateNo,
+      date: date ?? this.date,
+      expiryDate: expiryDate ?? this.expiryDate,
+      status: status ?? this.status,
+      notes: notes ?? this.notes,
+      terms: terms ?? this.terms,
+      poNumber: poNumber ?? this.poNumber,
+      supplierName: supplierName ?? this.supplierName,
+      supplierAddress: supplierAddress ?? this.supplierAddress,
+      supplierGstin: supplierGstin ?? this.supplierGstin,
+      supplierEmail: supplierEmail ?? this.supplierEmail,
+      supplierPhone: supplierPhone ?? this.supplierPhone,
+      supplierState: supplierState ?? this.supplierState,
+      receiverName: receiverName ?? this.receiverName,
+      receiverAddress: receiverAddress ?? this.receiverAddress,
+      receiverGstin: receiverGstin ?? this.receiverGstin,
+      receiverPan: receiverPan ?? this.receiverPan,
+      receiverState: receiverState ?? this.receiverState,
+      receiverStateCode: receiverStateCode ?? this.receiverStateCode,
+      receiverEmail: receiverEmail ?? this.receiverEmail,
+      receiverPhone: receiverPhone ?? this.receiverPhone,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (profileId.present) {
+      map['profile_id'] = Variable<String>(profileId.value);
+    }
+    if (estimateNo.present) {
+      map['estimate_no'] = Variable<String>(estimateNo.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (expiryDate.present) {
+      map['expiry_date'] = Variable<DateTime>(expiryDate.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (terms.present) {
+      map['terms'] = Variable<String>(terms.value);
+    }
+    if (poNumber.present) {
+      map['po_number'] = Variable<String>(poNumber.value);
+    }
+    if (supplierName.present) {
+      map['supplier_name'] = Variable<String>(supplierName.value);
+    }
+    if (supplierAddress.present) {
+      map['supplier_address'] = Variable<String>(supplierAddress.value);
+    }
+    if (supplierGstin.present) {
+      map['supplier_gstin'] = Variable<String>(supplierGstin.value);
+    }
+    if (supplierEmail.present) {
+      map['supplier_email'] = Variable<String>(supplierEmail.value);
+    }
+    if (supplierPhone.present) {
+      map['supplier_phone'] = Variable<String>(supplierPhone.value);
+    }
+    if (supplierState.present) {
+      map['supplier_state'] = Variable<String>(supplierState.value);
+    }
+    if (receiverName.present) {
+      map['receiver_name'] = Variable<String>(receiverName.value);
+    }
+    if (receiverAddress.present) {
+      map['receiver_address'] = Variable<String>(receiverAddress.value);
+    }
+    if (receiverGstin.present) {
+      map['receiver_gstin'] = Variable<String>(receiverGstin.value);
+    }
+    if (receiverPan.present) {
+      map['receiver_pan'] = Variable<String>(receiverPan.value);
+    }
+    if (receiverState.present) {
+      map['receiver_state'] = Variable<String>(receiverState.value);
+    }
+    if (receiverStateCode.present) {
+      map['receiver_state_code'] = Variable<String>(receiverStateCode.value);
+    }
+    if (receiverEmail.present) {
+      map['receiver_email'] = Variable<String>(receiverEmail.value);
+    }
+    if (receiverPhone.present) {
+      map['receiver_phone'] = Variable<String>(receiverPhone.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EstimatesCompanion(')
+          ..write('id: $id, ')
+          ..write('profileId: $profileId, ')
+          ..write('estimateNo: $estimateNo, ')
+          ..write('date: $date, ')
+          ..write('expiryDate: $expiryDate, ')
+          ..write('status: $status, ')
+          ..write('notes: $notes, ')
+          ..write('terms: $terms, ')
+          ..write('poNumber: $poNumber, ')
+          ..write('supplierName: $supplierName, ')
+          ..write('supplierAddress: $supplierAddress, ')
+          ..write('supplierGstin: $supplierGstin, ')
+          ..write('supplierEmail: $supplierEmail, ')
+          ..write('supplierPhone: $supplierPhone, ')
+          ..write('supplierState: $supplierState, ')
+          ..write('receiverName: $receiverName, ')
+          ..write('receiverAddress: $receiverAddress, ')
+          ..write('receiverGstin: $receiverGstin, ')
+          ..write('receiverPan: $receiverPan, ')
+          ..write('receiverState: $receiverState, ')
+          ..write('receiverStateCode: $receiverStateCode, ')
+          ..write('receiverEmail: $receiverEmail, ')
+          ..write('receiverPhone: $receiverPhone, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $EstimateItemsTable extends EstimateItems
+    with TableInfo<$EstimateItemsTable, EstimateItem> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EstimateItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _estimateIdMeta = const VerificationMeta(
+    'estimateId',
+  );
+  @override
+  late final GeneratedColumn<String> estimateId = GeneratedColumn<String>(
+    'estimate_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES estimates (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sacCodeMeta = const VerificationMeta(
+    'sacCode',
+  );
+  @override
+  late final GeneratedColumn<String> sacCode = GeneratedColumn<String>(
+    'sac_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _codeTypeMeta = const VerificationMeta(
+    'codeType',
+  );
+  @override
+  late final GeneratedColumn<String> codeType = GeneratedColumn<String>(
+    'code_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _yearMeta = const VerificationMeta('year');
+  @override
+  late final GeneratedColumn<String> year = GeneratedColumn<String>(
+    'year',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
+    'amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _discountMeta = const VerificationMeta(
+    'discount',
+  );
+  @override
+  late final GeneratedColumn<double> discount = GeneratedColumn<double>(
+    'discount',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _quantityMeta = const VerificationMeta(
+    'quantity',
+  );
+  @override
+  late final GeneratedColumn<double> quantity = GeneratedColumn<double>(
+    'quantity',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _unitMeta = const VerificationMeta('unit');
+  @override
+  late final GeneratedColumn<String> unit = GeneratedColumn<String>(
+    'unit',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _gstRateMeta = const VerificationMeta(
+    'gstRate',
+  );
+  @override
+  late final GeneratedColumn<double> gstRate = GeneratedColumn<double>(
+    'gst_rate',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    estimateId,
+    description,
+    sacCode,
+    codeType,
+    year,
+    amount,
+    discount,
+    quantity,
+    unit,
+    gstRate,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'estimate_items';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<EstimateItem> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('estimate_id')) {
+      context.handle(
+        _estimateIdMeta,
+        estimateId.isAcceptableOrUnknown(data['estimate_id']!, _estimateIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_estimateIdMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_descriptionMeta);
+    }
+    if (data.containsKey('sac_code')) {
+      context.handle(
+        _sacCodeMeta,
+        sacCode.isAcceptableOrUnknown(data['sac_code']!, _sacCodeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sacCodeMeta);
+    }
+    if (data.containsKey('code_type')) {
+      context.handle(
+        _codeTypeMeta,
+        codeType.isAcceptableOrUnknown(data['code_type']!, _codeTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_codeTypeMeta);
+    }
+    if (data.containsKey('year')) {
+      context.handle(
+        _yearMeta,
+        year.isAcceptableOrUnknown(data['year']!, _yearMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_yearMeta);
+    }
+    if (data.containsKey('amount')) {
+      context.handle(
+        _amountMeta,
+        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_amountMeta);
+    }
+    if (data.containsKey('discount')) {
+      context.handle(
+        _discountMeta,
+        discount.isAcceptableOrUnknown(data['discount']!, _discountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_discountMeta);
+    }
+    if (data.containsKey('quantity')) {
+      context.handle(
+        _quantityMeta,
+        quantity.isAcceptableOrUnknown(data['quantity']!, _quantityMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_quantityMeta);
+    }
+    if (data.containsKey('unit')) {
+      context.handle(
+        _unitMeta,
+        unit.isAcceptableOrUnknown(data['unit']!, _unitMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_unitMeta);
+    }
+    if (data.containsKey('gst_rate')) {
+      context.handle(
+        _gstRateMeta,
+        gstRate.isAcceptableOrUnknown(data['gst_rate']!, _gstRateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_gstRateMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  EstimateItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return EstimateItem(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      estimateId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}estimate_id'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      sacCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sac_code'],
+      )!,
+      codeType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}code_type'],
+      )!,
+      year: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}year'],
+      )!,
+      amount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}amount'],
+      )!,
+      discount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}discount'],
+      )!,
+      quantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}quantity'],
+      )!,
+      unit: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit'],
+      )!,
+      gstRate: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}gst_rate'],
+      )!,
+    );
+  }
+
+  @override
+  $EstimateItemsTable createAlias(String alias) {
+    return $EstimateItemsTable(attachedDatabase, alias);
+  }
+}
+
+class EstimateItem extends DataClass implements Insertable<EstimateItem> {
+  final String id;
+  final String estimateId;
+  final String description;
+  final String sacCode;
+  final String codeType;
+  final String year;
+  final double amount;
+  final double discount;
+  final double quantity;
+  final String unit;
+  final double gstRate;
+  const EstimateItem({
+    required this.id,
+    required this.estimateId,
+    required this.description,
+    required this.sacCode,
+    required this.codeType,
+    required this.year,
+    required this.amount,
+    required this.discount,
+    required this.quantity,
+    required this.unit,
+    required this.gstRate,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['estimate_id'] = Variable<String>(estimateId);
+    map['description'] = Variable<String>(description);
+    map['sac_code'] = Variable<String>(sacCode);
+    map['code_type'] = Variable<String>(codeType);
+    map['year'] = Variable<String>(year);
+    map['amount'] = Variable<double>(amount);
+    map['discount'] = Variable<double>(discount);
+    map['quantity'] = Variable<double>(quantity);
+    map['unit'] = Variable<String>(unit);
+    map['gst_rate'] = Variable<double>(gstRate);
+    return map;
+  }
+
+  EstimateItemsCompanion toCompanion(bool nullToAbsent) {
+    return EstimateItemsCompanion(
+      id: Value(id),
+      estimateId: Value(estimateId),
+      description: Value(description),
+      sacCode: Value(sacCode),
+      codeType: Value(codeType),
+      year: Value(year),
+      amount: Value(amount),
+      discount: Value(discount),
+      quantity: Value(quantity),
+      unit: Value(unit),
+      gstRate: Value(gstRate),
+    );
+  }
+
+  factory EstimateItem.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return EstimateItem(
+      id: serializer.fromJson<String>(json['id']),
+      estimateId: serializer.fromJson<String>(json['estimateId']),
+      description: serializer.fromJson<String>(json['description']),
+      sacCode: serializer.fromJson<String>(json['sacCode']),
+      codeType: serializer.fromJson<String>(json['codeType']),
+      year: serializer.fromJson<String>(json['year']),
+      amount: serializer.fromJson<double>(json['amount']),
+      discount: serializer.fromJson<double>(json['discount']),
+      quantity: serializer.fromJson<double>(json['quantity']),
+      unit: serializer.fromJson<String>(json['unit']),
+      gstRate: serializer.fromJson<double>(json['gstRate']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'estimateId': serializer.toJson<String>(estimateId),
+      'description': serializer.toJson<String>(description),
+      'sacCode': serializer.toJson<String>(sacCode),
+      'codeType': serializer.toJson<String>(codeType),
+      'year': serializer.toJson<String>(year),
+      'amount': serializer.toJson<double>(amount),
+      'discount': serializer.toJson<double>(discount),
+      'quantity': serializer.toJson<double>(quantity),
+      'unit': serializer.toJson<String>(unit),
+      'gstRate': serializer.toJson<double>(gstRate),
+    };
+  }
+
+  EstimateItem copyWith({
+    String? id,
+    String? estimateId,
+    String? description,
+    String? sacCode,
+    String? codeType,
+    String? year,
+    double? amount,
+    double? discount,
+    double? quantity,
+    String? unit,
+    double? gstRate,
+  }) => EstimateItem(
+    id: id ?? this.id,
+    estimateId: estimateId ?? this.estimateId,
+    description: description ?? this.description,
+    sacCode: sacCode ?? this.sacCode,
+    codeType: codeType ?? this.codeType,
+    year: year ?? this.year,
+    amount: amount ?? this.amount,
+    discount: discount ?? this.discount,
+    quantity: quantity ?? this.quantity,
+    unit: unit ?? this.unit,
+    gstRate: gstRate ?? this.gstRate,
+  );
+  EstimateItem copyWithCompanion(EstimateItemsCompanion data) {
+    return EstimateItem(
+      id: data.id.present ? data.id.value : this.id,
+      estimateId: data.estimateId.present
+          ? data.estimateId.value
+          : this.estimateId,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      sacCode: data.sacCode.present ? data.sacCode.value : this.sacCode,
+      codeType: data.codeType.present ? data.codeType.value : this.codeType,
+      year: data.year.present ? data.year.value : this.year,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      discount: data.discount.present ? data.discount.value : this.discount,
+      quantity: data.quantity.present ? data.quantity.value : this.quantity,
+      unit: data.unit.present ? data.unit.value : this.unit,
+      gstRate: data.gstRate.present ? data.gstRate.value : this.gstRate,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EstimateItem(')
+          ..write('id: $id, ')
+          ..write('estimateId: $estimateId, ')
+          ..write('description: $description, ')
+          ..write('sacCode: $sacCode, ')
+          ..write('codeType: $codeType, ')
+          ..write('year: $year, ')
+          ..write('amount: $amount, ')
+          ..write('discount: $discount, ')
+          ..write('quantity: $quantity, ')
+          ..write('unit: $unit, ')
+          ..write('gstRate: $gstRate')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    estimateId,
+    description,
+    sacCode,
+    codeType,
+    year,
+    amount,
+    discount,
+    quantity,
+    unit,
+    gstRate,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is EstimateItem &&
+          other.id == this.id &&
+          other.estimateId == this.estimateId &&
+          other.description == this.description &&
+          other.sacCode == this.sacCode &&
+          other.codeType == this.codeType &&
+          other.year == this.year &&
+          other.amount == this.amount &&
+          other.discount == this.discount &&
+          other.quantity == this.quantity &&
+          other.unit == this.unit &&
+          other.gstRate == this.gstRate);
+}
+
+class EstimateItemsCompanion extends UpdateCompanion<EstimateItem> {
+  final Value<String> id;
+  final Value<String> estimateId;
+  final Value<String> description;
+  final Value<String> sacCode;
+  final Value<String> codeType;
+  final Value<String> year;
+  final Value<double> amount;
+  final Value<double> discount;
+  final Value<double> quantity;
+  final Value<String> unit;
+  final Value<double> gstRate;
+  final Value<int> rowid;
+  const EstimateItemsCompanion({
+    this.id = const Value.absent(),
+    this.estimateId = const Value.absent(),
+    this.description = const Value.absent(),
+    this.sacCode = const Value.absent(),
+    this.codeType = const Value.absent(),
+    this.year = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.discount = const Value.absent(),
+    this.quantity = const Value.absent(),
+    this.unit = const Value.absent(),
+    this.gstRate = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  EstimateItemsCompanion.insert({
+    required String id,
+    required String estimateId,
+    required String description,
+    required String sacCode,
+    required String codeType,
+    required String year,
+    required double amount,
+    required double discount,
+    required double quantity,
+    required String unit,
+    required double gstRate,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       estimateId = Value(estimateId),
+       description = Value(description),
+       sacCode = Value(sacCode),
+       codeType = Value(codeType),
+       year = Value(year),
+       amount = Value(amount),
+       discount = Value(discount),
+       quantity = Value(quantity),
+       unit = Value(unit),
+       gstRate = Value(gstRate);
+  static Insertable<EstimateItem> custom({
+    Expression<String>? id,
+    Expression<String>? estimateId,
+    Expression<String>? description,
+    Expression<String>? sacCode,
+    Expression<String>? codeType,
+    Expression<String>? year,
+    Expression<double>? amount,
+    Expression<double>? discount,
+    Expression<double>? quantity,
+    Expression<String>? unit,
+    Expression<double>? gstRate,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (estimateId != null) 'estimate_id': estimateId,
+      if (description != null) 'description': description,
+      if (sacCode != null) 'sac_code': sacCode,
+      if (codeType != null) 'code_type': codeType,
+      if (year != null) 'year': year,
+      if (amount != null) 'amount': amount,
+      if (discount != null) 'discount': discount,
+      if (quantity != null) 'quantity': quantity,
+      if (unit != null) 'unit': unit,
+      if (gstRate != null) 'gst_rate': gstRate,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  EstimateItemsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? estimateId,
+    Value<String>? description,
+    Value<String>? sacCode,
+    Value<String>? codeType,
+    Value<String>? year,
+    Value<double>? amount,
+    Value<double>? discount,
+    Value<double>? quantity,
+    Value<String>? unit,
+    Value<double>? gstRate,
+    Value<int>? rowid,
+  }) {
+    return EstimateItemsCompanion(
+      id: id ?? this.id,
+      estimateId: estimateId ?? this.estimateId,
+      description: description ?? this.description,
+      sacCode: sacCode ?? this.sacCode,
+      codeType: codeType ?? this.codeType,
+      year: year ?? this.year,
+      amount: amount ?? this.amount,
+      discount: discount ?? this.discount,
+      quantity: quantity ?? this.quantity,
+      unit: unit ?? this.unit,
+      gstRate: gstRate ?? this.gstRate,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (estimateId.present) {
+      map['estimate_id'] = Variable<String>(estimateId.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (sacCode.present) {
+      map['sac_code'] = Variable<String>(sacCode.value);
+    }
+    if (codeType.present) {
+      map['code_type'] = Variable<String>(codeType.value);
+    }
+    if (year.present) {
+      map['year'] = Variable<String>(year.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<double>(amount.value);
+    }
+    if (discount.present) {
+      map['discount'] = Variable<double>(discount.value);
+    }
+    if (quantity.present) {
+      map['quantity'] = Variable<double>(quantity.value);
+    }
+    if (unit.present) {
+      map['unit'] = Variable<String>(unit.value);
+    }
+    if (gstRate.present) {
+      map['gst_rate'] = Variable<double>(gstRate.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EstimateItemsCompanion(')
+          ..write('id: $id, ')
+          ..write('estimateId: $estimateId, ')
+          ..write('description: $description, ')
+          ..write('sacCode: $sacCode, ')
+          ..write('codeType: $codeType, ')
+          ..write('year: $year, ')
+          ..write('amount: $amount, ')
+          ..write('discount: $discount, ')
+          ..write('quantity: $quantity, ')
+          ..write('unit: $unit, ')
+          ..write('gstRate: $gstRate, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RecurringProfilesTableTable extends RecurringProfilesTable
+    with TableInfo<$RecurringProfilesTableTable, RecurringProfilesTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RecurringProfilesTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _profileIdMeta = const VerificationMeta(
+    'profileId',
+  );
+  @override
+  late final GeneratedColumn<String> profileId = GeneratedColumn<String>(
+    'profile_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES business_profiles (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _intervalMeta = const VerificationMeta(
+    'interval',
+  );
+  @override
+  late final GeneratedColumn<int> interval = GeneratedColumn<int>(
+    'interval',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nextRunDateMeta = const VerificationMeta(
+    'nextRunDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> nextRunDate = GeneratedColumn<DateTime>(
+    'next_run_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lastRunDateMeta = const VerificationMeta(
+    'lastRunDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastRunDate = GeneratedColumn<DateTime>(
+    'last_run_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _dueDaysMeta = const VerificationMeta(
+    'dueDays',
+  );
+  @override
+  late final GeneratedColumn<int> dueDays = GeneratedColumn<int>(
+    'due_days',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _baseInvoiceJsonMeta = const VerificationMeta(
+    'baseInvoiceJson',
+  );
+  @override
+  late final GeneratedColumn<String> baseInvoiceJson = GeneratedColumn<String>(
+    'base_invoice_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    profileId,
+    interval,
+    nextRunDate,
+    lastRunDate,
+    isActive,
+    dueDays,
+    baseInvoiceJson,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'recurring_profiles_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RecurringProfilesTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('profile_id')) {
+      context.handle(
+        _profileIdMeta,
+        profileId.isAcceptableOrUnknown(data['profile_id']!, _profileIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_profileIdMeta);
+    }
+    if (data.containsKey('interval')) {
+      context.handle(
+        _intervalMeta,
+        interval.isAcceptableOrUnknown(data['interval']!, _intervalMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_intervalMeta);
+    }
+    if (data.containsKey('next_run_date')) {
+      context.handle(
+        _nextRunDateMeta,
+        nextRunDate.isAcceptableOrUnknown(
+          data['next_run_date']!,
+          _nextRunDateMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_nextRunDateMeta);
+    }
+    if (data.containsKey('last_run_date')) {
+      context.handle(
+        _lastRunDateMeta,
+        lastRunDate.isAcceptableOrUnknown(
+          data['last_run_date']!,
+          _lastRunDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
+    if (data.containsKey('due_days')) {
+      context.handle(
+        _dueDaysMeta,
+        dueDays.isAcceptableOrUnknown(data['due_days']!, _dueDaysMeta),
+      );
+    }
+    if (data.containsKey('base_invoice_json')) {
+      context.handle(
+        _baseInvoiceJsonMeta,
+        baseInvoiceJson.isAcceptableOrUnknown(
+          data['base_invoice_json']!,
+          _baseInvoiceJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_baseInvoiceJsonMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RecurringProfilesTableData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RecurringProfilesTableData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      profileId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}profile_id'],
+      )!,
+      interval: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}interval'],
+      )!,
+      nextRunDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}next_run_date'],
+      )!,
+      lastRunDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_run_date'],
+      ),
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
+      dueDays: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}due_days'],
+      ),
+      baseInvoiceJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}base_invoice_json'],
+      )!,
+    );
+  }
+
+  @override
+  $RecurringProfilesTableTable createAlias(String alias) {
+    return $RecurringProfilesTableTable(attachedDatabase, alias);
+  }
+}
+
+class RecurringProfilesTableData extends DataClass
+    implements Insertable<RecurringProfilesTableData> {
+  final String id;
+  final String profileId;
+  final int interval;
+  final DateTime nextRunDate;
+  final DateTime? lastRunDate;
+  final bool isActive;
+  final int? dueDays;
+  final String baseInvoiceJson;
+  const RecurringProfilesTableData({
+    required this.id,
+    required this.profileId,
+    required this.interval,
+    required this.nextRunDate,
+    this.lastRunDate,
+    required this.isActive,
+    this.dueDays,
+    required this.baseInvoiceJson,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['profile_id'] = Variable<String>(profileId);
+    map['interval'] = Variable<int>(interval);
+    map['next_run_date'] = Variable<DateTime>(nextRunDate);
+    if (!nullToAbsent || lastRunDate != null) {
+      map['last_run_date'] = Variable<DateTime>(lastRunDate);
+    }
+    map['is_active'] = Variable<bool>(isActive);
+    if (!nullToAbsent || dueDays != null) {
+      map['due_days'] = Variable<int>(dueDays);
+    }
+    map['base_invoice_json'] = Variable<String>(baseInvoiceJson);
+    return map;
+  }
+
+  RecurringProfilesTableCompanion toCompanion(bool nullToAbsent) {
+    return RecurringProfilesTableCompanion(
+      id: Value(id),
+      profileId: Value(profileId),
+      interval: Value(interval),
+      nextRunDate: Value(nextRunDate),
+      lastRunDate: lastRunDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastRunDate),
+      isActive: Value(isActive),
+      dueDays: dueDays == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dueDays),
+      baseInvoiceJson: Value(baseInvoiceJson),
+    );
+  }
+
+  factory RecurringProfilesTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RecurringProfilesTableData(
+      id: serializer.fromJson<String>(json['id']),
+      profileId: serializer.fromJson<String>(json['profileId']),
+      interval: serializer.fromJson<int>(json['interval']),
+      nextRunDate: serializer.fromJson<DateTime>(json['nextRunDate']),
+      lastRunDate: serializer.fromJson<DateTime?>(json['lastRunDate']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      dueDays: serializer.fromJson<int?>(json['dueDays']),
+      baseInvoiceJson: serializer.fromJson<String>(json['baseInvoiceJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'profileId': serializer.toJson<String>(profileId),
+      'interval': serializer.toJson<int>(interval),
+      'nextRunDate': serializer.toJson<DateTime>(nextRunDate),
+      'lastRunDate': serializer.toJson<DateTime?>(lastRunDate),
+      'isActive': serializer.toJson<bool>(isActive),
+      'dueDays': serializer.toJson<int?>(dueDays),
+      'baseInvoiceJson': serializer.toJson<String>(baseInvoiceJson),
+    };
+  }
+
+  RecurringProfilesTableData copyWith({
+    String? id,
+    String? profileId,
+    int? interval,
+    DateTime? nextRunDate,
+    Value<DateTime?> lastRunDate = const Value.absent(),
+    bool? isActive,
+    Value<int?> dueDays = const Value.absent(),
+    String? baseInvoiceJson,
+  }) => RecurringProfilesTableData(
+    id: id ?? this.id,
+    profileId: profileId ?? this.profileId,
+    interval: interval ?? this.interval,
+    nextRunDate: nextRunDate ?? this.nextRunDate,
+    lastRunDate: lastRunDate.present ? lastRunDate.value : this.lastRunDate,
+    isActive: isActive ?? this.isActive,
+    dueDays: dueDays.present ? dueDays.value : this.dueDays,
+    baseInvoiceJson: baseInvoiceJson ?? this.baseInvoiceJson,
+  );
+  RecurringProfilesTableData copyWithCompanion(
+    RecurringProfilesTableCompanion data,
+  ) {
+    return RecurringProfilesTableData(
+      id: data.id.present ? data.id.value : this.id,
+      profileId: data.profileId.present ? data.profileId.value : this.profileId,
+      interval: data.interval.present ? data.interval.value : this.interval,
+      nextRunDate: data.nextRunDate.present
+          ? data.nextRunDate.value
+          : this.nextRunDate,
+      lastRunDate: data.lastRunDate.present
+          ? data.lastRunDate.value
+          : this.lastRunDate,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      dueDays: data.dueDays.present ? data.dueDays.value : this.dueDays,
+      baseInvoiceJson: data.baseInvoiceJson.present
+          ? data.baseInvoiceJson.value
+          : this.baseInvoiceJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecurringProfilesTableData(')
+          ..write('id: $id, ')
+          ..write('profileId: $profileId, ')
+          ..write('interval: $interval, ')
+          ..write('nextRunDate: $nextRunDate, ')
+          ..write('lastRunDate: $lastRunDate, ')
+          ..write('isActive: $isActive, ')
+          ..write('dueDays: $dueDays, ')
+          ..write('baseInvoiceJson: $baseInvoiceJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    profileId,
+    interval,
+    nextRunDate,
+    lastRunDate,
+    isActive,
+    dueDays,
+    baseInvoiceJson,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RecurringProfilesTableData &&
+          other.id == this.id &&
+          other.profileId == this.profileId &&
+          other.interval == this.interval &&
+          other.nextRunDate == this.nextRunDate &&
+          other.lastRunDate == this.lastRunDate &&
+          other.isActive == this.isActive &&
+          other.dueDays == this.dueDays &&
+          other.baseInvoiceJson == this.baseInvoiceJson);
+}
+
+class RecurringProfilesTableCompanion
+    extends UpdateCompanion<RecurringProfilesTableData> {
+  final Value<String> id;
+  final Value<String> profileId;
+  final Value<int> interval;
+  final Value<DateTime> nextRunDate;
+  final Value<DateTime?> lastRunDate;
+  final Value<bool> isActive;
+  final Value<int?> dueDays;
+  final Value<String> baseInvoiceJson;
+  final Value<int> rowid;
+  const RecurringProfilesTableCompanion({
+    this.id = const Value.absent(),
+    this.profileId = const Value.absent(),
+    this.interval = const Value.absent(),
+    this.nextRunDate = const Value.absent(),
+    this.lastRunDate = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.dueDays = const Value.absent(),
+    this.baseInvoiceJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RecurringProfilesTableCompanion.insert({
+    required String id,
+    required String profileId,
+    required int interval,
+    required DateTime nextRunDate,
+    this.lastRunDate = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.dueDays = const Value.absent(),
+    required String baseInvoiceJson,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       profileId = Value(profileId),
+       interval = Value(interval),
+       nextRunDate = Value(nextRunDate),
+       baseInvoiceJson = Value(baseInvoiceJson);
+  static Insertable<RecurringProfilesTableData> custom({
+    Expression<String>? id,
+    Expression<String>? profileId,
+    Expression<int>? interval,
+    Expression<DateTime>? nextRunDate,
+    Expression<DateTime>? lastRunDate,
+    Expression<bool>? isActive,
+    Expression<int>? dueDays,
+    Expression<String>? baseInvoiceJson,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (profileId != null) 'profile_id': profileId,
+      if (interval != null) 'interval': interval,
+      if (nextRunDate != null) 'next_run_date': nextRunDate,
+      if (lastRunDate != null) 'last_run_date': lastRunDate,
+      if (isActive != null) 'is_active': isActive,
+      if (dueDays != null) 'due_days': dueDays,
+      if (baseInvoiceJson != null) 'base_invoice_json': baseInvoiceJson,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RecurringProfilesTableCompanion copyWith({
+    Value<String>? id,
+    Value<String>? profileId,
+    Value<int>? interval,
+    Value<DateTime>? nextRunDate,
+    Value<DateTime?>? lastRunDate,
+    Value<bool>? isActive,
+    Value<int?>? dueDays,
+    Value<String>? baseInvoiceJson,
+    Value<int>? rowid,
+  }) {
+    return RecurringProfilesTableCompanion(
+      id: id ?? this.id,
+      profileId: profileId ?? this.profileId,
+      interval: interval ?? this.interval,
+      nextRunDate: nextRunDate ?? this.nextRunDate,
+      lastRunDate: lastRunDate ?? this.lastRunDate,
+      isActive: isActive ?? this.isActive,
+      dueDays: dueDays ?? this.dueDays,
+      baseInvoiceJson: baseInvoiceJson ?? this.baseInvoiceJson,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (profileId.present) {
+      map['profile_id'] = Variable<String>(profileId.value);
+    }
+    if (interval.present) {
+      map['interval'] = Variable<int>(interval.value);
+    }
+    if (nextRunDate.present) {
+      map['next_run_date'] = Variable<DateTime>(nextRunDate.value);
+    }
+    if (lastRunDate.present) {
+      map['last_run_date'] = Variable<DateTime>(lastRunDate.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (dueDays.present) {
+      map['due_days'] = Variable<int>(dueDays.value);
+    }
+    if (baseInvoiceJson.present) {
+      map['base_invoice_json'] = Variable<String>(baseInvoiceJson.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecurringProfilesTableCompanion(')
+          ..write('id: $id, ')
+          ..write('profileId: $profileId, ')
+          ..write('interval: $interval, ')
+          ..write('nextRunDate: $nextRunDate, ')
+          ..write('lastRunDate: $lastRunDate, ')
+          ..write('isActive: $isActive, ')
+          ..write('dueDays: $dueDays, ')
+          ..write('baseInvoiceJson: $baseInvoiceJson, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5849,6 +8389,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PaymentsTable payments = $PaymentsTable(this);
   late final $BankAccountsTable bankAccounts = $BankAccountsTable(this);
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
+  late final $EstimatesTable estimates = $EstimatesTable(this);
+  late final $EstimateItemsTable estimateItems = $EstimateItemsTable(this);
+  late final $RecurringProfilesTableTable recurringProfilesTable =
+      $RecurringProfilesTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5861,6 +8405,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     payments,
     bankAccounts,
     appSettings,
+    estimates,
+    estimateItems,
+    recurringProfilesTable,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -5905,6 +8452,29 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('bank_accounts', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'business_profiles',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('estimates', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'estimates',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('estimate_items', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'business_profiles',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [
+        TableUpdate('recurring_profiles_table', kind: UpdateKind.delete),
+      ],
     ),
   ]);
 }
@@ -6032,6 +8602,50 @@ final class $$BusinessProfilesTableReferences
     ).filter((f) => f.profileId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_bankAccountsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$EstimatesTable, List<Estimate>>
+  _estimatesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.estimates,
+    aliasName: 'business_profiles__id__estimates__profile_id',
+  );
+
+  $$EstimatesTableProcessedTableManager get estimatesRefs {
+    final manager = $$EstimatesTableTableManager(
+      $_db,
+      $_db.estimates,
+    ).filter((f) => f.profileId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_estimatesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $RecurringProfilesTableTable,
+    List<RecurringProfilesTableData>
+  >
+  _recurringProfilesTableRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.recurringProfilesTable,
+        aliasName:
+            'business_profiles__id__recurring_profiles_table__profile_id',
+      );
+
+  $$RecurringProfilesTableTableProcessedTableManager
+  get recurringProfilesTableRefs {
+    final manager = $$RecurringProfilesTableTableTableManager(
+      $_db,
+      $_db.recurringProfilesTable,
+    ).filter((f) => f.profileId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _recurringProfilesTableRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -6254,6 +8868,57 @@ class $$BusinessProfilesTableFilterComposer
                 $removeJoinBuilderFromRootComposer,
           ),
     );
+    return f(composer);
+  }
+
+  Expression<bool> estimatesRefs(
+    Expression<bool> Function($$EstimatesTableFilterComposer f) f,
+  ) {
+    final $$EstimatesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.estimates,
+      getReferencedColumn: (t) => t.profileId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EstimatesTableFilterComposer(
+            $db: $db,
+            $table: $db.estimates,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> recurringProfilesTableRefs(
+    Expression<bool> Function($$RecurringProfilesTableTableFilterComposer f) f,
+  ) {
+    final $$RecurringProfilesTableTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.recurringProfilesTable,
+          getReferencedColumn: (t) => t.profileId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RecurringProfilesTableTableFilterComposer(
+                $db: $db,
+                $table: $db.recurringProfilesTable,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
@@ -6587,6 +9252,57 @@ class $$BusinessProfilesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> estimatesRefs<T extends Object>(
+    Expression<T> Function($$EstimatesTableAnnotationComposer a) f,
+  ) {
+    final $$EstimatesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.estimates,
+      getReferencedColumn: (t) => t.profileId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EstimatesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.estimates,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> recurringProfilesTableRefs<T extends Object>(
+    Expression<T> Function($$RecurringProfilesTableTableAnnotationComposer a) f,
+  ) {
+    final $$RecurringProfilesTableTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.recurringProfilesTable,
+          getReferencedColumn: (t) => t.profileId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RecurringProfilesTableTableAnnotationComposer(
+                $db: $db,
+                $table: $db.recurringProfilesTable,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$BusinessProfilesTableTableManager
@@ -6606,6 +9322,8 @@ class $$BusinessProfilesTableTableManager
             bool clientsRefs,
             bool invoicesRefs,
             bool bankAccountsRefs,
+            bool estimatesRefs,
+            bool recurringProfilesTableRefs,
           })
         > {
   $$BusinessProfilesTableTableManager(
@@ -6754,6 +9472,8 @@ class $$BusinessProfilesTableTableManager
                 clientsRefs = false,
                 invoicesRefs = false,
                 bankAccountsRefs = false,
+                estimatesRefs = false,
+                recurringProfilesTableRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -6761,6 +9481,8 @@ class $$BusinessProfilesTableTableManager
                     if (clientsRefs) db.clients,
                     if (invoicesRefs) db.invoices,
                     if (bankAccountsRefs) db.bankAccounts,
+                    if (estimatesRefs) db.estimates,
+                    if (recurringProfilesTableRefs) db.recurringProfilesTable,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -6828,6 +9550,48 @@ class $$BusinessProfilesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (estimatesRefs)
+                        await $_getPrefetchedData<
+                          BusinessProfile,
+                          $BusinessProfilesTable,
+                          Estimate
+                        >(
+                          currentTable: table,
+                          referencedTable: $$BusinessProfilesTableReferences
+                              ._estimatesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$BusinessProfilesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).estimatesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.profileId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (recurringProfilesTableRefs)
+                        await $_getPrefetchedData<
+                          BusinessProfile,
+                          $BusinessProfilesTable,
+                          RecurringProfilesTableData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$BusinessProfilesTableReferences
+                              ._recurringProfilesTableRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$BusinessProfilesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).recurringProfilesTableRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.profileId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -6852,6 +9616,8 @@ typedef $$BusinessProfilesTableProcessedTableManager =
         bool clientsRefs,
         bool invoicesRefs,
         bool bankAccountsRefs,
+        bool estimatesRefs,
+        bool recurringProfilesTableRefs,
       })
     >;
 typedef $$ClientsTableCreateCompanionBuilder =
@@ -9863,6 +12629,1632 @@ typedef $$AppSettingsTableProcessedTableManager =
       AppSetting,
       PrefetchHooks Function()
     >;
+typedef $$EstimatesTableCreateCompanionBuilder =
+    EstimatesCompanion Function({
+      required String id,
+      required String profileId,
+      required String estimateNo,
+      required DateTime date,
+      Value<DateTime?> expiryDate,
+      Value<String> status,
+      required String notes,
+      required String terms,
+      Value<String?> poNumber,
+      Value<String?> supplierName,
+      Value<String?> supplierAddress,
+      Value<String?> supplierGstin,
+      Value<String?> supplierEmail,
+      Value<String?> supplierPhone,
+      Value<String?> supplierState,
+      Value<String?> receiverName,
+      Value<String?> receiverAddress,
+      Value<String?> receiverGstin,
+      Value<String?> receiverPan,
+      Value<String?> receiverState,
+      Value<String?> receiverStateCode,
+      Value<String?> receiverEmail,
+      Value<String?> receiverPhone,
+      Value<int> rowid,
+    });
+typedef $$EstimatesTableUpdateCompanionBuilder =
+    EstimatesCompanion Function({
+      Value<String> id,
+      Value<String> profileId,
+      Value<String> estimateNo,
+      Value<DateTime> date,
+      Value<DateTime?> expiryDate,
+      Value<String> status,
+      Value<String> notes,
+      Value<String> terms,
+      Value<String?> poNumber,
+      Value<String?> supplierName,
+      Value<String?> supplierAddress,
+      Value<String?> supplierGstin,
+      Value<String?> supplierEmail,
+      Value<String?> supplierPhone,
+      Value<String?> supplierState,
+      Value<String?> receiverName,
+      Value<String?> receiverAddress,
+      Value<String?> receiverGstin,
+      Value<String?> receiverPan,
+      Value<String?> receiverState,
+      Value<String?> receiverStateCode,
+      Value<String?> receiverEmail,
+      Value<String?> receiverPhone,
+      Value<int> rowid,
+    });
+
+final class $$EstimatesTableReferences
+    extends BaseReferences<_$AppDatabase, $EstimatesTable, Estimate> {
+  $$EstimatesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $BusinessProfilesTable _profileIdTable(_$AppDatabase db) => db
+      .businessProfiles
+      .createAlias('estimates__profile_id__business_profiles__id');
+
+  $$BusinessProfilesTableProcessedTableManager get profileId {
+    final $_column = $_itemColumn<String>('profile_id')!;
+
+    final manager = $$BusinessProfilesTableTableManager(
+      $_db,
+      $_db.businessProfiles,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_profileIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$EstimateItemsTable, List<EstimateItem>>
+  _estimateItemsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.estimateItems,
+    aliasName: 'estimates__id__estimate_items__estimate_id',
+  );
+
+  $$EstimateItemsTableProcessedTableManager get estimateItemsRefs {
+    final manager = $$EstimateItemsTableTableManager(
+      $_db,
+      $_db.estimateItems,
+    ).filter((f) => f.estimateId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_estimateItemsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$EstimatesTableFilterComposer
+    extends Composer<_$AppDatabase, $EstimatesTable> {
+  $$EstimatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get estimateNo => $composableBuilder(
+    column: $table.estimateNo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get expiryDate => $composableBuilder(
+    column: $table.expiryDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get terms => $composableBuilder(
+    column: $table.terms,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get poNumber => $composableBuilder(
+    column: $table.poNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get supplierName => $composableBuilder(
+    column: $table.supplierName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get supplierAddress => $composableBuilder(
+    column: $table.supplierAddress,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get supplierGstin => $composableBuilder(
+    column: $table.supplierGstin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get supplierEmail => $composableBuilder(
+    column: $table.supplierEmail,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get supplierPhone => $composableBuilder(
+    column: $table.supplierPhone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get supplierState => $composableBuilder(
+    column: $table.supplierState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get receiverName => $composableBuilder(
+    column: $table.receiverName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get receiverAddress => $composableBuilder(
+    column: $table.receiverAddress,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get receiverGstin => $composableBuilder(
+    column: $table.receiverGstin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get receiverPan => $composableBuilder(
+    column: $table.receiverPan,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get receiverState => $composableBuilder(
+    column: $table.receiverState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get receiverStateCode => $composableBuilder(
+    column: $table.receiverStateCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get receiverEmail => $composableBuilder(
+    column: $table.receiverEmail,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get receiverPhone => $composableBuilder(
+    column: $table.receiverPhone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$BusinessProfilesTableFilterComposer get profileId {
+    final $$BusinessProfilesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.businessProfiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BusinessProfilesTableFilterComposer(
+            $db: $db,
+            $table: $db.businessProfiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> estimateItemsRefs(
+    Expression<bool> Function($$EstimateItemsTableFilterComposer f) f,
+  ) {
+    final $$EstimateItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.estimateItems,
+      getReferencedColumn: (t) => t.estimateId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EstimateItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.estimateItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$EstimatesTableOrderingComposer
+    extends Composer<_$AppDatabase, $EstimatesTable> {
+  $$EstimatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get estimateNo => $composableBuilder(
+    column: $table.estimateNo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get expiryDate => $composableBuilder(
+    column: $table.expiryDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get terms => $composableBuilder(
+    column: $table.terms,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get poNumber => $composableBuilder(
+    column: $table.poNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get supplierName => $composableBuilder(
+    column: $table.supplierName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get supplierAddress => $composableBuilder(
+    column: $table.supplierAddress,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get supplierGstin => $composableBuilder(
+    column: $table.supplierGstin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get supplierEmail => $composableBuilder(
+    column: $table.supplierEmail,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get supplierPhone => $composableBuilder(
+    column: $table.supplierPhone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get supplierState => $composableBuilder(
+    column: $table.supplierState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get receiverName => $composableBuilder(
+    column: $table.receiverName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get receiverAddress => $composableBuilder(
+    column: $table.receiverAddress,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get receiverGstin => $composableBuilder(
+    column: $table.receiverGstin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get receiverPan => $composableBuilder(
+    column: $table.receiverPan,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get receiverState => $composableBuilder(
+    column: $table.receiverState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get receiverStateCode => $composableBuilder(
+    column: $table.receiverStateCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get receiverEmail => $composableBuilder(
+    column: $table.receiverEmail,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get receiverPhone => $composableBuilder(
+    column: $table.receiverPhone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$BusinessProfilesTableOrderingComposer get profileId {
+    final $$BusinessProfilesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.businessProfiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BusinessProfilesTableOrderingComposer(
+            $db: $db,
+            $table: $db.businessProfiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$EstimatesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EstimatesTable> {
+  $$EstimatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get estimateNo => $composableBuilder(
+    column: $table.estimateNo,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get expiryDate => $composableBuilder(
+    column: $table.expiryDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get terms =>
+      $composableBuilder(column: $table.terms, builder: (column) => column);
+
+  GeneratedColumn<String> get poNumber =>
+      $composableBuilder(column: $table.poNumber, builder: (column) => column);
+
+  GeneratedColumn<String> get supplierName => $composableBuilder(
+    column: $table.supplierName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get supplierAddress => $composableBuilder(
+    column: $table.supplierAddress,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get supplierGstin => $composableBuilder(
+    column: $table.supplierGstin,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get supplierEmail => $composableBuilder(
+    column: $table.supplierEmail,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get supplierPhone => $composableBuilder(
+    column: $table.supplierPhone,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get supplierState => $composableBuilder(
+    column: $table.supplierState,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get receiverName => $composableBuilder(
+    column: $table.receiverName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get receiverAddress => $composableBuilder(
+    column: $table.receiverAddress,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get receiverGstin => $composableBuilder(
+    column: $table.receiverGstin,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get receiverPan => $composableBuilder(
+    column: $table.receiverPan,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get receiverState => $composableBuilder(
+    column: $table.receiverState,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get receiverStateCode => $composableBuilder(
+    column: $table.receiverStateCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get receiverEmail => $composableBuilder(
+    column: $table.receiverEmail,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get receiverPhone => $composableBuilder(
+    column: $table.receiverPhone,
+    builder: (column) => column,
+  );
+
+  $$BusinessProfilesTableAnnotationComposer get profileId {
+    final $$BusinessProfilesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.businessProfiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BusinessProfilesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.businessProfiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> estimateItemsRefs<T extends Object>(
+    Expression<T> Function($$EstimateItemsTableAnnotationComposer a) f,
+  ) {
+    final $$EstimateItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.estimateItems,
+      getReferencedColumn: (t) => t.estimateId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EstimateItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.estimateItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$EstimatesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $EstimatesTable,
+          Estimate,
+          $$EstimatesTableFilterComposer,
+          $$EstimatesTableOrderingComposer,
+          $$EstimatesTableAnnotationComposer,
+          $$EstimatesTableCreateCompanionBuilder,
+          $$EstimatesTableUpdateCompanionBuilder,
+          (Estimate, $$EstimatesTableReferences),
+          Estimate,
+          PrefetchHooks Function({bool profileId, bool estimateItemsRefs})
+        > {
+  $$EstimatesTableTableManager(_$AppDatabase db, $EstimatesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EstimatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EstimatesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EstimatesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> profileId = const Value.absent(),
+                Value<String> estimateNo = const Value.absent(),
+                Value<DateTime> date = const Value.absent(),
+                Value<DateTime?> expiryDate = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<String> terms = const Value.absent(),
+                Value<String?> poNumber = const Value.absent(),
+                Value<String?> supplierName = const Value.absent(),
+                Value<String?> supplierAddress = const Value.absent(),
+                Value<String?> supplierGstin = const Value.absent(),
+                Value<String?> supplierEmail = const Value.absent(),
+                Value<String?> supplierPhone = const Value.absent(),
+                Value<String?> supplierState = const Value.absent(),
+                Value<String?> receiverName = const Value.absent(),
+                Value<String?> receiverAddress = const Value.absent(),
+                Value<String?> receiverGstin = const Value.absent(),
+                Value<String?> receiverPan = const Value.absent(),
+                Value<String?> receiverState = const Value.absent(),
+                Value<String?> receiverStateCode = const Value.absent(),
+                Value<String?> receiverEmail = const Value.absent(),
+                Value<String?> receiverPhone = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EstimatesCompanion(
+                id: id,
+                profileId: profileId,
+                estimateNo: estimateNo,
+                date: date,
+                expiryDate: expiryDate,
+                status: status,
+                notes: notes,
+                terms: terms,
+                poNumber: poNumber,
+                supplierName: supplierName,
+                supplierAddress: supplierAddress,
+                supplierGstin: supplierGstin,
+                supplierEmail: supplierEmail,
+                supplierPhone: supplierPhone,
+                supplierState: supplierState,
+                receiverName: receiverName,
+                receiverAddress: receiverAddress,
+                receiverGstin: receiverGstin,
+                receiverPan: receiverPan,
+                receiverState: receiverState,
+                receiverStateCode: receiverStateCode,
+                receiverEmail: receiverEmail,
+                receiverPhone: receiverPhone,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String profileId,
+                required String estimateNo,
+                required DateTime date,
+                Value<DateTime?> expiryDate = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                required String notes,
+                required String terms,
+                Value<String?> poNumber = const Value.absent(),
+                Value<String?> supplierName = const Value.absent(),
+                Value<String?> supplierAddress = const Value.absent(),
+                Value<String?> supplierGstin = const Value.absent(),
+                Value<String?> supplierEmail = const Value.absent(),
+                Value<String?> supplierPhone = const Value.absent(),
+                Value<String?> supplierState = const Value.absent(),
+                Value<String?> receiverName = const Value.absent(),
+                Value<String?> receiverAddress = const Value.absent(),
+                Value<String?> receiverGstin = const Value.absent(),
+                Value<String?> receiverPan = const Value.absent(),
+                Value<String?> receiverState = const Value.absent(),
+                Value<String?> receiverStateCode = const Value.absent(),
+                Value<String?> receiverEmail = const Value.absent(),
+                Value<String?> receiverPhone = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EstimatesCompanion.insert(
+                id: id,
+                profileId: profileId,
+                estimateNo: estimateNo,
+                date: date,
+                expiryDate: expiryDate,
+                status: status,
+                notes: notes,
+                terms: terms,
+                poNumber: poNumber,
+                supplierName: supplierName,
+                supplierAddress: supplierAddress,
+                supplierGstin: supplierGstin,
+                supplierEmail: supplierEmail,
+                supplierPhone: supplierPhone,
+                supplierState: supplierState,
+                receiverName: receiverName,
+                receiverAddress: receiverAddress,
+                receiverGstin: receiverGstin,
+                receiverPan: receiverPan,
+                receiverState: receiverState,
+                receiverStateCode: receiverStateCode,
+                receiverEmail: receiverEmail,
+                receiverPhone: receiverPhone,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$EstimatesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({profileId = false, estimateItemsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (estimateItemsRefs) db.estimateItems,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (profileId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.profileId,
+                                    referencedTable: $$EstimatesTableReferences
+                                        ._profileIdTable(db),
+                                    referencedColumn: $$EstimatesTableReferences
+                                        ._profileIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (estimateItemsRefs)
+                        await $_getPrefetchedData<
+                          Estimate,
+                          $EstimatesTable,
+                          EstimateItem
+                        >(
+                          currentTable: table,
+                          referencedTable: $$EstimatesTableReferences
+                              ._estimateItemsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$EstimatesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).estimateItemsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.estimateId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$EstimatesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $EstimatesTable,
+      Estimate,
+      $$EstimatesTableFilterComposer,
+      $$EstimatesTableOrderingComposer,
+      $$EstimatesTableAnnotationComposer,
+      $$EstimatesTableCreateCompanionBuilder,
+      $$EstimatesTableUpdateCompanionBuilder,
+      (Estimate, $$EstimatesTableReferences),
+      Estimate,
+      PrefetchHooks Function({bool profileId, bool estimateItemsRefs})
+    >;
+typedef $$EstimateItemsTableCreateCompanionBuilder =
+    EstimateItemsCompanion Function({
+      required String id,
+      required String estimateId,
+      required String description,
+      required String sacCode,
+      required String codeType,
+      required String year,
+      required double amount,
+      required double discount,
+      required double quantity,
+      required String unit,
+      required double gstRate,
+      Value<int> rowid,
+    });
+typedef $$EstimateItemsTableUpdateCompanionBuilder =
+    EstimateItemsCompanion Function({
+      Value<String> id,
+      Value<String> estimateId,
+      Value<String> description,
+      Value<String> sacCode,
+      Value<String> codeType,
+      Value<String> year,
+      Value<double> amount,
+      Value<double> discount,
+      Value<double> quantity,
+      Value<String> unit,
+      Value<double> gstRate,
+      Value<int> rowid,
+    });
+
+final class $$EstimateItemsTableReferences
+    extends BaseReferences<_$AppDatabase, $EstimateItemsTable, EstimateItem> {
+  $$EstimateItemsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $EstimatesTable _estimateIdTable(_$AppDatabase db) =>
+      db.estimates.createAlias('estimate_items__estimate_id__estimates__id');
+
+  $$EstimatesTableProcessedTableManager get estimateId {
+    final $_column = $_itemColumn<String>('estimate_id')!;
+
+    final manager = $$EstimatesTableTableManager(
+      $_db,
+      $_db.estimates,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_estimateIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$EstimateItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $EstimateItemsTable> {
+  $$EstimateItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sacCode => $composableBuilder(
+    column: $table.sacCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get codeType => $composableBuilder(
+    column: $table.codeType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get year => $composableBuilder(
+    column: $table.year,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get discount => $composableBuilder(
+    column: $table.discount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get gstRate => $composableBuilder(
+    column: $table.gstRate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$EstimatesTableFilterComposer get estimateId {
+    final $$EstimatesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.estimateId,
+      referencedTable: $db.estimates,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EstimatesTableFilterComposer(
+            $db: $db,
+            $table: $db.estimates,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$EstimateItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $EstimateItemsTable> {
+  $$EstimateItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sacCode => $composableBuilder(
+    column: $table.sacCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get codeType => $composableBuilder(
+    column: $table.codeType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get year => $composableBuilder(
+    column: $table.year,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get discount => $composableBuilder(
+    column: $table.discount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get gstRate => $composableBuilder(
+    column: $table.gstRate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$EstimatesTableOrderingComposer get estimateId {
+    final $$EstimatesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.estimateId,
+      referencedTable: $db.estimates,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EstimatesTableOrderingComposer(
+            $db: $db,
+            $table: $db.estimates,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$EstimateItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EstimateItemsTable> {
+  $$EstimateItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sacCode =>
+      $composableBuilder(column: $table.sacCode, builder: (column) => column);
+
+  GeneratedColumn<String> get codeType =>
+      $composableBuilder(column: $table.codeType, builder: (column) => column);
+
+  GeneratedColumn<String> get year =>
+      $composableBuilder(column: $table.year, builder: (column) => column);
+
+  GeneratedColumn<double> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<double> get discount =>
+      $composableBuilder(column: $table.discount, builder: (column) => column);
+
+  GeneratedColumn<double> get quantity =>
+      $composableBuilder(column: $table.quantity, builder: (column) => column);
+
+  GeneratedColumn<String> get unit =>
+      $composableBuilder(column: $table.unit, builder: (column) => column);
+
+  GeneratedColumn<double> get gstRate =>
+      $composableBuilder(column: $table.gstRate, builder: (column) => column);
+
+  $$EstimatesTableAnnotationComposer get estimateId {
+    final $$EstimatesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.estimateId,
+      referencedTable: $db.estimates,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EstimatesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.estimates,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$EstimateItemsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $EstimateItemsTable,
+          EstimateItem,
+          $$EstimateItemsTableFilterComposer,
+          $$EstimateItemsTableOrderingComposer,
+          $$EstimateItemsTableAnnotationComposer,
+          $$EstimateItemsTableCreateCompanionBuilder,
+          $$EstimateItemsTableUpdateCompanionBuilder,
+          (EstimateItem, $$EstimateItemsTableReferences),
+          EstimateItem,
+          PrefetchHooks Function({bool estimateId})
+        > {
+  $$EstimateItemsTableTableManager(_$AppDatabase db, $EstimateItemsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EstimateItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EstimateItemsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EstimateItemsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> estimateId = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<String> sacCode = const Value.absent(),
+                Value<String> codeType = const Value.absent(),
+                Value<String> year = const Value.absent(),
+                Value<double> amount = const Value.absent(),
+                Value<double> discount = const Value.absent(),
+                Value<double> quantity = const Value.absent(),
+                Value<String> unit = const Value.absent(),
+                Value<double> gstRate = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EstimateItemsCompanion(
+                id: id,
+                estimateId: estimateId,
+                description: description,
+                sacCode: sacCode,
+                codeType: codeType,
+                year: year,
+                amount: amount,
+                discount: discount,
+                quantity: quantity,
+                unit: unit,
+                gstRate: gstRate,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String estimateId,
+                required String description,
+                required String sacCode,
+                required String codeType,
+                required String year,
+                required double amount,
+                required double discount,
+                required double quantity,
+                required String unit,
+                required double gstRate,
+                Value<int> rowid = const Value.absent(),
+              }) => EstimateItemsCompanion.insert(
+                id: id,
+                estimateId: estimateId,
+                description: description,
+                sacCode: sacCode,
+                codeType: codeType,
+                year: year,
+                amount: amount,
+                discount: discount,
+                quantity: quantity,
+                unit: unit,
+                gstRate: gstRate,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$EstimateItemsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({estimateId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (estimateId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.estimateId,
+                                referencedTable: $$EstimateItemsTableReferences
+                                    ._estimateIdTable(db),
+                                referencedColumn: $$EstimateItemsTableReferences
+                                    ._estimateIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$EstimateItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $EstimateItemsTable,
+      EstimateItem,
+      $$EstimateItemsTableFilterComposer,
+      $$EstimateItemsTableOrderingComposer,
+      $$EstimateItemsTableAnnotationComposer,
+      $$EstimateItemsTableCreateCompanionBuilder,
+      $$EstimateItemsTableUpdateCompanionBuilder,
+      (EstimateItem, $$EstimateItemsTableReferences),
+      EstimateItem,
+      PrefetchHooks Function({bool estimateId})
+    >;
+typedef $$RecurringProfilesTableTableCreateCompanionBuilder =
+    RecurringProfilesTableCompanion Function({
+      required String id,
+      required String profileId,
+      required int interval,
+      required DateTime nextRunDate,
+      Value<DateTime?> lastRunDate,
+      Value<bool> isActive,
+      Value<int?> dueDays,
+      required String baseInvoiceJson,
+      Value<int> rowid,
+    });
+typedef $$RecurringProfilesTableTableUpdateCompanionBuilder =
+    RecurringProfilesTableCompanion Function({
+      Value<String> id,
+      Value<String> profileId,
+      Value<int> interval,
+      Value<DateTime> nextRunDate,
+      Value<DateTime?> lastRunDate,
+      Value<bool> isActive,
+      Value<int?> dueDays,
+      Value<String> baseInvoiceJson,
+      Value<int> rowid,
+    });
+
+final class $$RecurringProfilesTableTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $RecurringProfilesTableTable,
+          RecurringProfilesTableData
+        > {
+  $$RecurringProfilesTableTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $BusinessProfilesTable _profileIdTable(_$AppDatabase db) =>
+      db.businessProfiles.createAlias(
+        'recurring_profiles_table__profile_id__business_profiles__id',
+      );
+
+  $$BusinessProfilesTableProcessedTableManager get profileId {
+    final $_column = $_itemColumn<String>('profile_id')!;
+
+    final manager = $$BusinessProfilesTableTableManager(
+      $_db,
+      $_db.businessProfiles,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_profileIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$RecurringProfilesTableTableFilterComposer
+    extends Composer<_$AppDatabase, $RecurringProfilesTableTable> {
+  $$RecurringProfilesTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get interval => $composableBuilder(
+    column: $table.interval,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get nextRunDate => $composableBuilder(
+    column: $table.nextRunDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastRunDate => $composableBuilder(
+    column: $table.lastRunDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dueDays => $composableBuilder(
+    column: $table.dueDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get baseInvoiceJson => $composableBuilder(
+    column: $table.baseInvoiceJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$BusinessProfilesTableFilterComposer get profileId {
+    final $$BusinessProfilesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.businessProfiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BusinessProfilesTableFilterComposer(
+            $db: $db,
+            $table: $db.businessProfiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RecurringProfilesTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $RecurringProfilesTableTable> {
+  $$RecurringProfilesTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get interval => $composableBuilder(
+    column: $table.interval,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get nextRunDate => $composableBuilder(
+    column: $table.nextRunDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastRunDate => $composableBuilder(
+    column: $table.lastRunDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dueDays => $composableBuilder(
+    column: $table.dueDays,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get baseInvoiceJson => $composableBuilder(
+    column: $table.baseInvoiceJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$BusinessProfilesTableOrderingComposer get profileId {
+    final $$BusinessProfilesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.businessProfiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BusinessProfilesTableOrderingComposer(
+            $db: $db,
+            $table: $db.businessProfiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RecurringProfilesTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RecurringProfilesTableTable> {
+  $$RecurringProfilesTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get interval =>
+      $composableBuilder(column: $table.interval, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get nextRunDate => $composableBuilder(
+    column: $table.nextRunDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastRunDate => $composableBuilder(
+    column: $table.lastRunDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<int> get dueDays =>
+      $composableBuilder(column: $table.dueDays, builder: (column) => column);
+
+  GeneratedColumn<String> get baseInvoiceJson => $composableBuilder(
+    column: $table.baseInvoiceJson,
+    builder: (column) => column,
+  );
+
+  $$BusinessProfilesTableAnnotationComposer get profileId {
+    final $$BusinessProfilesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.businessProfiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BusinessProfilesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.businessProfiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RecurringProfilesTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RecurringProfilesTableTable,
+          RecurringProfilesTableData,
+          $$RecurringProfilesTableTableFilterComposer,
+          $$RecurringProfilesTableTableOrderingComposer,
+          $$RecurringProfilesTableTableAnnotationComposer,
+          $$RecurringProfilesTableTableCreateCompanionBuilder,
+          $$RecurringProfilesTableTableUpdateCompanionBuilder,
+          (RecurringProfilesTableData, $$RecurringProfilesTableTableReferences),
+          RecurringProfilesTableData,
+          PrefetchHooks Function({bool profileId})
+        > {
+  $$RecurringProfilesTableTableTableManager(
+    _$AppDatabase db,
+    $RecurringProfilesTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RecurringProfilesTableTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$RecurringProfilesTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$RecurringProfilesTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> profileId = const Value.absent(),
+                Value<int> interval = const Value.absent(),
+                Value<DateTime> nextRunDate = const Value.absent(),
+                Value<DateTime?> lastRunDate = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<int?> dueDays = const Value.absent(),
+                Value<String> baseInvoiceJson = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RecurringProfilesTableCompanion(
+                id: id,
+                profileId: profileId,
+                interval: interval,
+                nextRunDate: nextRunDate,
+                lastRunDate: lastRunDate,
+                isActive: isActive,
+                dueDays: dueDays,
+                baseInvoiceJson: baseInvoiceJson,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String profileId,
+                required int interval,
+                required DateTime nextRunDate,
+                Value<DateTime?> lastRunDate = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<int?> dueDays = const Value.absent(),
+                required String baseInvoiceJson,
+                Value<int> rowid = const Value.absent(),
+              }) => RecurringProfilesTableCompanion.insert(
+                id: id,
+                profileId: profileId,
+                interval: interval,
+                nextRunDate: nextRunDate,
+                lastRunDate: lastRunDate,
+                isActive: isActive,
+                dueDays: dueDays,
+                baseInvoiceJson: baseInvoiceJson,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$RecurringProfilesTableTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({profileId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (profileId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.profileId,
+                                referencedTable:
+                                    $$RecurringProfilesTableTableReferences
+                                        ._profileIdTable(db),
+                                referencedColumn:
+                                    $$RecurringProfilesTableTableReferences
+                                        ._profileIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$RecurringProfilesTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RecurringProfilesTableTable,
+      RecurringProfilesTableData,
+      $$RecurringProfilesTableTableFilterComposer,
+      $$RecurringProfilesTableTableOrderingComposer,
+      $$RecurringProfilesTableTableAnnotationComposer,
+      $$RecurringProfilesTableTableCreateCompanionBuilder,
+      $$RecurringProfilesTableTableUpdateCompanionBuilder,
+      (RecurringProfilesTableData, $$RecurringProfilesTableTableReferences),
+      RecurringProfilesTableData,
+      PrefetchHooks Function({bool profileId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -9881,4 +14273,13 @@ class $AppDatabaseManager {
       $$BankAccountsTableTableManager(_db, _db.bankAccounts);
   $$AppSettingsTableTableManager get appSettings =>
       $$AppSettingsTableTableManager(_db, _db.appSettings);
+  $$EstimatesTableTableManager get estimates =>
+      $$EstimatesTableTableManager(_db, _db.estimates);
+  $$EstimateItemsTableTableManager get estimateItems =>
+      $$EstimateItemsTableTableManager(_db, _db.estimateItems);
+  $$RecurringProfilesTableTableTableManager get recurringProfilesTable =>
+      $$RecurringProfilesTableTableTableManager(
+        _db,
+        _db.recurringProfilesTable,
+      );
 }

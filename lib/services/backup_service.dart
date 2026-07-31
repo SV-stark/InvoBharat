@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:archive/archive_io.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:invobharat/services/csv_export_service.dart';
 import 'package:invobharat/data/sql_invoice_repository.dart';
@@ -83,13 +84,9 @@ class BackupService {
 
   Future<String> exportData(final SqlInvoiceRepository repository) async {
     try {
-      // 1. Fetch Data
       final invoices = await repository.getAllInvoices();
-
-      // 2. Generate CSV
       final csvString = await _csvService.generateInvoiceCsv(invoices);
 
-      // 3. Save to file
       String? outputFile = await _filePicker.saveFile(
         dialogTitle: 'Save CSV Backup',
         fileName:
@@ -144,49 +141,89 @@ class BackupService {
         'invobharat_export_$timestamp.sqlite',
       );
 
+      final List<File> tempFilesToClean = [];
+
       try {
         File dbFile;
         final currentDb = db;
         if (currentDb != null) {
-          // Safe path: VACUUM INTO gives a consistent snapshot including WAL data
           await currentDb.vacuumInto(tempDbPath);
           dbFile = File(tempDbPath);
         } else {
-          // Fallback: zip the raw file (legacy behaviour, WAL not guaranteed)
           final dbPath = await _getDbPath();
           dbFile = File(dbPath);
           if (!await dbFile.exists()) {
             throw Exception("Database file not found at $dbPath");
           }
         }
+        tempFilesToClean.add(File(tempDbPath));
 
-        final schemaVersion = db?.schemaVersion ?? 10;
+        final prefs = await SharedPreferences.getInstance();
+        final activeProfileId = prefs.getString('active_profile_id') ?? '';
+        final schemaVersion = db?.schemaVersion ?? 13;
+
+        final List<Map<String, String>> mediaEntries = [];
+        if (currentDb != null) {
+          final profiles =
+              await currentDb.select(currentDb.businessProfiles).get();
+          for (final prof in profiles) {
+            for (final entry in [
+              {'type': 'logo', 'path': prof.logoPath},
+              {'type': 'signature', 'path': prof.signaturePath},
+              {'type': 'stamp', 'path': prof.stampPath},
+            ]) {
+              final String? srcPath = entry['path'];
+              if (srcPath != null &&
+                  srcPath.isNotEmpty &&
+                  File(srcPath).existsSync()) {
+                final String ext = p.extension(srcPath);
+                final String zipMediaName =
+                    'media/${prof.id}_${entry['type']}$ext';
+                mediaEntries.add({
+                  'profileId': prof.id,
+                  'type': entry['type']!,
+                  'zipPath': zipMediaName,
+                  'originalPath': srcPath,
+                });
+              }
+            }
+          }
+        }
+
         final tempManifestPath = p.join(
           Directory.systemTemp.path,
           'invobharat_manifest_$timestamp.json',
         );
         final manifestFile = File(tempManifestPath);
-        await manifestFile.writeAsString(jsonEncode({'schemaVersion': schemaVersion}));
+        await manifestFile.writeAsString(
+          jsonEncode({
+            'schemaVersion': schemaVersion,
+            'activeProfileId': activeProfileId,
+            'exportTimestamp': timestamp,
+            'mediaEntries': mediaEntries,
+          }),
+        );
+        tempFilesToClean.add(manifestFile);
 
         final zipEncoder = ZipFileEncoder();
         zipEncoder.create(outputFile);
         await zipEncoder.addFile(dbFile, kDbFileName);
         await zipEncoder.addFile(manifestFile, 'manifest.json');
-        await zipEncoder.close();
 
+        for (final m in mediaEntries) {
+          final mediaFile = File(m['originalPath']!);
+          if (await mediaFile.exists()) {
+            await zipEncoder.addFile(mediaFile, m['zipPath']!);
+          }
+        }
+
+        await zipEncoder.close();
         return "Full Backup saved to $outputFile";
       } finally {
-        // Clean up the temp files if they were created
-        final tempFile = File(tempDbPath);
-        if (await tempFile.exists()) {
-          await tempFile.delete();
-        }
-        final tempManifestFile = File(p.join(
-          Directory.systemTemp.path,
-          'invobharat_manifest_$timestamp.json',
-        ));
-        if (await tempManifestFile.exists()) {
-          await tempManifestFile.delete();
+        for (final f in tempFilesToClean) {
+          if (await f.exists()) {
+            await f.delete();
+          }
         }
       }
     } catch (e) {
@@ -206,7 +243,6 @@ class BackupService {
       if (file != null && file.path != null) {
         final zipFile = File(file.path!);
         final bytes = await zipFile.readAsBytes();
-
         final archive = ZipDecoder().decodeBytes(bytes);
 
         final dbEntry = archive.findFile(kDbFileName);
@@ -216,10 +252,12 @@ class BackupService {
           );
         }
 
-        final prefsEntry = archive.findFile('manifest.json');
-        if (prefsEntry != null) {
-          final manifestContent = String.fromCharCodes(
-            prefsEntry.content as List<int>,
+        String? activeProfileIdToRestore;
+        List<dynamic> mediaEntries = [];
+        final manifestEntry = archive.findFile('manifest.json');
+        if (manifestEntry != null) {
+          final manifestContent = utf8.decode(
+            manifestEntry.content as List<int>,
           );
           final manifest = jsonDecode(manifestContent) as Map<String, dynamic>;
           final backedUpSchemaVersion = manifest['schemaVersion'] as int?;
@@ -229,6 +267,8 @@ class BackupService {
               "Incompatible backup: schema version $backedUpSchemaVersion (minimum: $kMinCompatibleSchemaVersion)",
             );
           }
+          activeProfileIdToRestore = manifest['activeProfileId'] as String?;
+          mediaEntries = (manifest['mediaEntries'] as List<dynamic>?) ?? [];
         }
 
         final dbPath = await _getDbPath();
@@ -255,13 +295,37 @@ class BackupService {
             final data = dbEntry.content as List<int>;
             await dbDestFile.writeAsBytes(data, flush: true);
 
-            // Delete stale WAL and SHM files to prevent the database engine
-            // from replaying an old log over the freshly restored file.
             final walFile = File('$dbPath-wal');
             final shmFile = File('$dbPath-shm');
             if (await walFile.exists()) await walFile.delete();
             if (await shmFile.exists()) await shmFile.delete();
           }
+
+          final docDir = await getApplicationDocumentsDirectory();
+          final mediaDir = Directory(p.join(docDir.path, 'InvoBharat', 'media'));
+          if (!await mediaDir.exists()) {
+            await mediaDir.create(recursive: true);
+          }
+
+          for (final m in mediaEntries) {
+            final String zipPath = m['zipPath'];
+            final mediaArchiveFile = archive.findFile(zipPath);
+            if (mediaArchiveFile != null && mediaArchiveFile.isFile) {
+              final fileName = p.basename(zipPath);
+              final targetFile = File(p.join(mediaDir.path, fileName));
+              await targetFile.writeAsBytes(
+                mediaArchiveFile.content as List<int>,
+                flush: true,
+              );
+            }
+          }
+
+          if (activeProfileIdToRestore != null &&
+              activeProfileIdToRestore.isNotEmpty) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('active_profile_id', activeProfileIdToRestore);
+          }
+
           return "Restore Successful. Please restart the app to apply changes.";
         } catch (e) {
           if (backupPath != null) {

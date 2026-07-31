@@ -8,6 +8,12 @@ import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/data/business_profile_repository.dart';
 import 'package:invobharat/data/sql_business_profile_repository.dart';
 import 'package:invobharat/providers/database_provider.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:invobharat/providers/client_provider.dart';
+import 'package:invobharat/providers/estimate_provider.dart';
+import 'package:invobharat/providers/recurring_provider.dart';
+import 'package:invobharat/providers/bank_provider.dart';
+import 'package:invobharat/providers/invoice_series_provider.dart';
 
 part 'business_profile_provider.g.dart';
 
@@ -146,8 +152,9 @@ class ActiveProfileId extends _$ActiveProfileId {
   @override
   String build() {
     final profiles = ref.watch(businessProfileListProvider);
+    if (profiles.isEmpty) return "";
     Future.microtask(() => _loadActiveId(profiles));
-    return "";
+    return profiles.first.id;
   }
 
   Future<void> _loadActiveId(final List<BusinessProfile> profiles) async {
@@ -155,10 +162,14 @@ class ActiveProfileId extends _$ActiveProfileId {
     final storedId = prefs.getString('active_profile_id');
 
     if (storedId != null && profiles.any((final p) => p.id == storedId)) {
-      state = storedId;
+      if (state != storedId) {
+        state = storedId;
+      }
     } else if (profiles.isNotEmpty) {
-      state = profiles.first.id;
-      await selectProfile(state);
+      if (state != profiles.first.id) {
+        state = profiles.first.id;
+        await prefs.setString('active_profile_id', state);
+      }
     }
   }
 
@@ -166,6 +177,13 @@ class ActiveProfileId extends _$ActiveProfileId {
     state = id;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('active_profile_id', id);
+
+    ref.invalidate(invoiceListProvider);
+    ref.invalidate(clientListProvider);
+    ref.invalidate(estimateListProvider);
+    ref.invalidate(recurringListProvider);
+    ref.invalidate(bankListProvider);
+    ref.invalidate(invoiceSeriesProvider);
   }
 }
 

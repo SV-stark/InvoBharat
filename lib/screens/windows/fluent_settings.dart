@@ -1295,12 +1295,6 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                                 await ref
                                     .read(clientRepositoryProvider)
                                     .deleteAll();
-                                await ref
-                                    .read(estimateRepositoryProvider)
-                                    .deleteAll();
-                                await ref
-                                    .read(recurringRepositoryProvider)
-                                    .deleteAll();
 
                                 ref.invalidate(invoiceListProvider);
                                 ref.invalidate(clientListProvider);

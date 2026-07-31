@@ -109,9 +109,6 @@ class Invoices extends Table {
 
   @override
   Set<Column> get primaryKey => {id};
-
-  @override
-  List<String> get customConstraints => ['UNIQUE (profile_id, invoice_no)'];
 }
 
 class InvoiceItems extends Table {
@@ -167,3 +164,71 @@ class AppSettings extends Table {
   @override
   Set<Column> get primaryKey => {key};
 }
+
+class Estimates extends Table {
+  TextColumn get id => text()();
+  TextColumn get profileId =>
+      text().references(BusinessProfiles, #id, onDelete: KeyAction.cascade)();
+  TextColumn get estimateNo => text()();
+  DateTimeColumn get date => dateTime()();
+  DateTimeColumn get expiryDate => dateTime().nullable()();
+  TextColumn get status => text().withDefault(const Constant('Draft'))();
+  TextColumn get notes => text()();
+  TextColumn get terms => text()();
+  TextColumn get poNumber => text().nullable()();
+
+  // Supplier Snapshot
+  TextColumn get supplierName => text().nullable()();
+  TextColumn get supplierAddress => text().nullable()();
+  TextColumn get supplierGstin => text().nullable()();
+  TextColumn get supplierEmail => text().nullable()();
+  TextColumn get supplierPhone => text().nullable()();
+  TextColumn get supplierState => text().nullable()();
+
+  // Receiver Snapshot
+  TextColumn get receiverName => text().nullable()();
+  TextColumn get receiverAddress => text().nullable()();
+  TextColumn get receiverGstin => text().nullable()();
+  TextColumn get receiverPan => text().nullable()();
+  TextColumn get receiverState => text().nullable()();
+  TextColumn get receiverStateCode => text().nullable()();
+  TextColumn get receiverEmail => text().nullable()();
+  TextColumn get receiverPhone => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+class EstimateItems extends Table {
+  TextColumn get id => text()();
+  TextColumn get estimateId =>
+      text().references(Estimates, #id, onDelete: KeyAction.cascade)();
+  TextColumn get description => text()();
+  TextColumn get sacCode => text()();
+  TextColumn get codeType => text()();
+  TextColumn get year => text()();
+  RealColumn get amount => real()();
+  RealColumn get discount => real()();
+  RealColumn get quantity => real()();
+  TextColumn get unit => text()();
+  RealColumn get gstRate => real()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+class RecurringProfilesTable extends Table {
+  TextColumn get id => text()();
+  TextColumn get profileId =>
+      text().references(BusinessProfiles, #id, onDelete: KeyAction.cascade)();
+  IntColumn get interval => integer()();
+  DateTimeColumn get nextRunDate => dateTime()();
+  DateTimeColumn get lastRunDate => dateTime().nullable()();
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+  IntColumn get dueDays => integer().nullable()();
+  TextColumn get baseInvoiceJson => text()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+

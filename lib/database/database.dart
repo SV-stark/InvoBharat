@@ -18,6 +18,9 @@ part 'database.g.dart';
     Payments,
     BankAccounts,
     AppSettings,
+    Estimates,
+    EstimateItems,
+    RecurringProfilesTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -30,7 +33,7 @@ class AppDatabase extends _$AppDatabase {
   static AppDatabase get instance => _instance ??= AppDatabase();
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration {
@@ -243,6 +246,33 @@ class AppDatabase extends _$AppDatabase {
             await m.database.customStatement(
               "CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null'",
             );
+          });
+          await m.database.customStatement('PRAGMA foreign_keys = ON;');
+        }
+        if (from < 13) {
+          await m.createTable(estimates);
+          await m.createTable(estimateItems);
+          await m.createTable(recurringProfilesTable);
+
+          await m.database.customStatement('PRAGMA foreign_keys = OFF;');
+          await m.database.transaction(() async {
+            final table = invoices;
+            final tableName = table.actualTableName;
+            final tempName = '${tableName}_temp';
+
+            await m.database.customStatement(
+              'ALTER TABLE `$tableName` RENAME TO `$tempName`',
+            );
+
+            await m.createTable(table);
+
+            final columnsToCopy =
+                table.$columns.map((final c) => c.name).join(', ');
+            await m.database.customStatement(
+              'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
+            );
+
+            await m.database.customStatement('DROP TABLE `$tempName`');
           });
           await m.database.customStatement('PRAGMA foreign_keys = ON;');
         }

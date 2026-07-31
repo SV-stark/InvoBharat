@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:invobharat/main.dart';
 import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/models/estimate.dart';
+import 'package:invobharat/models/recurring_profile.dart';
 import 'package:invobharat/data/invoice_repository.dart';
 
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/providers/database_provider.dart';
-import 'package:invobharat/database/database.dart' hide Invoice;
+import 'package:invobharat/database/database.dart' hide Invoice, Estimate;
 import 'package:invobharat/services/auto_backup_service.dart';
 import 'package:drift/native.dart';
 
@@ -39,6 +41,12 @@ class FakeInvoiceRepository implements InvoiceRepository {
 
   @override
   Future<void> saveInvoice(final Invoice invoice) async {}
+
+  @override
+  Future<List<Estimate>> getAllEstimates() async => [];
+
+  @override
+  Future<List<RecurringProfile>> getAllRecurringProfiles() async => [];
 
   @override
   dynamic noSuchMethod(final Invocation invocation) =>

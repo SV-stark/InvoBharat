@@ -13,6 +13,7 @@ abstract class Invoice with _$Invoice {
 
   const factory Invoice({
     final String? id,
+    final String? profileId,
     @Default('Modern') final String style,
     required final Supplier supplier,
     required final Receiver receiver,
