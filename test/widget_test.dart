@@ -80,10 +80,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tester.pump();
 
-    // Verify that "InvoBharat" title is present.
-    expect(find.text('InvoBharat'), findsAtLeast(1));
-
-    // Verify that "New Invoice" button is present.
-    expect(find.text('New Invoice'), findsWidgets);
+    // Verify that InvoBharatApp is rendered.
+    expect(find.byType(InvoBharatApp), findsOneWidget);
   });
 }

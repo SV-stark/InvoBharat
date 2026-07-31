@@ -10,6 +10,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:invobharat/database/database.dart' hide Invoice;
 import 'package:invobharat/services/backup_service.dart';
 import 'package:invobharat/services/csv_export_service.dart';
@@ -63,6 +65,7 @@ void main() {
   });
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     mockFilePicker = MockFilePickerWrapper();
     mockCsvService = MockCsvExportService();
     mockRepo = MockInvoiceRepository();
@@ -161,7 +164,7 @@ void main() {
       expect(dbEntry, isNotNull);
       expect(manifestEntry, isNotNull);
 
-      final manifestContent = String.fromCharCodes(manifestEntry!.content as List<int>);
+      final manifestContent = utf8.decode(manifestEntry!.content as List<int>);
       final manifestMap = jsonDecode(manifestContent) as Map<String, dynamic>;
       expect(manifestMap['schemaVersion'], equals(db.schemaVersion));
 
