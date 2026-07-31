@@ -74,6 +74,10 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
       textCol = PdfColor.fromHex('#1E40AF');
     }
 
+    if (text == 'DRAFT' || invoice.status.toLowerCase() == 'draft') {
+      return pw.SizedBox();
+    }
+
     return buildBadge(text, bgColor: bg, textColor: textCol, font: font);
   }
 
