@@ -86,25 +86,40 @@ class RecurringService {
             prefix: businessProfile.invoiceSeries,
             sequence: businessProfile.invoiceSequence,
           );
-    final invoiceNo =
-        "${defaultSeries.prefix}${defaultSeries.sequence.toString().padLeft(3, '0')}";
+
+    final repo = ref.read(invoiceRepositoryProvider);
+    final targetPrefix = defaultSeries.prefix;
+    int currentSeq = defaultSeries.sequence;
+    String candidate =
+        '$targetPrefix${currentSeq.toString().padLeft(3, '0')}';
+    final now = DateTime.now();
+
+    while (await repo.checkInvoiceExists(candidate, invoiceDate: now)) {
+      currentSeq++;
+      candidate =
+          '$targetPrefix${currentSeq.toString().padLeft(3, '0')}';
+    }
 
     final newInvoice = profile.baseInvoice.copyWith(
       id: const Uuid().v4(),
       profileId: profile.profileId,
-      invoiceNo: invoiceNo,
-      invoiceDate: DateTime.now(),
-      dueDate: DateTime.now().add(
+      invoiceNo: candidate,
+      invoiceDate: now,
+      dueDate: now.add(
         Duration(days: profile.dueDays ?? 7),
       ),
       payments: [],
     );
 
-    await ref.read(invoiceRepositoryProvider).saveInvoice(newInvoice);
+    await repo.saveInvoice(newInvoice);
 
     await ref
         .read(invoiceSeriesProvider.notifier)
-        .incrementSequence(defaultSeries.prefix);
+        .updateSequence(targetPrefix, currentSeq + 1);
+
+    await ref
+        .read(businessProfileListProvider.notifier)
+        .incrementInvoiceSequence(profile.profileId);
   }
 }
 

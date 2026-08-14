@@ -149,13 +149,15 @@ class ExcelExportService {
 
     for (final inv in invoices) {
       if (inv.receiver.gstin.isNotEmpty) {
-        for (final item in inv.items) {
+        for (int i = 0; i < inv.items.length; i++) {
+          final item = inv.items[i];
+          final isFirstItem = i == 0;
           gstrSheet.appendRow([
             TextCellValue(inv.receiver.gstin),
             TextCellValue(inv.receiver.name),
             TextCellValue(inv.invoiceNo),
             TextCellValue(dateFormat.format(inv.invoiceDate)),
-            DoubleCellValue(inv.grandTotal),
+            DoubleCellValue(isFirstItem ? inv.grandTotal : 0.0),
             TextCellValue(inv.placeOfSupply),
             TextCellValue(inv.reverseCharge),
             DoubleCellValue(item.gstRate),

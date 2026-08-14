@@ -7,6 +7,7 @@ import 'package:invobharat/models/payment_transaction.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:path/path.dart' as p;
 import 'dart:typed_data';
+import 'package:invobharat/utils/gst_utils.dart';
 
 class CsvExportService {
   // Ordered columns as per request + required fields for restoration
@@ -123,9 +124,11 @@ class CsvExportService {
     final rows = Csv().decode(csvContent);
     if (rows.isEmpty) return [];
 
-    final headerRow = rows.first;
-    // Basic validation
-    if (headerRow.length < 3 || headerRow[2] != 'Invoice No') {
+    final headerRow = rows.first
+        .map((final e) => e.toString().trim().toLowerCase())
+        .toList();
+    // Basic validation (case-insensitive)
+    if (!headerRow.contains('invoice no')) {
       throw Exception('Invalid CSV Format: Missing Invoice No column');
     }
 
@@ -199,10 +202,12 @@ class CsvExportService {
         invoiceMap[invoiceNo] = existing.copyWith(items: updatedItems);
       } else {
         // Create new Invoice
+        final supplierGstin = paddedRow[0].toString().trim();
+        final supplierState = GstUtils.getStateName(supplierGstin) ?? '';
         final supplier = Supplier(
-          gstin: paddedRow[0].toString(),
+          gstin: supplierGstin,
           name: paddedRow[1].toString(),
-          state: pos,
+          state: supplierState,
         );
 
         final receiver = Receiver(

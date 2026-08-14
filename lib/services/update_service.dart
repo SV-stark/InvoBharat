@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Release {
@@ -86,32 +87,39 @@ class UpdateService {
       }
     }
 
+    final shouldCloseClient = client == null;
     final httpClient = client ?? http.Client();
     http.Response? response;
     int attempt = 0;
     const int maxAttempts = 3;
 
-    while (attempt < maxAttempts) {
-      attempt++;
-      try {
-        response = await httpClient.get(
-          Uri.parse('https://api.github.com/repos/$_repoOwner/$_repoName/releases'),
-          headers: {
-            'Accept': 'application/vnd.github+json',
-            'X-GitHub-Api-Version': '2022-11-28',
-            'User-Agent': 'InvoBharat-App',
-          },
-        ).timeout(const Duration(seconds: 8));
+    try {
+      while (attempt < maxAttempts) {
+        attempt++;
+        try {
+          response = await httpClient.get(
+            Uri.parse('https://api.github.com/repos/$_repoOwner/$_repoName/releases'),
+            headers: {
+              'Accept': 'application/vnd.github+json',
+              'X-GitHub-Api-Version': '2022-11-28',
+              'User-Agent': 'InvoBharat-App',
+            },
+          ).timeout(const Duration(seconds: 8));
 
-        if (response.statusCode == 200) {
-          break;
+          if (response.statusCode == 200) {
+            break;
+          }
+        } catch (e) {
+          debugPrint('Update check attempt $attempt failed: $e');
         }
-      } catch (e) {
-        debugPrint('Update check attempt $attempt failed: $e');
-      }
 
-      if (attempt < maxAttempts) {
-        await Future.delayed(Duration(seconds: attempt));
+        if (attempt < maxAttempts) {
+          await Future.delayed(Duration(seconds: attempt));
+        }
+      }
+    } finally {
+      if (shouldCloseClient) {
+        httpClient.close();
       }
     }
 
@@ -177,23 +185,34 @@ class UpdateService {
     );
 
     final tempDir = await getTemporaryDirectory();
-    final savePath = '${tempDir.path}/${asset.name}';
+    final savePath = p.join(tempDir.path, asset.name);
 
+    final shouldCloseClient = client == null;
     final httpClient = client ?? http.Client();
-    final response = await httpClient.get(Uri.parse(asset.browserDownloadUrl));
-    if (response.statusCode == 200) {
-      final file = File(savePath);
-      await file.writeAsBytes(response.bodyBytes);
+    try {
+      final request = http.Request('GET', Uri.parse(asset.browserDownloadUrl));
+      final streamedResponse = await httpClient.send(request);
+      if (streamedResponse.statusCode == 200) {
+        final file = File(savePath);
+        final sink = file.openWrite();
+        await streamedResponse.stream.pipe(sink);
+        await sink.flush();
+        await sink.close();
 
-      // Run the installer
-      if (startProcess != null) {
-        await startProcess(savePath);
+        // Run the installer
+        if (startProcess != null) {
+          await startProcess(savePath);
+        } else {
+          await Process.start(savePath, [], mode: ProcessStartMode.detached);
+          exit(0); // Exit app to let installer run
+        }
       } else {
-        await Process.start(savePath, [], mode: ProcessStartMode.detached);
-        exit(0); // Exit app to let installer run
+        throw Exception('Failed to download update: ${streamedResponse.statusCode}');
       }
-    } else {
-      throw Exception('Failed to download update: ${response.statusCode}');
+    } finally {
+      if (shouldCloseClient) {
+        httpClient.close();
+      }
     }
   }
 }

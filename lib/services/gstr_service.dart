@@ -1,6 +1,7 @@
 import 'dart:isolate';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/utils/gst_utils.dart';
+import 'package:invobharat/utils/einvoice_exporter.dart';
 import 'package:intl/intl.dart';
 import 'package:csv/csv.dart';
 
@@ -45,9 +46,11 @@ class GstrService {
 
       final stateCode = inv.receiver.stateCode.trim().isNotEmpty
           ? inv.receiver.stateCode.trim()
-          : (gstin.length >= 2 ? GstUtils.getStateCode(gstin) : null);
+          : (gstin.length >= 2
+              ? (GstUtils.getStateCode(gstin) ?? EInvoiceExporter.getStateCode(state, gstin))
+              : EInvoiceExporter.getStateCode(state, gstin));
 
-      final placeOfSupply = (stateCode != null && stateCode.isNotEmpty)
+      final placeOfSupply = (stateCode.isNotEmpty && !state.startsWith('$stateCode-'))
           ? "$stateCode-$state"
           : state;
 

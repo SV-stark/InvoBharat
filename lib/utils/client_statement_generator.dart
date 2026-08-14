@@ -1,4 +1,5 @@
 import 'dart:isolate';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
@@ -13,12 +14,16 @@ class ClientStatementParams {
   final BusinessProfile profile;
   final List<Invoice> invoices;
   final DateTimeRange dateRange;
+  final ByteData? regularFont;
+  final ByteData? boldFont;
 
   ClientStatementParams({
     required this.client,
     required this.profile,
     required this.invoices,
     required this.dateRange,
+    this.regularFont,
+    this.boldFont,
   });
 }
 
@@ -27,14 +32,14 @@ Future<Uint8List> _generateStatementInIsolate(
 ) async {
   pw.Font font;
   pw.Font fontBold;
-  try {
-    final regularData = await rootBundle.load('fonts/NotoSans-Regular.ttf');
-    font = pw.Font.ttf(regularData.buffer.asByteData());
-
-    final boldData = await rootBundle.load('fonts/NotoSans-Bold.ttf');
-    fontBold = pw.Font.ttf(boldData.buffer.asByteData());
-  } catch (_) {
+  if (params.regularFont != null) {
+    font = pw.Font.ttf(params.regularFont!);
+  } else {
     font = pw.Font.helvetica();
+  }
+  if (params.boldFont != null) {
+    fontBold = pw.Font.ttf(params.boldFont!);
+  } else {
     fontBold = pw.Font.helveticaBold();
   }
 
@@ -297,5 +302,28 @@ Future<Uint8List> _generateStatementInIsolate(
 Future<Uint8List> generateClientStatement(
   final ClientStatementParams params,
 ) async {
-  return Isolate.run(() => _generateStatementInIsolate(params));
+  ByteData? regularData = params.regularFont;
+  ByteData? boldData = params.boldFont;
+
+  if (regularData == null || boldData == null) {
+    try {
+      regularData ??= await rootBundle.load('fonts/Spectral-Regular.ttf');
+      boldData ??= await rootBundle.load('fonts/Spectral-Bold.ttf');
+    } catch (_) {}
+  }
+
+  final updatedParams = ClientStatementParams(
+    client: params.client,
+    profile: params.profile,
+    invoices: params.invoices,
+    dateRange: params.dateRange,
+    regularFont: regularData,
+    boldFont: boldData,
+  );
+
+  if (Platform.environment.containsKey('FLUTTER_TEST')) {
+    return _generateStatementInIsolate(updatedParams);
+  }
+
+  return Isolate.run(() => _generateStatementInIsolate(updatedParams));
 }

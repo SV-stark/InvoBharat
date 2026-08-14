@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:invobharat/services/csv_export_service.dart';
 import 'package:invobharat/data/sql_invoice_repository.dart';
 import 'package:invobharat/database/database.dart';
+import 'package:sqlite3/sqlite3.dart' as sqlite3;
 
 const kDbFileName = 'db.sqlite';
 const kMinCompatibleSchemaVersion = 5;
@@ -277,6 +278,7 @@ class BackupService {
         final currentDb = db;
         if (currentDb != null) {
           await currentDb.close();
+          AppDatabase.resetInstance();
         }
 
         String? backupPath;
@@ -308,15 +310,52 @@ class BackupService {
           }
 
           for (final m in mediaEntries) {
-            final String zipPath = m['zipPath'];
-            final mediaArchiveFile = archive.findFile(zipPath);
-            if (mediaArchiveFile != null && mediaArchiveFile.isFile) {
-              final fileName = p.basename(zipPath);
-              final targetFile = File(p.join(mediaDir.path, fileName));
-              await targetFile.writeAsBytes(
-                mediaArchiveFile.content as List<int>,
-                flush: true,
-              );
+            final String? zipPath = m['zipPath'];
+            if (zipPath != null) {
+              final mediaArchiveFile = archive.findFile(zipPath);
+              if (mediaArchiveFile != null && mediaArchiveFile.isFile) {
+                final fileName = p.basename(zipPath);
+                final targetFile = File(p.join(mediaDir.path, fileName));
+                await targetFile.writeAsBytes(
+                  mediaArchiveFile.content as List<int>,
+                  flush: true,
+                );
+              }
+            }
+          }
+
+          // Rewrite media paths in restored database
+          if (mediaEntries.isNotEmpty && await dbDestFile.exists()) {
+            try {
+              final rawDb = sqlite3.sqlite3.open(dbPath);
+              for (final m in mediaEntries) {
+                final profileId = m['profileId'] as String?;
+                final type = m['type'] as String?;
+                final zipPath = m['zipPath'] as String?;
+                if (profileId != null && type != null && zipPath != null) {
+                  final fileName = p.basename(zipPath);
+                  final localPath = p.join(mediaDir.path, fileName);
+                  if (type == 'logo') {
+                    rawDb.execute(
+                      'UPDATE business_profiles SET logo_path = ? WHERE id = ?',
+                      [localPath, profileId],
+                    );
+                  } else if (type == 'signature') {
+                    rawDb.execute(
+                      'UPDATE business_profiles SET signature_path = ? WHERE id = ?',
+                      [localPath, profileId],
+                    );
+                  } else if (type == 'stamp') {
+                    rawDb.execute(
+                      'UPDATE business_profiles SET stamp_path = ? WHERE id = ?',
+                      [localPath, profileId],
+                    );
+                  }
+                }
+              }
+              rawDb.close();
+            } catch (e) {
+              debugPrint("Media path rewrite error: $e");
             }
           }
 

@@ -153,6 +153,9 @@ class ActiveProfileId extends _$ActiveProfileId {
   String build() {
     final profiles = ref.watch(businessProfileListProvider);
     if (profiles.isEmpty) return "";
+    if (state.isNotEmpty && profiles.any((final p) => p.id == state)) {
+      return state;
+    }
     Future.microtask(() => _loadActiveId(profiles));
     return profiles.first.id;
   }

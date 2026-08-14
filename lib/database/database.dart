@@ -31,6 +31,9 @@ class AppDatabase extends _$AppDatabase {
 
   static AppDatabase? _instance;
   static AppDatabase get instance => _instance ??= AppDatabase();
+  static void resetInstance() {
+    _instance = null;
+  }
 
   @override
   int get schemaVersion => 13;

@@ -135,7 +135,8 @@ Future<void> warmUpFonts() async {
   if (_fontsWarmedUp) return;
   _fontsWarmedUp = true;
   try {
-    await rootBundle.load('fonts/NotoSans-Regular.ttf');
+    await rootBundle.load('fonts/Spectral-Regular.ttf');
+    await rootBundle.load('fonts/Spectral-Bold.ttf');
   } catch (_) {
     _fontsWarmedUp = false;
   }
