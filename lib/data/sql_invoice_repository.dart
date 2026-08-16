@@ -534,6 +534,49 @@ class SqlInvoiceRepository implements InvoiceRepository {
   }
 
   @override
+  Future<int> getMaxSequenceForPrefix(
+    final String prefix, {
+    final DateTime? invoiceDate,
+  }) async {
+    final targetDate = invoiceDate ?? DateTime.now();
+    final fyStartYear =
+        targetDate.month >= 4 ? targetDate.year : targetDate.year - 1;
+    final fyStart = DateTime(fyStartYear, 4);
+    final fyEnd = DateTime(fyStartYear + 1, 3, 31, 23, 59, 59);
+
+    final query = database.select(database.invoices)
+      ..where(
+        (final tbl) =>
+            tbl.profileId.equals(profileId) &
+            tbl.invoiceDate.isBetweenValues(fyStart, fyEnd),
+      );
+
+    final rows = await query.get();
+    int maxSeq = 0;
+    final cleanPrefix = prefix.trim();
+
+    for (final row in rows) {
+      final no = row.invoiceNo.trim();
+      if (cleanPrefix.isEmpty) {
+        final numMatch = RegExp(r'^\d+$').firstMatch(no);
+        if (numMatch != null) {
+          final val = int.tryParse(numMatch.group(0) ?? '') ?? 0;
+          if (val > maxSeq) maxSeq = val;
+        }
+      } else if (no.startsWith(cleanPrefix)) {
+        final rest = no.substring(cleanPrefix.length).trim();
+        final numMatch = RegExp(r'^\d+').firstMatch(rest);
+        if (numMatch != null) {
+          final val = int.tryParse(numMatch.group(0) ?? '') ?? 0;
+          if (val > maxSeq) maxSeq = val;
+        }
+      }
+    }
+
+    return maxSeq;
+  }
+
+  @override
   Future<void> saveEstimate(final model.Estimate estimate) async {
     final estimateId = estimate.id.isEmpty ? const Uuid().v4() : estimate.id;
     final items = estimate.items.map((final item) {

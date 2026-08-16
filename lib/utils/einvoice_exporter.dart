@@ -229,4 +229,193 @@ class EInvoiceExporter {
       mimeType: MimeType.json,
     );
   }
+
+  /// Generates the standard NIC E-Way Bill JSON payload
+  static String generateEWayBillJson(final Invoice invoice, final BusinessProfile profile) {
+    final sellerGstin = cleanText(
+        invoice.supplier.gstin.isNotEmpty ? invoice.supplier.gstin : profile.gstin,
+        15,
+        'GSTIN_PENDING');
+    final sellerName = cleanText(
+        invoice.supplier.name.isNotEmpty ? invoice.supplier.name : profile.companyName,
+        100,
+        'Supplier Legal Name');
+    final sellerAddress = cleanText(
+        invoice.supplier.address.isNotEmpty ? invoice.supplier.address : profile.address,
+        100,
+        'Supplier Address');
+    final sellerState = cleanText(
+        invoice.supplier.state.isNotEmpty ? invoice.supplier.state : profile.state,
+        50,
+        'Delhi');
+    final sellerStateCode = int.tryParse(getStateCode(sellerState, sellerGstin)) ?? 7;
+    final sellerPin = getPincode(
+        invoice.supplier.address.isNotEmpty ? invoice.supplier.address : profile.address);
+
+    final buyerGstin = cleanText(invoice.receiver.gstin, 15, 'URP');
+    final buyerName = cleanText(invoice.receiver.name, 100, 'Buyer Legal Name');
+    final buyerAddress = cleanText(invoice.receiver.address, 100, 'Buyer Address');
+    final buyerState = cleanText(invoice.receiver.state, 50, 'Delhi');
+    final buyerStateCodeStr = invoice.receiver.stateCode.isNotEmpty &&
+            invoice.receiver.stateCode.trim().length == 2
+        ? invoice.receiver.stateCode.trim()
+        : getStateCode(buyerState, buyerGstin);
+    final buyerStateCode = int.tryParse(buyerStateCodeStr) ?? 7;
+    final buyerPin = getPincode(invoice.receiver.address);
+
+    final docType = invoice.type == InvoiceType.creditNote
+        ? 'CRN'
+        : invoice.type == InvoiceType.debitNote
+            ? 'DBN'
+            : (invoice.type == InvoiceType.deliveryChallan ? 'CHL' : 'INV');
+
+    final List<Map<String, dynamic>> itemsList = [];
+    for (int i = 0; i < invoice.items.length; i++) {
+      final item = invoice.items[i];
+      final qty = item.quantity;
+      final price = item.amount;
+      final discount = item.discount;
+      final totAmt = price * qty;
+      final assAmt = totAmt - discount;
+      final rate = item.gstRate;
+
+      itemsList.add({
+        "itemNo": i + 1,
+        "productName": cleanText(item.description, 100, 'Product/Service'),
+        "productDesc": cleanText(item.description, 100, 'Product/Service'),
+        "hsnCode": int.tryParse(item.cleanSacCode) ?? 998311,
+        "quantity": double.parse(qty.toStringAsFixed(2)),
+        "qtyUnit": getGstUnitCode(item.unit),
+        "taxableAmount": double.parse(assAmt.toStringAsFixed(2)),
+        "cgstRate": invoice.isInterState ? 0.0 : double.parse((rate / 2).toStringAsFixed(2)),
+        "sgstRate": invoice.isInterState ? 0.0 : double.parse((rate / 2).toStringAsFixed(2)),
+        "igstRate": invoice.isInterState ? double.parse(rate.toStringAsFixed(2)) : 0.0,
+        "cessRate": 0.0,
+        "cessNonAdvol": 0.0
+      });
+    }
+
+    final billObj = {
+      "userGstin": sellerGstin,
+      "supplyType": "O",
+      "subSupplyType": "1",
+      "docType": docType,
+      "docNo": invoice.invoiceNo.isEmpty ? 'TEMP-NO' : invoice.invoiceNo,
+      "docDate": DateFormat('dd/MM/yyyy').format(invoice.invoiceDate),
+      "fromGstin": sellerGstin,
+      "fromTrdName": sellerName,
+      "fromAddr1": sellerAddress,
+      "fromAddr2": "",
+      "fromPlace": cleanText(sellerState, 50, 'Delhi'),
+      "fromPincode": sellerPin,
+      "actFromStateCode": sellerStateCode,
+      "fromStateCode": sellerStateCode,
+      "toGstin": buyerGstin,
+      "toTrdName": buyerName,
+      "toAddr1": buyerAddress,
+      "toAddr2": "",
+      "toPlace": cleanText(buyerState, 50, 'Delhi'),
+      "toPincode": buyerPin,
+      "actToStateCode": buyerStateCode,
+      "toStateCode": buyerStateCode,
+      "transactionType": 1,
+      "totalValue": double.parse(invoice.totalTaxableValue.toStringAsFixed(2)),
+      "cgstValue": double.parse(invoice.totalCGST.toStringAsFixed(2)),
+      "sgstValue": double.parse(invoice.totalSGST.toStringAsFixed(2)),
+      "igstValue": double.parse(invoice.totalIGST.toStringAsFixed(2)),
+      "cessValue": 0.0,
+      "totInvValue": double.parse(invoice.grandTotal.toStringAsFixed(2)),
+      "transMode": "1",
+      "transDistance": "0",
+      "transporterName": "",
+      "transporterId": "",
+      "transDocNo": invoice.ewayBillNo ?? "",
+      "transDocDate": "",
+      "vehicleNo": invoice.vehicleNo ?? "",
+      "vehicleType": "R",
+      "itemList": itemsList
+    };
+
+    final payload = {
+      "version": "1.0.0621",
+      "billLists": [billObj]
+    };
+
+    return const JsonEncoder.withIndent('  ').convert(payload);
+  }
+
+  /// Exports and saves the E-Way Bill JSON file cross-platform
+  static Future<String?> exportEWayBill(
+    final Invoice invoice,
+    final BusinessProfile profile,
+  ) async {
+    final jsonContent = generateEWayBillJson(invoice, profile);
+    final bytes = Uint8List.fromList(utf8.encode(jsonContent));
+
+    final cleanInvoiceNo = invoice.invoiceNo.replaceAll(RegExp(r'[^\w\s\-]+'), '_');
+    final fileName = 'ewaybill_${cleanInvoiceNo.isEmpty ? "draft" : cleanInvoiceNo}';
+
+    return FileSaver.instance.saveFile(
+      name: fileName,
+      bytes: bytes,
+      fileExtension: 'json',
+      mimeType: MimeType.json,
+    );
+  }
+
+  /// Exports multiple invoices as a batch E-Invoice JSON file
+  static Future<String?> exportBatchEInvoice(
+    final List<Invoice> invoices,
+    final BusinessProfile profile,
+  ) async {
+    final List<dynamic> batch = [];
+    for (final inv in invoices) {
+      final jsonStr = generateEInvoiceJson(inv, profile);
+      batch.add(jsonDecode(jsonStr));
+    }
+    final content = const JsonEncoder.withIndent('  ').convert(batch);
+    final bytes = Uint8List.fromList(utf8.encode(content));
+    final timestamp = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
+
+    return FileSaver.instance.saveFile(
+      name: 'einvoice_batch_$timestamp',
+      bytes: bytes,
+      fileExtension: 'json',
+      mimeType: MimeType.json,
+    );
+  }
+
+  /// Exports multiple invoices as a batch E-Way Bill JSON file
+  static Future<String?> exportBatchEWayBill(
+    final List<Invoice> invoices,
+    final BusinessProfile profile,
+  ) async {
+    final List<Map<String, dynamic>> allBills = [];
+    for (final inv in invoices) {
+      final jsonStr = generateEWayBillJson(inv, profile);
+      final decoded = jsonDecode(jsonStr) as Map<String, dynamic>;
+      final list = decoded['billLists'] as List<dynamic>? ?? [];
+      for (final item in list) {
+        if (item is Map<String, dynamic>) {
+          allBills.add(item);
+        }
+      }
+    }
+
+    final payload = {
+      "version": "1.0.0621",
+      "billLists": allBills,
+    };
+
+    final content = const JsonEncoder.withIndent('  ').convert(payload);
+    final bytes = Uint8List.fromList(utf8.encode(content));
+    final timestamp = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
+
+    return FileSaver.instance.saveFile(
+      name: 'ewaybill_batch_$timestamp',
+      bytes: bytes,
+      fileExtension: 'json',
+      mimeType: MimeType.json,
+    );
+  }
 }

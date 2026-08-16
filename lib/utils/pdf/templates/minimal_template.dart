@@ -265,75 +265,74 @@ class MinimalTemplate extends BasePdfTemplate {
               ),
             ],
           ),
-          pw.SizedBox(height: 24),
+          pw.SizedBox(height: 16),
           buildAmountInWords(invoice.grandTotal),
+          buildBankDetailsSection(
+            invoice,
+            profile,
+            headerColor: themeColor,
+            font: font,
+            fontBold: fontBold,
+          ),
+          pw.SizedBox(height: 16),
 
-          pw.SizedBox(height: 32),
-
-          // Footer (Bank + Sign)
+          // Footer (Terms, Payment QR, Sign)
           pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.end,
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
-              pw.Expanded(child: pw.SizedBox()),
               pw.Expanded(
-                child: pw.Container(
-                  padding: const pw.EdgeInsets.all(8),
-                  decoration: pw.BoxDecoration(
-                    border: pw.Border.all(color: PdfColors.grey300),
-                    borderRadius: const pw.BorderRadius.all(
-                      pw.Radius.circular(4),
-                    ),
-                  ),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    if (profile.termsAndConditions.isNotEmpty) ...[
                       pw.Text(
-                        "BANK DETAILS",
+                        "TERMS & CONDITIONS",
                         style: pw.TextStyle(
                           fontSize: 8,
                           fontWeight: pw.FontWeight.bold,
                           color: themeColor,
                         ),
                       ),
+                      pw.SizedBox(height: 2),
+                      pw.Text(
+                        profile.termsAndConditions,
+                        style: const pw.TextStyle(fontSize: 7),
+                      ),
+                    ],
+                    if (invoice.comments.isNotEmpty) ...[
                       pw.SizedBox(height: 4),
                       pw.Text(
-                        "Bank: ${invoice.bankName}",
-                        style: const pw.TextStyle(fontSize: 8),
-                      ),
-                      pw.Text(
-                        "A/C: ${invoice.accountNo}",
-                        style: const pw.TextStyle(fontSize: 8),
-                      ),
-                      pw.Text(
-                        "IFSC: ${invoice.ifscCode}",
-                        style: const pw.TextStyle(fontSize: 8),
-                      ),
-                      pw.Text(
-                        "Branch: ${invoice.branch}",
-                        style: const pw.TextStyle(fontSize: 8),
-                      ),
-                      if (profile.upiId.isNotEmpty) ...[
-                        pw.SizedBox(height: 4),
-                        pw.Text(
-                          "UPI ID: ${profile.upiId}",
-                          style: pw.TextStyle(
-                            fontWeight: pw.FontWeight.bold,
-                            fontSize: 8,
-                          ),
+                        "NOTES",
+                        style: pw.TextStyle(
+                          fontSize: 8,
+                          fontWeight: pw.FontWeight.bold,
+                          color: themeColor,
                         ),
-                        pw.SizedBox(height: 4),
-                        pw.Center(
-                          child: buildPaymentQRCode(
+                      ),
+                      pw.SizedBox(height: 2),
+                      pw.Text(
+                        invoice.comments,
+                        style: const pw.TextStyle(fontSize: 7),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              pw.Expanded(
+                child: profile.upiId.isNotEmpty
+                    ? pw.Column(
+                        mainAxisAlignment: pw.MainAxisAlignment.end,
+                        children: [
+                          buildPaymentQRCode(
                             profile.upiId,
                             profile.companyName,
                             invoice.grandTotal,
+                            invoice.invoiceNo,
                           ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+                        ],
+                      )
+                    : pw.SizedBox(),
               ),
               pw.Expanded(
                 child: pw.Column(

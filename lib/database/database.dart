@@ -36,13 +36,14 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (final Migrator m) async {
         await m.createAll();
+        await _createIndexes(m.database);
       },
       onUpgrade: (final Migrator m, final int from, final int to) async {
         if (from < 2) {
@@ -279,12 +280,33 @@ class AppDatabase extends _$AppDatabase {
           });
           await m.database.customStatement('PRAGMA foreign_keys = ON;');
         }
+        if (from < 14) {
+          await _createIndexes(m.database);
+        }
       },
       beforeOpen: (final details) async {
         if (details.wasCreated) {
           // ...
         }
       },
+    );
+  }
+
+  static Future<void> _createIndexes(final GeneratedDatabase db) async {
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_invoices_profile_date ON invoices (profile_id, invoice_date);',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_invoices_profile_no ON invoices (profile_id, invoice_no);',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_invoices_profile_type ON invoices (profile_id, type);',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice_id ON invoice_items (invoice_id);',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON payments (invoice_id);',
     );
   }
 

@@ -233,23 +233,30 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
       ),
     );
 
-    int currentSeq = series.sequence;
-    String candidate = '${series.prefix}${currentSeq.toString().padLeft(3, '0')}';
-
     final targetDate = invoiceDate ?? DateTime.now();
+
+    // Dynamically calculate next sequence based on existing invoices in the current FY
+    final maxInFy = await repository.getMaxSequenceForPrefix(
+      targetPrefix,
+      invoiceDate: targetDate,
+    );
+
+    int currentSeq = maxInFy > 0
+        ? (maxInFy + 1)
+        : (series.sequence > 0 ? series.sequence : 1);
+
+    String candidate = '$targetPrefix${currentSeq.toString().padLeft(3, '0')}';
 
     // Verify candidate against repository to guarantee uniqueness within financial year
     while (await repository.checkInvoiceExists(candidate, invoiceDate: targetDate)) {
       currentSeq++;
-      candidate = '${series.prefix}${currentSeq.toString().padLeft(3, '0')}';
+      candidate = '$targetPrefix${currentSeq.toString().padLeft(3, '0')}';
     }
 
-    // Sync sequence back if it was incremented past existing database records
-    if (currentSeq > series.sequence) {
-      await ref
-          .read(invoiceSeriesProvider.notifier)
-          .updateSequence(targetPrefix, currentSeq);
-    }
+    // Sync sequence back to active series state
+    await ref
+        .read(invoiceSeriesProvider.notifier)
+        .updateSequence(targetPrefix, currentSeq);
 
     return candidate;
   }

@@ -20,6 +20,11 @@ abstract class InvoiceRepository {
     final DateTime? invoiceDate,
   });
 
+  Future<int> getMaxSequenceForPrefix(
+    final String prefix, {
+    final DateTime? invoiceDate,
+  });
+
   // Estimates
   Future<void> saveEstimate(final Estimate estimate);
   Future<List<Estimate>> getAllEstimates();

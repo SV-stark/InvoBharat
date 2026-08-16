@@ -18,6 +18,7 @@ import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:invobharat/utils/einvoice_exporter.dart';
 
 class FluentReportsScreen extends ConsumerStatefulWidget {
   const FluentReportsScreen({super.key});
@@ -328,6 +329,23 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
                     ],
                   ),
                   onPressed: () => _exportExcelReport(context, filteredInvoices),
+                ),
+                const Gap(8),
+                DropDownButton(
+                  title: const Text('Portal JSONs'),
+                  leading: const Icon(FluentIcons.cloud_download, size: 14),
+                  items: [
+                    MenuFlyoutItem(
+                      text: const Text('Export E-Invoice JSON (Batch)'),
+                      leading: const Icon(FluentIcons.download),
+                      onPressed: () => _exportBatchEInvoice(context, filteredInvoices),
+                    ),
+                    MenuFlyoutItem(
+                      text: const Text('Export E-Way Bill JSON (Batch)'),
+                      leading: const Icon(FluentIcons.car),
+                      onPressed: () => _exportBatchEWayBill(context, filteredInvoices),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -654,6 +672,112 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
             context,
             builder: (final context, final close) => InfoBar(
               title: const Text('Excel Export Failed'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportBatchEInvoice(
+    final BuildContext context,
+    final List<Invoice> invoices,
+  ) async {
+    try {
+      if (invoices.isEmpty) {
+        if (context.mounted) {
+          unawaited(
+            displayInfoBar(
+              context,
+              builder: (final context, final close) => InfoBar(
+                title: const Text('Export Notice'),
+                content: const Text('No invoices available in selected period to export.'),
+                severity: InfoBarSeverity.warning,
+                onClose: close,
+              ),
+            ),
+          );
+        }
+        return;
+      }
+      final profile = ref.read(businessProfileProvider);
+      final savedPath = await EInvoiceExporter.exportBatchEInvoice(invoices, profile);
+      if (savedPath != null && context.mounted) {
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (final context, final close) => InfoBar(
+              title: const Text('Batch E-Invoice Exported'),
+              content: Text('E-Invoice JSON saved successfully to $savedPath'),
+              severity: InfoBarSeverity.success,
+              onClose: close,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (final context, final close) => InfoBar(
+              title: const Text('E-Invoice Export Failed'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportBatchEWayBill(
+    final BuildContext context,
+    final List<Invoice> invoices,
+  ) async {
+    try {
+      if (invoices.isEmpty) {
+        if (context.mounted) {
+          unawaited(
+            displayInfoBar(
+              context,
+              builder: (final context, final close) => InfoBar(
+                title: const Text('Export Notice'),
+                content: const Text('No invoices available in selected period to export.'),
+                severity: InfoBarSeverity.warning,
+                onClose: close,
+              ),
+            ),
+          );
+        }
+        return;
+      }
+      final profile = ref.read(businessProfileProvider);
+      final savedPath = await EInvoiceExporter.exportBatchEWayBill(invoices, profile);
+      if (savedPath != null && context.mounted) {
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (final context, final close) => InfoBar(
+              title: const Text('Batch E-Way Bill Exported'),
+              content: Text('E-Way Bill JSON saved successfully to $savedPath'),
+              severity: InfoBarSeverity.success,
+              onClose: close,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (final context, final close) => InfoBar(
+              title: const Text('E-Way Bill Export Failed'),
               content: Text(e.toString()),
               severity: InfoBarSeverity.error,
               onClose: close,

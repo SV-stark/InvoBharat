@@ -250,6 +250,70 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
     );
   }
 
+  pw.Widget buildBankDetailsSection(
+    final Invoice invoice,
+    final BusinessProfile profile, {
+    final PdfColor? headerColor,
+    final pw.Font? font,
+    final pw.Font? fontBold,
+  }) {
+    final bankName = invoice.bankName.isNotEmpty ? invoice.bankName : profile.bankName;
+    final accountNo = invoice.accountNo.isNotEmpty ? invoice.accountNo : profile.accountNo;
+    final ifsc = invoice.ifscCode.isNotEmpty ? invoice.ifscCode : profile.ifscCode;
+    final branch = invoice.branch.isNotEmpty ? invoice.branch : profile.branch;
+    final upiId = profile.upiId;
+
+    if (bankName.isEmpty && accountNo.isEmpty && ifsc.isEmpty && upiId.isEmpty) {
+      return pw.SizedBox();
+    }
+
+    return pw.Container(
+      margin: const pw.EdgeInsets.symmetric(vertical: 6),
+      padding: const pw.EdgeInsets.all(6),
+      decoration: const pw.BoxDecoration(
+        color: PdfColors.grey100,
+        borderRadius: pw.BorderRadius.all(pw.Radius.circular(4)),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            "BANK & PAYMENT DETAILS",
+            style: pw.TextStyle(
+              font: fontBold,
+              fontSize: 8,
+              fontWeight: pw.FontWeight.bold,
+              color: headerColor ?? PdfColors.grey800,
+            ),
+          ),
+          pw.SizedBox(height: 3),
+          pw.Row(
+            children: [
+              if (bankName.isNotEmpty) ...[
+                pw.Text("Bank: $bankName", style: pw.TextStyle(font: font, fontSize: 8)),
+                pw.SizedBox(width: 12),
+              ],
+              if (accountNo.isNotEmpty) ...[
+                pw.Text("A/C No: $accountNo", style: pw.TextStyle(font: fontBold, fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(width: 12),
+              ],
+              if (ifsc.isNotEmpty) ...[
+                pw.Text("IFSC: $ifsc", style: pw.TextStyle(font: font, fontSize: 8)),
+                pw.SizedBox(width: 12),
+              ],
+              if (branch.isNotEmpty) ...[
+                pw.Text("Branch: $branch", style: pw.TextStyle(font: font, fontSize: 8)),
+                pw.SizedBox(width: 12),
+              ],
+              if (upiId.isNotEmpty)
+                pw.Text("UPI ID: $upiId", style: pw.TextStyle(font: font, fontSize: 8)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   pw.Widget buildPaymentQRCode(
     final String upiId,
     final String name,

@@ -631,9 +631,12 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                                       onMarkPaid: _markAsPaid,
                                       onRecurring: _setupRecurring,
                                       onDuplicate: _duplicateInvoice,
+                                      onCreateCreditNote: _createCreditNote,
+                                      onCreateDebitNote: _createDebitNote,
                                       onEmail: _emailInvoice,
                                       onMarkSent: _markAsSent,
                                       onExportEInvoiceJson: _exportEInvoiceJson,
+                                      onExportEWayBillJson: _exportEWayBillJson,
                                     ),
                                   ),
                                 ],
@@ -1136,6 +1139,50 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     );
     await context.push('/invoice-form', extra: newInvoice);
     ref.invalidate(invoiceListProvider);
+  }
+
+  void _createCreditNote(final BuildContext context, final Invoice invoice) async {
+    final creditNote = await InvoiceActions.buildCreditNote(ref, invoice);
+    if (!context.mounted) return;
+    await context.push('/invoice-form', extra: creditNote);
+    ref.invalidate(invoiceListProvider);
+  }
+
+  void _createDebitNote(final BuildContext context, final Invoice invoice) async {
+    final debitNote = await InvoiceActions.buildDebitNote(ref, invoice);
+    if (!context.mounted) return;
+    await context.push('/invoice-form', extra: debitNote);
+    ref.invalidate(invoiceListProvider);
+  }
+
+  void _exportEWayBillJson(final BuildContext context, final Invoice invoice) async {
+    try {
+      final profile = ref.read(businessProfileProvider);
+      final path = await EInvoiceExporter.exportEWayBill(invoice, profile);
+      if (context.mounted && path != null) {
+        displayInfoBar(
+          context,
+          builder: (final context, final close) => InfoBar(
+            title: const Text("Success"),
+            content: Text("E-Way Bill JSON exported successfully to $path"),
+            severity: InfoBarSeverity.success,
+            onClose: close,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        displayInfoBar(
+          context,
+          builder: (final context, final close) => InfoBar(
+            title: const Text("Error"),
+            content: Text("Failed to export E-Way Bill JSON: $e"),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          ),
+        );
+      }
+    }
   }
 
   void _emailInvoice(final BuildContext context, final Invoice invoice) async {

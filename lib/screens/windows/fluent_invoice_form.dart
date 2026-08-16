@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
@@ -71,7 +72,11 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
     return ScaffoldPage.scrollable(
       header: PageHeader(
         title: Text(
-          widget.invoiceToEdit != null ? "Edit Invoice" : "New Invoice",
+          invoice.type == InvoiceType.creditNote
+              ? "Credit Note (${invoice.invoiceNo.isNotEmpty ? invoice.invoiceNo : 'New'})"
+              : invoice.type == InvoiceType.debitNote
+                  ? "Debit Note (${invoice.invoiceNo.isNotEmpty ? invoice.invoiceNo : 'New'})"
+                  : (widget.invoiceToEdit != null ? "Edit Invoice" : "New Invoice"),
         ),
         leading: Navigator.canPop(context)
             ? Padding(
@@ -116,6 +121,20 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
         ),
       ),
       children: [
+        if (invoice.type == InvoiceType.creditNote ||
+            invoice.type == InvoiceType.debitNote ||
+            (invoice.originalInvoiceNumber != null && invoice.originalInvoiceNumber!.isNotEmpty))
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: InfoBar(
+              title: Text(invoice.type == InvoiceType.creditNote
+                  ? "Credit Note (CDNR / CDNUR)"
+                  : "Debit Note"),
+              content: Text(
+                "Linked to Original Invoice: ${invoice.originalInvoiceNumber ?? 'N/A'}${invoice.originalInvoiceDate != null ? ' dated ${DateFormat('dd MMM yyyy').format(invoice.originalInvoiceDate!)}' : ''}",
+              ),
+            ),
+          ),
         Expander(
           header: Text(
             "Invoice Details",

@@ -67,6 +67,12 @@ void main() {
       ),
     ).thenAnswer((_) async => false);
     when(
+      () => mockInvoiceRepo.getMaxSequenceForPrefix(
+        any(),
+        invoiceDate: any(named: 'invoiceDate'),
+      ),
+    ).thenAnswer((_) async => 0);
+    when(
       () => mockProfileRepo.getAllProfiles(),
     ).thenAnswer((_) async => [testProfile]);
     when(() => mockClientRepo.getAllClients()).thenAnswer((_) async => []);
