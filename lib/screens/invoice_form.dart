@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:printing/printing.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/models/client.dart';
-import 'package:invobharat/utils/pdf_generator.dart';
 import 'package:invobharat/utils/gst_utils.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/client_provider.dart';
@@ -15,6 +13,7 @@ import 'package:invobharat/providers/bank_provider.dart';
 import 'package:invobharat/mixins/invoice_form_mixin.dart';
 import 'package:invobharat/screens/widgets/invoice_form_sections.dart';
 import 'package:invobharat/utils/formatters.dart';
+import 'package:invobharat/widgets/dialogs/invoice_pdf_preview_dialog.dart';
 
 // Generates a unique ID
 
@@ -123,6 +122,9 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
                 posCtrl: posCtrl,
                 paymentTermsCtrl: paymentTermsCtrl,
                 poNumberCtrl: poNumberCtrl,
+                ewayBillCtrl: ewayBillCtrl,
+                vehicleNoCtrl: vehicleNoCtrl,
+                irnNoCtrl: irnNoCtrl,
               ),
               const SizedBox(height: 16),
               ClientDetailsSection(
@@ -285,6 +287,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
         estimateIdToMarkConverted: widget.estimateId,
         context: context,
       );
+      ref.read(invoiceProvider.notifier).reset();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Invoice saved successfully")),
@@ -559,17 +562,10 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
     final Invoice invoice,
     final BusinessProfile profile,
   ) {
-    showDialog(
-      context: context,
-      builder: (final context) {
-        return Dialog(
-          insetPadding: const EdgeInsets.all(20),
-          child: PdfPreview(
-            build: (final format) => generateInvoicePdf(invoice, profile),
-            useActions: false,
-          ),
-        );
-      },
+    InvoicePdfPreviewDialog.show(
+      context,
+      invoice: invoice,
+      profile: profile,
     );
   }
 

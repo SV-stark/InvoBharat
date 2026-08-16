@@ -18,6 +18,7 @@ class CorporateTemplate extends BasePdfTemplate {
     final pw.Font font,
     final pw.Font fontBold, {
     final String? title,
+    final bool showHsnSummary = true,
   }) async {
     final pdf = pw.Document(
       theme: pw.ThemeData.withFont(base: font, bold: fontBold),
@@ -81,13 +82,20 @@ class CorporateTemplate extends BasePdfTemplate {
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.end,
                       children: [
-                        pw.Text(
-                          supplyType,
-                          style: pw.TextStyle(
-                            color: white,
-                            fontSize: 22,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
+                        pw.Row(
+                          mainAxisAlignment: pw.MainAxisAlignment.end,
+                          children: [
+                            buildStatusBadge(invoice, font: fontBold),
+                            pw.SizedBox(width: 8),
+                            pw.Text(
+                              supplyType,
+                              style: pw.TextStyle(
+                                color: white,
+                                fontSize: 20,
+                                fontWeight: pw.FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                         pw.SizedBox(height: 5),
                         pw.Text(
@@ -227,6 +235,7 @@ class CorporateTemplate extends BasePdfTemplate {
                     ],
                   ),
                   buildOriginalInvoiceInfo(invoice),
+                  buildEwayBillAndEinvoiceInfo(invoice, font, fontBold),
                   pw.SizedBox(height: 30),
 
                   // Items Table
@@ -244,7 +253,7 @@ class CorporateTemplate extends BasePdfTemplate {
                       horizontalInside: pw.BorderSide(color: PdfColors.grey100),
                     ),
                   ),
-                  buildAmountInWords(invoice.grandTotal),
+                  if (showHsnSummary) buildHsnSummaryTable(invoice, font, fontBold),
                   pw.SizedBox(height: 20),
 
                   // Totals
@@ -346,60 +355,39 @@ class CorporateTemplate extends BasePdfTemplate {
                     ],
                   ),
 
-                  pw.SizedBox(height: 40),
+                  pw.SizedBox(height: 16),
+                  buildAmountInWords(invoice.grandTotal),
+                  buildBankDetailsSection(
+                    invoice,
+                    profile,
+                    headerColor: themeColor,
+                    font: font,
+                    fontBold: fontBold,
+                  ),
 
-                  // Footer (Payment + Sign)
+                  pw.SizedBox(height: 16),
+
+                  // Footer (Terms/Notes left, QR center, Sign right)
                   pw.Row(
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
-                      pw.Expanded(child: pw.SizedBox()), // Empty left
+                      pw.Expanded(child: pw.SizedBox()),
 
                       pw.Expanded(
-                        child: pw.Column(
-                          children: [
-                            pw.Text(
-                              "Payment Details",
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                                color: themeColor,
-                              ),
-                            ),
-                            pw.SizedBox(height: 5),
-                            pw.Text(
-                              "Bank: ${invoice.bankName}",
-                              style: const pw.TextStyle(fontSize: 9),
-                            ),
-                            pw.Text(
-                              "A/c No: ${invoice.accountNo}",
-                              style: const pw.TextStyle(fontSize: 9),
-                            ),
-                            pw.Text(
-                              "IFSC: ${invoice.ifscCode}",
-                              style: const pw.TextStyle(fontSize: 9),
-                            ),
-                            if (profile.upiId.isNotEmpty) ...[
-                              pw.SizedBox(height: 5),
-                              pw.Text(
-                                "UPI ID: ${profile.upiId}",
-                                style: pw.TextStyle(
-                                  fontWeight: pw.FontWeight.bold,
-                                  fontSize: 9,
-                                  color: themeColor,
-                                ),
-                              ),
-                              pw.SizedBox(height: 5),
-                              pw.Center(
-                                child: buildPaymentQRCode(
-                                  profile.upiId,
-                                  profile.companyName,
-                                  invoice.grandTotal,
-                                  invoice.invoiceNo,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
+                        child: profile.upiId.isNotEmpty
+                            ? pw.Column(
+                                mainAxisAlignment: pw.MainAxisAlignment.end,
+                                children: [
+                                  buildPaymentQRCode(
+                                    profile.upiId,
+                                    profile.companyName,
+                                    invoice.grandTotal,
+                                    invoice.invoiceNo,
+                                  ),
+                                ],
+                              )
+                            : pw.SizedBox(),
                       ),
 
                       pw.Expanded(

@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:indian_formatters/indian_formatters.dart';
+import 'package:money2/money2.dart';
 
 class CurrencyFormatter {
   static final _indianFormat = NumberFormat.currency(
@@ -11,6 +12,11 @@ class CurrencyFormatter {
 
   static String format(final double amount) {
     return _indianFormat.format(amount);
+  }
+
+  static Money toMoney(final double amount, [final String currencyCode = 'INR']) {
+    final currency = Currencies().find(currencyCode) ?? CommonCurrencies().inr;
+    return Money.fromNumWithCurrency(amount, currency);
   }
 }
 
@@ -25,6 +31,14 @@ extension DoubleFormatter on double {
       decimalDigits: 2,
     );
     return fmt.format(this);
+  }
+
+  Money toMoney([final String currencyCode = 'INR']) {
+    return CurrencyFormatter.toMoney(this, currencyCode);
+  }
+
+  String toIndianWords() {
+    return IndianCurrencyFormatter.forCheque(this);
   }
 }
 
@@ -47,13 +61,22 @@ class MobileNumberFormatter extends TextInputFormatter {
     final TextEditingValue oldValue,
     final TextEditingValue newValue,
   ) {
-    final text = newValue.text.replaceAll(RegExp(r'\D'), '');
-    if (text.length > 10) return oldValue;
+    final digitsOnly = newValue.text.replaceAll(RegExp(r'\D'), '');
+    if (digitsOnly.length > 10) return oldValue;
 
-    // We could add spaces like "99999 88888" but let's keep it simple for now
-    return newValue.copyWith(
-      text: text,
-      selection: TextSelection.collapsed(offset: text.length),
+    int cursorOffset = 0;
+    final int rawCursor =
+        newValue.selection.baseOffset.clamp(0, newValue.text.length);
+    for (int i = 0; i < rawCursor; i++) {
+      if (RegExp(r'\d').hasMatch(newValue.text[i])) {
+        cursorOffset++;
+      }
+    }
+    cursorOffset = cursorOffset.clamp(0, digitsOnly.length);
+
+    return TextEditingValue(
+      text: digitsOnly,
+      selection: TextSelection.collapsed(offset: cursorOffset),
     );
   }
 }

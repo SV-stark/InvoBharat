@@ -24,6 +24,9 @@ import 'package:invobharat/screens/windows/fluent_estimate_form.dart';
 import 'package:invobharat/screens/client_ledger_screen.dart';
 import 'package:invobharat/screens/windows/fluent_settings.dart';
 import 'package:flutter/material.dart' hide Colors, Builder;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talker_flutter/talker_flutter.dart';
+import 'package:invobharat/services/logger_service.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/client.dart';
 
@@ -150,6 +153,22 @@ final appRouter = GoRouter(
       path: '/invoice-detail',
       builder: (final context, final state) =>
           InvoiceDetailScreen(invoice: state.extra as Invoice),
+    ),
+    GoRoute(
+      path: '/logs',
+      builder: (final context, final state) {
+        return Consumer(
+          builder: (final context, final ref, final child) {
+            final talker = ref.watch(talkerProvider);
+            return TalkerScreen(
+              talker: talker,
+              theme: const TalkerScreenTheme(
+                backgroundColor: Color(0xFF1A1D24),
+              ),
+            );
+          },
+        );
+      },
     ),
   ],
 );

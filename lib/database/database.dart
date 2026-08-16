@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -16,6 +18,9 @@ part 'database.g.dart';
     Payments,
     BankAccounts,
     AppSettings,
+    Estimates,
+    EstimateItems,
+    RecurringProfilesTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -26,15 +31,19 @@ class AppDatabase extends _$AppDatabase {
 
   static AppDatabase? _instance;
   static AppDatabase get instance => _instance ??= AppDatabase();
+  static void resetInstance() {
+    _instance = null;
+  }
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (final Migrator m) async {
         await m.createAll();
+        await _createIndexes(m.database);
       },
       onUpgrade: (final Migrator m, final int from, final int to) async {
         if (from < 2) {
@@ -166,6 +175,9 @@ class AppDatabase extends _$AppDatabase {
                 'status',
                 'sent_at',
                 'receiver_phone',
+                'eway_bill_no',
+                'vehicle_no',
+                'irn_no',
               };
               final columnsToCopy = table.$columns
                   .map((final c) => c.name)
@@ -205,6 +217,72 @@ class AppDatabase extends _$AppDatabase {
         if (from < 10) {
           await m.addColumn(invoices, invoices.receiverPhone);
         }
+        if (from < 11) {
+          await m.addColumn(invoices, invoices.ewayBillNo);
+          await m.addColumn(invoices, invoices.vehicleNo);
+          await m.addColumn(invoices, invoices.irnNo);
+        }
+        if (from < 12) {
+          await m.database.customStatement('PRAGMA foreign_keys = OFF;');
+          await m.database.transaction(() async {
+            final table = clients;
+            final tableName = table.actualTableName;
+            final tempName = '${tableName}_temp';
+
+            // 1. Rename existing table to temp
+            await m.database.customStatement(
+              'ALTER TABLE `$tableName` RENAME TO `$tempName`',
+            );
+
+            // 2. Create new table with updated constraints (no UNIQUE constraint)
+            await m.createTable(table);
+
+            // 3. Copy all columns
+            final columnsToCopy = table.$columns.map((final c) => c.name).join(', ');
+            await m.database.customStatement(
+              'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
+            );
+
+            // 4. Drop temp table
+            await m.database.customStatement('DROP TABLE `$tempName`');
+
+            // 5. Create partial unique index where gstin is not empty/null
+            await m.database.customStatement(
+              "CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null'",
+            );
+          });
+          await m.database.customStatement('PRAGMA foreign_keys = ON;');
+        }
+        if (from < 13) {
+          await m.createTable(estimates);
+          await m.createTable(estimateItems);
+          await m.createTable(recurringProfilesTable);
+
+          await m.database.customStatement('PRAGMA foreign_keys = OFF;');
+          await m.database.transaction(() async {
+            final table = invoices;
+            final tableName = table.actualTableName;
+            final tempName = '${tableName}_temp';
+
+            await m.database.customStatement(
+              'ALTER TABLE `$tableName` RENAME TO `$tempName`',
+            );
+
+            await m.createTable(table);
+
+            final columnsToCopy =
+                table.$columns.map((final c) => c.name).join(', ');
+            await m.database.customStatement(
+              'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
+            );
+
+            await m.database.customStatement('DROP TABLE `$tempName`');
+          });
+          await m.database.customStatement('PRAGMA foreign_keys = ON;');
+        }
+        if (from < 14) {
+          await _createIndexes(m.database);
+        }
       },
       beforeOpen: (final details) async {
         if (details.wasCreated) {
@@ -214,12 +292,33 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  static Future<void> _createIndexes(final GeneratedDatabase db) async {
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_invoices_profile_date ON invoices (profile_id, invoice_date);',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_invoices_profile_no ON invoices (profile_id, invoice_no);',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_invoices_profile_type ON invoices (profile_id, type);',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice_id ON invoice_items (invoice_id);',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON payments (invoice_id);',
+    );
+  }
+
   Future<void> vacuumInto(final String path) async {
     await customStatement('VACUUM INTO ?', [path]);
   }
 }
 
 QueryExecutor _openConnection() {
+  if (Platform.environment.containsKey('FLUTTER_TEST')) {
+    return NativeDatabase.memory();
+  }
   return driftDatabase(name: 'db');
 }
 

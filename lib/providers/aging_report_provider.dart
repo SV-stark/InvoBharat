@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:money2/money2.dart';
 
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 
@@ -28,19 +29,16 @@ final agingReportProvider = FutureProvider<AgingReportData>((final ref) async {
   final repository = ref.watch(invoiceRepositoryProvider);
   final allInvoices = await repository.getAllInvoices();
 
-  // Filter Unpaid
-  // Note: invoice.paymentStatus logic is in model, but we can recheck here to be safe or use model getter.
-  // We need actual balance due.
+  final inr = CommonCurrencies().inr;
   final unpaidInvoices = allInvoices
       .where((final inv) => inv.balanceDue > 0.01)
       .toList();
-  // > 0.01 to handle float rounding errors or negligible amounts.
 
-  double current = 0;
-  double days30 = 0;
-  double days60 = 0;
-  double days90 = 0;
-  double days90Plus = 0;
+  Money current = Money.fromNumWithCurrency(0, inr);
+  Money days30 = Money.fromNumWithCurrency(0, inr);
+  Money days60 = Money.fromNumWithCurrency(0, inr);
+  Money days90 = Money.fromNumWithCurrency(0, inr);
+  Money days90Plus = Money.fromNumWithCurrency(0, inr);
 
   int countCurrent = 0;
   int count30 = 0;
@@ -48,51 +46,53 @@ final agingReportProvider = FutureProvider<AgingReportData>((final ref) async {
   int count90 = 0;
   int count90Plus = 0;
 
-  final Map<String, double> clientMap = {};
+  final Map<String, Money> clientMoneyMap = {};
 
   final now = DateTime.now();
 
   for (final inv in unpaidInvoices) {
     final due =
         inv.dueDate ?? inv.invoiceDate; // Use invoice date if due date missing
-    final balance = inv.balanceDue;
+    final balanceMoney = Money.fromNumWithCurrency(inv.balanceDue, inr);
 
     // Aggregate by Client
-    clientMap[inv.receiver.name] =
-        (clientMap[inv.receiver.name] ?? 0) + balance;
+    clientMoneyMap[inv.receiver.name] =
+        (clientMoneyMap[inv.receiver.name] ?? Money.fromNumWithCurrency(0, inr)) +
+            balanceMoney;
 
     if (now.isBefore(due)) {
-      current += balance;
+      current += balanceMoney;
       countCurrent++;
     } else {
       final daysOverdue = now.difference(due).inDays;
       if (daysOverdue <= 30) {
-        days30 += balance;
+        days30 += balanceMoney;
         count30++;
       } else if (daysOverdue <= 60) {
-        days60 += balance;
+        days60 += balanceMoney;
         count60++;
       } else if (daysOverdue <= 90) {
-        days90 += balance;
+        days90 += balanceMoney;
         count90++;
       } else {
-        days90Plus += balance;
+        days90Plus += balanceMoney;
         count90Plus++;
       }
     }
   }
 
   final total = current + days30 + days60 + days90 + days90Plus;
+  final clientMap = clientMoneyMap.map((key, val) => MapEntry(key, val.toDouble()));
 
   return AgingReportData(
-    totalReceivable: total,
+    totalReceivable: total.toDouble(),
     clientBreakdown: clientMap,
     buckets: [
-      AgingBucket("Current (Not Overdue)", current, countCurrent, Colors.green),
-      AgingBucket("1-30 Days", days30, count30, Colors.teal),
-      AgingBucket("31-60 Days", days60, count60, Colors.orange),
-      AgingBucket("61-90 Days", days90, count90, Colors.deepOrange),
-      AgingBucket("> 90 Days", days90Plus, count90Plus, Colors.red),
+      AgingBucket("Current (Not Overdue)", current.toDouble(), countCurrent, Colors.green),
+      AgingBucket("1-30 Days", days30.toDouble(), count30, Colors.teal),
+      AgingBucket("31-60 Days", days60.toDouble(), count60, Colors.orange),
+      AgingBucket("61-90 Days", days90.toDouble(), count90, Colors.deepOrange),
+      AgingBucket("> 90 Days", days90Plus.toDouble(), count90Plus, Colors.red),
     ],
   );
 });

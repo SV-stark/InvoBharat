@@ -15,8 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PaymentTransaction {
 
- String get id; String get invoiceId; DateTime get date; double get amount; String get paymentMode;// 'Cash', 'UPI', 'Bank Transfer', 'Cheque', 'Other'
- String? get notes;
+ String get id; String get invoiceId; DateTime get date; double get amount; String get paymentMode; String? get notes;
 /// Create a copy of PaymentTransaction
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -223,7 +222,6 @@ class _PaymentTransaction implements PaymentTransaction {
 @override final  DateTime date;
 @override final  double amount;
 @override final  String paymentMode;
-// 'Cash', 'UPI', 'Bank Transfer', 'Cheque', 'Other'
 @override final  String? notes;
 
 /// Create a copy of PaymentTransaction

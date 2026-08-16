@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:invobharat/utils/formatters.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/estimate_provider.dart';
+import 'package:invobharat/widgets/skeleton_widgets.dart';
 import 'package:go_router/go_router.dart';
 
 class EstimatesScreen extends ConsumerStatefulWidget {
@@ -343,7 +344,7 @@ class _EstimatesScreenState extends ConsumerState<EstimatesScreen> {
           );
         },
         error: (final err, final stack) => Center(child: Text("Error: $err")),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const InvoiceListSkeleton(),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

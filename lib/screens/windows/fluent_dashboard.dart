@@ -8,6 +8,7 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/app_config_provider.dart';
 import 'package:invobharat/widgets/profile_switcher_sheet.dart';
 import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/services/gstr_service.dart';
@@ -15,9 +16,12 @@ import 'package:invobharat/services/invoice_import_service.dart';
 import 'package:invobharat/services/gstr1_json_import_service.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:file_picker/file_picker.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'dart:io';
 
 import 'package:invobharat/services/invoice_actions.dart';
+import 'package:invobharat/utils/einvoice_exporter.dart';
 
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/payment_transaction.dart';
@@ -44,6 +48,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
   String _selectedPeriod = "This Financial Year";
   String _selectedType = "All";
   String _searchQuery = "";
+  String _sortBy = "date_desc";
   final Set<String> _selectedIds = {};
 
   @override
@@ -225,6 +230,33 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                   .toList();
             }
 
+            filteredInvoices = List.from(filteredInvoices);
+            filteredInvoices.sort((final a, final b) {
+              switch (_sortBy) {
+                case 'date_asc':
+                  return a.invoiceDate.compareTo(b.invoiceDate);
+                case 'amount_desc':
+                  return b.grandTotal.compareTo(a.grandTotal);
+                case 'amount_asc':
+                  return a.grandTotal.compareTo(b.grandTotal);
+                case 'number_asc':
+                  return a.invoiceNo.compareTo(b.invoiceNo);
+                case 'number_desc':
+                  return b.invoiceNo.compareTo(a.invoiceNo);
+                case 'client_asc':
+                  return a.receiver.name
+                      .toLowerCase()
+                      .compareTo(b.receiver.name.toLowerCase());
+                case 'client_desc':
+                  return b.receiver.name
+                      .toLowerCase()
+                      .compareTo(a.receiver.name.toLowerCase());
+                case 'date_desc':
+                default:
+                  return b.invoiceDate.compareTo(a.invoiceDate);
+              }
+            });
+
             final stats = DashboardActions.calculateStats(filteredInvoices);
             final totalRevenue = stats['revenue'] as double;
             final totalCGST = stats['cgst'] as double;
@@ -271,8 +303,32 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                     CommandBarButton(
                       label: const Text('CSV Template'),
                       icon: const Icon(FluentIcons.file_template),
-                      onPressed: () =>
-                          InvoiceImportService.downloadImportTemplate(),
+                      onPressed: () async {
+                        try {
+                          await InvoiceImportService.downloadImportTemplate();
+                          if (!context.mounted) return;
+                          displayInfoBar(
+                            context,
+                            builder: (final context, final close) => InfoBar(
+                              title: const Text("Success"),
+                              content: const Text("Import template downloaded successfully"),
+                              severity: InfoBarSeverity.success,
+                              onClose: close,
+                            ),
+                          );
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          displayInfoBar(
+                            context,
+                            builder: (final context, final close) => InfoBar(
+                              title: const Text("Error"),
+                              content: Text("Failed to download template: $e"),
+                              severity: InfoBarSeverity.error,
+                              onClose: close,
+                            ),
+                          );
+                        }
+                      },
                     ),
                   ],
                   secondaryItems: [
@@ -427,21 +483,61 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
 
                 const Gap(30),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  alignment: WrapAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: Text(
-                        "Recent Invoices",
-                        style: theme.typography.title,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    Text(
+                      "Recent Invoices",
+                      style: theme.typography.title,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const Gap(16),
+                    ComboBox<String>(
+                      value: _sortBy,
+                      items: const [
+                        ComboBoxItem(
+                          value: "date_desc",
+                          child: Text("Date: Newest First"),
+                        ),
+                        ComboBoxItem(
+                          value: "date_asc",
+                          child: Text("Date: Oldest First"),
+                        ),
+                        ComboBoxItem(
+                          value: "amount_desc",
+                          child: Text("Amount: High to Low"),
+                        ),
+                        ComboBoxItem(
+                          value: "amount_asc",
+                          child: Text("Amount: Low to High"),
+                        ),
+                        ComboBoxItem(
+                          value: "number_asc",
+                          child: Text("Invoice #: A-Z"),
+                        ),
+                        ComboBoxItem(
+                          value: "number_desc",
+                          child: Text("Invoice #: Z-A"),
+                        ),
+                        ComboBoxItem(
+                          value: "client_asc",
+                          child: Text("Client: A-Z"),
+                        ),
+                        ComboBoxItem(
+                          value: "client_desc",
+                          child: Text("Client: Z-A"),
+                        ),
+                      ],
+                      onChanged: (final v) {
+                        if (v != null) setState(() => _sortBy = v);
+                      },
+                    ),
                     SizedBox(
-                      width: 250,
+                      width: 160,
                       child: TextBox(
-                        placeholder: "Search invoices...",
+                        placeholder: "Search...",
                         prefix: const Padding(
                           padding: EdgeInsets.only(left: 8),
                           child: Icon(FluentIcons.search),
@@ -535,8 +631,12 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                                       onMarkPaid: _markAsPaid,
                                       onRecurring: _setupRecurring,
                                       onDuplicate: _duplicateInvoice,
+                                      onCreateCreditNote: _createCreditNote,
+                                      onCreateDebitNote: _createDebitNote,
                                       onEmail: _emailInvoice,
                                       onMarkSent: _markAsSent,
+                                      onExportEInvoiceJson: _exportEInvoiceJson,
+                                      onExportEWayBillJson: _exportEWayBillJson,
                                     ),
                                   ),
                                 ],
@@ -695,6 +795,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         fileName: 'GSTR1_${_selectedPeriod.replaceAll(" ", "_")}.csv',
         allowedExtensions: ['csv'],
         type: FileType.custom,
+        bytes: Uint8List.fromList(utf8.encode(csvData)),
       );
 
       if (outputFile != null) {
@@ -1040,10 +1141,55 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     ref.invalidate(invoiceListProvider);
   }
 
+  void _createCreditNote(final BuildContext context, final Invoice invoice) async {
+    final creditNote = await InvoiceActions.buildCreditNote(ref, invoice);
+    if (!context.mounted) return;
+    await context.push('/invoice-form', extra: creditNote);
+    ref.invalidate(invoiceListProvider);
+  }
+
+  void _createDebitNote(final BuildContext context, final Invoice invoice) async {
+    final debitNote = await InvoiceActions.buildDebitNote(ref, invoice);
+    if (!context.mounted) return;
+    await context.push('/invoice-form', extra: debitNote);
+    ref.invalidate(invoiceListProvider);
+  }
+
+  void _exportEWayBillJson(final BuildContext context, final Invoice invoice) async {
+    try {
+      final profile = ref.read(businessProfileProvider);
+      final path = await EInvoiceExporter.exportEWayBill(invoice, profile);
+      if (context.mounted && path != null) {
+        displayInfoBar(
+          context,
+          builder: (final context, final close) => InfoBar(
+            title: const Text("Success"),
+            content: Text("E-Way Bill JSON exported successfully to $path"),
+            severity: InfoBarSeverity.success,
+            onClose: close,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        displayInfoBar(
+          context,
+          builder: (final context, final close) => InfoBar(
+            title: const Text("Error"),
+            content: Text("Failed to export E-Way Bill JSON: $e"),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          ),
+        );
+      }
+    }
+  }
+
   void _emailInvoice(final BuildContext context, final Invoice invoice) async {
     try {
       final profile = ref.read(businessProfileProvider);
-      final pdfBytes = await generateInvoicePdf(invoice, profile);
+      final showHsn = ref.read(appConfigProvider).showHsnSummaryInPdf;
+      final pdfBytes = await generateInvoicePdf(invoice, profile, showHsnSummary: showHsn);
       final filename =
           'Invoice_${invoice.invoiceNo.replaceAll(RegExp(r'[^\w\s]+'), '_')}.pdf';
 
@@ -1061,6 +1207,36 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
           builder: (final context, final close) => InfoBar(
             title: const Text("Error Sharing"),
             content: Text(e.toString()),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          ),
+        );
+      }
+    }
+  }
+
+  void _exportEInvoiceJson(final BuildContext context, final Invoice invoice) async {
+    try {
+      final profile = ref.read(businessProfileProvider);
+      final path = await EInvoiceExporter.exportEInvoice(invoice, profile);
+      if (context.mounted && path != null) {
+        displayInfoBar(
+          context,
+          builder: (final context, final close) => InfoBar(
+            title: const Text("Success"),
+            content: Text("E-Invoice exported successfully to $path"),
+            severity: InfoBarSeverity.success,
+            onClose: close,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        displayInfoBar(
+          context,
+          builder: (final context, final close) => InfoBar(
+            title: const Text("Error"),
+            content: Text("Failed to export E-Invoice: $e"),
             severity: InfoBarSeverity.error,
             onClose: close,
           ),
@@ -1122,9 +1298,32 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
           ),
           Button(
             child: const Text('Download Template'),
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              InvoiceImportService.downloadImportTemplate();
+              try {
+                await InvoiceImportService.downloadImportTemplate();
+                if (!context.mounted) return;
+                displayInfoBar(
+                  context,
+                  builder: (final context, final close) => InfoBar(
+                    title: const Text("Success"),
+                    content: const Text("Import template downloaded successfully"),
+                    severity: InfoBarSeverity.success,
+                    onClose: close,
+                  ),
+                );
+              } catch (e) {
+                if (!context.mounted) return;
+                displayInfoBar(
+                  context,
+                  builder: (final context, final close) => InfoBar(
+                    title: const Text("Error"),
+                    content: Text("Failed to download template: $e"),
+                    severity: InfoBarSeverity.error,
+                    onClose: close,
+                  ),
+                );
+              }
             },
           ),
         ],

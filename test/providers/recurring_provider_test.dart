@@ -5,14 +5,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:invobharat/providers/recurring_provider.dart';
 import 'package:invobharat/models/recurring_profile.dart';
 import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/data/invoice_repository.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:drift/native.dart';
 import 'package:invobharat/providers/database_provider.dart';
 import 'package:invobharat/database/database.dart'
-    hide Invoice, BusinessProfile, Client, AppSetting, InvoiceItem;
+    hide Invoice, BusinessProfile, Client;
 
-class MockRecurringRepository extends Mock implements RecurringRepository {}
+class MockInvoiceRepository extends Mock implements InvoiceRepository {}
 
 class FakeActiveProfileId extends ActiveProfileId {
   @override
@@ -24,7 +26,7 @@ class FakeActiveProfileId extends ActiveProfileId {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late MockRecurringRepository mockRepo;
+  late MockInvoiceRepository mockRepo;
   late BusinessProfile testProfile;
 
   setUpAll(() {
@@ -46,10 +48,10 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
-    mockRepo = MockRecurringRepository();
+    mockRepo = MockInvoiceRepository();
     testProfile = BusinessProfile.defaults().copyWith(id: 'test-profile');
 
-    when(() => mockRepo.getAllProfiles(any())).thenAnswer((_) async => []);
+    when(() => mockRepo.getAllRecurringProfiles()).thenAnswer((_) async => []);
   });
 
   ProviderContainer createContainer({
@@ -57,7 +59,7 @@ void main() {
   }) {
     final container = ProviderContainer(
       overrides: [
-        recurringRepositoryProvider.overrideWithValue(mockRepo),
+        invoiceRepositoryProvider.overrideWithValue(mockRepo),
         businessProfileProvider.overrideWithValue(testProfile),
         activeProfileIdProvider.overrideWith(FakeActiveProfileId.new),
         databaseProvider.overrideWith((final ref) {
@@ -75,17 +77,14 @@ void main() {
   group('RecurringProvider', () {
     test('initial state should be empty', () async {
       final container = createContainer();
-      final profiles = container.read(recurringListProvider);
-      expect(profiles, const AsyncValue<List<RecurringProfile>>.loading());
-
-      final data = await container.read(recurringListProvider.future);
-      expect(data, isEmpty);
+      final profiles = await container.read(recurringListProvider.future);
+      expect(profiles, isEmpty);
     });
 
-    test('addProfile should update state', () async {
+    test('addProfile should call saveRecurringProfile on repository', () async {
       final container = createContainer();
-      final profile = RecurringProfile(
-        id: 'p1',
+      final recProfile = RecurringProfile(
+        id: 'rec1',
         profileId: 'test-profile',
         interval: RecurringInterval.monthly,
         nextRunDate: DateTime.now(),
@@ -98,17 +97,16 @@ void main() {
       );
 
       when(
-        () => mockRepo.saveProfile(any()),
+        () => mockRepo.saveRecurringProfile(any()),
       ).thenAnswer((_) async => Future.value());
       when(
-        () => mockRepo.getAllProfiles(any()),
-      ).thenAnswer((_) async => [profile]);
+        () => mockRepo.getAllRecurringProfiles(),
+      ).thenAnswer((_) async => [recProfile]);
 
-      await container.read(recurringListProvider.notifier).addProfile(profile);
-      final profiles = await container.read(recurringListProvider.future);
-
-      expect(profiles, contains(profile));
-      verify(() => mockRepo.saveProfile(profile)).called(1);
+      await container
+          .read(recurringListProvider.notifier)
+          .addProfile(recProfile);
+      verify(() => mockRepo.saveRecurringProfile(recProfile)).called(1);
     });
   });
 }

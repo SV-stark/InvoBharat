@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/app_config_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:io'; // NEW
@@ -22,6 +23,8 @@ import 'package:invobharat/services/email_service.dart'; // NEW
 import 'package:invobharat/utils/pdf_generator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:invobharat/services/invoice_actions.dart';
+import 'package:invobharat/utils/einvoice_exporter.dart';
+import 'package:invobharat/widgets/dialogs/invoice_pdf_preview_dialog.dart';
 
 class InvoiceDetailScreen extends ConsumerStatefulWidget {
   final Invoice invoice;
@@ -90,6 +93,18 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.picture_as_pdf),
+            tooltip: "Preview PDF",
+            onPressed: () {
+              final profile = ref.read(businessProfileProvider);
+              InvoicePdfPreviewDialog.show(
+                context,
+                invoice: _invoice,
+                profile: profile,
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.email),
             tooltip: "Send Email",
             onPressed: _sendEmail,
@@ -105,12 +120,17 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             icon: const Icon(Icons.share),
             tooltip: "Share",
             onPressed: () async {
-              final profile = ref.read(businessProfileProvider);
-              final bytes = await generateInvoicePdf(_invoice, profile);
-              await Printing.sharePdf(
-                bytes: bytes,
-                filename: 'invoice_${_invoice.invoiceNo}.pdf',
-              );
+              try {
+                final profile = ref.read(businessProfileProvider);
+                final showHsn = ref.read(appConfigProvider).showHsnSummaryInPdf;
+                final bytes = await generateInvoicePdf(_invoice, profile, showHsnSummary: showHsn);
+                await Printing.sharePdf(
+                  bytes: bytes,
+                  filename: 'invoice_${_invoice.invoiceNo}.pdf',
+                );
+              } catch (e) {
+                debugPrint("Error sharing invoice: $e");
+              }
             },
           ),
           PopupMenuButton<String>(
@@ -120,6 +140,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
               if (val == 'archive') _toggleArchive();
               if (val == 'mark_sent') _markAsSent();
               if (val == 'delete') _deleteInvoice();
+              if (val == 'export_einvoice') _exportEInvoice();
             },
             itemBuilder: (final context) => [
               const PopupMenuItem(
@@ -145,6 +166,16 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
               const PopupMenuItem(
                 value: 'mark_sent',
                 child: Text("Mark as Sent"),
+              ),
+              const PopupMenuItem(
+                value: 'export_einvoice',
+                child: Row(
+                  children: [
+                    Icon(Icons.file_download, size: 20),
+                    SizedBox(width: 8),
+                    Text("Export E-Invoice JSON"),
+                  ],
+                ),
               ),
               const PopupMenuItem(
                 value: 'delete',
@@ -568,6 +599,24 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     }
   }
 
+  void _exportEInvoice() async {
+    try {
+      final profile = ref.read(businessProfileProvider);
+      final path = await EInvoiceExporter.exportEInvoice(_invoice, profile);
+      if (mounted && path != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("E-Invoice exported successfully to $path")),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to export E-Invoice: $e")),
+        );
+      }
+    }
+  }
+
   Future<void> _sendEmail() async {
     // Check settings first
     final settings = await EmailService.getSettingsStatic();
@@ -628,7 +677,8 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
 
     try {
       final profile = ref.read(businessProfileProvider);
-      final pdfBytes = await generateInvoicePdf(_invoice, profile);
+      final showHsn = ref.read(appConfigProvider).showHsnSummaryInPdf;
+      final pdfBytes = await generateInvoicePdf(_invoice, profile, showHsnSummary: showHsn);
 
       // Save temp file and send email
       final tempDir = await getTemporaryDirectory();

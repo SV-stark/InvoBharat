@@ -9,6 +9,7 @@ import 'package:gap/gap.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/invoice_series_provider.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/services/backup_service.dart';
@@ -146,32 +147,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _pickLogo() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    if (pickedFile != null) {
-      final currentProfile = ref.read(businessProfileProvider);
-      final newProfile = currentProfile.copyWith(logoPath: pickedFile.path);
-      await ref
-          .read(businessProfileListProvider.notifier)
-          .updateProfile(newProfile);
-      setState(() {});
+      if (pickedFile != null) {
+        final currentProfile = ref.read(businessProfileProvider);
+        final newProfile = currentProfile.copyWith(logoPath: pickedFile.path);
+        await ref
+            .read(businessProfileListProvider.notifier)
+            .updateProfile(newProfile);
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint("Error picking logo: $e");
     }
   }
 
   Future<void> _pickSignature() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    if (pickedFile != null) {
-      final currentProfile = ref.read(businessProfileProvider);
-      final newProfile = currentProfile.copyWith(
-        signaturePath: pickedFile.path,
-      );
-      await ref
-          .read(businessProfileListProvider.notifier)
-          .updateProfile(newProfile);
-      setState(() {});
+      if (pickedFile != null) {
+        final currentProfile = ref.read(businessProfileProvider);
+        final newProfile = currentProfile.copyWith(
+          signaturePath: pickedFile.path,
+        );
+        await ref
+            .read(businessProfileListProvider.notifier)
+            .updateProfile(newProfile);
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint("Error picking signature: $e");
     }
   }
 
@@ -292,6 +301,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             Wrap(
               spacing: 12,
               runSpacing: 12,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 _buildColorOption(const Color(0xFF009688), 'Teal'),
                 _buildColorOption(const Color(0xFF2196F3), 'Blue'),
@@ -302,6 +312,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _buildColorOption(const Color(0xFFFF9800), 'Orange'),
                 _buildColorOption(const Color(0xFF4CAF50), 'Green'),
                 _buildColorOption(const Color(0xFF607D8B), 'Slate'),
+                _buildColorOption(const Color(0xFF00BCD4), 'Cyan'),
+                _buildColorOption(const Color(0xFF673AB7), 'Deep Purple'),
+                _buildColorOption(const Color(0xFFFFC107), 'Amber'),
+                _buildColorOption(const Color(0xFF795548), 'Brown'),
+                _buildCustomColorOption(),
               ],
             ),
             const Gap(12),
@@ -335,6 +350,84 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const Gap(16),
             _buildTextField("Default Terms", _termsController, maxLines: 4),
             _buildTextField("Default Notes", _notesController, maxLines: 2),
+            const Gap(16),
+            SwitchListTile(
+              title: const Text("Show HSN-wise tax summary in PDF footer"),
+              value: ref.watch(appConfigProvider).showHsnSummaryInPdf,
+              onChanged: (final v) {
+                ref.read(appConfigProvider.notifier).setShowHsnSummaryInPdf(v);
+              },
+            ),
+            const Gap(24),
+            _buildSectionHeader("Invoice Series Prefixes"),
+            ...ref.watch(invoiceSeriesProvider).map((final s) => ListTile(
+              title: Text("Prefix: ${s.prefix}"),
+              subtitle: Text("Next sequence: ${s.sequence}"),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () async {
+                      final controller = TextEditingController(text: s.sequence.toString());
+                      final val = await showDialog<String>(
+                        context: context,
+                        builder: (final context) => AlertDialog(
+                          title: Text("Update ${s.prefix} sequence"),
+                          content: TextField(
+                            controller: controller,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(labelText: "Next sequence"),
+                          ),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+                            TextButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text("Update")),
+                          ],
+                        ),
+                      );
+                      if (val != null) {
+                        final seq = int.tryParse(val) ?? s.sequence;
+                        await ref.read(invoiceSeriesProvider.notifier).updateSequence(s.prefix, seq);
+                      }
+                    },
+                  ),
+                  if (ref.watch(invoiceSeriesProvider).length > 1)
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async => await ref.read(invoiceSeriesProvider.notifier).removeSeries(s.prefix),
+                    ),
+                ],
+              ),
+            )),
+            TextButton.icon(
+              icon: const Icon(Icons.add),
+              label: const Text("Add Series Prefix"),
+              onPressed: () async {
+                final prefixCtrl = TextEditingController();
+                final seqCtrl = TextEditingController(text: "1");
+                final added = await showDialog<bool>(
+                  context: context,
+                  builder: (final context) => AlertDialog(
+                    title: const Text("Add New Invoice Series"),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(controller: prefixCtrl, decoration: const InputDecoration(labelText: "Prefix (e.g. SRV/)")),
+                        TextField(controller: seqCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: "Starting sequence")),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+                      TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Add")),
+                    ],
+                  ),
+                );
+                if (added == true && prefixCtrl.text.isNotEmpty) {
+                  final seq = int.tryParse(seqCtrl.text) ?? 1;
+                  await ref.read(invoiceSeriesProvider.notifier).addSeries(prefixCtrl.text, seq);
+                }
+              },
+            ),
             const Gap(24),
             _buildSectionHeader("UPI Details"),
             _buildTextField("UPI ID (VPA)", _upiIdController),
@@ -801,7 +894,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ],
           ),
-          const Gap(32),
+          const Gap(24),
+          Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.bug_report,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+              ),
+              title: const Text(
+                "System Diagnostics & Logs",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: const Text(
+                "Inspect live app logs, Riverpod state updates, and error traces with Talker UI",
+              ),
+              trailing: FilledButton.icon(
+                onPressed: () => context.push('/logs'),
+                icon: const Icon(Icons.receipt_long, size: 18),
+                label: const Text("View Logs"),
+              ),
+            ),
+          ),
+          const Gap(16),
           const Text(
             "Supports backing up all profiles and invoices.",
             style: TextStyle(color: Colors.grey),
@@ -1057,6 +1184,287 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               : null,
         ),
       ),
+    );
+  }
+
+  Widget _buildCustomColorOption() {
+    final profile = ref.watch(businessProfileProvider);
+    final selectedColorVal = profile.colorValue;
+    final presets = [
+      const Color(0xFF009688),
+      const Color(0xFF2196F3),
+      const Color(0xFF3F51B5),
+      const Color(0xFF9C27B0),
+      const Color(0xFFE91E63),
+      const Color(0xFFF44336),
+      const Color(0xFFFF9800),
+      const Color(0xFF4CAF50),
+      const Color(0xFF607D8B),
+      const Color(0xFF00BCD4),
+      const Color(0xFF673AB7),
+      const Color(0xFFFFC107),
+      const Color(0xFF795548),
+    ];
+    final isCustomSelected = !presets.any((final c) => c.toARGB32() == selectedColorVal);
+    final displayColor = isCustomSelected ? Color(selectedColorVal) : Colors.grey.shade300;
+
+    return Tooltip(
+      message: 'Custom Color',
+      child: GestureDetector(
+        onTap: _showCustomColorDialog,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: displayColor,
+            shape: BoxShape.circle,
+            border: isCustomSelected
+                ? Border.all(
+                    width: 3,
+                    color: Theme.of(context).colorScheme.primary,
+                  )
+                : Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+            boxShadow: isCustomSelected
+                ? [
+                    BoxShadow(
+                      color: displayColor.withValues(alpha: 0.4),
+                      blurRadius: 8,
+                      spreadRadius: 2,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Center(
+            child: Icon(
+              isCustomSelected ? Icons.check : Icons.palette_outlined,
+              color: isCustomSelected
+                  ? (displayColor.computeLuminance() > 0.5 ? Colors.black : Colors.white)
+                  : Colors.grey.shade700,
+              size: 20,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showCustomColorDialog() async {
+    final profile = ref.read(businessProfileProvider);
+    final selectedColor = Color(profile.colorValue);
+    final newColor = await showDialog<Color>(
+      context: context,
+      builder: (final context) => CustomColorPickerDialog(initialColor: selectedColor),
+    );
+
+    if (newColor != null) {
+      await ref
+          .read(businessProfileListProvider.notifier)
+          .updateColor(profile.id, newColor.toARGB32());
+    }
+  }
+}
+
+class CustomColorPickerDialog extends StatefulWidget {
+  final Color initialColor;
+
+  const CustomColorPickerDialog({super.key, required this.initialColor});
+
+  @override
+  State<CustomColorPickerDialog> createState() => _CustomColorPickerDialogState();
+}
+
+class _CustomColorPickerDialogState extends State<CustomColorPickerDialog> {
+  late Color _currentColor;
+  late double _hue;
+  late double _saturation;
+  late double _lightness;
+  final TextEditingController _hexController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _currentColor = widget.initialColor;
+    _updateHslFromColor(_currentColor);
+    _updateHexText(_currentColor);
+  }
+
+  void _updateHslFromColor(final Color color) {
+    final hsl = HSLColor.fromColor(color);
+    _hue = hsl.hue;
+    _saturation = hsl.saturation;
+    _lightness = hsl.lightness;
+  }
+
+  void _updateHexText(final Color color) {
+    final r = (color.r * 255.0).round().clamp(0, 255).toRadixString(16).padLeft(2, '0');
+    final g = (color.g * 255.0).round().clamp(0, 255).toRadixString(16).padLeft(2, '0');
+    final b = (color.b * 255.0).round().clamp(0, 255).toRadixString(16).padLeft(2, '0');
+    _hexController.text = '#$r$g$b'.toUpperCase();
+  }
+
+  void _onHslChanged() {
+    setState(() {
+      _currentColor = HSLColor.fromAHSL(1.0, _hue, _saturation, _lightness).toColor();
+      _updateHexText(_currentColor);
+    });
+  }
+
+  void _onColorSelected(final Color color) {
+    setState(() {
+      _currentColor = color;
+      _updateHslFromColor(color);
+      _updateHexText(color);
+    });
+  }
+
+  void _onHexChanged(final String val) {
+    final cleanHex = val.replaceAll('#', '').trim();
+    if (cleanHex.length == 6) {
+      final intVal = int.tryParse(cleanHex, radix: 16);
+      if (intVal != null) {
+        setState(() {
+          _currentColor = Color(intVal | 0xFF000000);
+          _updateHslFromColor(_currentColor);
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(final BuildContext context) {
+    final presetGridColors = [
+      Colors.red, Colors.pink, Colors.purple, Colors.deepPurple,
+      Colors.indigo, Colors.blue, Colors.lightBlue, Colors.cyan,
+      Colors.teal, Colors.green, Colors.lightGreen, Colors.lime,
+      Colors.yellow, Colors.amber, Colors.orange, Colors.deepOrange,
+      Colors.brown, Colors.grey, Colors.blueGrey, Colors.black,
+    ];
+
+    return AlertDialog(
+      title: const Text("Select Custom Color"),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Color preview and hex input
+            Row(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: _currentColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade400),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _currentColor.withValues(alpha: 0.3),
+                        blurRadius: 6,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextField(
+                    controller: _hexController,
+                    decoration: const InputDecoration(
+                      labelText: "HEX Code",
+                      hintText: "#RRGGBB",
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: _onHexChanged,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            
+            // HSL Sliders
+            Text("Hue: ${_hue.round()}°", style: const TextStyle(fontWeight: FontWeight.bold)),
+            Slider(
+              value: _hue,
+              max: 360.0,
+              activeColor: Colors.red,
+              onChanged: (final val) {
+                setState(() {
+                  _hue = val;
+                  _onHslChanged();
+                });
+              },
+            ),
+
+            Text("Saturation: ${(_saturation * 100).round()}%", style: const TextStyle(fontWeight: FontWeight.bold)),
+            Slider(
+              value: _saturation,
+              onChanged: (final val) {
+                setState(() {
+                  _saturation = val;
+                  _onHslChanged();
+                });
+              },
+            ),
+
+            Text("Lightness: ${(_lightness * 100).round()}%", style: const TextStyle(fontWeight: FontWeight.bold)),
+            Slider(
+              value: _lightness,
+              onChanged: (final val) {
+                setState(() {
+                  _lightness = val;
+                  _onHslChanged();
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Color Grid
+            const Text("Presets", style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: presetGridColors.map((final color) {
+                final isSelected = color.toARGB32() == _currentColor.toARGB32();
+                return GestureDetector(
+                  onTap: () => _onColorSelected(color),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      border: isSelected
+                          ? Border.all(width: 3, color: Colors.white)
+                          : Border.all(color: Colors.grey.shade300),
+                      boxShadow: isSelected
+                          ? [
+                              const BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 4,
+                                spreadRadius: 1,
+                              )
+                            ]
+                          : null,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Cancel"),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, _currentColor),
+          child: const Text("Select"),
+        ),
+      ],
     );
   }
 }

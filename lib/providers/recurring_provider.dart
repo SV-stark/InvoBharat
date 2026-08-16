@@ -1,80 +1,11 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:invobharat/models/recurring_profile.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
-
-class RecurringRepository {
-  Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-    final path = '${directory.path}/InvoBharat/recurring';
-    final dir = Directory(path);
-    if (!await dir.exists()) {
-      await dir.create(recursive: true);
-    }
-    return path;
-  }
-
-  Future<void> saveProfile(final RecurringProfile profile) async {
-    final path = await _localPath;
-    final file = File('$path/rec_${profile.id}.json');
-    await file.writeAsString(jsonEncode(profile.toJson()));
-  }
-
-  Future<void> deleteProfile(final String id) async {
-    final path = await _localPath;
-    final file = File('$path/rec_$id.json');
-    if (await file.exists()) {
-      await file.delete();
-    }
-  }
-
-  Future<void> deleteAll() async {
-    final path = await _localPath;
-    final dir = Directory(path);
-    if (await dir.exists()) {
-      await dir.delete(recursive: true);
-    }
-  }
-
-  Future<List<RecurringProfile>> getAllProfiles(
-    final String businessProfileId,
-  ) async {
-    try {
-      final path = await _localPath;
-      final dir = Directory(path);
-      final List<RecurringProfile> profiles = [];
-      if (!await dir.exists()) return [];
-
-      final files = dir.listSync();
-      for (var file in files) {
-        if (file is File && file.path.endsWith('.json')) {
-          try {
-            final content = await file.readAsString();
-            final p = RecurringProfile.fromJson(jsonDecode(content));
-            if (p.profileId == businessProfileId) {
-              profiles.add(p);
-            }
-          } catch (e) {
-            debugPrint("Error parsing recurring profile: $e");
-          }
-        }
-      }
-      return profiles;
-    } catch (e) {
-      return [];
-    }
-  }
-}
-
-final recurringRepositoryProvider = Provider(
-  (final ref) => RecurringRepository(),
-);
+import 'package:invobharat/providers/invoice_series_provider.dart';
 
 class RecurringService {
   final Ref ref;
@@ -82,8 +13,8 @@ class RecurringService {
   RecurringService(this.ref);
 
   Future<int> checkAndRun(final String businessProfileId) async {
-    final repo = ref.read(recurringRepositoryProvider);
-    final profiles = await repo.getAllProfiles(businessProfileId);
+    final repo = ref.read(invoiceRepositoryProvider);
+    final profiles = await repo.getAllRecurringProfiles();
     int generatedCount = 0;
 
     for (var profile in profiles) {
@@ -91,25 +22,28 @@ class RecurringService {
 
       if (DateTime.now().isAfter(profile.nextRunDate) ||
           DateTime.now().isAtSameMomentAs(profile.nextRunDate)) {
-        // Time to generate!
-        await _generateInvoice(profile);
-        generatedCount++;
+        try {
+          await _generateInvoice(profile);
+          generatedCount++;
 
-        // Update profile
-        final nextDate = calculateNextDate(
-          profile.nextRunDate,
-          profile.interval,
-        );
-        final updatedProfile = profile.copyWith(
-          lastRunDate: DateTime.now(),
-          nextRunDate: nextDate,
-        );
-        await repo.saveProfile(updatedProfile);
+          final nextDate = calculateNextDate(
+            profile.nextRunDate,
+            profile.interval,
+          );
+          final updatedProfile = profile.copyWith(
+            lastRunDate: DateTime.now(),
+            nextRunDate: nextDate,
+          );
+          await repo.saveRecurringProfile(updatedProfile);
+        } catch (e) {
+          debugPrint(
+            "Failed to generate recurring invoice for profile ${profile.id}: $e",
+          );
+        }
       }
     }
 
     if (generatedCount > 0) {
-      // Refresh lists if needed
       ref.invalidate(recurringListProvider);
       ref.invalidate(invoiceListProvider);
     }
@@ -140,50 +74,52 @@ class RecurringService {
   }
 
   Future<void> _generateInvoice(final RecurringProfile profile) async {
-    // Get Business Profile for sequence
-    // Use read, but we might be in background? We should be careful.
-    // We assume this runs in foreground.
-    final businessProfileNotifier = ref.read(
-      businessProfileListProvider.notifier,
-    );
-    // getting active profile from provider might be tricky if we are passing specific ID.
-    // Ideally we fetch the specific profile.
-
-    // Logic hack: we can't easily get 'sequence' for arbitrary profile ID without loading it.
-    // For now, let's assume we run this for the active profile primarily.
-    // If not active, we might desync sequence?
-    // Let's rely on BusinessProfileProvider to handle sequence increment.
-
-    // We need to fetch the specific business profile first to get series/sequence.
-    // Since BusinessProfileProvider manages list, we can find it.
     final profiles = ref.read(businessProfileListProvider);
     final index = profiles.indexWhere((final p) => p.id == profile.profileId);
-    if (index == -1) return; // Profile not found
+    if (index == -1) return;
 
     final businessProfile = profiles[index];
+    final seriesList = ref.read(invoiceSeriesProvider);
+    final defaultSeries = seriesList.isNotEmpty
+        ? seriesList.first
+        : InvoiceSeries(
+            prefix: businessProfile.invoiceSeries,
+            sequence: businessProfile.invoiceSequence,
+          );
 
-    final invoiceNo =
-        "${businessProfile.invoiceSeries}${businessProfile.invoiceSequence.toString().padLeft(3, '0')}";
+    final repo = ref.read(invoiceRepositoryProvider);
+    final targetPrefix = defaultSeries.prefix;
+    int currentSeq = defaultSeries.sequence;
+    String candidate =
+        '$targetPrefix${currentSeq.toString().padLeft(3, '0')}';
+    final now = DateTime.now();
 
-    // Create Invoice
+    while (await repo.checkInvoiceExists(candidate, invoiceDate: now)) {
+      currentSeq++;
+      candidate =
+          '$targetPrefix${currentSeq.toString().padLeft(3, '0')}';
+    }
+
     final newInvoice = profile.baseInvoice.copyWith(
       id: const Uuid().v4(),
-      invoiceNo: invoiceNo,
-      invoiceDate: DateTime.now(),
-      dueDate: DateTime.now().add(
+      profileId: profile.profileId,
+      invoiceNo: candidate,
+      invoiceDate: now,
+      dueDate: now.add(
         Duration(days: profile.dueDays ?? 7),
-      ), // Use profile setting or default 7 days
-      payments: [], // Empty payments
+      ),
+      payments: [],
     );
 
-    // Save Invoice
-    await ref.read(invoiceRepositoryProvider).saveInvoice(newInvoice);
+    await repo.saveInvoice(newInvoice);
 
-    // Increment Sequence
-    final updatedBusinessProfile = businessProfile.copyWith(
-      invoiceSequence: businessProfile.invoiceSequence + 1,
-    );
-    await businessProfileNotifier.updateProfile(updatedBusinessProfile);
+    await ref
+        .read(invoiceSeriesProvider.notifier)
+        .updateSequence(targetPrefix, currentSeq + 1);
+
+    await ref
+        .read(businessProfileListProvider.notifier)
+        .incrementInvoiceSequence(profile.profileId);
   }
 }
 
@@ -197,22 +133,25 @@ final recurringListProvider =
 class RecurringListNotifier extends AsyncNotifier<List<RecurringProfile>> {
   @override
   Future<List<RecurringProfile>> build() async {
-    final profile = ref.watch(businessProfileProvider);
-    return ref.read(recurringRepositoryProvider).getAllProfiles(profile.id);
+    final repo = ref.watch(invoiceRepositoryProvider);
+    return await repo.getAllRecurringProfiles();
   }
 
   Future<void> addProfile(final RecurringProfile profile) async {
-    await ref.read(recurringRepositoryProvider).saveProfile(profile);
+    final repo = ref.read(invoiceRepositoryProvider);
+    await repo.saveRecurringProfile(profile);
     ref.invalidateSelf();
   }
 
   Future<void> deleteProfile(final String id) async {
-    await ref.read(recurringRepositoryProvider).deleteProfile(id);
+    final repo = ref.read(invoiceRepositoryProvider);
+    await repo.deleteRecurringProfile(id);
     ref.invalidateSelf();
   }
 
   Future<void> updateProfile(final RecurringProfile profile) async {
-    await ref.read(recurringRepositoryProvider).saveProfile(profile);
+    final repo = ref.read(invoiceRepositoryProvider);
+    await repo.saveRecurringProfile(profile);
     ref.invalidateSelf();
   }
 

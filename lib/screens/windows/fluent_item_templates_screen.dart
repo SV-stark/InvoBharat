@@ -1,9 +1,11 @@
 // ignore_for_file: unawaited_futures
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:uuid/uuid.dart';
 import 'package:invobharat/models/item_template.dart';
 import 'package:invobharat/providers/item_template_provider.dart';
+import 'package:invobharat/services/hsn_service.dart';
 
 class FluentItemTemplatesScreen extends ConsumerWidget {
   const FluentItemTemplatesScreen({super.key});
@@ -150,6 +152,7 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
       context: context,
       builder: (final context) => StatefulBuilder(
         builder: (final context, final setState) => ContentDialog(
+          constraints: const BoxConstraints(maxWidth: 600),
           title: Text(template == null ? "New Template" : "Edit Template"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -157,9 +160,57 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
             children: [
               InfoLabel(
                 label: "Description *",
-                child: TextFormBox(
-                  controller: descCtrl,
-                  placeholder: "Item Name / Description",
+                child: TypeAheadField<HsnEntry>(
+                  suggestionsCallback: (final pattern) async {
+                    if (pattern.trim().length < 2) return [];
+                    return await HsnService.instance.search(pattern);
+                  },
+                  builder: (final context, final controller, final focusNode) {
+                    return TextFormBox(
+                      controller: descCtrl,
+                      focusNode: focusNode,
+                      placeholder: "Item Name / Description (search goods/services)",
+                    );
+                  },
+                  itemBuilder: (final context, final suggestion) {
+                    return Container(
+                      color: FluentTheme.of(context).cardColor,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            suggestion.description,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                          Text(
+                            "${suggestion.type}: ${suggestion.code}",
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: FluentTheme.of(context)
+                                  .typography
+                                  .caption
+                                  ?.color,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  onSelected: (final suggestion) {
+                    descCtrl.text = suggestion.description;
+                    sacCtrl.text = suggestion.code;
+                    setState(() {
+                      codeType = suggestion.type;
+                    });
+                  },
                 ),
               ),
               const SizedBox(height: 10),

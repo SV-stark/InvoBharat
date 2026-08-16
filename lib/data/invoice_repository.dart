@@ -17,6 +17,12 @@ abstract class InvoiceRepository {
   Future<bool> checkInvoiceExists(
     final String invoiceNumber, {
     final String? excludeId,
+    final DateTime? invoiceDate,
+  });
+
+  Future<int> getMaxSequenceForPrefix(
+    final String prefix, {
+    final DateTime? invoiceDate,
   });
 
   // Estimates

@@ -6,10 +6,12 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:archive/archive_io.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:invobharat/services/csv_export_service.dart';
 import 'package:invobharat/data/sql_invoice_repository.dart';
 import 'package:invobharat/database/database.dart';
+import 'package:sqlite3/sqlite3.dart' as sqlite3;
 
 const kDbFileName = 'db.sqlite';
 const kMinCompatibleSchemaVersion = 5;
@@ -28,8 +30,9 @@ abstract class FilePickerWrapper {
     final String? fileName,
     final List<String>? allowedExtensions,
     final FileType type = FileType.any,
+    required final Uint8List bytes,
   });
-  Future<FilePickerResult?> pickFiles({
+  Future<PlatformFile?> pickFile({
     final String? dialogTitle,
     final FileType type = FileType.any,
     final List<String>? allowedExtensions,
@@ -43,22 +46,24 @@ class DefaultFilePickerWrapper implements FilePickerWrapper {
     final String? fileName,
     final List<String>? allowedExtensions,
     final FileType type = FileType.any,
+    required final Uint8List bytes,
   }) {
     return FilePicker.saveFile(
       dialogTitle: dialogTitle,
-      fileName: fileName,
+      fileName: fileName ?? '',
       allowedExtensions: allowedExtensions,
       type: type,
+      bytes: bytes,
     );
   }
 
   @override
-  Future<FilePickerResult?> pickFiles({
+  Future<PlatformFile?> pickFile({
     final String? dialogTitle,
     final FileType type = FileType.any,
     final List<String>? allowedExtensions,
   }) {
-    return FilePicker.pickFiles(
+    return FilePicker.pickFile(
       dialogTitle: dialogTitle,
       type: type,
       allowedExtensions: allowedExtensions,
@@ -69,31 +74,27 @@ class DefaultFilePickerWrapper implements FilePickerWrapper {
 class BackupService {
   final FilePickerWrapper _filePicker;
   final CsvExportService _csvService;
-  final AppDatabase? _db;
+  final AppDatabase? db;
 
   BackupService({
-    final FilePickerWrapper? filePicker,
-    final CsvExportService? csvService,
-    final AppDatabase? db,
+    FilePickerWrapper? filePicker,
+    CsvExportService? csvService,
+    this.db,
   }) : _filePicker = filePicker ?? DefaultFilePickerWrapper(),
-       _csvService = csvService ?? CsvExportService(),
-       _db = db;
+       _csvService = csvService ?? CsvExportService();
 
   Future<String> exportData(final SqlInvoiceRepository repository) async {
     try {
-      // 1. Fetch Data
       final invoices = await repository.getAllInvoices();
-
-      // 2. Generate CSV
       final csvString = await _csvService.generateInvoiceCsv(invoices);
 
-      // 3. Save to file
       String? outputFile = await _filePicker.saveFile(
         dialogTitle: 'Save CSV Backup',
         fileName:
             'invobharat_backup_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.csv',
         allowedExtensions: ['csv'],
         type: FileType.custom,
+        bytes: Uint8List.fromList(utf8.encode(csvString)),
       );
 
       if (outputFile != null) {
@@ -126,6 +127,7 @@ class BackupService {
             'invobharat_backup_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.zip',
         allowedExtensions: ['zip'],
         type: FileType.custom,
+        bytes: Uint8List(0),
       );
 
       if (outputFile == null) return "Backup cancelled";
@@ -140,33 +142,89 @@ class BackupService {
         'invobharat_export_$timestamp.sqlite',
       );
 
+      final List<File> tempFilesToClean = [];
+
       try {
         File dbFile;
-
-        if (_db != null) {
-          // Safe path: VACUUM INTO gives a consistent snapshot including WAL data
-          await _db.vacuumInto(tempDbPath);
+        final currentDb = db;
+        if (currentDb != null) {
+          await currentDb.vacuumInto(tempDbPath);
           dbFile = File(tempDbPath);
         } else {
-          // Fallback: zip the raw file (legacy behaviour, WAL not guaranteed)
           final dbPath = await _getDbPath();
           dbFile = File(dbPath);
           if (!await dbFile.exists()) {
             throw Exception("Database file not found at $dbPath");
           }
         }
+        tempFilesToClean.add(File(tempDbPath));
+
+        final prefs = await SharedPreferences.getInstance();
+        final activeProfileId = prefs.getString('active_profile_id') ?? '';
+        final schemaVersion = db?.schemaVersion ?? 13;
+
+        final List<Map<String, String>> mediaEntries = [];
+        if (currentDb != null) {
+          final profiles =
+              await currentDb.select(currentDb.businessProfiles).get();
+          for (final prof in profiles) {
+            for (final entry in [
+              {'type': 'logo', 'path': prof.logoPath},
+              {'type': 'signature', 'path': prof.signaturePath},
+              {'type': 'stamp', 'path': prof.stampPath},
+            ]) {
+              final String? srcPath = entry['path'];
+              if (srcPath != null &&
+                  srcPath.isNotEmpty &&
+                  File(srcPath).existsSync()) {
+                final String ext = p.extension(srcPath);
+                final String zipMediaName =
+                    'media/${prof.id}_${entry['type']}$ext';
+                mediaEntries.add({
+                  'profileId': prof.id,
+                  'type': entry['type']!,
+                  'zipPath': zipMediaName,
+                  'originalPath': srcPath,
+                });
+              }
+            }
+          }
+        }
+
+        final tempManifestPath = p.join(
+          Directory.systemTemp.path,
+          'invobharat_manifest_$timestamp.json',
+        );
+        final manifestFile = File(tempManifestPath);
+        await manifestFile.writeAsString(
+          jsonEncode({
+            'schemaVersion': schemaVersion,
+            'activeProfileId': activeProfileId,
+            'exportTimestamp': timestamp,
+            'mediaEntries': mediaEntries,
+          }),
+        );
+        tempFilesToClean.add(manifestFile);
 
         final zipEncoder = ZipFileEncoder();
         zipEncoder.create(outputFile);
-        await zipEncoder.addFile(dbFile);
-        await zipEncoder.close();
+        await zipEncoder.addFile(dbFile, kDbFileName);
+        await zipEncoder.addFile(manifestFile, 'manifest.json');
 
+        for (final m in mediaEntries) {
+          final mediaFile = File(m['originalPath']!);
+          if (await mediaFile.exists()) {
+            await zipEncoder.addFile(mediaFile, m['zipPath']!);
+          }
+        }
+
+        await zipEncoder.close();
         return "Full Backup saved to $outputFile";
       } finally {
-        // Clean up the temp VACUUM file if it was created
-        final tempFile = File(tempDbPath);
-        if (await tempFile.exists()) {
-          await tempFile.delete();
+        for (final f in tempFilesToClean) {
+          if (await f.exists()) {
+            await f.delete();
+          }
         }
       }
     } catch (e) {
@@ -177,16 +235,15 @@ class BackupService {
 
   Future<String> restoreFullBackup() async {
     try {
-      final FilePickerResult? result = await _filePicker.pickFiles(
+      final PlatformFile? file = await _filePicker.pickFile(
         dialogTitle: 'Select Full Backup (ZIP)',
         type: FileType.custom,
         allowedExtensions: ['zip'],
       );
 
-      if (result != null && result.files.single.path != null) {
-        final zipFile = File(result.files.single.path!);
+      if (file != null && file.path != null) {
+        final zipFile = File(file.path!);
         final bytes = await zipFile.readAsBytes();
-
         final archive = ZipDecoder().decodeBytes(bytes);
 
         final dbEntry = archive.findFile(kDbFileName);
@@ -196,10 +253,12 @@ class BackupService {
           );
         }
 
-        final prefsEntry = archive.findFile('manifest.json');
-        if (prefsEntry != null) {
-          final manifestContent = String.fromCharCodes(
-            prefsEntry.content as List<int>,
+        String? activeProfileIdToRestore;
+        List<dynamic> mediaEntries = [];
+        final manifestEntry = archive.findFile('manifest.json');
+        if (manifestEntry != null) {
+          final manifestContent = utf8.decode(
+            manifestEntry.content as List<int>,
           );
           final manifest = jsonDecode(manifestContent) as Map<String, dynamic>;
           final backedUpSchemaVersion = manifest['schemaVersion'] as int?;
@@ -209,10 +268,18 @@ class BackupService {
               "Incompatible backup: schema version $backedUpSchemaVersion (minimum: $kMinCompatibleSchemaVersion)",
             );
           }
+          activeProfileIdToRestore = manifest['activeProfileId'] as String?;
+          mediaEntries = (manifest['mediaEntries'] as List<dynamic>?) ?? [];
         }
 
         final dbPath = await _getDbPath();
         final dbDestFile = File(dbPath);
+
+        final currentDb = db;
+        if (currentDb != null) {
+          await currentDb.close();
+          AppDatabase.resetInstance();
+        }
 
         String? backupPath;
         if (await dbDestFile.exists()) {
@@ -230,13 +297,74 @@ class BackupService {
             final data = dbEntry.content as List<int>;
             await dbDestFile.writeAsBytes(data, flush: true);
 
-            // Delete stale WAL and SHM files to prevent the database engine
-            // from replaying an old log over the freshly restored file.
             final walFile = File('$dbPath-wal');
             final shmFile = File('$dbPath-shm');
             if (await walFile.exists()) await walFile.delete();
             if (await shmFile.exists()) await shmFile.delete();
           }
+
+          final docDir = await getApplicationDocumentsDirectory();
+          final mediaDir = Directory(p.join(docDir.path, 'InvoBharat', 'media'));
+          if (!await mediaDir.exists()) {
+            await mediaDir.create(recursive: true);
+          }
+
+          for (final m in mediaEntries) {
+            final String? zipPath = m['zipPath'];
+            if (zipPath != null) {
+              final mediaArchiveFile = archive.findFile(zipPath);
+              if (mediaArchiveFile != null && mediaArchiveFile.isFile) {
+                final fileName = p.basename(zipPath);
+                final targetFile = File(p.join(mediaDir.path, fileName));
+                await targetFile.writeAsBytes(
+                  mediaArchiveFile.content as List<int>,
+                  flush: true,
+                );
+              }
+            }
+          }
+
+          // Rewrite media paths in restored database
+          if (mediaEntries.isNotEmpty && await dbDestFile.exists()) {
+            try {
+              final rawDb = sqlite3.sqlite3.open(dbPath);
+              for (final m in mediaEntries) {
+                final profileId = m['profileId'] as String?;
+                final type = m['type'] as String?;
+                final zipPath = m['zipPath'] as String?;
+                if (profileId != null && type != null && zipPath != null) {
+                  final fileName = p.basename(zipPath);
+                  final localPath = p.join(mediaDir.path, fileName);
+                  if (type == 'logo') {
+                    rawDb.execute(
+                      'UPDATE business_profiles SET logo_path = ? WHERE id = ?',
+                      [localPath, profileId],
+                    );
+                  } else if (type == 'signature') {
+                    rawDb.execute(
+                      'UPDATE business_profiles SET signature_path = ? WHERE id = ?',
+                      [localPath, profileId],
+                    );
+                  } else if (type == 'stamp') {
+                    rawDb.execute(
+                      'UPDATE business_profiles SET stamp_path = ? WHERE id = ?',
+                      [localPath, profileId],
+                    );
+                  }
+                }
+              }
+              rawDb.close();
+            } catch (e) {
+              debugPrint("Media path rewrite error: $e");
+            }
+          }
+
+          if (activeProfileIdToRestore != null &&
+              activeProfileIdToRestore.isNotEmpty) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('active_profile_id', activeProfileIdToRestore);
+          }
+
           return "Restore Successful. Please restart the app to apply changes.";
         } catch (e) {
           if (backupPath != null) {

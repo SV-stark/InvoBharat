@@ -18,7 +18,6 @@ linter:
     always_use_package_imports: true
     unawaited_futures: true
     prefer_final_fields: true
-    prefer_final_parameters: true
     avoid_unnecessary_containers: true
     use_key_in_widget_constructors: true
     avoid_redundant_argument_values: true

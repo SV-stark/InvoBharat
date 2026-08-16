@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:invobharat/models/invoice.dart';
@@ -14,17 +15,17 @@ class InvoiceImportService {
     final InvoiceRepository repository,
   ) async {
     try {
-      final result = await FilePicker.pickFiles(
+      final file = await FilePicker.pickFile(
         type: FileType.custom,
         allowedExtensions: ['csv'],
       );
 
-      if (result == null || result.files.single.path == null) {
+      if (file == null || file.path == null) {
         return ImportResult(0, 0, "No file selected");
       }
 
-      final file = File(result.files.single.path!);
-      final content = await file.readAsString();
+      final fileToRead = File(file.path!);
+      final content = await fileToRead.readAsString();
       final rows = Csv().decode(content);
 
       if (rows.length < 2) {
@@ -74,61 +75,67 @@ class InvoiceImportService {
   }
 
   static Future<void> downloadImportTemplate() async {
-    final headers = [
-      'GSTIN(recipeint)',
-      'Trade Name(recipeint)',
-      'Invoice No',
-      'Date of Invoice',
-      'Invoice Value',
-      'GST%',
-      'Taxable Value',
-      'CESS',
-      'Place Of Supply',
-      'RCM Applicable',
-      'HSN Description',
-    ];
+    try {
+      final headers = [
+        'GSTIN(recipeint)',
+        'Trade Name(recipeint)',
+        'Invoice No',
+        'Date of Invoice',
+        'Invoice Value',
+        'GST%',
+        'Taxable Value',
+        'CESS',
+        'Place Of Supply',
+        'RCM Applicable',
+        'HSN Description',
+      ];
 
-    final sampleData = [
-      [
-        '27AAPFU0939F1ZV',
-        'Test Client Corp',
-        'INV-001',
-        '01-05-2024',
-        '1180.00',
-        '18.0',
-        '1000.00',
-        '0.00',
-        'Maharashtra',
-        'No',
-        'Consulting Services',
-      ],
-      [
-        '27AAPFU0939F1ZV',
-        'Test Client Corp',
-        'INV-002',
-        '02-05-2024',
-        '525.00',
-        '5.0',
-        '500.00',
-        '0.00',
-        'Maharashtra',
-        'No',
-        'Printing Services',
-      ],
-    ];
+      final sampleData = [
+        [
+          '27AAPFU0939F1ZV',
+          'Test Client Corp',
+          'INV-001',
+          '01-05-2024',
+          '1180.00',
+          '18.0',
+          '1000.00',
+          '0.00',
+          'Maharashtra',
+          'No',
+          'Consulting Services',
+        ],
+        [
+          '27AAPFU0939F1ZV',
+          'Test Client Corp',
+          'INV-002',
+          '02-05-2024',
+          '525.00',
+          '5.0',
+          '500.00',
+          '0.00',
+          'Maharashtra',
+          'No',
+          'Printing Services',
+        ],
+      ];
 
-    final csvString = Csv().encode([headers, ...sampleData]);
+      final csvString = Csv().encode([headers, ...sampleData]);
 
-    final result = await FilePicker.saveFile(
-      dialogTitle: 'Save Import Template',
-      fileName: 'invobharat_gst_import_template.csv',
-      allowedExtensions: ['csv'],
-      type: FileType.custom,
-    );
+      final result = await FilePicker.saveFile(
+        dialogTitle: 'Save Import Template',
+        fileName: 'invobharat_gst_import_template.csv',
+        allowedExtensions: ['csv'],
+        type: FileType.custom,
+        bytes: Uint8List.fromList(utf8.encode(csvString)),
+      );
 
-    if (result != null) {
-      final file = File(result.endsWith('.csv') ? result : '$result.csv');
-      await file.writeAsString(csvString);
+      if (result != null) {
+        final file = File(result.endsWith('.csv') ? result : '$result.csv');
+        await file.writeAsString(csvString);
+      }
+    } catch (e) {
+      debugPrint("Failed to download import template: $e");
+      rethrow;
     }
   }
 

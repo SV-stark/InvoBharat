@@ -25,12 +25,15 @@ class RevenueChart extends StatelessWidget {
       return FlSpot(e.key.toDouble(), monthlyData[e.value]!);
     }).toList();
 
-    final maxY = spots.isEmpty
+    double maxY = spots.isEmpty
         ? 1000.0
         : spots
                   .map((final e) => e.y)
                   .reduce((final a, final b) => a > b ? a : b) *
               1.2;
+    if (maxY == 0) {
+      maxY = 1000.0;
+    }
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -56,16 +59,26 @@ class RevenueChart extends StatelessWidget {
                       getTitlesWidget: (final value, final meta) {
                         final index = value.toInt();
                         if (index >= 0 && index < displayKeys.length) {
-                          final date = DateFormat(
-                            "yyyy-MM",
-                          ).parse(displayKeys[index]);
-                          return SideTitleWidget(
-                            meta: meta,
-                            child: Text(
-                              DateFormat("MMM").format(date),
-                              style: const TextStyle(fontSize: 10),
-                            ),
-                          );
+                          try {
+                            final date = DateFormat(
+                              "yyyy-MM",
+                            ).parse(displayKeys[index]);
+                            return SideTitleWidget(
+                              meta: meta,
+                              child: Text(
+                                DateFormat("MMM").format(date),
+                                style: const TextStyle(fontSize: 10),
+                              ),
+                            );
+                          } catch (_) {
+                            return SideTitleWidget(
+                              meta: meta,
+                              child: Text(
+                                displayKeys[index],
+                                style: const TextStyle(fontSize: 10),
+                              ),
+                            );
+                          }
                         }
                         return const Text('');
                       },
@@ -85,6 +98,30 @@ class RevenueChart extends StatelessWidget {
                   ),
                 ),
                 borderData: FlBorderData(show: false),
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipItems: (final touchedSpots) {
+                      return touchedSpots.map((final spot) {
+                        final index = spot.x.toInt();
+                        String label = index >= 0 && index < displayKeys.length
+                            ? displayKeys[index]
+                            : '';
+                        try {
+                          final date = DateFormat('yyyy-MM').parse(label);
+                          label = DateFormat('MMM yyyy').format(date);
+                        } catch (_) {}
+                        return LineTooltipItem(
+                          '$label\n₹${NumberFormat('#,##0.00').format(spot.y)}',
+                          const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
                 minX: 0,
                 maxX: (displayKeys.length - 1).toDouble(),
                 minY: 0,
@@ -100,7 +137,7 @@ class RevenueChart extends StatelessWidget {
                       show: true,
                       color: FluentTheme.of(
                         context,
-                      ).accentColor.withValues(alpha: 0.1),
+                      ).accentColor.withValues(alpha: 0.15),
                     ),
                   ),
                 ],

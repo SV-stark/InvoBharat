@@ -10,6 +10,7 @@ import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/estimate_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/utils/pdf_generator.dart';
+import 'package:invobharat/providers/app_config_provider.dart';
 
 /// Mixin to handle shared logic for Estimate Forms (Material & Fluent UI)
 mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
@@ -203,9 +204,18 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
       branch: profile.branch,
     );
 
-    await Printing.layoutPdf(
-      onLayout: (final format) =>
-          generateInvoicePdf(estimateInvoice, profile, title: "ESTIMATE"),
-    );
+    try {
+      await Printing.layoutPdf(
+        onLayout: (final format) =>
+            generateInvoicePdf(
+              estimateInvoice,
+              profile,
+              title: "ESTIMATE",
+              showHsnSummary: ref.read(appConfigProvider).showHsnSummaryInPdf,
+            ),
+      );
+    } catch (e) {
+      debugPrint("Error printing estimate: $e");
+    }
   }
 }

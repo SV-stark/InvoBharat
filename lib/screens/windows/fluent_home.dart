@@ -13,7 +13,7 @@ import 'package:invobharat/screens/clients_screen.dart';
 import 'package:invobharat/screens/windows/fluent_recurring_screen.dart';
 import 'package:invobharat/screens/windows/fluent_estimates_screen.dart';
 import 'package:invobharat/screens/windows/fluent_item_templates_screen.dart';
-import 'package:invobharat/screens/aging_report_screen.dart';
+import 'package:invobharat/screens/windows/fluent_reports_screen.dart';
 import 'package:invobharat/providers/app_config_provider.dart';
 
 class FluentHome extends ConsumerStatefulWidget {
@@ -120,7 +120,7 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
             PaneItem(
               icon: const Icon(FluentIcons.report_document),
               title: const Text('Reports'),
-              body: const AgingReportScreen(),
+              body: const FluentReportsScreen(),
             ),
             PaneItem(
               icon: const Icon(FluentIcons.settings),

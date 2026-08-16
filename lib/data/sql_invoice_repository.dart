@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 import 'package:invobharat/database/database.dart';
@@ -15,6 +16,11 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
   @override
   Future<void> saveInvoice(final model.Invoice invoice) async {
+    final targetProfileId =
+        (invoice.profileId != null && invoice.profileId!.isNotEmpty)
+            ? invoice.profileId!
+            : profileId;
+
     // Ensure we have a valid Invoice ID
     String invoiceId = invoice.id ?? '';
     if (invoiceId.isEmpty) {
@@ -55,7 +61,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
       // 1. Resolve Client ID
       final client =
           await (database.select(database.clients)
-                ..where((final t) => t.name.equals(invoice.receiver.name)))
+                ..where((final t) =>
+                    t.name.equals(invoice.receiver.name) &
+                    t.profileId.equals(targetProfileId)))
               .getSingleOrNull();
 
       // 2. Atomic Sequence Increment
@@ -63,7 +71,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
       if (invoice.id == null || invoice.id!.isEmpty) {
         final profile = await (database.select(
           database.businessProfiles,
-        )..where((final t) => t.id.equals(profileId))).getSingleOrNull();
+        )..where((final t) => t.id.equals(targetProfileId))).getSingleOrNull();
 
         if (profile != null) {
           final expectedNo =
@@ -72,7 +80,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
           if (finalInvoiceNo == expectedNo) {
             await (database.update(
               database.businessProfiles,
-            )..where((final t) => t.id.equals(profileId))).write(
+            )..where((final t) => t.id.equals(targetProfileId))).write(
               BusinessProfilesCompanion(
                 invoiceSequence: Value(profile.invoiceSequence + 1),
               ),
@@ -86,7 +94,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
           .insertOnConflictUpdate(
             InvoicesCompanion(
               id: Value(invoiceId),
-              profileId: Value(profileId),
+              profileId: Value(targetProfileId),
               clientId: Value(client?.id),
               invoiceNo: Value(finalInvoiceNo),
               invoiceDate: Value(invoice.invoiceDate),
@@ -115,13 +123,16 @@ class SqlInvoiceRepository implements InvoiceRepository {
               receiverState: Value(invoice.receiver.state),
               receiverStateCode: Value(invoice.receiver.stateCode),
               receiverEmail: Value(invoice.receiver.email),
-              receiverPhone: Value(invoice.receiver.phone), // Added
+              receiverPhone: Value(invoice.receiver.phone),
 
               originalInvoiceNumber: Value(invoice.originalInvoiceNumber),
               originalInvoiceDate: Value(invoice.originalInvoiceDate),
               poNumber: Value(invoice.poNumber),
               status: Value(invoice.status),
               sentAt: Value(invoice.sentAt),
+              ewayBillNo: Value(invoice.ewayBillNo),
+              vehicleNo: Value(invoice.vehicleNo),
+              irnNo: Value(invoice.irnNo),
             ),
           );
 
@@ -140,8 +151,6 @@ class SqlInvoiceRepository implements InvoiceRepository {
       for (var p in payments) {
         await database.into(database.payments).insert(p);
       }
-
-      // CN Link logic omitted for brevity, or kept if essential.
     });
   }
 
@@ -171,6 +180,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
     return model.Invoice(
       id: invoiceRow.id,
+      profileId: invoiceRow.profileId,
       invoiceNo: invoiceRow.invoiceNo,
       invoiceDate: invoiceRow.invoiceDate,
       type: model.InvoiceType.values.firstWhere(
@@ -226,7 +236,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
               state: invoiceRow.receiverState ?? "",
               stateCode: invoiceRow.receiverStateCode ?? "",
               email: invoiceRow.receiverEmail ?? "",
-              phone: invoiceRow.receiverPhone ?? "", // Added
+              phone: invoiceRow.receiverPhone ?? "",
             )
           : (clientRow != null
                 ? model.Receiver(
@@ -237,6 +247,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
                     state: clientRow.state,
                     stateCode: clientRow.stateCode,
                     email: clientRow.email,
+                    phone: clientRow.phone,
                   )
                 : const model.Receiver(name: "Unknown")),
       supplier:
@@ -255,6 +266,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
       poNumber: invoiceRow.poNumber,
       status: invoiceRow.status,
       sentAt: invoiceRow.sentAt,
+      ewayBillNo: invoiceRow.ewayBillNo,
+      vehicleNo: invoiceRow.vehicleNo,
+      irnNo: invoiceRow.irnNo,
     );
   }
 
@@ -262,11 +276,41 @@ class SqlInvoiceRepository implements InvoiceRepository {
   Future<List<model.Invoice>> getAllInvoices() async {
     final invoiceRows = await (database.select(
       database.invoices,
-    )..where((final t) => t.profileId.equals(profileId))).get();
+    )
+          ..where((final t) => t.profileId.equals(profileId))
+          ..orderBy([
+            (final t) => OrderingTerm(
+                  expression: t.invoiceDate,
+                  mode: OrderingMode.desc,
+                ),
+          ]))
+        .get();
     if (invoiceRows.isEmpty) return [];
-    final allItems = await database.select(database.invoiceItems).get();
-    final allPayments = await database.select(database.payments).get();
-    return _mapInvoices(invoiceRows, allItems, allPayments);
+    final invoiceIds = invoiceRows.map((final r) => r.id).toList();
+    final allItems = await (database.select(database.invoiceItems)
+          ..where((final t) => t.invoiceId.isIn(invoiceIds)))
+        .get();
+    final allPayments = await (database.select(database.payments)
+          ..where((final t) => t.invoiceId.isIn(invoiceIds)))
+        .get();
+
+    final clientIds = invoiceRows
+        .map((final r) => r.clientId)
+        .whereType<String>()
+        .toSet()
+        .toList();
+
+    final clientRows = clientIds.isNotEmpty
+        ? await (database.select(database.clients)
+              ..where((final t) => t.id.isIn(clientIds)))
+            .get()
+        : [];
+
+    final Map<String, dynamic> clientMap = <String, dynamic>{
+      for (var c in clientRows) c.id: c,
+    };
+
+    return _mapInvoices(invoiceRows, allItems, allPayments, clientMap);
   }
 
   @override
@@ -287,15 +331,36 @@ class SqlInvoiceRepository implements InvoiceRepository {
             .get();
     if (invoiceRows.isEmpty) return [];
     final invoiceIds = invoiceRows.map((final r) => r.id).toSet();
-    final allItems = await database.select(database.invoiceItems).get();
-    final allPayments = await database.select(database.payments).get();
+    final allItems = await (database.select(database.invoiceItems)
+          ..where((final t) => t.invoiceId.isIn(invoiceIds)))
+        .get();
+    final allPayments = await (database.select(database.payments)
+          ..where((final t) => t.invoiceId.isIn(invoiceIds)))
+        .get();
     final filteredItems = allItems
         .where((final i) => invoiceIds.contains(i.invoiceId))
         .toList();
     final filteredPayments = allPayments
         .where((final p) => invoiceIds.contains(p.invoiceId))
         .toList();
-    return _mapInvoices(invoiceRows, filteredItems, filteredPayments);
+
+    final clientIds = invoiceRows
+        .map((final r) => r.clientId)
+        .whereType<String>()
+        .toSet()
+        .toList();
+
+    final clientRows = clientIds.isNotEmpty
+        ? await (database.select(database.clients)
+              ..where((final t) => t.id.isIn(clientIds)))
+            .get()
+        : [];
+
+    final Map<String, dynamic> clientMap = <String, dynamic>{
+      for (var c in clientRows) c.id: c,
+    };
+
+    return _mapInvoices(invoiceRows, filteredItems, filteredPayments, clientMap);
   }
 
   @override
@@ -312,6 +377,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
     final List<dynamic> invoiceRows,
     final List<dynamic> allItems,
     final List<dynamic> allPayments,
+    final Map<String, dynamic> clientMap,
   ) {
     return invoiceRows.map((final row) {
       final items = allItems
@@ -346,8 +412,36 @@ class SqlInvoiceRepository implements InvoiceRepository {
           )
           .toList();
 
+      final clientRow = row.clientId != null ? clientMap[row.clientId] : null;
+
+      final receiver = (row.receiverName != null &&
+              row.receiverName.toString().isNotEmpty)
+          ? model.Receiver(
+              name: row.receiverName,
+              address: row.receiverAddress ?? "",
+              gstin: row.receiverGstin ?? "",
+              pan: row.receiverPan ?? "",
+              state: row.receiverState ?? "",
+              stateCode: row.receiverStateCode ?? "",
+              email: row.receiverEmail ?? "",
+              phone: row.receiverPhone ?? "",
+            )
+          : (clientRow != null
+                ? model.Receiver(
+                    name: clientRow.name,
+                    address: clientRow.address,
+                    gstin: clientRow.gstin,
+                    pan: clientRow.pan,
+                    state: clientRow.state,
+                    stateCode: clientRow.stateCode,
+                    email: clientRow.email,
+                    phone: clientRow.phone,
+                  )
+                : const model.Receiver(name: "Unknown"));
+
       return model.Invoice(
         id: row.id,
+        profileId: row.profileId,
         invoiceNo: row.invoiceNo,
         invoiceDate: row.invoiceDate,
         type: model.InvoiceType.values.firstWhere(
@@ -373,18 +467,15 @@ class SqlInvoiceRepository implements InvoiceRepository {
           email: row.supplierEmail ?? "",
           phone: row.supplierPhone ?? "",
         ),
-        receiver: model.Receiver(
-          name: row.receiverName ?? "",
-          address: row.receiverAddress ?? "",
-          gstin: row.receiverGstin ?? "",
-          pan: row.receiverPan ?? "",
-          state: row.receiverState ?? "",
-          stateCode: row.receiverStateCode ?? "",
-          email: row.receiverEmail ?? "",
-          phone: row.receiverPhone ?? "", // Added
-        ),
+        receiver: receiver,
         originalInvoiceNumber: row.originalInvoiceNumber,
         originalInvoiceDate: row.originalInvoiceDate,
+        poNumber: row.poNumber,
+        status: row.status,
+        sentAt: row.sentAt,
+        ewayBillNo: row.ewayBillNo,
+        vehicleNo: row.vehicleNo,
+        irnNo: row.irnNo,
       );
     }).toList();
   }
@@ -413,45 +504,259 @@ class SqlInvoiceRepository implements InvoiceRepository {
   Future<bool> checkInvoiceExists(
     final String invoiceNumber, {
     final String? excludeId,
+    final DateTime? invoiceDate,
   }) async {
+    if (invoiceNumber.trim().isEmpty) return false;
+
     final query = database.select(database.invoices)
       ..where(
         (final tbl) =>
-            tbl.invoiceNo.equals(invoiceNumber) &
+            tbl.invoiceNo.equals(invoiceNumber.trim()) &
             tbl.profileId.equals(profileId),
       );
 
-    if (excludeId != null) {
-      query.where((final tbl) => tbl.id.isNotValue(excludeId));
+    if (excludeId != null && excludeId.trim().isNotEmpty) {
+      query.where((final tbl) => tbl.id.equals(excludeId.trim()).not());
     }
+
+    final targetDate = invoiceDate ?? DateTime.now();
+    final fyStartYear =
+        targetDate.month >= 4 ? targetDate.year : targetDate.year - 1;
+    final fyStart = DateTime(fyStartYear, 4);
+    final fyEnd = DateTime(fyStartYear + 1, 3, 31, 23, 59, 59);
+
+    query.where(
+      (final tbl) => tbl.invoiceDate.isBetweenValues(fyStart, fyEnd),
+    );
 
     final result = await query.get();
     return result.isNotEmpty;
   }
 
   @override
+  Future<int> getMaxSequenceForPrefix(
+    final String prefix, {
+    final DateTime? invoiceDate,
+  }) async {
+    final targetDate = invoiceDate ?? DateTime.now();
+    final fyStartYear =
+        targetDate.month >= 4 ? targetDate.year : targetDate.year - 1;
+    final fyStart = DateTime(fyStartYear, 4);
+    final fyEnd = DateTime(fyStartYear + 1, 3, 31, 23, 59, 59);
+
+    final query = database.select(database.invoices)
+      ..where(
+        (final tbl) =>
+            tbl.profileId.equals(profileId) &
+            tbl.invoiceDate.isBetweenValues(fyStart, fyEnd),
+      );
+
+    final rows = await query.get();
+    int maxSeq = 0;
+    final cleanPrefix = prefix.trim();
+
+    for (final row in rows) {
+      final no = row.invoiceNo.trim();
+      if (cleanPrefix.isEmpty) {
+        final numMatch = RegExp(r'^\d+$').firstMatch(no);
+        if (numMatch != null) {
+          final val = int.tryParse(numMatch.group(0) ?? '') ?? 0;
+          if (val > maxSeq) maxSeq = val;
+        }
+      } else if (no.startsWith(cleanPrefix)) {
+        final rest = no.substring(cleanPrefix.length).trim();
+        final numMatch = RegExp(r'^\d+').firstMatch(rest);
+        if (numMatch != null) {
+          final val = int.tryParse(numMatch.group(0) ?? '') ?? 0;
+          if (val > maxSeq) maxSeq = val;
+        }
+      }
+    }
+
+    return maxSeq;
+  }
+
+  @override
   Future<void> saveEstimate(final model.Estimate estimate) async {
-    // Basic implementation for interface fulfillment
+    final estimateId = estimate.id.isEmpty ? const Uuid().v4() : estimate.id;
+    final items = estimate.items.map((final item) {
+      return EstimateItemsCompanion(
+        id: Value(item.id ?? const Uuid().v4()),
+        estimateId: Value(estimateId),
+        description: Value(item.description),
+        sacCode: Value(item.sacCode),
+        codeType: Value(item.codeType),
+        year: Value(item.year),
+        amount: Value(item.amount),
+        discount: Value(item.discount),
+        quantity: Value(item.quantity),
+        unit: Value(item.unit),
+        gstRate: Value(item.gstRate),
+      );
+    }).toList();
+
+    await database.transaction(() async {
+      await database.into(database.estimates).insertOnConflictUpdate(
+            EstimatesCompanion(
+              id: Value(estimateId),
+              profileId: Value(profileId),
+              estimateNo: Value(estimate.estimateNo),
+              date: Value(estimate.date),
+              expiryDate: Value(estimate.expiryDate),
+              status: Value(estimate.status ?? 'Draft'),
+              notes: Value(estimate.notes),
+              terms: Value(estimate.terms),
+              poNumber: Value(estimate.poNumber),
+              supplierName: Value(estimate.supplier.name),
+              supplierAddress: Value(estimate.supplier.address),
+              supplierGstin: Value(estimate.supplier.gstin),
+              supplierEmail: Value(estimate.supplier.email),
+              supplierPhone: Value(estimate.supplier.phone),
+              supplierState: Value(estimate.supplier.state),
+              receiverName: Value(estimate.receiver.name),
+              receiverAddress: Value(estimate.receiver.address),
+              receiverGstin: Value(estimate.receiver.gstin),
+              receiverPan: Value(estimate.receiver.pan),
+              receiverState: Value(estimate.receiver.state),
+              receiverStateCode: Value(estimate.receiver.stateCode),
+              receiverEmail: Value(estimate.receiver.email),
+              receiverPhone: Value(estimate.receiver.phone),
+            ),
+          );
+
+      await (database.delete(database.estimateItems)
+            ..where((final t) => t.estimateId.equals(estimateId)))
+          .go();
+
+      for (final item in items) {
+        await database.into(database.estimateItems).insert(item);
+      }
+    });
   }
 
   @override
   Future<List<model.Estimate>> getAllEstimates() async {
-    return [];
+    final estimateRows = await (database.select(database.estimates)
+          ..where((final t) => t.profileId.equals(profileId))
+          ..orderBy([
+            (final t) => OrderingTerm(
+                  expression: t.date,
+                  mode: OrderingMode.desc,
+                ),
+          ]))
+        .get();
+    if (estimateRows.isEmpty) return [];
+
+    final estimateIds = estimateRows.map((final r) => r.id).toList();
+    final allItems = await (database.select(database.estimateItems)
+          ..where((final t) => t.estimateId.isIn(estimateIds)))
+        .get();
+
+    return estimateRows.map((final row) {
+      final items = allItems
+          .where((final item) => item.estimateId == row.id)
+          .map(
+            (final itemRow) => model.InvoiceItem(
+              id: itemRow.id,
+              description: itemRow.description,
+              sacCode: itemRow.sacCode,
+              codeType: itemRow.codeType,
+              year: itemRow.year,
+              amount: itemRow.amount,
+              discount: itemRow.discount,
+              quantity: itemRow.quantity,
+              unit: itemRow.unit,
+              gstRate: itemRow.gstRate,
+            ),
+          )
+          .toList();
+
+      return model.Estimate(
+        id: row.id,
+        estimateNo: row.estimateNo,
+        date: row.date,
+        expiryDate: row.expiryDate,
+        status: row.status,
+        notes: row.notes,
+        terms: row.terms,
+        poNumber: row.poNumber,
+        supplier: model.Supplier(
+          name: row.supplierName ?? "",
+          address: row.supplierAddress ?? "",
+          gstin: row.supplierGstin ?? "",
+          email: row.supplierEmail ?? "",
+          phone: row.supplierPhone ?? "",
+          state: row.supplierState ?? "",
+        ),
+        receiver: model.Receiver(
+          name: row.receiverName ?? "",
+          address: row.receiverAddress ?? "",
+          gstin: row.receiverGstin ?? "",
+          pan: row.receiverPan ?? "",
+          state: row.receiverState ?? "",
+          stateCode: row.receiverStateCode ?? "",
+          email: row.receiverEmail ?? "",
+          phone: row.receiverPhone ?? "",
+        ),
+        items: items,
+      );
+    }).toList();
   }
 
   @override
-  Future<void> deleteEstimate(final String id) async {}
+  Future<void> deleteEstimate(final String id) async {
+    await (database.delete(database.estimateItems)
+          ..where((final t) => t.estimateId.equals(id)))
+        .go();
+    await (database.delete(database.estimates)
+          ..where((final t) => t.id.equals(id) & t.profileId.equals(profileId)))
+        .go();
+  }
 
   @override
   Future<void> saveRecurringProfile(
     final model.RecurringProfile profile,
-  ) async {}
-
-  @override
-  Future<List<model.RecurringProfile>> getAllRecurringProfiles() async {
-    return [];
+  ) async {
+    final targetProfileId =
+        profile.profileId.isNotEmpty ? profile.profileId : profileId;
+    await database.into(database.recurringProfilesTable).insertOnConflictUpdate(
+          RecurringProfilesTableCompanion(
+            id: Value(profile.id),
+            profileId: Value(targetProfileId),
+            interval: Value(profile.interval.index),
+            nextRunDate: Value(profile.nextRunDate),
+            lastRunDate: Value(profile.lastRunDate),
+            isActive: Value(profile.isActive),
+            dueDays: Value(profile.dueDays),
+            baseInvoiceJson: Value(jsonEncode(profile.baseInvoice.toJson())),
+          ),
+        );
   }
 
   @override
-  Future<void> deleteRecurringProfile(final String id) async {}
+  Future<List<model.RecurringProfile>> getAllRecurringProfiles() async {
+    final rows = await (database.select(database.recurringProfilesTable)
+          ..where((final t) => t.profileId.equals(profileId)))
+        .get();
+
+    return rows.map((final row) {
+      return model.RecurringProfile(
+        id: row.id,
+        profileId: row.profileId,
+        interval: model.RecurringInterval.values[row.interval],
+        nextRunDate: row.nextRunDate,
+        lastRunDate: row.lastRunDate,
+        isActive: row.isActive,
+        dueDays: row.dueDays,
+        baseInvoice: model.Invoice.fromJson(jsonDecode(row.baseInvoiceJson)),
+      );
+    }).toList();
+  }
+
+  @override
+  Future<void> deleteRecurringProfile(final String id) async {
+    await (database.delete(database.recurringProfilesTable)
+          ..where((final t) => t.id.equals(id) & t.profileId.equals(profileId)))
+        .go();
+  }
 }

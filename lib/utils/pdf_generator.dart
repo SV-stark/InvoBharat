@@ -1,4 +1,5 @@
 import 'dart:isolate';
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:invobharat/models/invoice.dart';
@@ -22,6 +23,7 @@ class PdfGeneratorParams {
   final String? title;
   final ByteData regularFont;
   final ByteData boldFont;
+  final bool showHsnSummary;
 
   PdfGeneratorParams({
     required this.invoice,
@@ -29,6 +31,7 @@ class PdfGeneratorParams {
     required this.regularFont,
     required this.boldFont,
     this.title,
+    this.showHsnSummary = true,
   });
 }
 
@@ -81,6 +84,7 @@ Future<Uint8List> _generatePdfInIsolate(final PdfGeneratorParams params) async {
     font,
     fontBold,
     title: effectiveTitle,
+    showHsnSummary: params.showHsnSummary,
   );
 }
 
@@ -89,6 +93,7 @@ Future<Uint8List> generateInvoicePdf(
   final Invoice invoice,
   final BusinessProfile profile, {
   final String? title,
+  final bool showHsnSummary = true,
 }) async {
   // Load fonts in the main thread where rootBundle is guaranteed to work
   final regularData = await rootBundle.load('fonts/Spectral-Regular.ttf');
@@ -100,7 +105,12 @@ Future<Uint8List> generateInvoicePdf(
     title: title,
     regularFont: regularData,
     boldFont: boldData,
+    showHsnSummary: showHsnSummary,
   );
+
+  if (Platform.environment.containsKey('FLUTTER_TEST')) {
+    return _generatePdfInIsolate(params);
+  }
 
   return Isolate.run(() => _generatePdfInIsolate(params));
 }
@@ -125,7 +135,8 @@ Future<void> warmUpFonts() async {
   if (_fontsWarmedUp) return;
   _fontsWarmedUp = true;
   try {
-    await rootBundle.load('fonts/NotoSans-Regular.ttf');
+    await rootBundle.load('fonts/Spectral-Regular.ttf');
+    await rootBundle.load('fonts/Spectral-Bold.ttf');
   } catch (_) {
     _fontsWarmedUp = false;
   }

@@ -18,6 +18,7 @@ class AppConfig {
   final String backupTime;
   final DateTime? lastAutoBackup;
   final String? backupPath;
+  final bool showHsnSummaryInPdf;
 
   AppConfig({
     this.paneDisplayMode = PaneDisplayMode.expanded,
@@ -27,6 +28,7 @@ class AppConfig {
     this.backupTime = "00:00",
     this.lastAutoBackup,
     this.backupPath,
+    this.showHsnSummaryInPdf = true,
   });
 
   AppConfig copyWith({
@@ -37,6 +39,7 @@ class AppConfig {
     final String? backupTime,
     final DateTime? lastAutoBackup,
     final String? backupPath,
+    final bool? showHsnSummaryInPdf,
   }) {
     return AppConfig(
       paneDisplayMode: paneDisplayMode ?? this.paneDisplayMode,
@@ -46,6 +49,7 @@ class AppConfig {
       backupTime: backupTime ?? this.backupTime,
       lastAutoBackup: lastAutoBackup ?? this.lastAutoBackup,
       backupPath: backupPath ?? this.backupPath,
+      showHsnSummaryInPdf: showHsnSummaryInPdf ?? this.showHsnSummaryInPdf,
     );
   }
 }
@@ -58,6 +62,7 @@ class AppConfigNotifier extends Notifier<AppConfig> {
   static const _backupTimeKey = 'backup_time';
   static const _lastAutoBackupKey = 'last_auto_backup';
   static const _backupPathKey = 'backup_path';
+  static const _showHsnSummaryInPdfKey = 'show_hsn_summary_in_pdf';
 
   @override
   AppConfig build() {
@@ -74,6 +79,7 @@ class AppConfigNotifier extends Notifier<AppConfig> {
     final backupTime = prefs.getString(_backupTimeKey) ?? "00:00";
     final lastBackupStr = prefs.getString(_lastAutoBackupKey);
     final backupPath = prefs.getString(_backupPathKey);
+    final showHsnSummaryInPdf = prefs.getBool(_showHsnSummaryInPdfKey) ?? true;
 
     var newState = state.copyWith(
       autoBackupEnabled: autoBackupEnabled,
@@ -83,6 +89,7 @@ class AppConfigNotifier extends Notifier<AppConfig> {
           ? DateTime.tryParse(lastBackupStr)
           : null,
       backupPath: backupPath,
+      showHsnSummaryInPdf: showHsnSummaryInPdf,
     );
 
     if (paneIndex != null &&
@@ -151,5 +158,11 @@ class AppConfigNotifier extends Notifier<AppConfig> {
     state = state.copyWith(lastAutoBackup: date);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_lastAutoBackupKey, date.toIso8601String());
+  }
+
+  Future<void> setShowHsnSummaryInPdf(final bool value) async {
+    state = state.copyWith(showHsnSummaryInPdf: value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_showHsnSummaryInPdfKey, value);
   }
 }

@@ -70,5 +70,34 @@ void main() {
       expect(parsed.first.items[0].description, 'Item A');
       expect(parsed.first.items[1].description, 'Item B');
     });
+
+    test('interstate calculation is preserved after export and re-import', () async {
+      // Supplier in MH (27), Receiver in DL (07)
+      final interstateInvoice = Invoice(
+        id: 'inv2',
+        invoiceNo: 'INV-002',
+        invoiceDate: now,
+        placeOfSupply: 'Delhi',
+        supplier: const Supplier(name: 'MH Biz', gstin: '27AAAAA0000A1Z6', state: 'Maharashtra'),
+        receiver: const Receiver(name: 'DL Client', gstin: '07BBBBB0000B1ZX', state: 'Delhi'),
+        items: [
+          const InvoiceItem(description: 'Item Interstate', amount: 1000),
+        ],
+      );
+
+      expect(interstateInvoice.isInterState, isTrue);
+      expect(interstateInvoice.totalIGST, 180.0);
+
+      final csv = await csvService.generateInvoiceCsv([interstateInvoice]);
+      final parsed = await csvService.parseInvoiceCsv(csv);
+
+      expect(parsed.length, 1);
+      final restored = parsed.first;
+      expect(restored.supplier.state, 'Maharashtra');
+      expect(restored.isInterState, isTrue);
+      expect(restored.totalIGST, 180.0);
+      expect(restored.totalCGST, 0.0);
+      expect(restored.totalSGST, 0.0);
+    });
   });
 }

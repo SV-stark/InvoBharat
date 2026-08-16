@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'dart:io';
 import 'package:go_router/go_router.dart';
 
@@ -76,6 +78,7 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
             'Payment_History_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv',
         allowedExtensions: ['csv'],
         type: FileType.custom,
+        bytes: Uint8List.fromList(utf8.encode(csvData)),
       );
 
       if (outputFile != null) {

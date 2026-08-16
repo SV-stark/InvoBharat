@@ -6,6 +6,7 @@ import 'package:invobharat/utils/formatters.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/widgets/skeleton_widgets.dart';
 import 'package:go_router/go_router.dart';
 
 class InvoicesListScreen extends ConsumerStatefulWidget {
@@ -614,7 +615,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const InvoiceListSkeleton(),
         error: (final err, final stack) => Center(child: Text("Error: $err")),
       ),
     );

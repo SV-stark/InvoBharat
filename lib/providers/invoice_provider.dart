@@ -113,6 +113,18 @@ class InvoiceNotifier extends Notifier<Invoice> {
     state = state.copyWith(poNumber: val);
   }
 
+  void updateEwayBillNo(final String val) {
+    state = state.copyWith(ewayBillNo: val);
+  }
+
+  void updateVehicleNo(final String val) {
+    state = state.copyWith(vehicleNo: val);
+  }
+
+  void updateIrnNo(final String val) {
+    state = state.copyWith(irnNo: val);
+  }
+
   void updateStatus(final String val) {
     state = state.copyWith(status: val);
   }

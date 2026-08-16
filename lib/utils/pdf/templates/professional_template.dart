@@ -18,8 +18,16 @@ class ProfessionalTemplate extends BasePdfTemplate {
     final pw.Font font,
     final pw.Font fontBold, {
     final String? title,
+    final bool showHsnSummary = true,
   }) async {
     final pdf = pw.Document();
+    final themeColor = PdfColor.fromInt(profile.colorValue);
+    final themeFaint = PdfColor(
+      themeColor.red,
+      themeColor.green,
+      themeColor.blue,
+      0.12,
+    );
 
     pdf.addPage(
       pw.MultiPage(
@@ -87,13 +95,20 @@ class ProfessionalTemplate extends BasePdfTemplate {
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
                   children: [
-                    pw.Text(
-                      title ?? "TAX INVOICE",
-                      style: pw.TextStyle(
-                        fontSize: 22,
-                        fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.blueGrey800,
-                      ),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.end,
+                      children: [
+                        buildStatusBadge(invoice, font: fontBold),
+                        pw.SizedBox(width: 8),
+                        pw.Text(
+                          title ?? "TAX INVOICE",
+                          style: pw.TextStyle(
+                            fontSize: 20,
+                            fontWeight: pw.FontWeight.bold,
+                            color: themeColor,
+                          ),
+                        ),
+                      ],
                     ),
                     pw.SizedBox(height: 8),
                     buildField(
@@ -134,6 +149,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
             ],
           ),
           buildOriginalInvoiceInfo(invoice),
+          buildEwayBillAndEinvoiceInfo(invoice, font, fontBold),
           pw.SizedBox(height: 32),
 
           // Client and Payment Summary
@@ -150,14 +166,18 @@ class ProfessionalTemplate extends BasePdfTemplate {
                         vertical: 4,
                         horizontal: 8,
                       ),
-                      decoration: const pw.BoxDecoration(
-                        color: PdfColors.grey200,
+                      decoration: pw.BoxDecoration(
+                        color: themeFaint,
+                        border: pw.Border(
+                          left: pw.BorderSide(color: themeColor, width: 3),
+                        ),
                       ),
                       child: pw.Text(
                         "BILL TO",
                         style: pw.TextStyle(
                           fontSize: 10,
                           fontWeight: pw.FontWeight.bold,
+                          color: themeColor,
                         ),
                       ),
                     ),
@@ -197,8 +217,11 @@ class ProfessionalTemplate extends BasePdfTemplate {
                         vertical: 4,
                         horizontal: 8,
                       ),
-                      decoration: const pw.BoxDecoration(
-                        color: PdfColors.grey200,
+                      decoration: pw.BoxDecoration(
+                        color: themeFaint,
+                        border: pw.Border(
+                          left: pw.BorderSide(color: themeColor, width: 3),
+                        ),
                       ),
                       width: double.infinity,
                       child: pw.Text(
@@ -206,6 +229,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                         style: pw.TextStyle(
                           fontSize: 10,
                           fontWeight: pw.FontWeight.bold,
+                          color: themeColor,
                         ),
                       ),
                     ),
@@ -256,16 +280,29 @@ class ProfessionalTemplate extends BasePdfTemplate {
           // Items Table
           buildItemsTable(
             invoice,
-            headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
-            border: pw.TableBorder.all(color: PdfColors.grey400, width: 0.5),
+            headerDecoration: pw.BoxDecoration(color: themeColor),
+            headerStyle: pw.TextStyle(
+              color: PdfColors.white,
+              fontWeight: pw.FontWeight.bold,
+              fontSize: 9,
+            ),
+            border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
           ),
+          if (showHsnSummary) buildHsnSummaryTable(invoice, font, fontBold),
           pw.SizedBox(height: 24),
 
-          // Amount in Words
+          // Amount in Words & Bank Details
           buildAmountInWords(invoice.grandTotal),
-          pw.SizedBox(height: 32),
+          buildBankDetailsSection(
+            invoice,
+            profile,
+            headerColor: themeColor,
+            font: font,
+            fontBold: fontBold,
+          ),
+          pw.SizedBox(height: 16),
 
-          // Footer (Terms, Payment Details, Signature)
+          // Footer (Terms, Payment QR Code, Signature)
           pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.end,
             children: [
@@ -279,7 +316,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                       style: pw.TextStyle(
                         fontSize: 9,
                         fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.grey700,
+                        color: themeColor,
                       ),
                     ),
                     pw.SizedBox(height: 4),
@@ -290,13 +327,13 @@ class ProfessionalTemplate extends BasePdfTemplate {
                       style: const pw.TextStyle(fontSize: 8),
                     ),
                     if (invoice.comments.isNotEmpty) ...[
-                      pw.SizedBox(height: 16),
+                      pw.SizedBox(height: 8),
                       pw.Text(
                         "NOTES",
                         style: pw.TextStyle(
                           fontSize: 9,
                           fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.grey700,
+                          color: themeColor,
                         ),
                       ),
                       pw.SizedBox(height: 4),
@@ -310,57 +347,21 @@ class ProfessionalTemplate extends BasePdfTemplate {
               ),
               pw.SizedBox(width: 16),
 
-              // Payment Details (Center)
+              // QR Code (Center)
               pw.Expanded(
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text(
-                      "PAYMENT DETAILS",
-                      style: pw.TextStyle(
-                        fontSize: 9,
-                        fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.grey700,
-                      ),
-                    ),
-                    pw.SizedBox(height: 4),
-                    pw.Text(
-                      "Bank Name: ${invoice.bankName}",
-                      style: const pw.TextStyle(fontSize: 8),
-                    ),
-                    pw.Text(
-                      "Account No: ${invoice.accountNo}",
-                      style: const pw.TextStyle(fontSize: 8),
-                    ),
-                    pw.Text(
-                      "IFSC Code: ${invoice.ifscCode}",
-                      style: const pw.TextStyle(fontSize: 8),
-                    ),
-                    pw.Text(
-                      "Branch: ${invoice.branch}",
-                      style: const pw.TextStyle(fontSize: 8),
-                    ),
-                    if (profile.upiId.isNotEmpty) ...[
-                      pw.SizedBox(height: 8),
-                      pw.Text(
-                        "UPI ID: ${profile.upiId}",
-                        style: pw.TextStyle(
-                          fontSize: 8,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                      pw.SizedBox(height: 4),
-                      pw.Center(
-                        child: buildPaymentQRCode(
-                          profile.upiId,
-                          profile.companyName,
-                          invoice.grandTotal,
-                          invoice.invoiceNo,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+                child: profile.upiId.isNotEmpty
+                    ? pw.Column(
+                        mainAxisAlignment: pw.MainAxisAlignment.end,
+                        children: [
+                          buildPaymentQRCode(
+                            profile.upiId,
+                            profile.companyName,
+                            invoice.grandTotal,
+                            invoice.invoiceNo,
+                          ),
+                        ],
+                      )
+                    : pw.SizedBox(),
               ),
               pw.SizedBox(width: 16),
 

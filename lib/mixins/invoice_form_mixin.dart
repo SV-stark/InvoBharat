@@ -11,6 +11,9 @@ import 'package:invobharat/providers/invoice_provider.dart';
 import 'package:invobharat/providers/estimate_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/providers/app_config_provider.dart';
+
+import 'package:invobharat/providers/invoice_series_provider.dart';
 
 /// Mixin to handle form logic for creating/editing Invoices.
 /// Standardizes controller management and common actions.
@@ -32,6 +35,9 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   late TextEditingController deliveryAddressCtrl;
   late TextEditingController paymentTermsCtrl;
   late TextEditingController originalInvoiceNoCtrl;
+  late TextEditingController ewayBillCtrl;
+  late TextEditingController vehicleNoCtrl;
+  late TextEditingController irnNoCtrl;
 
   void initInvoiceControllers([final Invoice? invoice]) {
     invoiceNoCtrl = TextEditingController(text: invoice?.invoiceNo);
@@ -52,6 +58,9 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     originalInvoiceNoCtrl = TextEditingController(
       text: invoice?.originalInvoiceNumber,
     );
+    ewayBillCtrl = TextEditingController(text: invoice?.ewayBillNo);
+    vehicleNoCtrl = TextEditingController(text: invoice?.vehicleNo);
+    irnNoCtrl = TextEditingController(text: invoice?.irnNo);
   }
 
   void disposeInvoiceControllers() {
@@ -67,6 +76,9 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     deliveryAddressCtrl.dispose();
     paymentTermsCtrl.dispose();
     originalInvoiceNoCtrl.dispose();
+    ewayBillCtrl.dispose();
+    vehicleNoCtrl.dispose();
+    irnNoCtrl.dispose();
   }
 
   /// Syncs controllers with provider state.
@@ -108,6 +120,15 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     if (originalInvoiceNoCtrl.text != (invoice.originalInvoiceNumber ?? '')) {
       originalInvoiceNoCtrl.text = invoice.originalInvoiceNumber ?? '';
     }
+    if (ewayBillCtrl.text != (invoice.ewayBillNo ?? '')) {
+      ewayBillCtrl.text = invoice.ewayBillNo ?? '';
+    }
+    if (vehicleNoCtrl.text != (invoice.vehicleNo ?? '')) {
+      vehicleNoCtrl.text = invoice.vehicleNo ?? '';
+    }
+    if (irnNoCtrl.text != (invoice.irnNo ?? '')) {
+      irnNoCtrl.text = invoice.irnNo ?? '';
+    }
   }
 
   /// Updates provider and controllers when a client is selected
@@ -131,25 +152,36 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   }
 
   Future<bool> saveInvoice({
-    required final Invoice invoice,
+    required Invoice invoice,
     final String? estimateIdToMarkConverted,
-    required final BuildContext
-    context, // required for notifications if specific UI logic needed?
-    // Actually mixin shouldn't depend on UI widgets like ShowDialog if possible,
-    // but here we return status or throw error?
-    // Let's return success bool and let UI handle success message.
-    // Or simpler: Reuse the logic.
+    required final BuildContext context,
   }) async {
     try {
       final repository = ref.read(invoiceRepositoryProvider);
-      final exists = await repository.checkInvoiceExists(
+      var exists = await repository.checkInvoiceExists(
         invoice.invoiceNo,
         excludeId: invoice.id,
+        invoiceDate: invoice.invoiceDate,
       );
+
+      // Auto-recover for new invoices if the generated candidate already exists in same FY
+      if (exists && (invoice.id == null || invoice.id!.isEmpty)) {
+        final uniqueNo = await generateNextInvoiceNumber(
+          invoiceDate: invoice.invoiceDate,
+        );
+        invoice = invoice.copyWith(invoiceNo: uniqueNo);
+        ref.read(invoiceProvider.notifier).updateInvoiceNo(uniqueNo);
+        syncInvoiceControllers(invoice);
+        exists = await repository.checkInvoiceExists(
+          uniqueNo,
+          excludeId: invoice.id,
+          invoiceDate: invoice.invoiceDate,
+        );
+      }
 
       if (exists) {
         throw Exception(
-          "Invoice number '${invoice.invoiceNo}' already exists.",
+          "Invoice number '${invoice.invoiceNo}' already exists for this financial year.",
         );
       }
 
@@ -171,16 +203,62 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     final Invoice invoice,
     final BusinessProfile profile,
   ) async {
-    final pdfBytes = await generateInvoicePdf(invoice, profile);
-    await Printing.layoutPdf(onLayout: (_) => pdfBytes);
+    try {
+      final showHsn = ref.read(appConfigProvider).showHsnSummaryInPdf;
+      final pdfBytes = await generateInvoicePdf(invoice, profile, showHsnSummary: showHsn);
+      await Printing.layoutPdf(onLayout: (_) => pdfBytes);
+    } catch (e) {
+      debugPrint("Error printing invoice: $e");
+    }
   }
 
-  /// Generates the next invoice number based on existing invoices
-  Future<String> generateNextInvoiceNumber() async {
+  /// Generates the next available unique invoice number based on active series or business profile
+  Future<String> generateNextInvoiceNumber({
+    final String? seriesPrefix,
+    final DateTime? invoiceDate,
+  }) async {
     final profile = ref.read(businessProfileProvider);
-    final nextSeq = profile.invoiceSequence;
-    final series = profile.invoiceSeries;
-    return '$series${nextSeq.toString().padLeft(3, '0')}';
+    final seriesList = ref.read(invoiceSeriesProvider);
+    final repository = ref.read(invoiceRepositoryProvider);
+
+    final targetPrefix = (seriesPrefix != null && seriesPrefix.isNotEmpty)
+        ? seriesPrefix
+        : (profile.invoiceSeries.isNotEmpty ? profile.invoiceSeries : 'INV-');
+
+    final series = seriesList.firstWhere(
+      (final s) => s.prefix == targetPrefix,
+      orElse: () => InvoiceSeries(
+        prefix: targetPrefix,
+        sequence: profile.invoiceSequence > 0 ? profile.invoiceSequence : 1,
+      ),
+    );
+
+    final targetDate = invoiceDate ?? DateTime.now();
+
+    // Dynamically calculate next sequence based on existing invoices in the current FY
+    final maxInFy = await repository.getMaxSequenceForPrefix(
+      targetPrefix,
+      invoiceDate: targetDate,
+    );
+
+    int currentSeq = maxInFy > 0
+        ? (maxInFy + 1)
+        : (series.sequence > 0 ? series.sequence : 1);
+
+    String candidate = '$targetPrefix${currentSeq.toString().padLeft(3, '0')}';
+
+    // Verify candidate against repository to guarantee uniqueness within financial year
+    while (await repository.checkInvoiceExists(candidate, invoiceDate: targetDate)) {
+      currentSeq++;
+      candidate = '$targetPrefix${currentSeq.toString().padLeft(3, '0')}';
+    }
+
+    // Sync sequence back to active series state
+    await ref
+        .read(invoiceSeriesProvider.notifier)
+        .updateSequence(targetPrefix, currentSeq);
+
+    return candidate;
   }
 
   /// Calculates due date based on payment terms

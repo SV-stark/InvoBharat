@@ -8,6 +8,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/providers/invoice_provider.dart';
+import 'package:invobharat/providers/invoice_series_provider.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/widgets/adaptive_widgets.dart';
 import 'package:invobharat/utils/formatters.dart';
 
@@ -72,6 +75,9 @@ class InvoiceHeaderSection extends ConsumerWidget {
   final TextEditingController posCtrl;
   final TextEditingController paymentTermsCtrl;
   final TextEditingController poNumberCtrl;
+  final TextEditingController ewayBillCtrl;
+  final TextEditingController vehicleNoCtrl;
+  final TextEditingController irnNoCtrl;
 
   const InvoiceHeaderSection({
     super.key,
@@ -79,6 +85,9 @@ class InvoiceHeaderSection extends ConsumerWidget {
     required this.posCtrl,
     required this.paymentTermsCtrl,
     required this.poNumberCtrl,
+    required this.ewayBillCtrl,
+    required this.vehicleNoCtrl,
+    required this.irnNoCtrl,
   });
 
   @override
@@ -106,6 +115,39 @@ class InvoiceHeaderSection extends ConsumerWidget {
         Row(
           children: [
             Expanded(
+              flex: 3,
+              child: _buildDropdownField(
+                label: "Series Prefix",
+                value: ref.watch(invoiceSeriesProvider).any((final s) => invoice.invoiceNo.startsWith(s.prefix))
+                    ? ref.watch(invoiceSeriesProvider).firstWhere((final s) => invoice.invoiceNo.startsWith(s.prefix)).prefix
+                    : (ref.watch(invoiceSeriesProvider).isNotEmpty
+                        ? ref.watch(invoiceSeriesProvider).first.prefix
+                        : ""),
+                items: ref.watch(invoiceSeriesProvider).map((final s) => s.prefix).toList(),
+                onChanged: (final val) async {
+                  if (val != null) {
+                    final repo = ref.read(invoiceRepositoryProvider);
+                    final profile = ref.read(businessProfileProvider);
+                    final seriesList = ref.read(invoiceSeriesProvider);
+                    final series = seriesList.firstWhere(
+                      (final s) => s.prefix == val,
+                      orElse: () => InvoiceSeries(prefix: val, sequence: profile.invoiceSequence > 0 ? profile.invoiceSequence : 1),
+                    );
+                    int seq = series.sequence;
+                    String candidate = '${series.prefix}${seq.toString().padLeft(3, '0')}';
+                    while (await repo.checkInvoiceExists(candidate)) {
+                      seq++;
+                      candidate = '${series.prefix}${seq.toString().padLeft(3, '0')}';
+                    }
+                    invoiceNoCtrl.text = candidate;
+                    ref.read(invoiceProvider.notifier).updateInvoiceNo(candidate);
+                  }
+                },
+              ),
+            ),
+            const Gap(16),
+            Expanded(
+              flex: 4,
               child: AppTextInput(
                 controller: invoiceNoCtrl,
                 label: "Invoice No",
@@ -117,6 +159,7 @@ class InvoiceHeaderSection extends ConsumerWidget {
             ),
             const Gap(16),
             Expanded(
+              flex: 4,
               child: _buildDateField(
                 context: context,
                 label: "Date",
@@ -206,6 +249,27 @@ class InvoiceHeaderSection extends ConsumerWidget {
           label: "PO Number (Optional)",
           onChanged: (final val) =>
               ref.read(invoiceProvider.notifier).updatePoNumber(val),
+        ),
+        const Gap(16),
+        AppTextInput(
+          controller: ewayBillCtrl,
+          label: "E-Way Bill No (Optional)",
+          onChanged: (final val) =>
+              ref.read(invoiceProvider.notifier).updateEwayBillNo(val),
+        ),
+        const Gap(16),
+        AppTextInput(
+          controller: vehicleNoCtrl,
+          label: "Vehicle Number (Optional)",
+          onChanged: (final val) =>
+              ref.read(invoiceProvider.notifier).updateVehicleNo(val),
+        ),
+        const Gap(16),
+        AppTextInput(
+          controller: irnNoCtrl,
+          label: "E-Invoice IRN (Optional)",
+          onChanged: (final val) =>
+              ref.read(invoiceProvider.notifier).updateIrnNo(val),
         ),
       ],
     );

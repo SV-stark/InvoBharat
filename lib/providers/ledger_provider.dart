@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:money2/money2.dart';
 import 'package:invobharat/models/invoice.dart';
 
 import 'package:invobharat/providers/invoice_repository_provider.dart';
@@ -48,13 +49,6 @@ final clientLedgerProvider = FutureProvider.family<List<LedgerEntry>, String>((
 
   for (final inv in clientInvoices) {
     // 3. Invoice Entry (Debit)
-    // If it's a Credit Note Invoice, is it a Debit or Credit?
-    // A "Credit Note" document usually *reduces* the balance.
-    // However, in our system, we treat Credit Notes as a Payment on the original invoice?
-    // OR is the Credit Note itself a document?
-    // If `InvoiceType.creditNote`, it should appear as a CREDIT (Reducing balance).
-
-    // Scenario A: Standard Invoice
     if (inv.type == InvoiceType.invoice) {
       entries.add(
         LedgerEntry(
@@ -83,20 +77,6 @@ final clientLedgerProvider = FutureProvider.family<List<LedgerEntry>, String>((
 
     // 4. Payments (Credit) associated with this invoice
     for (final pay in inv.payments) {
-      // If payment is "Credit Note", it means it came from a CN linking.
-      // Do we show it?
-      // If we show the CN document AND the payment, we double count?
-      // Logic:
-      // If we show the CN Document as a line item, we establish the Credit.
-      // The "Payment" of type "Credit Note" effectively "Apply" that credit to the invoice.
-      // In a Ledger View, we usually show:
-      // 1. Invoice A (Debit 1000)
-      // 2. Credit Note B (Credit 200)
-      // We do NOT show "Payment (CN applied)" as another 200.
-      // SO: We should filter out payments of mode 'Credit Note' IF we are showing the CN documents themselves.
-      // Since `clientInvoices` includes ALL documents (inc CNs), we will see the CN document.
-      // Therefore, we should skip 'Credit Note' payments to avoid double counting.
-
       if (pay.paymentMode == 'Credit Note') continue;
 
       entries.add(
@@ -115,12 +95,16 @@ final clientLedgerProvider = FutureProvider.family<List<LedgerEntry>, String>((
   // 5. Sort by Date
   entries.sort((final a, final b) => a.date.compareTo(b.date));
 
-  // 6. Calculate Running Balance
-  double runningBalance = 0;
+  // 6. Calculate Running Balance using Money precision math
+  final inr = CommonCurrencies().inr;
+  Money runningBalance = Money.fromNumWithCurrency(0, inr);
   final List<LedgerEntry> calculatedEntries = [];
 
   for (final entry in entries) {
-    runningBalance += entry.debit - entry.credit;
+    final debitMoney = Money.fromNumWithCurrency(entry.debit, inr);
+    final creditMoney = Money.fromNumWithCurrency(entry.credit, inr);
+    runningBalance = runningBalance + debitMoney - creditMoney;
+
     calculatedEntries.add(
       LedgerEntry(
         date: entry.date,
@@ -128,15 +112,10 @@ final clientLedgerProvider = FutureProvider.family<List<LedgerEntry>, String>((
         type: entry.type,
         debit: entry.debit,
         credit: entry.credit,
-        balance: runningBalance,
+        balance: runningBalance.toDouble(),
       ),
     );
   }
-
-  // Reverse to show latest first?
-  // Usually Ledgers are chronological (Oldest first) to show balance history.
-  // But users might want latest.
-  // Let's keep chronological.
 
   return calculatedEntries;
 });

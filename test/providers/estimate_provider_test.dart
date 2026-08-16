@@ -3,16 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:invobharat/providers/estimate_provider.dart';
-import 'package:invobharat/models/estimate.dart';
-import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/models/estimate.dart' as model_estimate;
+import 'package:invobharat/models/invoice.dart' as model_invoice;
+import 'package:invobharat/data/invoice_repository.dart';
+import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:drift/native.dart';
 import 'package:invobharat/providers/database_provider.dart';
-import 'package:invobharat/database/database.dart'
-    hide Invoice, BusinessProfile, Client, AppSetting, InvoiceItem;
+import 'package:invobharat/database/database.dart' hide BusinessProfile, Client;
 
-class MockEstimateRepository extends Mock implements EstimateRepository {}
+class MockInvoiceRepository extends Mock implements InvoiceRepository {}
 
 class FakeActiveProfileId extends ActiveProfileId {
   @override
@@ -24,16 +25,16 @@ class FakeActiveProfileId extends ActiveProfileId {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late MockEstimateRepository mockRepo;
+  late MockInvoiceRepository mockRepo;
   late BusinessProfile testProfile;
 
   setUpAll(() {
     registerFallbackValue(
-      Estimate(
+      model_estimate.Estimate(
         id: '',
         date: DateTime.now(),
-        supplier: const Supplier(),
-        receiver: const Receiver(),
+        supplier: const model_invoice.Supplier(),
+        receiver: const model_invoice.Receiver(),
         items: [],
       ),
     );
@@ -41,7 +42,7 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
-    mockRepo = MockEstimateRepository();
+    mockRepo = MockInvoiceRepository();
     testProfile = BusinessProfile.defaults().copyWith(id: 'test-profile');
 
     when(() => mockRepo.getAllEstimates()).thenAnswer((_) async => []);
@@ -52,7 +53,7 @@ void main() {
   }) {
     final container = ProviderContainer(
       overrides: [
-        estimateRepositoryProvider.overrideWithValue(mockRepo),
+        invoiceRepositoryProvider.overrideWithValue(mockRepo),
         businessProfileProvider.overrideWithValue(testProfile),
         activeProfileIdProvider.overrideWith(FakeActiveProfileId.new),
         databaseProvider.overrideWith((final ref) {
@@ -76,12 +77,12 @@ void main() {
 
     test('addEstimate should update state', () async {
       final container = createContainer();
-      final estimate = Estimate(
+      final estimate = model_estimate.Estimate(
         id: 'est1',
         estimateNo: 'EST-001',
         date: DateTime.now(),
-        supplier: const Supplier(),
-        receiver: const Receiver(),
+        supplier: const model_invoice.Supplier(),
+        receiver: const model_invoice.Receiver(),
         items: [],
       );
 
@@ -102,12 +103,12 @@ void main() {
     });
 
     test('deleteEstimate should remove from state', () async {
-      final estimate = Estimate(
+      final estimate = model_estimate.Estimate(
         id: 'est1',
         estimateNo: 'EST-001',
         date: DateTime.now(),
-        supplier: const Supplier(),
-        receiver: const Receiver(),
+        supplier: const model_invoice.Supplier(),
+        receiver: const model_invoice.Receiver(),
         items: [],
       );
 
@@ -117,7 +118,6 @@ void main() {
       when(
         () => mockRepo.deleteEstimate(any()),
       ).thenAnswer((_) async => Future.value());
-      // After deletion, it should return empty
       when(() => mockRepo.deleteEstimate('est1')).thenAnswer((_) async {
         when(() => mockRepo.getAllEstimates()).thenAnswer((_) async => []);
         return Future.value();

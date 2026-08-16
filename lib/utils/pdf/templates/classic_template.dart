@@ -18,6 +18,7 @@ class ClassicTemplate extends BasePdfTemplate {
     final pw.Font font,
     final pw.Font fontBold, {
     final String? title,
+    final bool showHsnSummary = true,
   }) async {
     final pdf = pw.Document(
       theme: pw.ThemeData.withFont(base: font, bold: fontBold),
@@ -91,15 +92,21 @@ class ClassicTemplate extends BasePdfTemplate {
             pw.SizedBox(height: 10),
 
             // Title
-            pw.Center(
-              child: pw.Text(
-                supplyType,
-                style: pw.TextStyle(
-                  fontSize: 16,
-                  fontWeight: pw.FontWeight.bold,
-                  decoration: pw.TextDecoration.underline,
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.center,
+              mainAxisSize: pw.MainAxisSize.min,
+              children: [
+                buildStatusBadge(invoice, font: fontBold),
+                pw.SizedBox(width: 8),
+                pw.Text(
+                  supplyType,
+                  style: pw.TextStyle(
+                    fontSize: 16,
+                    fontWeight: pw.FontWeight.bold,
+                    decoration: pw.TextDecoration.underline,
+                  ),
                 ),
-              ),
+              ],
             ),
             pw.SizedBox(height: 20),
 
@@ -179,6 +186,7 @@ class ClassicTemplate extends BasePdfTemplate {
               ],
             ),
             buildOriginalInvoiceInfo(invoice),
+            buildEwayBillAndEinvoiceInfo(invoice, font, fontBold),
             pw.SizedBox(height: 20),
 
             // Items Table
@@ -194,7 +202,7 @@ class ClassicTemplate extends BasePdfTemplate {
                 color: PdfColors.grey200,
               ),
             ),
-
+            if (showHsnSummary) buildHsnSummaryTable(invoice, font, fontBold),
             buildAmountInWords(invoice.grandTotal),
 
             pw.SizedBox(height: 10),
@@ -248,7 +256,15 @@ class ClassicTemplate extends BasePdfTemplate {
                 ),
               ],
             ),
-            pw.SizedBox(height: 20),
+            pw.SizedBox(height: 16),
+            buildAmountInWords(invoice.grandTotal),
+            buildBankDetailsSection(
+              invoice,
+              profile,
+              font: font,
+              fontBold: fontBold,
+            ),
+            pw.SizedBox(height: 16),
             pw.Row(
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
@@ -271,7 +287,7 @@ class ClassicTemplate extends BasePdfTemplate {
                         ),
                       ],
                       if (invoice.comments.isNotEmpty) ...[
-                        pw.SizedBox(height: 10),
+                        pw.SizedBox(height: 8),
                         pw.Text(
                           "Notes:",
                           style: pw.TextStyle(
@@ -288,55 +304,21 @@ class ClassicTemplate extends BasePdfTemplate {
                   ),
                 ),
                 pw.SizedBox(width: 16),
-                // Bank and QR
+                // QR Code in Middle
                 pw.Expanded(
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(
-                        "Bank Details:",
-                        style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 10,
-                        ),
-                      ),
-                      pw.Text(
-                        "Bank: ${invoice.bankName}",
-                        style: const pw.TextStyle(fontSize: 9),
-                      ),
-                      pw.Text(
-                        "A/c No: ${invoice.accountNo}",
-                        style: const pw.TextStyle(fontSize: 9),
-                      ),
-                      pw.Text(
-                        "IFSC: ${invoice.ifscCode}",
-                        style: const pw.TextStyle(fontSize: 9),
-                      ),
-                      pw.Text(
-                        "Branch: ${invoice.branch}",
-                        style: const pw.TextStyle(fontSize: 9),
-                      ),
-                      if (profile.upiId.isNotEmpty) ...[
-                        pw.SizedBox(height: 5),
-                        pw.Text(
-                          "UPI ID: ${profile.upiId}",
-                          style: pw.TextStyle(
-                            fontWeight: pw.FontWeight.bold,
-                            fontSize: 9,
-                          ),
-                        ),
-                        pw.SizedBox(height: 5),
-                        pw.Center(
-                          child: buildPaymentQRCode(
-                            profile.upiId,
-                            profile.companyName,
-                            invoice.grandTotal,
-                            invoice.invoiceNo,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
+                  child: profile.upiId.isNotEmpty
+                      ? pw.Column(
+                          mainAxisAlignment: pw.MainAxisAlignment.end,
+                          children: [
+                            buildPaymentQRCode(
+                              profile.upiId,
+                              profile.companyName,
+                              invoice.grandTotal,
+                              invoice.invoiceNo,
+                            ),
+                          ],
+                        )
+                      : pw.SizedBox(),
                 ),
                 pw.SizedBox(width: 16),
                 // Signatory

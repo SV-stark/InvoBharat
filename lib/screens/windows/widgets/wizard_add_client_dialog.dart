@@ -5,6 +5,9 @@ import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/client_provider.dart';
 import 'package:invobharat/utils/validators.dart';
 import 'package:invobharat/utils/constants.dart';
+import 'package:indian_formatters/indian_formatters.dart';
+import 'package:invobharat/utils/formatters.dart';
+import 'package:invobharat/utils/gst_utils.dart';
 
 class WizardAddClientDialog extends ConsumerStatefulWidget {
   final Function(Client) onClientAdded;
@@ -24,6 +27,8 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
   String state = "Karnataka"; // Default
   String email = "";
   String phone = "";
+  String pan = "";
+  String stateCode = "";
 
   // Controllers to avoid recreation if we used them,
   // but here we are using simple string assignment which is fine for simple forms,
@@ -32,22 +37,26 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
   // However, AutoSuggestBox for state used `controller: TextEditingController(text: state)`. This was the leak.
 
   late TextEditingController _stateCtrl;
+  late TextEditingController _panCtrl;
 
   @override
   void initState() {
     super.initState();
     _stateCtrl = TextEditingController(text: state);
+    _panCtrl = TextEditingController(text: pan);
   }
 
   @override
   void dispose() {
     _stateCtrl.dispose();
+    _panCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(final BuildContext context) {
     return ContentDialog(
+      constraints: const BoxConstraints(maxWidth: 600),
       title: const Text("Add New Client"),
       content: Form(
         key: _formKey,
@@ -72,20 +81,39 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
               ),
             ),
             const SizedBox(height: 10),
+            InfoLabel(
+              label: "GSTIN",
+              child: TextFormBox(
+                placeholder: "Optional",
+                validator: Validators.gstin,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                inputFormatters: [GSTNumberFormatter()],
+                onChanged: (final v) {
+                  gstin = v;
+                  final stateName = IndianValidators.getGSTState(v);
+                  if (stateName != null) {
+                    setState(() {
+                      state = stateName;
+                      _stateCtrl.text = stateName;
+                    });
+                  }
+                  final panVal = GstUtils.getPan(v);
+                  if (panVal != null) {
+                    setState(() {
+                      pan = panVal;
+                      _panCtrl.text = panVal;
+                    });
+                  }
+                  final code = GstUtils.getStateCode(v);
+                  if (code != null) {
+                    stateCode = code;
+                  }
+                },
+              ),
+            ),
+            const SizedBox(height: 10),
             Row(
               children: [
-                Expanded(
-                  child: InfoLabel(
-                    label: "GSTIN",
-                    child: TextFormBox(
-                      placeholder: "Optional",
-                      validator: Validators.gstin,
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      onChanged: (final v) => gstin = v,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
                 Expanded(
                   child: InfoLabel(
                     label: "State",
@@ -94,8 +122,15 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
                       controller: _stateCtrl,
                       items: AppStates.states
                           .map(
-                            (final e) =>
-                                AutoSuggestBoxItem<String>(value: e, label: e),
+                            (final e) => AutoSuggestBoxItem<String>(
+                              value: e,
+                              label: e,
+                              child: Text(
+                                e,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           )
                           .toList(),
                       onSelected: (final item) {
@@ -109,6 +144,17 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
                           state = text;
                         }
                       },
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: InfoLabel(
+                    label: "PAN",
+                    child: TextBox(
+                      placeholder: "Auto-extracted",
+                      controller: _panCtrl,
+                      onChanged: (final v) => pan = v,
                     ),
                   ),
                 ),
@@ -159,6 +205,8 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
               address: address,
               gstin: gstin,
               state: state,
+              pan: pan,
+              stateCode: stateCode,
               email: email,
               phone: phone,
             );

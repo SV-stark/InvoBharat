@@ -85,5 +85,60 @@ void main() {
       final invoice = await repository.getInvoice(testInvoice.id!);
       expect(invoice, isNull);
     });
+
+    test('getMaxSequenceForPrefix dynamically tracks max in active FY and isolates across FYs', () async {
+      final now = DateTime.now();
+      final currentFYStartYear = now.month >= 4 ? now.year : now.year - 1;
+
+      // Invoice in current FY: INV-029
+      final inv29 = testInvoice.copyWith(
+        id: 'inv29',
+        invoiceNo: 'INV-029',
+        invoiceDate: DateTime(currentFYStartYear, 6, 15),
+      );
+      await repository.saveInvoice(inv29);
+
+      int maxSeq = await repository.getMaxSequenceForPrefix('INV-', invoiceDate: inv29.invoiceDate);
+      expect(maxSeq, 29);
+
+      // Invoice in previous FY: INV-050
+      final invPrevFY = testInvoice.copyWith(
+        id: 'inv_prev',
+        invoiceNo: 'INV-050',
+        invoiceDate: DateTime(currentFYStartYear - 1, 6, 15),
+      );
+      await repository.saveInvoice(invPrevFY);
+
+      // Current FY should still report 29, ignoring the previous FY's 50!
+      maxSeq = await repository.getMaxSequenceForPrefix('INV-', invoiceDate: inv29.invoiceDate);
+      expect(maxSeq, 29);
+
+      // Previous FY should report 50
+      final maxPrev = await repository.getMaxSequenceForPrefix('INV-', invoiceDate: invPrevFY.invoiceDate);
+      expect(maxPrev, 50);
+
+      // Deletion of inv29 reclaims the sequence
+      await repository.deleteInvoice(inv29.id!);
+      final maxAfterDelete = await repository.getMaxSequenceForPrefix('INV-', invoiceDate: inv29.invoiceDate);
+      expect(maxAfterDelete, 0);
+    });
+
+    test('Credit Note and Debit Note persistence with original invoice linkage', () async {
+      final creditNote = testInvoice.copyWith(
+        id: 'cn1',
+        invoiceNo: 'CN-001',
+        type: model.InvoiceType.creditNote,
+        originalInvoiceNumber: 'INV-001',
+        originalInvoiceDate: DateTime(2026, 1, 10),
+      );
+
+      await repository.saveInvoice(creditNote);
+      final fetched = await repository.getInvoice('cn1');
+
+      expect(fetched, isNotNull);
+      expect(fetched?.type, model.InvoiceType.creditNote);
+      expect(fetched?.originalInvoiceNumber, 'INV-001');
+      expect(fetched?.originalInvoiceDate, DateTime(2026, 1, 10));
+    });
   });
 }

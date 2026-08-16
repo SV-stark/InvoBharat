@@ -18,8 +18,10 @@ class MinimalTemplate extends BasePdfTemplate {
     final pw.Font font,
     final pw.Font fontBold, {
     final String? title,
+    final bool showHsnSummary = true,
   }) async {
     final pdf = pw.Document();
+    final themeColor = PdfColor.fromInt(profile.colorValue);
 
     pdf.addPage(
       pw.MultiPage(
@@ -69,13 +71,20 @@ class MinimalTemplate extends BasePdfTemplate {
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
                   children: [
-                    pw.Text(
-                      title ?? "INVOICE",
-                      style: pw.TextStyle(
-                        fontSize: 24,
-                        fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.grey700,
-                      ),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.end,
+                      children: [
+                        buildStatusBadge(invoice, font: fontBold),
+                        pw.SizedBox(width: 8),
+                        pw.Text(
+                          title ?? "INVOICE",
+                          style: pw.TextStyle(
+                            fontSize: 22,
+                            fontWeight: pw.FontWeight.bold,
+                            color: themeColor,
+                          ),
+                        ),
+                      ],
                     ),
                     pw.SizedBox(height: 8),
                     buildField(
@@ -110,6 +119,7 @@ class MinimalTemplate extends BasePdfTemplate {
             ],
           ),
           buildOriginalInvoiceInfo(invoice),
+          buildEwayBillAndEinvoiceInfo(invoice, font, fontBold),
           pw.SizedBox(height: 32),
 
           // Bill To
@@ -125,10 +135,10 @@ class MinimalTemplate extends BasePdfTemplate {
                       style: pw.TextStyle(
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.grey700,
+                        color: themeColor,
                       ),
                     ),
-                    pw.Divider(thickness: 1, color: PdfColors.grey300),
+                    pw.Divider(thickness: 1, color: themeColor),
                     pw.SizedBox(height: 4),
                     pw.Text(
                       invoice.receiver.name,
@@ -152,10 +162,10 @@ class MinimalTemplate extends BasePdfTemplate {
                       style: pw.TextStyle(
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.grey700,
+                        color: themeColor,
                       ),
                     ),
-                    pw.Divider(thickness: 1, color: PdfColors.grey300),
+                    pw.Divider(thickness: 1, color: themeColor),
                     pw.SizedBox(height: 4),
                     pw.Text(invoice.placeOfSupply),
                     if (invoice.reverseCharge == 'Y')
@@ -172,6 +182,7 @@ class MinimalTemplate extends BasePdfTemplate {
 
           // Items Table
           buildItemsTable(invoice),
+          if (showHsnSummary) buildHsnSummaryTable(invoice, font, fontBold),
           pw.SizedBox(height: 16),
 
           // Summary and Notes
@@ -254,74 +265,74 @@ class MinimalTemplate extends BasePdfTemplate {
               ),
             ],
           ),
-          pw.SizedBox(height: 24),
+          pw.SizedBox(height: 16),
           buildAmountInWords(invoice.grandTotal),
+          buildBankDetailsSection(
+            invoice,
+            profile,
+            headerColor: themeColor,
+            font: font,
+            fontBold: fontBold,
+          ),
+          pw.SizedBox(height: 16),
 
-          pw.SizedBox(height: 32),
-
-          // Footer (Bank + Sign)
+          // Footer (Terms, Payment QR, Sign)
           pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.end,
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
-              pw.Expanded(child: pw.SizedBox()),
               pw.Expanded(
-                child: pw.Container(
-                  padding: const pw.EdgeInsets.all(8),
-                  decoration: pw.BoxDecoration(
-                    border: pw.Border.all(color: PdfColors.grey300),
-                    borderRadius: const pw.BorderRadius.all(
-                      pw.Radius.circular(4),
-                    ),
-                  ),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    if (profile.termsAndConditions.isNotEmpty) ...[
                       pw.Text(
-                        "BANK DETAILS",
+                        "TERMS & CONDITIONS",
                         style: pw.TextStyle(
                           fontSize: 8,
                           fontWeight: pw.FontWeight.bold,
+                          color: themeColor,
                         ),
                       ),
+                      pw.SizedBox(height: 2),
+                      pw.Text(
+                        profile.termsAndConditions,
+                        style: const pw.TextStyle(fontSize: 7),
+                      ),
+                    ],
+                    if (invoice.comments.isNotEmpty) ...[
                       pw.SizedBox(height: 4),
                       pw.Text(
-                        "Bank: ${invoice.bankName}",
-                        style: const pw.TextStyle(fontSize: 8),
-                      ),
-                      pw.Text(
-                        "A/C: ${invoice.accountNo}",
-                        style: const pw.TextStyle(fontSize: 8),
-                      ),
-                      pw.Text(
-                        "IFSC: ${invoice.ifscCode}",
-                        style: const pw.TextStyle(fontSize: 8),
-                      ),
-                      pw.Text(
-                        "Branch: ${invoice.branch}",
-                        style: const pw.TextStyle(fontSize: 8),
-                      ),
-                      if (profile.upiId.isNotEmpty) ...[
-                        pw.SizedBox(height: 4),
-                        pw.Text(
-                          "UPI ID: ${profile.upiId}",
-                          style: pw.TextStyle(
-                            fontWeight: pw.FontWeight.bold,
-                            fontSize: 8,
-                          ),
+                        "NOTES",
+                        style: pw.TextStyle(
+                          fontSize: 8,
+                          fontWeight: pw.FontWeight.bold,
+                          color: themeColor,
                         ),
-                        pw.SizedBox(height: 4),
-                        pw.Center(
-                          child: buildPaymentQRCode(
+                      ),
+                      pw.SizedBox(height: 2),
+                      pw.Text(
+                        invoice.comments,
+                        style: const pw.TextStyle(fontSize: 7),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              pw.Expanded(
+                child: profile.upiId.isNotEmpty
+                    ? pw.Column(
+                        mainAxisAlignment: pw.MainAxisAlignment.end,
+                        children: [
+                          buildPaymentQRCode(
                             profile.upiId,
                             profile.companyName,
                             invoice.grandTotal,
+                            invoice.invoiceNo,
                           ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+                        ],
+                      )
+                    : pw.SizedBox(),
               ),
               pw.Expanded(
                 child: pw.Column(

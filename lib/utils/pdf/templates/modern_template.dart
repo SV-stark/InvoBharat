@@ -18,6 +18,7 @@ class ModernTemplate extends BasePdfTemplate {
     final pw.Font font,
     final pw.Font fontBold, {
     final String? title,
+    final bool showHsnSummary = true,
   }) async {
     final pdf = pw.Document();
 
@@ -69,14 +70,22 @@ class ModernTemplate extends BasePdfTemplate {
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
-                      pw.Text(
-                        title ?? "INVOICE",
-                        style: pw.TextStyle(
-                          fontSize: 20,
-                          fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.white,
-                        ),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.end,
+                        children: [
+                          buildStatusBadge(invoice, font: fontBold),
+                          pw.SizedBox(width: 8),
+                          pw.Text(
+                            title ?? "INVOICE",
+                            style: pw.TextStyle(
+                              fontSize: 20,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.white,
+                            ),
+                          ),
+                        ],
                       ),
+                      pw.SizedBox(height: 4),
                       pw.Text(
                         "No: ${invoice.invoiceNo}",
                         style: const pw.TextStyle(
@@ -200,6 +209,7 @@ class ModernTemplate extends BasePdfTemplate {
             ],
           ),
           buildOriginalInvoiceInfo(invoice),
+          buildEwayBillAndEinvoiceInfo(invoice, font, fontBold),
           pw.SizedBox(height: 32),
 
           // Items
@@ -212,6 +222,7 @@ class ModernTemplate extends BasePdfTemplate {
             ),
             headerDecoration: pw.BoxDecoration(color: themeColor),
           ),
+          if (showHsnSummary) buildHsnSummaryTable(invoice, font, fontBold),
           pw.SizedBox(height: 16),
 
           // Summary
@@ -301,67 +312,42 @@ class ModernTemplate extends BasePdfTemplate {
             ],
           ),
 
-          pw.SizedBox(height: 24),
+          pw.SizedBox(height: 16),
           buildAmountInWords(invoice.grandTotal),
+          buildBankDetailsSection(
+            invoice,
+            profile,
+            headerColor: themeColor,
+            font: font,
+            fontBold: fontBold,
+          ),
 
-          pw.SizedBox(height: 32),
+          pw.SizedBox(height: 16),
 
           // Footer
           pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.end,
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
-              pw.Expanded(child: pw.SizedBox()), // Empty left space
               pw.Expanded(
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text(
-                      "PAYMENT INFO",
-                      style: pw.TextStyle(
-                        fontSize: 10,
-                        fontWeight: pw.FontWeight.bold,
-                        color: themeColor,
-                      ),
-                    ),
-                    pw.SizedBox(height: 4),
-                    pw.Text(
-                      "Bank: ${invoice.bankName}",
-                      style: const pw.TextStyle(fontSize: 8),
-                    ),
-                    pw.Text(
-                      "A/C: ${invoice.accountNo}",
-                      style: const pw.TextStyle(fontSize: 8),
-                    ),
-                    pw.Text(
-                      "IFSC: ${invoice.ifscCode}",
-                      style: const pw.TextStyle(fontSize: 8),
-                    ),
-                    pw.Text(
-                      "Branch: ${invoice.branch}",
-                      style: const pw.TextStyle(fontSize: 8),
-                    ),
-                    if (profile.upiId.isNotEmpty) ...[
-                      pw.SizedBox(height: 8),
-                      pw.Text(
-                        "UPI ID: ${profile.upiId}",
-                        style: pw.TextStyle(
-                          fontSize: 8,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                      pw.SizedBox(height: 4),
-                      pw.Center(
-                        child: buildPaymentQRCode(
-                          profile.upiId,
-                          profile.companyName,
-                          invoice.grandTotal,
-                          invoice.invoiceNo,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+                child: (profile.termsAndConditions.isNotEmpty || invoice.comments.isNotEmpty)
+                    ? pw.SizedBox() // Already shown above in summary
+                    : pw.SizedBox(),
+              ),
+              pw.Expanded(
+                child: profile.upiId.isNotEmpty
+                    ? pw.Column(
+                        mainAxisAlignment: pw.MainAxisAlignment.end,
+                        children: [
+                          buildPaymentQRCode(
+                            profile.upiId,
+                            profile.companyName,
+                            invoice.grandTotal,
+                            invoice.invoiceNo,
+                          ),
+                        ],
+                      )
+                    : pw.SizedBox(),
               ),
               pw.Expanded(
                 child: pw.Column(

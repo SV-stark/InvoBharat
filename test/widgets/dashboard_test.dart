@@ -57,6 +57,21 @@ void main() {
     );
 
     when(() => mockInvoiceRepo.getAllInvoices()).thenAnswer((_) async => []);
+    when(() => mockInvoiceRepo.getAllEstimates()).thenAnswer((_) async => []);
+    when(() => mockInvoiceRepo.getAllRecurringProfiles()).thenAnswer((_) async => []);
+    when(
+      () => mockInvoiceRepo.checkInvoiceExists(
+        any(),
+        excludeId: any(named: 'excludeId'),
+        invoiceDate: any(named: 'invoiceDate'),
+      ),
+    ).thenAnswer((_) async => false);
+    when(
+      () => mockInvoiceRepo.getMaxSequenceForPrefix(
+        any(),
+        invoiceDate: any(named: 'invoiceDate'),
+      ),
+    ).thenAnswer((_) async => 0);
     when(
       () => mockProfileRepo.getAllProfiles(),
     ).thenAnswer((_) async => [testProfile]);

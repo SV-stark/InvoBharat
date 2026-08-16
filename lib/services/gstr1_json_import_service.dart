@@ -16,7 +16,6 @@ class Gstr1JsonImportService {
       final result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
-        allowMultiple: true,
       );
 
       if (result == null || result.files.isEmpty) {

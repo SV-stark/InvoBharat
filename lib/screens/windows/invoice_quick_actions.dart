@@ -9,6 +9,10 @@ class InvoiceQuickActions extends StatefulWidget {
   final Function(BuildContext, Invoice) onDuplicate; // New
   final Function(BuildContext, Invoice) onEmail; // New
   final Function(BuildContext, Invoice) onMarkSent; // New
+  final Function(BuildContext, Invoice) onExportEInvoiceJson;
+  final Function(BuildContext, Invoice)? onExportEWayBillJson;
+  final Function(BuildContext, Invoice)? onCreateCreditNote;
+  final Function(BuildContext, Invoice)? onCreateDebitNote;
 
   const InvoiceQuickActions({
     super.key,
@@ -19,6 +23,10 @@ class InvoiceQuickActions extends StatefulWidget {
     required this.onDuplicate, // New
     required this.onEmail, // New
     required this.onMarkSent, // New
+    required this.onExportEInvoiceJson,
+    this.onExportEWayBillJson,
+    this.onCreateCreditNote,
+    this.onCreateDebitNote,
   });
 
   @override
@@ -84,6 +92,24 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
                       widget.onDuplicate(context, widget.invoice);
                     },
                   ),
+                  if (widget.onCreateCreditNote != null)
+                    MenuFlyoutItem(
+                      text: const Text('Create Credit Note'),
+                      leading: const Icon(FluentIcons.calculator_subtract),
+                      onPressed: () {
+                        Flyout.of(flyoutContext).close();
+                        widget.onCreateCreditNote!(context, widget.invoice);
+                      },
+                    ),
+                  if (widget.onCreateDebitNote != null)
+                    MenuFlyoutItem(
+                      text: const Text('Create Debit Note'),
+                      leading: const Icon(FluentIcons.calculator_addition),
+                      onPressed: () {
+                        Flyout.of(flyoutContext).close();
+                        widget.onCreateDebitNote!(context, widget.invoice);
+                      },
+                    ),
                   MenuFlyoutItem(
                     text: const Text('Email'),
                     leading: const Icon(FluentIcons.mail),
@@ -92,6 +118,23 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
                       widget.onEmail(context, widget.invoice);
                     },
                   ),
+                  MenuFlyoutItem(
+                    text: const Text('Export E-Invoice JSON'),
+                    leading: const Icon(FluentIcons.download),
+                    onPressed: () {
+                      Flyout.of(flyoutContext).close();
+                      widget.onExportEInvoiceJson(context, widget.invoice);
+                    },
+                  ),
+                  if (widget.onExportEWayBillJson != null)
+                    MenuFlyoutItem(
+                      text: const Text('Export E-Way Bill JSON'),
+                      leading: const Icon(FluentIcons.car),
+                      onPressed: () {
+                        Flyout.of(flyoutContext).close();
+                        widget.onExportEWayBillJson!(context, widget.invoice);
+                      },
+                    ),
                   const MenuFlyoutSeparator(),
                   MenuFlyoutItem(
                     text: const Text('Delete'),

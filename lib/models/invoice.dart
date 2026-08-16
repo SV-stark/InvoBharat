@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:invobharat/models/payment_transaction.dart';
+import 'package:invobharat/utils/gst_utils.dart';
 import 'package:money2/money2.dart';
 
 part 'invoice.freezed.dart';
@@ -13,6 +14,7 @@ abstract class Invoice with _$Invoice {
 
   const factory Invoice({
     final String? id,
+    final String? profileId,
     @Default('Modern') final String style,
     required final Supplier supplier,
     required final Receiver receiver,
@@ -39,6 +41,9 @@ abstract class Invoice with _$Invoice {
     final String? poNumber,
     @Default('Draft') final String status,
     final DateTime? sentAt,
+    final String? ewayBillNo,
+    final String? vehicleNo,
+    final String? irnNo,
   }) = _Invoice;
 
   factory Invoice.fromJson(final Map<String, dynamic> json) =>
@@ -48,9 +53,24 @@ abstract class Invoice with _$Invoice {
       Currencies().find(currency) ?? CommonCurrencies().inr;
 
   bool get isInterState {
-    if (supplier.state.isEmpty || placeOfSupply.isEmpty) return false;
-    return supplier.state.trim().toLowerCase() !=
-        placeOfSupply.trim().toLowerCase();
+    // 1. Effective Place of Supply (POS)
+    final posInput = placeOfSupply.isNotEmpty ? placeOfSupply : receiver.state;
+    final posCode = GstUtils.getStateCodeFromInput(posInput) ??
+        (receiver.gstin.length >= 2 ? GstUtils.getStateCodeFromInput(receiver.gstin.substring(0, 2)) : null) ??
+        GstUtils.getStateCodeFromInput(receiver.stateCode);
+
+    // 2. Effective Supplier State
+    final suppInput = supplier.state;
+    final suppCode = GstUtils.getStateCodeFromInput(suppInput) ??
+        (supplier.gstin.length >= 2 ? GstUtils.getStateCodeFromInput(supplier.gstin.substring(0, 2)) : null);
+
+    if (suppCode != null && posCode != null) {
+      return suppCode != posCode;
+    }
+
+    // Fallback: compare raw trimmed strings
+    if (suppInput.isEmpty || posInput.isEmpty) return false;
+    return suppInput.trim().toLowerCase() != posInput.trim().toLowerCase();
   }
 
   double get totalTaxableValue =>
@@ -95,10 +115,21 @@ abstract class Invoice with _$Invoice {
         .toDouble();
   }
 
-  double get totalPaid =>
-      payments.fold(0, (final sum, final p) => sum + p.amount);
+  double get totalPaid {
+    final paid = payments.fold(
+      Money.fromNumWithCurrency(0, _currencyObj),
+      (final sum, final p) =>
+          sum + Money.fromNumWithCurrency(p.amount, _currencyObj),
+    );
+    return paid.toDouble();
+  }
 
-  double get balanceDue => grandTotal - totalPaid;
+  double get balanceDue {
+    final grand = Money.fromNumWithCurrency(grandTotal, _currencyObj);
+    final paid = Money.fromNumWithCurrency(totalPaid, _currencyObj);
+    final diff = grand - paid;
+    return diff.toDouble();
+  }
 
   String get paymentStatus {
     if (totalPaid >= grandTotal - 0.001) return 'Paid';

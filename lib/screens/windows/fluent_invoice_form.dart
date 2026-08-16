@@ -1,22 +1,24 @@
 import 'dart:async';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
-import 'package:printing/printing.dart';
-import 'package:pdf/pdf.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/invoice_provider.dart';
+import 'package:invobharat/providers/invoice_series_provider.dart';
 
 import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/client_provider.dart';
 
-import 'package:invobharat/utils/pdf_generator.dart';
 import 'package:invobharat/utils/constants.dart';
 import 'package:invobharat/utils/validators.dart';
 import 'package:invobharat/mixins/invoice_form_mixin.dart';
 import 'package:invobharat/widgets/adaptive_widgets.dart'; // NEW Import
+import 'package:invobharat/widgets/dialogs/invoice_pdf_preview_dialog.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:invobharat/services/hsn_service.dart';
 
 // Generates a unique ID
 
@@ -47,7 +49,10 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
         syncInvoiceControllers(ref.read(invoiceProvider));
       });
     } else {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        ref.read(invoiceProvider.notifier).reset();
+        final nextInvoiceNo = await generateNextInvoiceNumber();
+        ref.read(invoiceProvider.notifier).updateInvoiceNo(nextInvoiceNo);
         syncInvoiceControllers(ref.read(invoiceProvider));
       });
     }
@@ -69,7 +74,11 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
     return ScaffoldPage.scrollable(
       header: PageHeader(
         title: Text(
-          widget.invoiceToEdit != null ? "Edit Invoice" : "New Invoice",
+          invoice.type == InvoiceType.creditNote
+              ? "Credit Note (${invoice.invoiceNo.isNotEmpty ? invoice.invoiceNo : 'New'})"
+              : invoice.type == InvoiceType.debitNote
+                  ? "Debit Note (${invoice.invoiceNo.isNotEmpty ? invoice.invoiceNo : 'New'})"
+                  : (widget.invoiceToEdit != null ? "Edit Invoice" : "New Invoice"),
         ),
         leading: Navigator.canPop(context)
             ? Padding(
@@ -114,6 +123,20 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
         ),
       ),
       children: [
+        if (invoice.type == InvoiceType.creditNote ||
+            invoice.type == InvoiceType.debitNote ||
+            (invoice.originalInvoiceNumber != null && invoice.originalInvoiceNumber!.isNotEmpty))
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: InfoBar(
+              title: Text(invoice.type == InvoiceType.creditNote
+                  ? "Credit Note (CDNR / CDNUR)"
+                  : "Debit Note"),
+              content: Text(
+                "Linked to Original Invoice: ${invoice.originalInvoiceNumber ?? 'N/A'}${invoice.originalInvoiceDate != null ? ' dated ${DateFormat('dd MMM yyyy').format(invoice.originalInvoiceDate!)}' : ''}",
+              ),
+            ),
+          ),
         Expander(
           header: Text(
             "Invoice Details",
@@ -144,6 +167,32 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
               Row(
                 children: [
                   Expanded(
+                    flex: 2,
+                    child: InfoLabel(
+                      label: "Series Prefix",
+                      child: ComboBox<String>(
+                        value: ref.watch(invoiceSeriesProvider).any((final s) => invoice.invoiceNo.startsWith(s.prefix))
+                            ? ref.watch(invoiceSeriesProvider).firstWhere((final s) => invoice.invoiceNo.startsWith(s.prefix)).prefix
+                            : (ref.watch(invoiceSeriesProvider).isNotEmpty
+                                ? ref.watch(invoiceSeriesProvider).first.prefix
+                                : ""),
+                        items: ref.watch(invoiceSeriesProvider).map((final s) => ComboBoxItem(
+                          value: s.prefix,
+                          child: Text(s.prefix),
+                        )).toList(),
+                        onChanged: (final val) async {
+                          if (val != null) {
+                            final nextNo = await generateNextInvoiceNumber(seriesPrefix: val);
+                            invoiceNoCtrl.text = nextNo;
+                            ref.read(invoiceProvider.notifier).updateInvoiceNo(nextNo);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 3,
                     child: AppTextInput(
                       label: "Invoice No",
                       controller: invoiceNoCtrl,
@@ -171,6 +220,40 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                       onChanged: (final val) => ref
                           .read(invoiceProvider.notifier)
                           .updatePoNumber(val),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppTextInput(
+                      label: "E-Way Bill No",
+                      controller: ewayBillCtrl,
+                      onChanged: (final val) => ref
+                          .read(invoiceProvider.notifier)
+                          .updateEwayBillNo(val),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: AppTextInput(
+                      label: "Vehicle Number",
+                      controller: vehicleNoCtrl,
+                      onChanged: (final val) => ref
+                          .read(invoiceProvider.notifier)
+                          .updateVehicleNo(val),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: AppTextInput(
+                      label: "E-Invoice IRN",
+                      controller: irnNoCtrl,
+                      onChanged: (final val) => ref
+                          .read(invoiceProvider.notifier)
+                          .updateIrnNo(val),
                     ),
                   ),
                 ],
@@ -331,14 +414,56 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                       ],
                     ),
                     const SizedBox(height: 5),
-                    AppTextInput(
-                      label:
-                          "Receiver Name", // Label added conceptually, though UI might just show placeholder
-                      controller: receiverNameCtrl,
-                      placeholder: "Name",
-                      onChanged: (final val) => ref
-                          .read(invoiceProvider.notifier)
-                          .updateReceiverName(val),
+                    TypeAheadField<Client>(
+                      suggestionsCallback: (final pattern) {
+                        final clients = ref.read(clientListProvider);
+                        if (pattern.trim().isEmpty) return [];
+                        final q = pattern.toLowerCase();
+                        return clients
+                            .where((final c) =>
+                                c.name.toLowerCase().contains(q) ||
+                                c.gstin.toLowerCase().contains(q) ||
+                                c.phone.contains(q))
+                            .toList();
+                      },
+                      builder: (final context, final controller, final focusNode) {
+                        return AppTextInput(
+                          label: "Receiver Name",
+                          controller: receiverNameCtrl,
+                          focusNode: focusNode,
+                          placeholder: "Name (type to search clients)",
+                          onChanged: (final val) => ref
+                              .read(invoiceProvider.notifier)
+                              .updateReceiverName(val),
+                        );
+                      },
+                      itemBuilder: (final context, final client) {
+                        return Container(
+                          color: FluentTheme.of(context).cardColor,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                client.name,
+                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                              ),
+                              if (client.gstin.isNotEmpty)
+                                Text(
+                                  'GSTIN: ${client.gstin} • ${client.state}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: FluentTheme.of(context).accentColor,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        );
+                      },
+                      onSelected: (final client) {
+                        onClientSelected(client);
+                      },
                     ),
                     const SizedBox(height: 5),
                     AppTextInput(
@@ -423,13 +548,62 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                   Row(
                     children: [
                       Expanded(
-                        child: AppTextInput(
-                          label: "Description",
-                          initialValue: item.description,
-                          placeholder: "Description",
-                          onChanged: (final val) => ref
-                              .read(invoiceProvider.notifier)
-                              .updateItemDescription(index, val),
+                        child: TypeAheadField<HsnEntry>(
+                          suggestionsCallback: (final pattern) async {
+                            if (pattern.trim().length < 2) return [];
+                            return await HsnService.instance.search(pattern);
+                          },
+                          builder: (final context, final controller, final focusNode) {
+                            if (controller.text.isEmpty && item.description.isNotEmpty) {
+                              controller.text = item.description;
+                            }
+                            return AppTextInput(
+                              label: "Description",
+                              controller: controller,
+                              focusNode: focusNode,
+                              placeholder: "Description (search goods/services)",
+                              onChanged: (final val) => ref
+                                  .read(invoiceProvider.notifier)
+                                  .updateItemDescription(index, val),
+                            );
+                          },
+                          itemBuilder: (final context, final suggestion) {
+                            return Container(
+                              color: FluentTheme.of(context).cardColor,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    suggestion.description,
+                                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${suggestion.type} Code: ${suggestion.code}',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: FluentTheme.of(context).accentColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          onSelected: (final suggestion) {
+                            ref
+                                .read(invoiceProvider.notifier)
+                                .updateItemDescription(index, suggestion.description);
+                            ref
+                                .read(invoiceProvider.notifier)
+                                .updateItemSac(index, suggestion.code);
+                            ref
+                                .read(invoiceProvider.notifier)
+                                .updateItemCodeType(index, suggestion.type);
+                          },
                         ),
                       ),
                       IconButton(
@@ -489,13 +663,58 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                       ),
                       const SizedBox(width: 5),
                       Expanded(
-                        child: AppTextInput(
-                          label: "Code",
-                          placeholder: "Code",
-                          initialValue: item.sacCode,
-                          onChanged: (final val) => ref
-                              .read(invoiceProvider.notifier)
-                              .updateItemSac(index, val),
+                        child: TypeAheadField<HsnEntry>(
+                          suggestionsCallback: (final pattern) async {
+                            if (pattern.trim().isEmpty) return [];
+                            return await HsnService.instance.search(pattern);
+                          },
+                          builder: (final context, final controller, final focusNode) {
+                            if (controller.text.isEmpty && item.sacCode.isNotEmpty) {
+                              controller.text = item.sacCode;
+                            }
+                            return AppTextInput(
+                              label: "Code",
+                              placeholder: "Code",
+                              controller: controller,
+                              focusNode: focusNode,
+                              onChanged: (final val) => ref
+                                  .read(invoiceProvider.notifier)
+                                  .updateItemSac(index, val),
+                            );
+                          },
+                          itemBuilder: (final context, final suggestion) {
+                            return Container(
+                              color: FluentTheme.of(context).cardColor,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    '${suggestion.code} (${suggestion.type})',
+                                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                  ),
+                                  Text(
+                                    suggestion.description,
+                                    style: const TextStyle(fontSize: 11),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          onSelected: (final suggestion) {
+                            ref
+                                .read(invoiceProvider.notifier)
+                                .updateItemSac(index, suggestion.code);
+                            ref
+                                .read(invoiceProvider.notifier)
+                                .updateItemDescription(index, suggestion.description);
+                            ref
+                                .read(invoiceProvider.notifier)
+                                .updateItemCodeType(index, suggestion.type);
+                          },
                         ),
                       ),
                       const SizedBox(width: 5),
@@ -555,6 +774,8 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
         context: context,
       );
 
+      ref.read(invoiceProvider.notifier).reset();
+
       if (context.mounted) {
         unawaited(
           displayInfoBar(
@@ -595,31 +816,10 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
     final Invoice invoice,
     final BusinessProfile profile,
   ) {
-    Navigator.push(
+    InvoicePdfPreviewDialog.show(
       context,
-      FluentPageRoute(
-        builder: (final context) => ScaffoldPage(
-          header: PageHeader(
-            title: const Text("Invoice Preview"),
-            leading: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: IconButton(
-                icon: const Icon(FluentIcons.back),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-          ),
-          content: PdfPreview(
-            build: (final format) => generateInvoicePdf(invoice, profile),
-            canChangePageFormat: false,
-            initialPageFormat: PdfPageFormat.a4,
-            pdfPreviewPageDecoration: BoxDecoration(
-              color: FluentTheme.of(context).cardColor,
-              boxShadow: const [BoxShadow(blurRadius: 4)],
-            ),
-          ),
-        ),
-      ),
+      invoice: invoice,
+      profile: profile,
     );
   }
 
