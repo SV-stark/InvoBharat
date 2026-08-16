@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:money2/money2.dart';
 import 'package:uuid/uuid.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/utils/gst_utils.dart';
@@ -38,6 +39,8 @@ abstract class Estimate with _$Estimate {
     );
   }
 
+  Currency get _currencyObj => CommonCurrencies().inr;
+
   bool get isInterState {
     final posInput = receiver.state;
     final posCode = GstUtils.getStateCodeFromInput(posInput) ??
@@ -59,20 +62,40 @@ abstract class Estimate with _$Estimate {
   double get totalTaxableValue =>
       items.fold(0, (final sum, final item) => sum + item.netAmount);
 
-  double get totalCGST => isInterState
-      ? 0
-      : items.fold(0, (final sum, final item) => sum + item.cgstAmount);
+  double get totalCGST {
+    if (isInterState) return 0;
+    final total = items.fold(
+      Money.fromNumWithCurrency(0, _currencyObj),
+      (final sum, final item) => sum + item.cgstMoney,
+    );
+    return total.toDouble();
+  }
 
-  double get totalSGST => isInterState
-      ? 0
-      : items.fold(0, (final sum, final item) => sum + item.sgstAmount);
+  double get totalSGST {
+    if (isInterState) return 0;
+    final total = items.fold(
+      Money.fromNumWithCurrency(0, _currencyObj),
+      (final sum, final item) => sum + item.sgstMoney,
+    );
+    return total.toDouble();
+  }
 
-  double get totalIGST => isInterState
-      ? items.fold(0, (final sum, final item) => sum + item.igstAmount)
-      : 0;
+  double get totalIGST {
+    if (!isInterState) return 0;
+    final total = items.fold(
+      Money.fromNumWithCurrency(0, _currencyObj),
+      (final sum, final item) => sum + item.igstMoney,
+    );
+    return total.toDouble();
+  }
 
-  double get totalAmount =>
-      totalTaxableValue + totalCGST + totalSGST + totalIGST;
+  double get totalAmount {
+    final taxable = Money.fromNumWithCurrency(totalTaxableValue, _currencyObj);
+    final cgst = Money.fromNumWithCurrency(totalCGST, _currencyObj);
+    final sgst = Money.fromNumWithCurrency(totalSGST, _currencyObj);
+    final igst = Money.fromNumWithCurrency(totalIGST, _currencyObj);
+    return (taxable + cgst + sgst + igst).toDouble();
+  }
 
   factory Estimate.fromJson(final Map<String, dynamic> json) =>
       _$EstimateFromJson(json);

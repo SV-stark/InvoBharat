@@ -3,6 +3,10 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:invobharat/models/client.dart';
+import 'package:invobharat/providers/client_provider.dart';
+import 'package:invobharat/services/hsn_service.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/utils/constants.dart';
 import 'package:invobharat/utils/validators.dart';
@@ -190,9 +194,66 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                 Row(
                   children: [
                     Expanded(
-                      child: AppTextInput(
-                        label: "Client Name",
-                        controller: receiverNameCtrl,
+                      child: TypeAheadField<Client>(
+                        suggestionsCallback: (final pattern) {
+                          final clients = ref.read(clientListProvider);
+                          if (pattern.trim().isEmpty) return [];
+                          final q = pattern.toLowerCase();
+                          return clients
+                              .where((final c) =>
+                                  c.name.toLowerCase().contains(q) ||
+                                  c.gstin.toLowerCase().contains(q) ||
+                                  c.phone.contains(q))
+                              .toList();
+                        },
+                        builder: (final context, final controller, final focusNode) {
+                          return AppTextInput(
+                            label: "Client Name",
+                            controller: receiverNameCtrl,
+                            focusNode: focusNode,
+                            placeholder: "Name (type to search clients)",
+                          );
+                        },
+                        itemBuilder: (final context, final client) {
+                          return Container(
+                            color: FluentTheme.of(context).cardColor,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  client.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                if (client.gstin.isNotEmpty)
+                                  Text(
+                                    "GSTIN: ${client.gstin}",
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: FluentTheme.of(context)
+                                          .typography
+                                          .caption
+                                          ?.color,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
+                        onSelected: (final client) {
+                          receiverNameCtrl.text = client.name;
+                          receiverAddressCtrl.text = client.address;
+                          receiverGstinCtrl.text = client.gstin;
+                          receiverStateCtrl.text = client.state;
+                          setState(() {});
+                        },
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -454,7 +515,56 @@ class _FluentItemEditDialogState extends State<_FluentItemEditDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppTextInput(label: "Description", controller: _descCtrl),
+          TypeAheadField<HsnEntry>(
+            suggestionsCallback: (final pattern) async {
+              if (pattern.trim().length < 2) return [];
+              return await HsnService.instance.search(pattern);
+            },
+            builder: (final context, final controller, final focusNode) {
+              return AppTextInput(
+                label: "Description",
+                controller: _descCtrl,
+                focusNode: focusNode,
+                placeholder: "Description (search goods/services/HSN)",
+              );
+            },
+            itemBuilder: (final context, final suggestion) {
+              return Container(
+                color: FluentTheme.of(context).cardColor,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      suggestion.description,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                    Text(
+                      "${suggestion.type}: ${suggestion.code}",
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: FluentTheme.of(context)
+                            .typography
+                            .caption
+                            ?.color,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+            onSelected: (final suggestion) {
+              _descCtrl.text = suggestion.description;
+              setState(() {});
+            },
+          ),
           const SizedBox(height: 8),
           Row(
             children: [

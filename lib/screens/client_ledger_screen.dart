@@ -8,6 +8,7 @@ import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/utils/client_statement_generator.dart';
 import 'package:printing/printing.dart';
+import 'package:data_table_2/data_table_2.dart';
 import 'package:invobharat/utils/formatters.dart';
 
 class ClientLedgerScreen extends ConsumerStatefulWidget {
@@ -183,70 +184,70 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
                 ),
                 const SizedBox(height: 24),
                 Expanded(
-                  child: SingleChildScrollView(
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: material.DataTable(
-                        columns: const [
-                          material.DataColumn(label: Text('Date')),
-                          material.DataColumn(label: Text('Particulars')),
-                          material.DataColumn(label: Text('Type')),
-                          material.DataColumn(label: Text('Debit (+)')),
-                          material.DataColumn(label: Text('Credit (-)')),
-                          material.DataColumn(label: Text('Balance')),
-                        ],
-                        rows: entries.map((final e) {
-                          return material.DataRow(
-                            cells: [
-                              material.DataCell(
-                                Text(DateFormat('dd-MM-yyyy').format(e.date)),
+                  child: Card(
+                    child: DataTable2(
+                      minWidth: 700,
+                      columnSpacing: 16,
+                      horizontalMargin: 12,
+                      columns: const [
+                        DataColumn2(label: Text('Date'), size: ColumnSize.S),
+                        DataColumn2(label: Text('Particulars'), size: ColumnSize.L),
+                        DataColumn2(label: Text('Type'), size: ColumnSize.S),
+                        DataColumn2(label: Text('Debit (+)'), numeric: true),
+                        DataColumn2(label: Text('Credit (-)'), numeric: true),
+                        DataColumn2(label: Text('Balance'), numeric: true),
+                      ],
+                      rows: entries.map((final e) {
+                        return material.DataRow(
+                          cells: [
+                            material.DataCell(
+                              Text(DateFormat('dd-MM-yyyy').format(e.date)),
+                            ),
+                            material.DataCell(Text(e.particulars)),
+                            material.DataCell(Text(e.type)),
+                            material.DataCell(
+                              Text(
+                                e.debit > 0
+                                    ? e.debit.toIndianFormat(
+                                        includeSymbol: true,
+                                        symbol: ref
+                                            .read(businessProfileProvider)
+                                            .currency,
+                                      )
+                                    : "-",
                               ),
-                              material.DataCell(Text(e.particulars)),
-                              material.DataCell(Text(e.type)),
-                              material.DataCell(
-                                Text(
-                                  e.debit > 0
-                                      ? e.debit.toIndianFormat(
-                                          includeSymbol: true,
-                                          symbol: ref
-                                              .read(businessProfileProvider)
-                                              .currency,
-                                        )
-                                      : "",
+                            ),
+                            material.DataCell(
+                              Text(
+                                e.credit > 0
+                                    ? e.credit.toIndianFormat(
+                                        includeSymbol: true,
+                                        symbol: ref
+                                            .read(businessProfileProvider)
+                                            .currency,
+                                      )
+                                    : "-",
+                              ),
+                            ),
+                            material.DataCell(
+                              Text(
+                                e.balance.toIndianFormat(
+                                  includeSymbol: true,
+                                  symbol: ref
+                                      .read(businessProfileProvider)
+                                      .currency,
+                                ),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: e.balance > 0
+                                      ? Colors.red
+                                      : Colors.green,
                                 ),
                               ),
-                              material.DataCell(
-                                Text(
-                                  e.credit > 0
-                                      ? e.credit.toIndianFormat(
-                                          includeSymbol: true,
-                                          symbol: ref
-                                              .read(businessProfileProvider)
-                                              .currency,
-                                        )
-                                      : "",
-                                ),
-                              ),
-                              material.DataCell(
-                                Text(
-                                  e.balance.toIndianFormat(
-                                    includeSymbol: true,
-                                    symbol: ref
-                                        .read(businessProfileProvider)
-                                        .currency,
-                                  ),
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: e.balance > 0
-                                        ? Colors.red
-                                        : Colors.green,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        }).toList(),
-                      ),
+                            ),
+                          ],
+                        );
+                      }).toList(),
                     ),
                   ),
                 ),

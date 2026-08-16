@@ -115,10 +115,21 @@ abstract class Invoice with _$Invoice {
         .toDouble();
   }
 
-  double get totalPaid =>
-      payments.fold(0, (final sum, final p) => sum + p.amount);
+  double get totalPaid {
+    final paid = payments.fold(
+      Money.fromNumWithCurrency(0, _currencyObj),
+      (final sum, final p) =>
+          sum + Money.fromNumWithCurrency(p.amount, _currencyObj),
+    );
+    return paid.toDouble();
+  }
 
-  double get balanceDue => grandTotal - totalPaid;
+  double get balanceDue {
+    final grand = Money.fromNumWithCurrency(grandTotal, _currencyObj);
+    final paid = Money.fromNumWithCurrency(totalPaid, _currencyObj);
+    final diff = grand - paid;
+    return diff.toDouble();
+  }
 
   String get paymentStatus {
     if (totalPaid >= grandTotal - 0.001) return 'Paid';
