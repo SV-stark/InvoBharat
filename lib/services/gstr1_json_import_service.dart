@@ -18,7 +18,7 @@ class Gstr1JsonImportService {
         allowedExtensions: ['json'],
       );
 
-      if (result == null || result.files.isEmpty) {
+      if (result.isEmpty) {
         return GstrImportResult(0, 0, "No files selected");
       }
 
@@ -26,7 +26,7 @@ class Gstr1JsonImportService {
       int totalErrors = 0;
       final List<String> messages = [];
 
-      for (final filePickerFile in result.files) {
+      for (final filePickerFile in result) {
         if (filePickerFile.path == null) continue;
         final file = File(filePickerFile.path!);
         final content = await file.readAsString();
@@ -41,7 +41,7 @@ class Gstr1JsonImportService {
       return GstrImportResult(
         totalSuccess,
         totalErrors,
-        "Imported $totalSuccess invoices from ${result.files.length} files.",
+        "Imported $totalSuccess invoices from ${result.length} files.",
       );
     } catch (e) {
       debugPrint("GSTR-1 JSON Import Error: $e");

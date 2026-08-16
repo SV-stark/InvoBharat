@@ -148,7 +148,7 @@ class CorporateTemplate extends BasePdfTemplate {
                             pw.SizedBox(height: 5),
                             pw.Text(
                               profile.companyName,
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                                 fontWeight: pw.FontWeight.bold,
                               ),
                             ),
@@ -183,7 +183,7 @@ class CorporateTemplate extends BasePdfTemplate {
                             pw.SizedBox(height: 5),
                             pw.Text(
                               invoice.receiver.name,
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                                 fontWeight: pw.FontWeight.bold,
                               ),
                             ),
@@ -225,7 +225,7 @@ class CorporateTemplate extends BasePdfTemplate {
                           if (invoice.reverseCharge == 'Y')
                             pw.Text(
                               "Reverse Charge: YES",
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                                 fontSize: 9,
                                 fontWeight: pw.FontWeight.bold,
                               ),
@@ -244,7 +244,7 @@ class CorporateTemplate extends BasePdfTemplate {
                     headerDecoration: const pw.BoxDecoration(
                       color: PdfColors.grey200,
                     ),
-                    headerStyle: pw.TextStyle(
+                    headerStyle: const pw.TextStyle(
                       fontWeight: pw.FontWeight.bold,
                       fontSize: 9,
                     ),
@@ -437,7 +437,7 @@ class CorporateTemplate extends BasePdfTemplate {
                             pw.SizedBox(height: 4),
                             pw.Text(
                               "For ${profile.companyName}",
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                                 fontSize: 10,
                                 fontWeight: pw.FontWeight.bold,
                               ),

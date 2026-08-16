@@ -47,14 +47,15 @@ class DefaultFilePickerWrapper implements FilePickerWrapper {
     final List<String>? allowedExtensions,
     final FileType type = FileType.any,
     required final Uint8List bytes,
-  }) {
-    return FilePicker.saveFile(
+  }) async {
+    final uri = await FilePicker.saveFile(
       dialogTitle: dialogTitle,
       fileName: fileName ?? '',
       allowedExtensions: allowedExtensions,
       type: type,
       bytes: bytes,
     );
+    return uri?.toFilePath();
   }
 
   @override

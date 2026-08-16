@@ -149,7 +149,7 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
           ),
       headerStyle:
           headerStyle ??
-          pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+          const pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
       cellStyle: cellStyle ?? const pw.TextStyle(fontSize: 8),
       headerDecoration: headerDecoration ?? const pw.BoxDecoration(color: PdfColors.grey100),
       oddRowDecoration: oddRowDecoration ?? pw.BoxDecoration(color: PdfColor.fromHex('#FAFAFA')),
@@ -237,12 +237,12 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
         children: [
           pw.Text(
             "Amount in words: ",
-            style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
+            style: const pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
           ),
           pw.Expanded(
             child: pw.Text(
               amount.toChequeFormat(),
-              style: pw.TextStyle(fontSize: 9, fontStyle: pw.FontStyle.italic),
+              style: const pw.TextStyle(fontSize: 9, fontStyle: pw.FontStyle.italic),
             ),
           ),
         ],
@@ -375,7 +375,7 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
         children: [
           pw.Text(
             "Original Invoice Reference",
-            style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
+            style: const pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
           ),
           pw.Row(
             children: [

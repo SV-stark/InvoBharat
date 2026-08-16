@@ -56,7 +56,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                       pw.SizedBox(height: 4),
                       pw.Text(
                         profile.companyName,
-                        style: pw.TextStyle(
+                        style: const pw.TextStyle(
                           fontSize: 14,
                           fontWeight: pw.FontWeight.bold,
                         ),
@@ -64,7 +64,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                     ] else
                       pw.Text(
                         profile.companyName,
-                        style: pw.TextStyle(
+                        style: const pw.TextStyle(
                           fontSize: 22,
                           fontWeight: pw.FontWeight.bold,
                         ),
@@ -115,7 +115,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                       "Invoice No",
                       invoice.invoiceNo,
                       const pw.TextStyle(fontSize: 10),
-                      pw.TextStyle(
+                      const pw.TextStyle(
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
                       ),
@@ -131,7 +131,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                         "Due Date",
                         DateFormat('dd MMM yyyy').format(invoice.dueDate!),
                         const pw.TextStyle(fontSize: 10),
-                        pw.TextStyle(
+                        const pw.TextStyle(
                           fontSize: 10,
                           fontWeight: pw.FontWeight.bold,
                           color: PdfColors.red700,
@@ -184,7 +184,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                     pw.SizedBox(height: 8),
                     pw.Text(
                       invoice.receiver.name,
-                      style: pw.TextStyle(
+                      style: const pw.TextStyle(
                         fontSize: 11,
                         fontWeight: pw.FontWeight.bold,
                       ),
@@ -281,7 +281,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
           buildItemsTable(
             invoice,
             headerDecoration: pw.BoxDecoration(color: themeColor),
-            headerStyle: pw.TextStyle(
+            headerStyle: const pw.TextStyle(
               color: PdfColors.white,
               fontWeight: pw.FontWeight.bold,
               fontSize: 9,
@@ -411,7 +411,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                     pw.SizedBox(height: 4),
                     pw.Text(
                       "For ${profile.companyName}",
-                      style: pw.TextStyle(
+                      style: const pw.TextStyle(
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
                       ),

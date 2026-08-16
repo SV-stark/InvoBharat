@@ -58,7 +58,7 @@ class ClassicTemplate extends BasePdfTemplate {
                     children: [
                       pw.Text(
                         profile.companyName.toUpperCase(),
-                        style: pw.TextStyle(
+                        style: const pw.TextStyle(
                           fontSize: 20,
                           fontWeight: pw.FontWeight.bold,
                         ),
@@ -100,7 +100,7 @@ class ClassicTemplate extends BasePdfTemplate {
                 pw.SizedBox(width: 8),
                 pw.Text(
                   supplyType,
-                  style: pw.TextStyle(
+                  style: const pw.TextStyle(
                     fontSize: 16,
                     fontWeight: pw.FontWeight.bold,
                     decoration: pw.TextDecoration.underline,
@@ -122,20 +122,20 @@ class ClassicTemplate extends BasePdfTemplate {
                       buildField(
                         "Invoice No",
                         invoice.invoiceNo,
-                        pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        const pw.TextStyle(fontWeight: pw.FontWeight.bold),
                         const pw.TextStyle(),
                       ),
                       buildField(
                         "Date",
                         DateFormat('dd-MM-yyyy').format(invoice.invoiceDate),
-                        pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        const pw.TextStyle(fontWeight: pw.FontWeight.bold),
                         const pw.TextStyle(),
                       ),
                       if (invoice.dueDate != null)
                         buildField(
                           "Due Date",
                           DateFormat('dd-MM-yyyy').format(invoice.dueDate!),
-                          pw.TextStyle(
+                          const pw.TextStyle(
                             fontWeight: pw.FontWeight.bold,
                             color: PdfColors.red,
                           ),
@@ -144,13 +144,13 @@ class ClassicTemplate extends BasePdfTemplate {
                       buildField(
                         "Place of Supply",
                         invoice.placeOfSupply,
-                        pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        const pw.TextStyle(fontWeight: pw.FontWeight.bold),
                         const pw.TextStyle(),
                       ),
                       buildField(
                         "Reverse Charge",
                         invoice.reverseCharge,
-                        pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        const pw.TextStyle(fontWeight: pw.FontWeight.bold),
                         const pw.TextStyle(),
                       ),
                     ],
@@ -163,7 +163,7 @@ class ClassicTemplate extends BasePdfTemplate {
                     children: [
                       pw.Text(
                         "Bill To:",
-                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        style: const pw.TextStyle(fontWeight: pw.FontWeight.bold),
                       ),
                       pw.Text(invoice.receiver.name),
                       pw.Text(
@@ -192,7 +192,7 @@ class ClassicTemplate extends BasePdfTemplate {
             // Items Table
             buildItemsTable(
               invoice,
-              headerStyle: pw.TextStyle(
+              headerStyle: const pw.TextStyle(
                 fontSize: 9,
                 fontWeight: pw.FontWeight.bold,
               ),
@@ -276,7 +276,7 @@ class ClassicTemplate extends BasePdfTemplate {
                       if (profile.termsAndConditions.isNotEmpty) ...[
                         pw.Text(
                           "Terms and Conditions:",
-                          style: pw.TextStyle(
+                          style: const pw.TextStyle(
                             fontWeight: pw.FontWeight.bold,
                             fontSize: 9,
                           ),
@@ -290,7 +290,7 @@ class ClassicTemplate extends BasePdfTemplate {
                         pw.SizedBox(height: 8),
                         pw.Text(
                           "Notes:",
-                          style: pw.TextStyle(
+                          style: const pw.TextStyle(
                             fontWeight: pw.FontWeight.bold,
                             fontSize: 9,
                           ),
@@ -367,7 +367,7 @@ class ClassicTemplate extends BasePdfTemplate {
                       pw.SizedBox(height: 4),
                       pw.Text(
                         "For ${profile.companyName}",
-                        style: pw.TextStyle(
+                        style: const pw.TextStyle(
                           fontSize: 9,
                           fontWeight: pw.FontWeight.bold,
                         ),

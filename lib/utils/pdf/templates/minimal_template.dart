@@ -49,7 +49,7 @@ class MinimalTemplate extends BasePdfTemplate {
                     else
                       pw.Text(
                         profile.companyName,
-                        style: pw.TextStyle(
+                        style: const pw.TextStyle(
                           fontSize: 24,
                           fontWeight: pw.FontWeight.bold,
                         ),
@@ -91,7 +91,7 @@ class MinimalTemplate extends BasePdfTemplate {
                       "No",
                       invoice.invoiceNo,
                       const pw.TextStyle(fontSize: 10),
-                      pw.TextStyle(
+                      const pw.TextStyle(
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
                       ),
@@ -107,7 +107,7 @@ class MinimalTemplate extends BasePdfTemplate {
                         "Due Date",
                         DateFormat('dd MMM yyyy').format(invoice.dueDate!),
                         const pw.TextStyle(fontSize: 10),
-                        pw.TextStyle(
+                        const pw.TextStyle(
                           fontSize: 10,
                           fontWeight: pw.FontWeight.bold,
                           color: PdfColors.red700,
@@ -142,7 +142,7 @@ class MinimalTemplate extends BasePdfTemplate {
                     pw.SizedBox(height: 4),
                     pw.Text(
                       invoice.receiver.name,
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                      style: const pw.TextStyle(fontWeight: pw.FontWeight.bold),
                     ),
                     pw.Text(invoice.receiver.address),
                     if (invoice.receiver.gstin.isNotEmpty)
@@ -171,7 +171,7 @@ class MinimalTemplate extends BasePdfTemplate {
                     if (invoice.reverseCharge == 'Y')
                       pw.Text(
                         "Reverse Charge: YES",
-                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        style: const pw.TextStyle(fontWeight: pw.FontWeight.bold),
                       ),
                   ],
                 ),
@@ -197,7 +197,7 @@ class MinimalTemplate extends BasePdfTemplate {
                     if (invoice.comments.isNotEmpty) ...[
                       pw.Text(
                         "Notes",
-                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        style: const pw.TextStyle(fontWeight: pw.FontWeight.bold),
                       ),
                       pw.SizedBox(height: 4),
                       pw.Text(
@@ -209,7 +209,7 @@ class MinimalTemplate extends BasePdfTemplate {
                     if (invoice.paymentTerms.isNotEmpty) ...[
                       pw.Text(
                         "Terms",
-                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        style: const pw.TextStyle(fontWeight: pw.FontWeight.bold),
                       ),
                       pw.SizedBox(height: 4),
                       pw.Text(
@@ -379,7 +379,7 @@ class MinimalTemplate extends BasePdfTemplate {
                     pw.SizedBox(height: 4),
                     pw.Text(
                       "For ${profile.companyName}",
-                      style: pw.TextStyle(
+                      style: const pw.TextStyle(
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
                       ),

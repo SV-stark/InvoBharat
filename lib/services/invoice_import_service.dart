@@ -130,7 +130,8 @@ class InvoiceImportService {
       );
 
       if (result != null) {
-        final file = File(result.endsWith('.csv') ? result : '$result.csv');
+        final path = result.toFilePath();
+        final file = File(path.endsWith('.csv') ? path : '$path.csv');
         await file.writeAsString(csvString);
       }
     } catch (e) {

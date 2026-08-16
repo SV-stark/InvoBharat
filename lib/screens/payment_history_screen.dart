@@ -72,7 +72,7 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
 
     final csvData = rows.map((final e) => e.join(',')).join('\n');
     try {
-      String? outputFile = await FilePicker.saveFile(
+      final saveUri = await FilePicker.saveFile(
         dialogTitle: 'Save Payment History CSV',
         fileName:
             'Payment_History_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv',
@@ -80,6 +80,7 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
         type: FileType.custom,
         bytes: Uint8List.fromList(utf8.encode(csvData)),
       );
+      String? outputFile = saveUri?.toFilePath();
 
       if (outputFile != null) {
         if (!outputFile.toLowerCase().endsWith('.csv')) {

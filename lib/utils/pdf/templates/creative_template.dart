@@ -168,7 +168,7 @@ class CreativeTemplate extends BasePdfTemplate {
                                 children: [
                                   pw.Text(
                                     "# ${invoice.invoiceNo}",
-                                    style: pw.TextStyle(
+                                    style: const pw.TextStyle(
                                       fontWeight: pw.FontWeight.bold,
                                       fontSize: 12,
                                     ),
@@ -185,7 +185,7 @@ class CreativeTemplate extends BasePdfTemplate {
                                   if (invoice.dueDate != null)
                                     pw.Text(
                                       "Due: ${DateFormat('MMM dd, yyyy').format(invoice.dueDate!)}",
-                                      style: pw.TextStyle(
+                                      style: const pw.TextStyle(
                                         fontSize: 10,
                                         color: PdfColors.red,
                                         fontWeight: pw.FontWeight.bold,
@@ -216,7 +216,7 @@ class CreativeTemplate extends BasePdfTemplate {
                                     ),
                                     pw.Text(
                                       invoice.receiver.name,
-                                      style: pw.TextStyle(
+                                      style: const pw.TextStyle(
                                         fontWeight: pw.FontWeight.bold,
                                         fontSize: 14,
                                       ),
@@ -250,7 +250,7 @@ class CreativeTemplate extends BasePdfTemplate {
                                   if (invoice.reverseCharge == 'Y')
                                     pw.Text(
                                       "Reverse Charge: YES",
-                                      style: pw.TextStyle(
+                                      style: const pw.TextStyle(
                                         fontSize: 10,
                                         fontWeight: pw.FontWeight.bold,
                                       ),
@@ -463,7 +463,7 @@ class CreativeTemplate extends BasePdfTemplate {
                                     pw.SizedBox(height: 4),
                                     pw.Text(
                                       "Authorized Signature",
-                                      style: pw.TextStyle(
+                                      style: const pw.TextStyle(
                                         fontSize: 10,
                                         fontStyle: pw.FontStyle.italic,
                                         color: PdfColors.grey600,

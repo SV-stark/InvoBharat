@@ -790,13 +790,14 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         filteredInvoices,
       );
 
-      String? outputFile = await FilePicker.saveFile(
+      final saveUri = await FilePicker.saveFile(
         dialogTitle: 'Save GSTR-1 CSV',
         fileName: 'GSTR1_${_selectedPeriod.replaceAll(" ", "_")}.csv',
         allowedExtensions: ['csv'],
         type: FileType.custom,
         bytes: Uint8List.fromList(utf8.encode(csvData)),
       );
+      String? outputFile = saveUri?.toFilePath();
 
       if (outputFile != null) {
         if (!outputFile.toLowerCase().endsWith('.csv')) {

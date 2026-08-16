@@ -63,6 +63,7 @@ dev_dependencies:
   plugin_platform_interface: any
   riverpod_generator: ^4.0.3
 
+  windows_file_picker: any
 dependency_overrides:
   xml: ^7.0.1
   intl: ^0.20.3

@@ -571,13 +571,14 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
     try {
       if (_gstTab == 0) {
         final csvData = await GstrService().generateGstr1CsvAsync(invoices);
-        String? outputFile = await FilePicker.saveFile(
+        final saveUri = await FilePicker.saveFile(
           dialogTitle: 'Save GSTR-1 CSV',
           fileName: 'GSTR1_$_selectedMonth.csv',
           allowedExtensions: ['csv'],
           type: FileType.custom,
           bytes: Uint8List.fromList(utf8.encode(csvData)),
         );
+        String? outputFile = saveUri?.toFilePath();
         if (outputFile != null) {
           if (!outputFile.toLowerCase().endsWith('.csv')) outputFile = '$outputFile.csv';
           await File(outputFile).writeAsString(csvData);
@@ -597,13 +598,14 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
         }
       } else {
         final csvData = await Gstr3bService().generateGstr3bCsvAsync(invoices);
-        String? outputFile = await FilePicker.saveFile(
+        final saveUri = await FilePicker.saveFile(
           dialogTitle: 'Save GSTR-3B CSV',
           fileName: 'GSTR3B_$_selectedMonth.csv',
           allowedExtensions: ['csv'],
           type: FileType.custom,
           bytes: Uint8List.fromList(utf8.encode(csvData)),
         );
+        String? outputFile = saveUri?.toFilePath();
         if (outputFile != null) {
           if (!outputFile.toLowerCase().endsWith('.csv')) outputFile = '$outputFile.csv';
           await File(outputFile).writeAsString(csvData);

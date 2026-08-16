@@ -565,13 +565,14 @@ class _DashboardQuickActions extends ConsumerWidget {
       final csvData = await GstrService().generateGstr1CsvAsync(
         filteredInvoices,
       );
-      String? outputFile = await FilePicker.saveFile(
+      final saveUri = await FilePicker.saveFile(
         dialogTitle: 'Save GSTR-1 CSV',
         fileName: 'GSTR1_${selectedFilter.replaceAll(" ", "_")}.csv',
         allowedExtensions: ['csv'],
         type: FileType.custom,
         bytes: Uint8List.fromList(utf8.encode(csvData)),
       );
+      String? outputFile = saveUri?.toFilePath();
 
       if (outputFile != null) {
         if (!outputFile.toLowerCase().endsWith('.csv')) {
@@ -685,13 +686,14 @@ class _DashboardQuickActions extends ConsumerWidget {
       final csvData = await Gstr3bService().generateGstr3bCsvAsync(
         filteredInvoices,
       );
-      String? outputFile = await FilePicker.saveFile(
+      final saveUri = await FilePicker.saveFile(
         dialogTitle: 'Save GSTR-3B CSV',
         fileName: 'GSTR3B_${selectedFilter.replaceAll(" ", "_")}.csv',
         allowedExtensions: ['csv'],
         type: FileType.custom,
         bytes: Uint8List.fromList(utf8.encode(csvData)),
       );
+      String? outputFile = saveUri?.toFilePath();
 
       if (outputFile != null) {
         if (!outputFile.toLowerCase().endsWith('.csv')) {

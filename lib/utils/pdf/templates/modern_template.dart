@@ -56,7 +56,7 @@ class ModernTemplate extends BasePdfTemplate {
                       else
                         pw.Text(
                           profile.companyName,
-                          style: pw.TextStyle(
+                          style: const pw.TextStyle(
                             fontSize: 20,
                             fontWeight: pw.FontWeight.bold,
                             color: PdfColors.white,
@@ -77,7 +77,7 @@ class ModernTemplate extends BasePdfTemplate {
                           pw.SizedBox(width: 8),
                           pw.Text(
                             title ?? "INVOICE",
-                            style: pw.TextStyle(
+                            style: const pw.TextStyle(
                               fontSize: 20,
                               fontWeight: pw.FontWeight.bold,
                               color: PdfColors.white,
@@ -120,7 +120,7 @@ class ModernTemplate extends BasePdfTemplate {
                     pw.SizedBox(height: 4),
                     pw.Text(
                       profile.companyName,
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                      style: const pw.TextStyle(fontWeight: pw.FontWeight.bold),
                     ),
                     pw.Text(
                       profile.address,
@@ -152,7 +152,7 @@ class ModernTemplate extends BasePdfTemplate {
                     pw.SizedBox(height: 4),
                     pw.Text(
                       invoice.receiver.name,
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                      style: const pw.TextStyle(fontWeight: pw.FontWeight.bold),
                     ),
                     pw.Text(
                       invoice.receiver.address,
@@ -184,7 +184,7 @@ class ModernTemplate extends BasePdfTemplate {
                       "Due Date",
                       DateFormat('dd/MM/yyyy').format(invoice.dueDate!),
                       const pw.TextStyle(fontSize: 9),
-                      pw.TextStyle(
+                      const pw.TextStyle(
                         fontSize: 9,
                         color: PdfColors.red,
                         fontWeight: pw.FontWeight.bold,
@@ -199,7 +199,7 @@ class ModernTemplate extends BasePdfTemplate {
                   if (invoice.reverseCharge == 'Y')
                     pw.Text(
                       "Reverse Charge: YES",
-                      style: pw.TextStyle(
+                      style: const pw.TextStyle(
                         fontSize: 9,
                         fontWeight: pw.FontWeight.bold,
                       ),
@@ -215,7 +215,7 @@ class ModernTemplate extends BasePdfTemplate {
           // Items
           buildItemsTable(
             invoice,
-            headerStyle: pw.TextStyle(
+            headerStyle: const pw.TextStyle(
               color: PdfColors.white,
               fontWeight: pw.FontWeight.bold,
               fontSize: 9,
@@ -395,7 +395,7 @@ class ModernTemplate extends BasePdfTemplate {
                     pw.Divider(thickness: 1),
                     pw.Text(
                       "Authorized Signatory",
-                      style: pw.TextStyle(
+                      style: const pw.TextStyle(
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
                       ),
