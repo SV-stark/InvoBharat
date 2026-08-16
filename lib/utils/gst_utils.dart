@@ -8,6 +8,70 @@ class GstUtils {
     return IndianValidators.isGST(gstin.toUpperCase(), verifyChecksum: false);
   }
 
+  static const Map<String, String> stateCodeMap = {
+    '01': 'Jammu and Kashmir',
+    '02': 'Himachal Pradesh',
+    '03': 'Punjab',
+    '04': 'Chandigarh',
+    '05': 'Uttarakhand',
+    '06': 'Haryana',
+    '07': 'Delhi',
+    '08': 'Rajasthan',
+    '09': 'Uttar Pradesh',
+    '10': 'Bihar',
+    '11': 'Sikkim',
+    '12': 'Arunachal Pradesh',
+    '13': 'Nagaland',
+    '14': 'Manipur',
+    '15': 'Mizoram',
+    '16': 'Tripura',
+    '17': 'Meghalaya',
+    '18': 'Assam',
+    '19': 'West Bengal',
+    '20': 'Jharkhand',
+    '21': 'Odisha',
+    '22': 'Chhattisgarh',
+    '23': 'Madhya Pradesh',
+    '24': 'Gujarat',
+    '26': 'Dadra and Nagar Haveli and Daman and Diu',
+    '27': 'Maharashtra',
+    '29': 'Karnataka',
+    '30': 'Goa',
+    '31': 'Lakshadweep',
+    '32': 'Kerala',
+    '33': 'Tamil Nadu',
+    '34': 'Puducherry',
+    '35': 'Andaman and Nicobar Islands',
+    '36': 'Telangana',
+    '37': 'Andhra Pradesh',
+    '38': 'Ladakh',
+    '97': 'Other Territory',
+  };
+
+  /// Resolves a standardized 2-digit GST state code from string (code, name, or combined)
+  static String? getStateCodeFromInput(final String? input) {
+    if (input == null || input.trim().isEmpty) return null;
+    final clean = input.trim();
+    
+    // Check if it's already a 2-digit code or starts with 2 digits like "07-Delhi"
+    final digitMatch = RegExp(r'^(\d{2})').firstMatch(clean);
+    if (digitMatch != null) {
+      final code = digitMatch.group(1)!;
+      if (stateCodeMap.containsKey(code)) return code;
+    }
+
+    // Match by state name (case-insensitive, ignore punctuation)
+    final normalized = clean.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+    for (final entry in stateCodeMap.entries) {
+      final entryNorm = entry.value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+      if (normalized == entryNorm || normalized.contains(entryNorm) || entryNorm.contains(normalized)) {
+        return entry.key;
+      }
+    }
+
+    return null;
+  }
+
   /// Extracts state name from GSTIN
   static String? getStateName(final String gstin) {
     if (gstin.length < 2) return null;

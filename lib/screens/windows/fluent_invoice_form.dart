@@ -17,6 +17,8 @@ import 'package:invobharat/utils/validators.dart';
 import 'package:invobharat/mixins/invoice_form_mixin.dart';
 import 'package:invobharat/widgets/adaptive_widgets.dart'; // NEW Import
 import 'package:invobharat/widgets/dialogs/invoice_pdf_preview_dialog.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:invobharat/services/hsn_service.dart';
 
 // Generates a unique ID
 
@@ -412,14 +414,56 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                       ],
                     ),
                     const SizedBox(height: 5),
-                    AppTextInput(
-                      label:
-                          "Receiver Name", // Label added conceptually, though UI might just show placeholder
-                      controller: receiverNameCtrl,
-                      placeholder: "Name",
-                      onChanged: (final val) => ref
-                          .read(invoiceProvider.notifier)
-                          .updateReceiverName(val),
+                    TypeAheadField<Client>(
+                      suggestionsCallback: (final pattern) {
+                        final clients = ref.read(clientListProvider);
+                        if (pattern.trim().isEmpty) return [];
+                        final q = pattern.toLowerCase();
+                        return clients
+                            .where((final c) =>
+                                c.name.toLowerCase().contains(q) ||
+                                c.gstin.toLowerCase().contains(q) ||
+                                c.phone.contains(q))
+                            .toList();
+                      },
+                      builder: (final context, final controller, final focusNode) {
+                        return AppTextInput(
+                          label: "Receiver Name",
+                          controller: receiverNameCtrl,
+                          focusNode: focusNode,
+                          placeholder: "Name (type to search clients)",
+                          onChanged: (final val) => ref
+                              .read(invoiceProvider.notifier)
+                              .updateReceiverName(val),
+                        );
+                      },
+                      itemBuilder: (final context, final client) {
+                        return Container(
+                          color: FluentTheme.of(context).cardColor,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                client.name,
+                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                              ),
+                              if (client.gstin.isNotEmpty)
+                                Text(
+                                  'GSTIN: ${client.gstin} • ${client.state}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: FluentTheme.of(context).accentColor,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        );
+                      },
+                      onSelected: (final client) {
+                        onClientSelected(client);
+                      },
                     ),
                     const SizedBox(height: 5),
                     AppTextInput(
@@ -504,13 +548,62 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                   Row(
                     children: [
                       Expanded(
-                        child: AppTextInput(
-                          label: "Description",
-                          initialValue: item.description,
-                          placeholder: "Description",
-                          onChanged: (final val) => ref
-                              .read(invoiceProvider.notifier)
-                              .updateItemDescription(index, val),
+                        child: TypeAheadField<HsnEntry>(
+                          suggestionsCallback: (final pattern) async {
+                            if (pattern.trim().length < 2) return [];
+                            return await HsnService.instance.search(pattern);
+                          },
+                          builder: (final context, final controller, final focusNode) {
+                            if (controller.text.isEmpty && item.description.isNotEmpty) {
+                              controller.text = item.description;
+                            }
+                            return AppTextInput(
+                              label: "Description",
+                              controller: controller,
+                              focusNode: focusNode,
+                              placeholder: "Description (search goods/services)",
+                              onChanged: (final val) => ref
+                                  .read(invoiceProvider.notifier)
+                                  .updateItemDescription(index, val),
+                            );
+                          },
+                          itemBuilder: (final context, final suggestion) {
+                            return Container(
+                              color: FluentTheme.of(context).cardColor,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    suggestion.description,
+                                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${suggestion.type} Code: ${suggestion.code}',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: FluentTheme.of(context).accentColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          onSelected: (final suggestion) {
+                            ref
+                                .read(invoiceProvider.notifier)
+                                .updateItemDescription(index, suggestion.description);
+                            ref
+                                .read(invoiceProvider.notifier)
+                                .updateItemSac(index, suggestion.code);
+                            ref
+                                .read(invoiceProvider.notifier)
+                                .updateItemCodeType(index, suggestion.type);
+                          },
                         ),
                       ),
                       IconButton(
@@ -570,13 +663,58 @@ class _FluentInvoiceFormState extends ConsumerState<FluentInvoiceForm>
                       ),
                       const SizedBox(width: 5),
                       Expanded(
-                        child: AppTextInput(
-                          label: "Code",
-                          placeholder: "Code",
-                          initialValue: item.sacCode,
-                          onChanged: (final val) => ref
-                              .read(invoiceProvider.notifier)
-                              .updateItemSac(index, val),
+                        child: TypeAheadField<HsnEntry>(
+                          suggestionsCallback: (final pattern) async {
+                            if (pattern.trim().isEmpty) return [];
+                            return await HsnService.instance.search(pattern);
+                          },
+                          builder: (final context, final controller, final focusNode) {
+                            if (controller.text.isEmpty && item.sacCode.isNotEmpty) {
+                              controller.text = item.sacCode;
+                            }
+                            return AppTextInput(
+                              label: "Code",
+                              placeholder: "Code",
+                              controller: controller,
+                              focusNode: focusNode,
+                              onChanged: (final val) => ref
+                                  .read(invoiceProvider.notifier)
+                                  .updateItemSac(index, val),
+                            );
+                          },
+                          itemBuilder: (final context, final suggestion) {
+                            return Container(
+                              color: FluentTheme.of(context).cardColor,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    '${suggestion.code} (${suggestion.type})',
+                                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                  ),
+                                  Text(
+                                    suggestion.description,
+                                    style: const TextStyle(fontSize: 11),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          onSelected: (final suggestion) {
+                            ref
+                                .read(invoiceProvider.notifier)
+                                .updateItemSac(index, suggestion.code);
+                            ref
+                                .read(invoiceProvider.notifier)
+                                .updateItemDescription(index, suggestion.description);
+                            ref
+                                .read(invoiceProvider.notifier)
+                                .updateItemCodeType(index, suggestion.type);
+                          },
                         ),
                       ),
                       const SizedBox(width: 5),

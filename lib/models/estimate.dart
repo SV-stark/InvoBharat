@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/utils/gst_utils.dart';
 
 part 'estimate.freezed.dart';
 part 'estimate.g.dart';
@@ -38,9 +39,21 @@ abstract class Estimate with _$Estimate {
   }
 
   bool get isInterState {
-    if (supplier.state.isEmpty || receiver.state.isEmpty) return false;
-    return supplier.state.trim().toLowerCase() !=
-        receiver.state.trim().toLowerCase();
+    final posInput = receiver.state;
+    final posCode = GstUtils.getStateCodeFromInput(posInput) ??
+        (receiver.gstin.length >= 2 ? GstUtils.getStateCodeFromInput(receiver.gstin.substring(0, 2)) : null) ??
+        GstUtils.getStateCodeFromInput(receiver.stateCode);
+
+    final suppInput = supplier.state;
+    final suppCode = GstUtils.getStateCodeFromInput(suppInput) ??
+        (supplier.gstin.length >= 2 ? GstUtils.getStateCodeFromInput(supplier.gstin.substring(0, 2)) : null);
+
+    if (suppCode != null && posCode != null) {
+      return suppCode != posCode;
+    }
+
+    if (suppInput.isEmpty || posInput.isEmpty) return false;
+    return suppInput.trim().toLowerCase() != posInput.trim().toLowerCase();
   }
 
   double get totalTaxableValue =>

@@ -19,6 +19,7 @@ import 'package:intl/intl.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:invobharat/utils/einvoice_exporter.dart';
+import 'package:data_table_2/data_table_2.dart';
 
 class FluentReportsScreen extends ConsumerStatefulWidget {
   const FluentReportsScreen({super.key});
@@ -391,66 +392,64 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
     }
 
     return Card(
-      child: material.SingleChildScrollView(
-        child: material.SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: material.DataTable(
-            columns: const [
-              material.DataColumn(label: Text('Invoice No')),
-              material.DataColumn(label: Text('Date')),
-              material.DataColumn(label: Text('Recipient GSTIN')),
-              material.DataColumn(label: Text('Name')),
-              material.DataColumn(label: Text('Taxable Value')),
-              material.DataColumn(label: Text('CGST')),
-              material.DataColumn(label: Text('SGST')),
-              material.DataColumn(label: Text('IGST')),
-              material.DataColumn(label: Text('Type')),
+      child: DataTable2(
+        minWidth: 950,
+        columnSpacing: 16,
+        horizontalMargin: 12,
+        columns: const [
+          DataColumn2(label: Text('Invoice No'), size: ColumnSize.S),
+          DataColumn2(label: Text('Date'), size: ColumnSize.S),
+          DataColumn2(label: Text('Recipient GSTIN')),
+          DataColumn2(label: Text('Name'), size: ColumnSize.L),
+          DataColumn2(label: Text('Taxable Value'), numeric: true),
+          DataColumn2(label: Text('CGST'), size: ColumnSize.S, numeric: true),
+          DataColumn2(label: Text('SGST'), size: ColumnSize.S, numeric: true),
+          DataColumn2(label: Text('IGST'), size: ColumnSize.S, numeric: true),
+          DataColumn2(label: Text('Type'), size: ColumnSize.S),
+        ],
+        rows: items.map((final item) {
+          return material.DataRow(
+            cells: [
+              material.DataCell(Text(item['invoiceNo'])),
+              material.DataCell(Text(item['date'])),
+              material.DataCell(Text(item['gstin'])),
+              material.DataCell(Text(item['name'])),
+              material.DataCell(
+                Text(
+                  (item['taxable'] as double).toIndianFormat(
+                    includeSymbol: true,
+                    symbol: currencySymbol,
+                  ),
+                ),
+              ),
+              material.DataCell(
+                Text(
+                  (item['cgst'] as double).toIndianFormat(
+                    includeSymbol: true,
+                    symbol: currencySymbol,
+                  ),
+                ),
+              ),
+              material.DataCell(
+                Text(
+                  (item['sgst'] as double).toIndianFormat(
+                    includeSymbol: true,
+                    symbol: currencySymbol,
+                  ),
+                ),
+              ),
+              material.DataCell(
+                Text(
+                  (item['igst'] as double).toIndianFormat(
+                    includeSymbol: true,
+                    symbol: currencySymbol,
+                  ),
+                ),
+              ),
+              material.DataCell(Text(item['type'])),
             ],
-            rows: items.map((final item) {
-              return material.DataRow(
-                cells: [
-                  material.DataCell(Text(item['invoiceNo'])),
-                  material.DataCell(Text(item['date'])),
-                  material.DataCell(Text(item['gstin'])),
-                  material.DataCell(Text(item['name'])),
-                  material.DataCell(
-                    Text(
-                      (item['taxable'] as double).toIndianFormat(
-                        includeSymbol: true,
-                        symbol: currencySymbol,
-                      ),
-                    ),
-                  ),
-                  material.DataCell(
-                    Text(
-                      (item['cgst'] as double).toIndianFormat(
-                        includeSymbol: true,
-                        symbol: currencySymbol,
-                      ),
-                    ),
-                  ),
-                  material.DataCell(
-                    Text(
-                      (item['sgst'] as double).toIndianFormat(
-                        includeSymbol: true,
-                        symbol: currencySymbol,
-                      ),
-                    ),
-                  ),
-                  material.DataCell(
-                    Text(
-                      (item['igst'] as double).toIndianFormat(
-                        includeSymbol: true,
-                        symbol: currencySymbol,
-                      ),
-                    ),
-                  ),
-                  material.DataCell(Text(item['type'])),
-                ],
-              );
-            }).toList(),
-          ),
-        ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -505,64 +504,62 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
     }
 
     return Card(
-      child: material.SingleChildScrollView(
-        child: material.SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: material.DataTable(
-            columns: const [
-              material.DataColumn(label: Text('Section')),
-              material.DataColumn(label: Text('Nature of Supplies')),
-              material.DataColumn(label: Text('GST Rate')),
-              material.DataColumn(label: Text('Taxable Value')),
-              material.DataColumn(label: Text('IGST')),
-              material.DataColumn(label: Text('CGST')),
-              material.DataColumn(label: Text('SGST')),
+      child: DataTable2(
+        minWidth: 850,
+        columnSpacing: 16,
+        horizontalMargin: 12,
+        columns: const [
+          DataColumn2(label: Text('Section')),
+          DataColumn2(label: Text('Nature of Supplies'), size: ColumnSize.L),
+          DataColumn2(label: Text('GST Rate'), size: ColumnSize.S, numeric: true),
+          DataColumn2(label: Text('Taxable Value'), numeric: true),
+          DataColumn2(label: Text('IGST'), size: ColumnSize.S, numeric: true),
+          DataColumn2(label: Text('CGST'), size: ColumnSize.S, numeric: true),
+          DataColumn2(label: Text('SGST'), size: ColumnSize.S, numeric: true),
+        ],
+        rows: grouped.values.map((final entry) {
+          return material.DataRow(
+            cells: [
+              material.DataCell(Text(entry['section'])),
+              material.DataCell(Text(entry['nature'])),
+              material.DataCell(
+                Text('${(entry['rate'] as double).toStringAsFixed(1)}%'),
+              ),
+              material.DataCell(
+                Text(
+                  (entry['taxable'] as double).toIndianFormat(
+                    includeSymbol: true,
+                    symbol: currencySymbol,
+                  ),
+                ),
+              ),
+              material.DataCell(
+                Text(
+                  (entry['igst'] as double).toIndianFormat(
+                    includeSymbol: true,
+                    symbol: currencySymbol,
+                  ),
+                ),
+              ),
+              material.DataCell(
+                Text(
+                  (entry['cgst'] as double).toIndianFormat(
+                    includeSymbol: true,
+                    symbol: currencySymbol,
+                  ),
+                ),
+              ),
+              material.DataCell(
+                Text(
+                  (entry['sgst'] as double).toIndianFormat(
+                    includeSymbol: true,
+                    symbol: currencySymbol,
+                  ),
+                ),
+              ),
             ],
-            rows: grouped.values.map((final entry) {
-              return material.DataRow(
-                cells: [
-                  material.DataCell(Text(entry['section'])),
-                  material.DataCell(Text(entry['nature'])),
-                  material.DataCell(
-                    Text('${(entry['rate'] as double).toStringAsFixed(1)}%'),
-                  ),
-                  material.DataCell(
-                    Text(
-                      (entry['taxable'] as double).toIndianFormat(
-                        includeSymbol: true,
-                        symbol: currencySymbol,
-                      ),
-                    ),
-                  ),
-                  material.DataCell(
-                    Text(
-                      (entry['igst'] as double).toIndianFormat(
-                        includeSymbol: true,
-                        symbol: currencySymbol,
-                      ),
-                    ),
-                  ),
-                  material.DataCell(
-                    Text(
-                      (entry['cgst'] as double).toIndianFormat(
-                        includeSymbol: true,
-                        symbol: currencySymbol,
-                      ),
-                    ),
-                  ),
-                  material.DataCell(
-                    Text(
-                      (entry['sgst'] as double).toIndianFormat(
-                        includeSymbol: true,
-                        symbol: currencySymbol,
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            }).toList(),
-          ),
-        ),
+          );
+        }).toList(),
       ),
     );
   }

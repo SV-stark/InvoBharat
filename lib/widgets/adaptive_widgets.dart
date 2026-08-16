@@ -40,6 +40,7 @@ class AppTextInput extends StatelessWidget {
   final int maxLines;
   final bool readOnly;
   final List<TextInputFormatter>? inputFormatters;
+  final FocusNode? focusNode;
 
   const AppTextInput({
     super.key,
@@ -53,6 +54,7 @@ class AppTextInput extends StatelessWidget {
     this.maxLines = 1,
     this.readOnly = false,
     this.inputFormatters,
+    this.focusNode,
   });
 
   @override
@@ -64,6 +66,7 @@ class AppTextInput extends StatelessWidget {
         label: label,
         child: fluent.TextFormBox(
           controller: controller,
+          focusNode: focusNode,
           initialValue: initialValue,
           placeholder: placeholder,
           onChanged: onChanged,
@@ -78,6 +81,7 @@ class AppTextInput extends StatelessWidget {
     }
     return TextFormField(
       controller: controller,
+      focusNode: focusNode,
       initialValue: initialValue,
       decoration: InputDecoration(
         labelText: label,
