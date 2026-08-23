@@ -1,7 +1,11 @@
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final talkerProvider = Provider<Talker>((final ref) => TalkerFlutter.init());
+class LoggerService {
+  static final Talker talker = TalkerFlutter.init();
+}
+
+final talkerProvider = Provider<Talker>((final ref) => LoggerService.talker);
 
 final class RiverpodTalkerObserver extends ProviderObserver {
   final Talker talker;

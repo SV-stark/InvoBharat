@@ -74,16 +74,23 @@ class EInvoiceExporter {
       'ladakh': '38',
     };
 
-    return stateCodes[normalized] ?? '07'; // Fallback to Delhi (07)
+    final code = stateCodes[normalized];
+    if (code != null) return code;
+    throw FormatException(
+      'Unable to determine valid GST State Code for state "$stateName" and GSTIN "$gstin".',
+    );
   }
 
   /// Extracts a 6-digit PIN code from address string
   static int getPincode(final String address) {
     final match = RegExp(r'\b\d{6}\b').firstMatch(address);
     if (match != null) {
-      return int.tryParse(match.group(0)!) ?? 110001;
+      final pin = int.tryParse(match.group(0)!);
+      if (pin != null) return pin;
     }
-    return 110001; // Default fallback PIN code
+    throw FormatException(
+      'Valid 6-digit PIN code not found in address "$address". E-Invoice requires a valid statutory PIN code.',
+    );
   }
 
   /// Truncates string to a safe maximum length and provides fallback for empty fields
@@ -117,17 +124,20 @@ class EInvoiceExporter {
             ? 'DBN'
             : 'INV';
 
-    final sellerGstin = cleanText(invoice.supplier.gstin.isNotEmpty ? invoice.supplier.gstin : profile.gstin, 15, 'GSTIN_PENDING');
+    final sellerGstin = (invoice.supplier.gstin.isNotEmpty ? invoice.supplier.gstin : profile.gstin).trim();
+    if (sellerGstin.isEmpty) {
+      throw Exception('Seller GSTIN is required for E-Invoice generation.');
+    }
     final sellerName = cleanText(invoice.supplier.name.isNotEmpty ? invoice.supplier.name : profile.companyName, 100, 'Supplier Legal Name');
     final sellerAddress = cleanText(invoice.supplier.address.isNotEmpty ? invoice.supplier.address : profile.address, 100, 'Supplier Address');
-    final sellerState = cleanText(invoice.supplier.state.isNotEmpty ? invoice.supplier.state : profile.state, 50, 'Delhi');
+    final sellerState = cleanText(invoice.supplier.state.isNotEmpty ? invoice.supplier.state : profile.state, 50, '');
     final sellerStateCode = getStateCode(sellerState, sellerGstin);
     final sellerPin = getPincode(invoice.supplier.address.isNotEmpty ? invoice.supplier.address : profile.address);
 
-    final buyerGstin = cleanText(invoice.receiver.gstin, 15, 'URP');
+    final buyerGstin = invoice.receiver.gstin.trim().isNotEmpty ? cleanText(invoice.receiver.gstin, 15, 'URP') : 'URP';
     final buyerName = cleanText(invoice.receiver.name, 100, 'Buyer Legal Name');
     final buyerAddress = cleanText(invoice.receiver.address, 100, 'Buyer Address');
-    final buyerState = cleanText(invoice.receiver.state, 50, 'Delhi');
+    final buyerState = cleanText(invoice.receiver.state, 50, '');
     final buyerStateCode = invoice.receiver.stateCode.isNotEmpty && invoice.receiver.stateCode.trim().length == 2
         ? invoice.receiver.stateCode.trim()
         : getStateCode(buyerState, buyerGstin);
@@ -167,6 +177,14 @@ class EInvoiceExporter {
       });
     }
 
+    final assVal = double.parse(invoice.totalTaxableValue.toStringAsFixed(2));
+    final cgstVal = double.parse(invoice.totalCGST.toStringAsFixed(2));
+    final sgstVal = double.parse(invoice.totalSGST.toStringAsFixed(2));
+    final igstVal = double.parse(invoice.totalIGST.toStringAsFixed(2));
+    final discountVal = double.parse(invoice.discountAmount.toStringAsFixed(2));
+    // Strict NIC formula: TotInvVal = AssVal + CgstVal + SgstVal + IgstVal - Discount
+    final totInvVal = double.parse((assVal + cgstVal + sgstVal + igstVal - discountVal).toStringAsFixed(2));
+
     final payload = {
       "Version": "1.1",
       "TranDtls": {
@@ -184,7 +202,7 @@ class EInvoiceExporter {
         "Gstin": sellerGstin,
         "LglNm": sellerName,
         "Addr1": sellerAddress,
-        "Loc": cleanText(sellerState, 50, 'Delhi'),
+        "Loc": sellerState.isNotEmpty ? sellerState : 'State',
         "Pin": sellerPin,
         "Stcd": sellerStateCode
       },
@@ -193,18 +211,18 @@ class EInvoiceExporter {
         "LglNm": buyerName,
         "Pos": buyerStateCode,
         "Addr1": buyerAddress,
-        "Loc": cleanText(buyerState, 50, 'Delhi'),
+        "Loc": buyerState.isNotEmpty ? buyerState : 'State',
         "Pin": buyerPin,
         "Stcd": buyerStateCode
       },
       "ItemList": itemsList,
       "ValDtls": {
-        "AssVal": double.parse(invoice.totalTaxableValue.toStringAsFixed(2)),
-        "CgstVal": double.parse(invoice.totalCGST.toStringAsFixed(2)),
-        "SgstVal": double.parse(invoice.totalSGST.toStringAsFixed(2)),
-        "IgstVal": double.parse(invoice.totalIGST.toStringAsFixed(2)),
-        "Discount": double.parse(invoice.discountAmount.toStringAsFixed(2)),
-        "TotInvVal": double.parse(invoice.grandTotal.toStringAsFixed(2))
+        "AssVal": assVal,
+        "CgstVal": cgstVal,
+        "SgstVal": sgstVal,
+        "IgstVal": igstVal,
+        "Discount": discountVal,
+        "TotInvVal": totInvVal
       }
     };
 
@@ -247,20 +265,21 @@ class EInvoiceExporter {
     final sellerState = cleanText(
         invoice.supplier.state.isNotEmpty ? invoice.supplier.state : profile.state,
         50,
-        'Delhi');
-    final sellerStateCode = int.tryParse(getStateCode(sellerState, sellerGstin)) ?? 7;
+        '');
+    final sellerStateCodeStr = getStateCode(sellerState, sellerGstin);
+    final sellerStateCode = int.parse(sellerStateCodeStr);
     final sellerPin = getPincode(
         invoice.supplier.address.isNotEmpty ? invoice.supplier.address : profile.address);
 
     final buyerGstin = cleanText(invoice.receiver.gstin, 15, 'URP');
     final buyerName = cleanText(invoice.receiver.name, 100, 'Buyer Legal Name');
     final buyerAddress = cleanText(invoice.receiver.address, 100, 'Buyer Address');
-    final buyerState = cleanText(invoice.receiver.state, 50, 'Delhi');
+    final buyerState = cleanText(invoice.receiver.state, 50, '');
     final buyerStateCodeStr = invoice.receiver.stateCode.isNotEmpty &&
             invoice.receiver.stateCode.trim().length == 2
         ? invoice.receiver.stateCode.trim()
         : getStateCode(buyerState, buyerGstin);
-    final buyerStateCode = int.tryParse(buyerStateCodeStr) ?? 7;
+    final buyerStateCode = int.parse(buyerStateCodeStr);
     final buyerPin = getPincode(invoice.receiver.address);
 
     final docType = invoice.type == InvoiceType.creditNote

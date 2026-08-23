@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
@@ -6,55 +5,67 @@ import 'package:invobharat/models/recurring_profile.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/providers/invoice_series_provider.dart';
+import 'package:invobharat/services/logger_service.dart';
 
 class RecurringService {
   final Ref ref;
+  static bool _isRunning = false;
 
   RecurringService(this.ref);
 
   Future<int> checkAndRun(final String businessProfileId) async {
-    final repo = ref.read(invoiceRepositoryProvider);
-    final profiles = await repo.getAllRecurringProfiles();
-    int generatedCount = 0;
+    if (_isRunning) return 0;
+    _isRunning = true;
+    try {
+      final repo = ref.read(invoiceRepositoryProvider);
+      final profiles = await repo.getAllRecurringProfiles();
+      int generatedCount = 0;
 
-    for (var profile in profiles) {
-      if (!profile.isActive) continue;
+      for (var profile in profiles) {
+        if (!profile.isActive) continue;
 
-      if (DateTime.now().isAfter(profile.nextRunDate) ||
-          DateTime.now().isAtSameMomentAs(profile.nextRunDate)) {
-        try {
-          await _generateInvoice(profile);
-          generatedCount++;
-
-          final nextDate = calculateNextDate(
-            profile.nextRunDate,
-            profile.interval,
-          );
-          final updatedProfile = profile.copyWith(
-            lastRunDate: DateTime.now(),
-            nextRunDate: nextDate,
-          );
-          await repo.saveRecurringProfile(updatedProfile);
-        } catch (e) {
-          debugPrint(
-            "Failed to generate recurring invoice for profile ${profile.id}: $e",
-          );
+        if (DateTime.now().isAfter(profile.nextRunDate) ||
+            DateTime.now().isAtSameMomentAs(profile.nextRunDate)) {
+          try {
+            final nextDate = calculateNextDate(
+              profile.nextRunDate,
+              profile.interval,
+              anchorDay: profile.baseInvoice.invoiceDate.day,
+            );
+            final updatedProfile = profile.copyWith(
+              lastRunDate: DateTime.now(),
+              nextRunDate: nextDate,
+            );
+            await repo.saveRecurringProfile(updatedProfile);
+            await _generateInvoice(profile);
+            generatedCount++;
+          } catch (e, st) {
+            LoggerService.talker.handle(
+              e,
+              st,
+              "Failed to generate recurring invoice for profile ${profile.id}",
+            );
+          }
         }
       }
-    }
 
-    if (generatedCount > 0) {
-      ref.invalidate(recurringListProvider);
-      ref.invalidate(invoiceListProvider);
-    }
+      if (generatedCount > 0) {
+        ref.invalidate(recurringListProvider);
+        ref.invalidate(invoiceListProvider);
+      }
 
-    return generatedCount;
+      return generatedCount;
+    } finally {
+      _isRunning = false;
+    }
   }
 
   DateTime calculateNextDate(
     final DateTime current,
-    final RecurringInterval interval,
-  ) {
+    final RecurringInterval interval, {
+    final int? anchorDay,
+  }) {
+    final effectiveAnchor = anchorDay ?? current.day;
     switch (interval) {
       case RecurringInterval.daily:
         return current.add(const Duration(days: 1));
@@ -66,10 +77,16 @@ class RecurringService {
         return DateTime(
           next.year,
           next.month,
-          current.day.clamp(1, lastDayOfMonth),
+          effectiveAnchor.clamp(1, lastDayOfMonth),
         );
       case RecurringInterval.yearly:
-        return DateTime(current.year + 1, current.month, current.day);
+        final nextYear = current.year + 1;
+        final lastDayOfMonth = DateTime(nextYear, current.month + 1, 0).day;
+        return DateTime(
+          nextYear,
+          current.month,
+          effectiveAnchor.clamp(1, lastDayOfMonth),
+        );
     }
   }
 

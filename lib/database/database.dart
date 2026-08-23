@@ -36,7 +36,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration {
@@ -156,37 +156,22 @@ class AppDatabase extends _$AppDatabase {
               // 2. Create new table with updated constraints
               await m.createTable(table);
 
-              // instead of mapping table.$columns (which has V10 columns),
-              // we manually list or safely query.
-
-              // 3. Copy data from temp to new table
-              // Drift doesn't give a great way to read results from customStatement easily here,
-              // but we can assume V6 columns or just use a safer approach.
-              // Let's use a simpler approach: only copy columns that are in BOTH.
-              // For simplicity in this fix, we'll hardcode the known V6 columns or use a helper.
-              // Actually, sqlite allows: INSERT INTO table (col1) SELECT col1 FROM temp
-              // We'll filter the current columns by checking if they exist in temp.
-              // But drift's customStatement returns void.
-
-              // Let's use a more robust check if possible, or just be careful.
-              // For now, I'll filter out columns known to be added in V8, V9, V10.
-              final newCols = {
-                'po_number',
-                'status',
-                'sent_at',
-                'receiver_phone',
-                'eway_bill_no',
-                'vehicle_no',
-                'irn_no',
-              };
+              // 3. Copy data from temp to new table (only columns that existed in temp table)
+              final pragmaResult = await m.database
+                  .customSelect('PRAGMA table_info(`$tempName`)')
+                  .get();
+              final existingCols =
+                  pragmaResult.map((final r) => r.read<String>('name')).toSet();
               final columnsToCopy = table.$columns
                   .map((final c) => c.name)
-                  .where((final name) => !newCols.contains(name))
+                  .where((final name) => existingCols.contains(name))
                   .join(', ');
 
-              await m.database.customStatement(
-                'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
-              );
+              if (columnsToCopy.isNotEmpty) {
+                await m.database.customStatement(
+                  'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
+                );
+              }
 
               // 4. Drop temp table
               await m.database.customStatement('DROP TABLE `$tempName`');
@@ -283,8 +268,29 @@ class AppDatabase extends _$AppDatabase {
         if (from < 14) {
           await _createIndexes(m.database);
         }
+        if (from < 15) {
+          final pragmaResult = await m.database
+              .customSelect('PRAGMA table_info(`business_profiles`)')
+              .get();
+          final existingCols =
+              pragmaResult.map((final r) => r.read<String>('name')).toSet();
+          if (!existingCols.contains('stamp_x')) {
+            await m.addColumn(businessProfiles, businessProfiles.stampX);
+          }
+          if (!existingCols.contains('stamp_y')) {
+            await m.addColumn(businessProfiles, businessProfiles.stampY);
+          }
+          if (!existingCols.contains('signature_x')) {
+            await m.addColumn(businessProfiles, businessProfiles.signatureX);
+          }
+          if (!existingCols.contains('signature_y')) {
+            await m.addColumn(businessProfiles, businessProfiles.signatureY);
+          }
+          await _createIndexes(m.database);
+        }
       },
       beforeOpen: (final details) async {
+        await customStatement('PRAGMA foreign_keys = ON;');
         if (details.wasCreated) {
           // ...
         }
@@ -293,6 +299,9 @@ class AppDatabase extends _$AppDatabase {
   }
 
   static Future<void> _createIndexes(final GeneratedDatabase db) async {
+    await db.customStatement(
+      "CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null';",
+    );
     await db.customStatement(
       'CREATE INDEX IF NOT EXISTS idx_invoices_profile_date ON invoices (profile_id, invoice_date);',
     );

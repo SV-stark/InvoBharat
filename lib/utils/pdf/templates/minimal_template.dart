@@ -17,6 +17,7 @@ class MinimalTemplate extends BasePdfTemplate {
     final BusinessProfile profile,
     final pw.Font font,
     final pw.Font fontBold, {
+    final pw.Font? fontFallback,
     final String? title,
     final bool showHsnSummary = true,
   }) async {
@@ -27,7 +28,11 @@ class MinimalTemplate extends BasePdfTemplate {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(32),
-        theme: pw.ThemeData.withFont(base: font, bold: fontBold),
+        theme: pw.ThemeData.withFont(
+          base: font,
+          bold: fontBold,
+          fontFallback: fontFallback != null ? [fontFallback] : const [],
+        ),
         build: (final context) => [
           // Header
           pw.Row(
@@ -168,11 +173,14 @@ class MinimalTemplate extends BasePdfTemplate {
                     pw.Divider(thickness: 1, color: themeColor),
                     pw.SizedBox(height: 4),
                     pw.Text(invoice.placeOfSupply),
-                    if (invoice.reverseCharge == 'Y')
-                      pw.Text(
-                        "Reverse Charge: YES",
-                        style: const pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    pw.Text(
+                      "Reverse Charge: ${invoice.reverseCharge == 'Y' ? 'YES' : 'NO'}",
+                      style: pw.TextStyle(
+                        fontWeight: invoice.reverseCharge == 'Y'
+                            ? pw.FontWeight.bold
+                            : pw.FontWeight.normal,
                       ),
+                    ),
                   ],
                 ),
               ),

@@ -23,6 +23,7 @@ class PdfGeneratorParams {
   final String? title;
   final ByteData regularFont;
   final ByteData boldFont;
+  final ByteData? fallbackFont;
   final bool showHsnSummary;
 
   PdfGeneratorParams({
@@ -30,6 +31,7 @@ class PdfGeneratorParams {
     required this.profile,
     required this.regularFont,
     required this.boldFont,
+    this.fallbackFont,
     this.title,
     this.showHsnSummary = true,
   });
@@ -39,6 +41,9 @@ class PdfGeneratorParams {
 Future<Uint8List> _generatePdfInIsolate(final PdfGeneratorParams params) async {
   final font = pw.Font.ttf(params.regularFont);
   final fontBold = pw.Font.ttf(params.boldFont);
+  final fontFallback = params.fallbackFont != null
+      ? pw.Font.ttf(params.fallbackFont!)
+      : null;
 
   InvoiceTemplate template;
   switch (params.invoice.style) {
@@ -83,6 +88,7 @@ Future<Uint8List> _generatePdfInIsolate(final PdfGeneratorParams params) async {
     params.profile,
     font,
     fontBold,
+    fontFallback: fontFallback,
     title: effectiveTitle,
     showHsnSummary: params.showHsnSummary,
   );
@@ -98,6 +104,10 @@ Future<Uint8List> generateInvoicePdf(
   // Load fonts in the main thread where rootBundle is guaranteed to work
   final regularData = await rootBundle.load('fonts/Spectral-Regular.ttf');
   final boldData = await rootBundle.load('fonts/Spectral-Bold.ttf');
+  ByteData? fallbackData;
+  try {
+    fallbackData = await rootBundle.load('fonts/NotoSans-Regular.ttf');
+  } catch (_) {}
 
   final params = PdfGeneratorParams(
     invoice: invoice,
@@ -105,6 +115,7 @@ Future<Uint8List> generateInvoicePdf(
     title: title,
     regularFont: regularData,
     boldFont: boldData,
+    fallbackFont: fallbackData,
     showHsnSummary: showHsnSummary,
   );
 

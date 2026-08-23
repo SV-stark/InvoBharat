@@ -7,6 +7,7 @@ void main() {
     final invoice = Invoice(
       id: '1',
       invoiceNo: 'INV-001',
+      status: 'Sent',
       invoiceDate: DateTime(2025, 4),
       supplier: const Supplier(state: 'Karnataka'),
       receiver: const Receiver(
@@ -47,6 +48,7 @@ void main() {
     final invoice = Invoice(
       id: '2',
       invoiceNo: 'INV-002',
+      status: 'Sent',
       invoiceDate: DateTime(2025, 4),
       supplier: const Supplier(state: 'Karnataka'),
       receiver: const Receiver(
@@ -76,6 +78,7 @@ void main() {
     final invoice = Invoice(
       id: '3',
       invoiceNo: 'INV-003',
+      status: 'Sent',
       invoiceDate: DateTime(2025, 4),
       placeOfSupply: 'Maharashtra',
       supplier: const Supplier(state: 'Karnataka'),

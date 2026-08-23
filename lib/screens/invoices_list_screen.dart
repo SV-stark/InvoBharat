@@ -1,4 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -83,28 +82,26 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
         _isMultiSelectMode = false;
         _selectedIds.clear();
       });
-      if (context.mounted) {
-        final messenger = ScaffoldMessenger.of(context);
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text("${deletedInvoices.length} invoice(s) deleted"),
-            action: SnackBarAction(
-              label: "Undo",
-              onPressed: () async {
-                for (final inv in deletedInvoices) {
-                  await repo.saveInvoice(inv);
-                }
-                ref.invalidate(invoiceListProvider);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Deletion undone")),
-                  );
-                }
-              },
-            ),
+      if (!mounted) return;
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text("${deletedInvoices.length} invoice(s) deleted"),
+          action: SnackBarAction(
+            label: "Undo",
+            onPressed: () async {
+              for (final inv in deletedInvoices) {
+                await repo.saveInvoice(inv);
+              }
+              ref.invalidate(invoiceListProvider);
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Deletion undone")),
+              );
+            },
           ),
-        );
-      }
+        ),
+      );
     }
   }
 
@@ -119,7 +116,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
 
     await context.push('/invoice-form', extra: duplicated);
     ref.invalidate(invoiceListProvider);
-    if (!context.mounted) return;
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Invoice duplicated for editing")),
     );
@@ -622,6 +619,9 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
   }
 
   void _showFilterDialog() {
+    String tempFilter = _filter;
+    DateTimeRange? tempDateRange = _dateRange;
+
     showDialog(
       context: context,
       builder: (final context) {
@@ -633,8 +633,8 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<String>(
-                    key: ValueKey(_filter),
-                    initialValue: _filter,
+                    key: ValueKey(tempFilter),
+                    initialValue: tempFilter,
                     decoration: const InputDecoration(labelText: "Status"),
                     items: const [
                       DropdownMenuItem(value: 'All', child: Text("All Active")),
@@ -653,16 +653,18 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                       ),
                     ],
                     onChanged: (final val) {
-                      setDialogState(() => _filter = val!);
+                      if (val != null) {
+                        setDialogState(() => tempFilter = val);
+                      }
                     },
                   ),
                   const SizedBox(height: 16),
                   ListTile(
                     title: const Text("Date Range"),
                     subtitle: Text(
-                      _dateRange == null
+                      tempDateRange == null
                           ? "All Time"
-                          : "${DateFormat('dd/MM').format(_dateRange!.start)} - ${DateFormat('dd/MM').format(_dateRange!.end)}",
+                          : "${DateFormat('dd/MM').format(tempDateRange!.start)} - ${DateFormat('dd/MM').format(tempDateRange!.end)}",
                     ),
                     trailing: const Icon(Icons.calendar_today),
                     onTap: () async {
@@ -670,16 +672,16 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                         context: context,
                         firstDate: DateTime(2020),
                         lastDate: DateTime(2100),
-                        initialDateRange: _dateRange,
+                        initialDateRange: tempDateRange,
                       );
                       if (picked != null) {
-                        setDialogState(() => _dateRange = picked);
+                        setDialogState(() => tempDateRange = picked);
                       }
                     },
                   ),
-                  if (_dateRange != null)
+                  if (tempDateRange != null)
                     TextButton(
-                      onPressed: () => setDialogState(() => _dateRange = null),
+                      onPressed: () => setDialogState(() => tempDateRange = null),
                       child: const Text("Clear Date Filter"),
                     ),
                 ],
@@ -691,7 +693,10 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                 ),
                 FilledButton(
                   onPressed: () {
-                    setState(() {});
+                    setState(() {
+                      _filter = tempFilter;
+                      _dateRange = tempDateRange;
+                    });
                     Navigator.pop(context);
                   },
                   child: const Text("Apply"),

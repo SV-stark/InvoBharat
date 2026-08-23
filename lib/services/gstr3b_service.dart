@@ -9,7 +9,23 @@ class Gstr3bService {
     return Isolate.run(() => generateGstr3bCsv(invoices));
   }
 
+  static dynamic _sanitize(final dynamic value) {
+    if (value == null) return '';
+    final str = value.toString();
+    if (str.isEmpty) return str;
+    final firstChar = str[0];
+    if (firstChar == '=' || firstChar == '+' || firstChar == '-' || firstChar == '@' || firstChar == '\t' || firstChar == '\r') {
+      return "'$str";
+    }
+    return str;
+  }
+
   String generateGstr3bCsv(final List<Invoice> invoices) {
+    final validInvoices = invoices.where((inv) =>
+      inv.status.toLowerCase() != 'draft' &&
+      inv.type != InvoiceType.deliveryChallan
+    ).toList();
+
     final List<List<dynamic>> rows = [];
 
     rows.add([
@@ -28,10 +44,11 @@ class Gstr3bService {
 
     final grouped = <String, Map<String, dynamic>>{};
 
-    for (final inv in invoices) {
+    for (final inv in validInvoices) {
       if (inv.items.isEmpty) continue;
 
       final isInter = inv.isInterState;
+      final multiplier = inv.type == InvoiceType.creditNote ? -1.0 : 1.0;
       // IndianDateFormatter.fiscalYear(date) returns "FY 2025-26"
       // We want something like "2025-26" or similar.
       final fy = IndianDateFormatter.fiscalYear(
@@ -65,14 +82,14 @@ class Gstr3bService {
         }
 
         final entry = grouped[compositeKey]!;
-        final taxable = item.netAmount;
+        final taxable = item.netAmount * multiplier;
         entry['taxableValue'] = (entry['taxableValue'] as double) + taxable;
 
         if (isInter) {
-          entry['igst'] = (entry['igst'] as double) + item.igstAmount;
+          entry['igst'] = (entry['igst'] as double) + (item.igstAmount * multiplier);
         } else {
-          entry['cgst'] = (entry['cgst'] as double) + item.cgstAmount;
-          entry['sgst'] = (entry['sgst'] as double) + item.sgstAmount;
+          entry['cgst'] = (entry['cgst'] as double) + (item.cgstAmount * multiplier);
+          entry['sgst'] = (entry['sgst'] as double) + (item.sgstAmount * multiplier);
         }
       }
     }
@@ -80,10 +97,10 @@ class Gstr3bService {
     for (final entry in grouped.values) {
       rows.add([
         '',
-        entry['fy'],
-        entry['period'],
-        entry['section'],
-        entry['nature'],
+        _sanitize(entry['fy']),
+        _sanitize(entry['period']),
+        _sanitize(entry['section']),
+        _sanitize(entry['nature']),
         (entry['gstRate'] as double).toStringAsFixed(2),
         (entry['taxableValue'] as double).toStringAsFixed(2),
         (entry['igst'] as double).toStringAsFixed(2),

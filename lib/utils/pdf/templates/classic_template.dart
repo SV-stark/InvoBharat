@@ -17,11 +17,16 @@ class ClassicTemplate extends BasePdfTemplate {
     final BusinessProfile profile,
     final pw.Font font,
     final pw.Font fontBold, {
+    final pw.Font? fontFallback,
     final String? title,
     final bool showHsnSummary = true,
   }) async {
     final pdf = pw.Document(
-      theme: pw.ThemeData.withFont(base: font, bold: fontBold),
+      theme: pw.ThemeData.withFont(
+        base: font,
+        bold: fontBold,
+        fontFallback: fontFallback != null ? [fontFallback] : const [],
+      ),
     );
 
     final black = PdfColors.black;
@@ -149,7 +154,7 @@ class ClassicTemplate extends BasePdfTemplate {
                       ),
                       buildField(
                         "Reverse Charge",
-                        invoice.reverseCharge,
+                        invoice.reverseCharge == 'Y' ? "Yes" : "No",
                         const pw.TextStyle(fontWeight: pw.FontWeight.bold),
                         const pw.TextStyle(),
                       ),
@@ -203,7 +208,6 @@ class ClassicTemplate extends BasePdfTemplate {
               ),
             ),
             if (showHsnSummary) buildHsnSummaryTable(invoice, font, fontBold),
-            buildAmountInWords(invoice.grandTotal),
 
             pw.SizedBox(height: 10),
 

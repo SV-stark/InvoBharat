@@ -17,6 +17,7 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
     final BusinessProfile profile,
     final pw.Font font,
     final pw.Font fontBold, {
+    final pw.Font? fontFallback,
     final String? title,
     final bool showHsnSummary = true,
   });
@@ -457,29 +458,30 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
   }
 
   pw.Widget buildHsnSummaryTable(final Invoice invoice, final pw.Font font, final pw.Font fontBold) {
-    // 1. Group items by HSN Code
+    // 1. Group items by HSN Code AND GST Rate
     final Map<String, List<InvoiceItem>> grouped = {};
     for (final item in invoice.items) {
       final code = item.cleanSacCode.isEmpty ? 'N/A' : item.cleanSacCode;
-      grouped.putIfAbsent(code, () => []).add(item);
+      final key = '$code|${item.gstRate}';
+      grouped.putIfAbsent(key, () => []).add(item);
     }
 
     final headers = ['HSN/SAC', 'Taxable Value', 'CGST %', 'CGST Amt', 'SGST %', 'SGST Amt', 'IGST %', 'IGST Amt', 'Total Tax'];
     final isInterState = invoice.isInterState;
 
     final data = grouped.entries.map((final entry) {
-      final code = entry.key;
+      final keyParts = entry.key.split('|');
+      final code = keyParts[0];
+      final gstRate = double.tryParse(keyParts[1]) ?? 0.0;
       final items = entry.value;
       
       double taxableVal = 0;
       double cgstAmt = 0;
       double sgstAmt = 0;
       double igstAmt = 0;
-      double gstRate = 0;
 
       for (final item in items) {
         taxableVal += item.netAmount;
-        gstRate = item.gstRate; // Assumes same HSN has same rate, standard
         cgstAmt += item.calculateCgst(isInterState);
         sgstAmt += item.calculateSgst(isInterState);
         igstAmt += item.calculateIgst(isInterState);

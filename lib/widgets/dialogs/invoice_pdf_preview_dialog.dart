@@ -200,15 +200,21 @@ class _InvoicePdfPreviewDialogState
                               "Invoice_${effectiveInvoice.invoiceNo.isEmpty ? 'Draft' : effectiveInvoice.invoiceNo}.pdf";
                           await saveInvoicePdf(bytes, fileName);
                           if (actionCtx.mounted) {
-                            ScaffoldMessenger.of(actionCtx).showSnackBar(
-                              SnackBar(content: Text("PDF Saved successfully: $fileName")),
-                            );
+                            final messenger = ScaffoldMessenger.maybeOf(actionCtx);
+                            if (messenger != null) {
+                              messenger.showSnackBar(
+                                SnackBar(content: Text("PDF Saved successfully: $fileName")),
+                              );
+                            }
                           }
                         } catch (e) {
                           if (actionCtx.mounted) {
-                            ScaffoldMessenger.of(actionCtx).showSnackBar(
-                              SnackBar(content: Text("Failed to save PDF: $e")),
-                            );
+                            final messenger = ScaffoldMessenger.maybeOf(actionCtx);
+                            if (messenger != null) {
+                              messenger.showSnackBar(
+                                SnackBar(content: Text("Failed to save PDF: $e")),
+                              );
+                            }
                           }
                         } finally {
                           if (mounted) setState(() => _isSaving = false);

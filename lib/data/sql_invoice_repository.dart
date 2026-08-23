@@ -58,13 +58,36 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
     // Transaction
     await database.transaction(() async {
-      // 1. Resolve Client ID
-      final client =
-          await (database.select(database.clients)
-                ..where((final t) =>
-                    t.name.equals(invoice.receiver.name) &
-                    t.profileId.equals(targetProfileId)))
-              .getSingleOrNull();
+      // 1. Resolve Client ID deterministically
+      String? resolvedClientId;
+      final gstin = invoice.receiver.gstin.trim();
+      if (gstin.isNotEmpty) {
+        final matchByGstin = await (database.select(database.clients)
+              ..where((final t) =>
+                  t.profileId.equals(targetProfileId) &
+                  t.gstin.equals(gstin)))
+            .getSingleOrNull();
+        if (matchByGstin != null) {
+          resolvedClientId = matchByGstin.id;
+        }
+      }
+
+      if (resolvedClientId == null && invoice.receiver.name.trim().isNotEmpty) {
+        final matchesByName = await (database.select(database.clients)
+              ..where((final t) =>
+                  t.profileId.equals(targetProfileId) &
+                  t.name.equals(invoice.receiver.name.trim())))
+            .get();
+        if (matchesByName.length == 1) {
+          resolvedClientId = matchesByName.first.id;
+        } else if (matchesByName.length > 1) {
+          final exact = matchesByName.where((final c) =>
+              (invoice.receiver.phone.isNotEmpty && c.phone == invoice.receiver.phone) ||
+              (invoice.receiver.email.isNotEmpty && c.email == invoice.receiver.email) ||
+              (invoice.receiver.state.isNotEmpty && c.state == invoice.receiver.state));
+          resolvedClientId = exact.isNotEmpty ? exact.first.id : matchesByName.first.id;
+        }
+      }
 
       // 2. Atomic Sequence Increment
       final String finalInvoiceNo = invoice.invoiceNo;
@@ -95,7 +118,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
             InvoicesCompanion(
               id: Value(invoiceId),
               profileId: Value(targetProfileId),
-              clientId: Value(client?.id),
+              clientId: Value(resolvedClientId),
               invoiceNo: Value(finalInvoiceNo),
               invoiceDate: Value(invoice.invoiceDate),
               type: Value(invoice.type.name),

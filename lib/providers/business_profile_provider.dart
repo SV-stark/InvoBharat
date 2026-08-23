@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path_provider/path_provider.dart';
@@ -15,16 +15,13 @@ import 'package:invobharat/providers/recurring_provider.dart';
 import 'package:invobharat/providers/bank_provider.dart';
 import 'package:invobharat/providers/invoice_series_provider.dart';
 
-part 'business_profile_provider.g.dart';
-
-@riverpod
-BusinessProfileRepository businessProfileRepository(final Ref ref) {
+final businessProfileRepositoryProvider =
+    Provider<BusinessProfileRepository>((final ref) {
   final db = ref.watch(databaseProvider);
   return SqlBusinessProfileRepository(db);
-}
+});
 
-@riverpod
-class BusinessProfileList extends _$BusinessProfileList {
+class BusinessProfileList extends Notifier<List<BusinessProfile>> {
   @override
   List<BusinessProfile> build() {
     _init();
@@ -147,8 +144,12 @@ class BusinessProfileList extends _$BusinessProfileList {
   }
 }
 
-@riverpod
-class ActiveProfileId extends _$ActiveProfileId {
+final businessProfileListProvider =
+    NotifierProvider<BusinessProfileList, List<BusinessProfile>>(
+  BusinessProfileList.new,
+);
+
+class ActiveProfileId extends Notifier<String> {
   @override
   String build() {
     final profiles = ref.watch(businessProfileListProvider);
@@ -190,8 +191,10 @@ class ActiveProfileId extends _$ActiveProfileId {
   }
 }
 
-@riverpod
-BusinessProfile businessProfile(final Ref ref) {
+final activeProfileIdProvider =
+    NotifierProvider<ActiveProfileId, String>(ActiveProfileId.new);
+
+final businessProfileProvider = Provider<BusinessProfile>((final ref) {
   final profiles = ref.watch(businessProfileListProvider);
   final activeId = ref.watch(activeProfileIdProvider);
 
@@ -201,4 +204,4 @@ BusinessProfile businessProfile(final Ref ref) {
     (final p) => p.id == activeId,
     orElse: () => profiles.first,
   );
-}
+});

@@ -58,6 +58,7 @@ BUGS_AND_FEATURES.md
 
 # User Data (Sensitive)
 profiles/
+scratch/
 db.sqlite
 
 # Generated code

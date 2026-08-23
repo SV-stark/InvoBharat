@@ -1,3 +1,4 @@
+import 'dart:isolate';
 import 'dart:typed_data';
 import 'package:excel/excel.dart';
 import 'package:intl/intl.dart';
@@ -8,6 +9,10 @@ import 'package:invobharat/models/invoice.dart';
 class ExcelExportService {
   /// Generates a professional multi-tab Excel (.xlsx) workbook for invoices
   Future<List<int>> generateInvoiceExcel(final List<Invoice> invoices) async {
+    return Isolate.run(() => _generateInvoiceExcelSync(invoices));
+  }
+
+  static List<int> _generateInvoiceExcelSync(final List<Invoice> invoices) {
     final excel = Excel.createExcel();
     
     // Rename default sheet to 'Invoices Summary'

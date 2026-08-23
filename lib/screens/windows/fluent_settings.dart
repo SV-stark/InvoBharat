@@ -2,7 +2,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:io';
 import 'package:invobharat/models/business_profile.dart';
@@ -295,15 +295,16 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   child: const Text("Select Brand Logo"),
                   onPressed: () async {
                     try {
-                      final picker = ImagePicker();
-                      final XFile? image = await picker.pickImage(
-                        source: ImageSource.gallery,
+                      final result = await FilePicker.pickFile(
+                        type: FileType.image,
                       );
-                      if (image != null) {
+                      if (result != null && result.path != null) {
                         ref
                             .read(businessProfileListProvider.notifier)
                             .updateProfile(
-                              profile.copyWith(logoPath: image.path),
+                              profile.copyWith(
+                                logoPath: result.path!,
+                              ),
                             );
                       }
                     } catch (e) {
@@ -313,9 +314,9 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 ),
                 if (profile.logoPath != null &&
                     profile.logoPath!.isNotEmpty) ...[
-                  const Gap(10),
+                  const Gap(5),
                   HyperlinkButton(
-                    child: const Text("Remove Logo"),
+                    child: const Text("Remove"),
                     onPressed: () {
                       ref
                           .read(businessProfileListProvider.notifier)
@@ -325,13 +326,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 ],
               ],
             ),
-          ],
-        ),
-        const Gap(20),
-
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+            const Gap(30),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -343,8 +338,8 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 Row(
                   children: [
                     Container(
-                      width: 100,
-                      height: 60,
+                      width: 80,
+                      height: 80,
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: Colors.grey.withValues(alpha: 0.5),
@@ -370,15 +365,16 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                           child: const Text("Upload Signature"),
                           onPressed: () async {
                             try {
-                              final picker = ImagePicker();
-                              final XFile? image = await picker.pickImage(
-                                source: ImageSource.gallery,
+                              final result = await FilePicker.pickFile(
+                                type: FileType.image,
                               );
-                              if (image != null) {
+                              if (result != null && result.path != null) {
                                 ref
                                     .read(businessProfileListProvider.notifier)
                                     .updateProfile(
-                                      profile.copyWith(signaturePath: image.path),
+                                      profile.copyWith(
+                                        signaturePath: result.path!,
+                                      ),
                                     );
                               }
                             } catch (e) {
@@ -447,15 +443,16 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                           child: const Text("Upload Stamp"),
                           onPressed: () async {
                             try {
-                              final picker = ImagePicker();
-                              final XFile? image = await picker.pickImage(
-                                source: ImageSource.gallery,
+                              final result = await FilePicker.pickFile(
+                                type: FileType.image,
                               );
-                              if (image != null) {
+                              if (result != null && result.path != null) {
                                 ref
                                     .read(businessProfileListProvider.notifier)
                                     .updateProfile(
-                                      profile.copyWith(stampPath: image.path),
+                                      profile.copyWith(
+                                        stampPath: result.path!,
+                                      ),
                                     );
                               }
                             } catch (e) {
@@ -1202,6 +1199,28 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             Expanded(
               child: Button(
                 onPressed: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (final context) => ContentDialog(
+                      title: const Text('Restore Backup Confirmation'),
+                      content: const Text(
+                        'Restoring a backup will overwrite your current business profiles, clients, invoices, and media files. This action cannot be undone.\n\nAre you sure you want to proceed?',
+                      ),
+                      actions: [
+                        Button(
+                          child: const Text('Cancel'),
+                          onPressed: () => Navigator.pop(context, false),
+                        ),
+                        FilledButton(
+                          child: const Text('Restore Data'),
+                          onPressed: () => Navigator.pop(context, true),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirmed != true) return;
+
                   try {
                     final result = await BackupService(
                       db: ref.read(databaseProvider),

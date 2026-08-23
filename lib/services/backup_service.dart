@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:invobharat/services/csv_export_service.dart';
 import 'package:invobharat/data/sql_invoice_repository.dart';
 import 'package:invobharat/database/database.dart';
+import 'package:invobharat/services/logger_service.dart';
 import 'package:sqlite3/sqlite3.dart' as sqlite3;
 
 const kDbFileName = 'db.sqlite';
@@ -354,9 +355,10 @@ class BackupService {
                   }
                 }
               }
+              rawDb.execute('PRAGMA wal_checkpoint(TRUNCATE);');
               rawDb.close();
-            } catch (e) {
-              debugPrint("Media path rewrite error: $e");
+            } catch (e, st) {
+              LoggerService.talker.handle(e, st, "Media path rewrite error");
             }
           }
 
@@ -367,20 +369,25 @@ class BackupService {
           }
 
           return "Restore Successful. Please restart the app to apply changes.";
-        } catch (e) {
+        } catch (e, st) {
           if (backupPath != null) {
             final backupFile = File(backupPath);
             if (await backupFile.exists()) {
               await backupFile.copy(dbPath);
             }
+            final walFile = File('$dbPath-wal');
+            final shmFile = File('$dbPath-shm');
+            if (await walFile.exists()) await walFile.delete();
+            if (await shmFile.exists()) await shmFile.delete();
           }
+          LoggerService.talker.handle(e, st, "Database Restore Failed during write/media update");
           rethrow;
         }
       } else {
         return "Restore cancelled";
       }
-    } catch (e) {
-      debugPrint("Restore Error: $e");
+    } catch (e, st) {
+      LoggerService.talker.handle(e, st, "Restore Error");
       throw Exception("Failed to restore backup: $e");
     }
   }

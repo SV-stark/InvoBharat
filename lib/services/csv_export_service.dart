@@ -66,6 +66,17 @@ class CsvExportService {
     );
   }
 
+  static dynamic _sanitize(final dynamic value) {
+    if (value == null) return '';
+    final str = value.toString();
+    if (str.isEmpty) return str;
+    final firstChar = str[0];
+    if (firstChar == '=' || firstChar == '+' || firstChar == '-' || firstChar == '@' || firstChar == '\t' || firstChar == '\r') {
+      return "'$str";
+    }
+    return str;
+  }
+
   static String _generateInvoiceCsvSync(final List<Invoice> invoices) {
     final List<List<dynamic>> rows = [headers];
     final dateFormat = DateFormat('dd-MM-yyyy');
@@ -78,35 +89,35 @@ class CsvExportService {
 
       for (final item in itemsToWrite) {
         rows.add([
-          invoice.supplier.gstin,
-          invoice.supplier.name,
-          invoice.invoiceNo,
+          _sanitize(invoice.supplier.gstin),
+          _sanitize(invoice.supplier.name),
+          _sanitize(invoice.invoiceNo),
           dateFormat.format(invoice.invoiceDate),
           invoice.grandTotal.toStringAsFixed(2),
           item.gstRate.toString(),
           item.netAmount.toStringAsFixed(2),
           '0', // CESS
-          invoice.placeOfSupply,
-          invoice.reverseCharge,
-          item.sacCode,
-          item.description,
+          _sanitize(invoice.placeOfSupply),
+          _sanitize(invoice.reverseCharge),
+          _sanitize(item.sacCode),
+          _sanitize(item.description),
 
           // Restore fields
-          invoice.receiver.name,
-          invoice.receiver.gstin,
-          invoice.receiver.address,
-          invoice.receiver.state,
+          _sanitize(invoice.receiver.name),
+          _sanitize(invoice.receiver.gstin),
+          _sanitize(invoice.receiver.address),
+          _sanitize(invoice.receiver.state),
           item.quantity.toString(),
-          item.unit,
+          _sanitize(item.unit),
           item.amount.toStringAsFixed(2),
           item.discount.toStringAsFixed(2),
           invoice.dueDate != null ? dateFormat.format(invoice.dueDate!) : '',
-          invoice.paymentTerms,
-          invoice.bankName,
-          invoice.accountNo,
-          invoice.ifscCode,
-          invoice.branch,
-          invoice.comments,
+          _sanitize(invoice.paymentTerms),
+          _sanitize(invoice.bankName),
+          _sanitize(invoice.accountNo),
+          _sanitize(invoice.ifscCode),
+          _sanitize(invoice.branch),
+          _sanitize(invoice.comments),
           invoice.totalPaid.toStringAsFixed(2),
         ]);
       }

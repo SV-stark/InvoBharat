@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:crypto/crypto.dart' as crypto;
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
@@ -198,6 +199,40 @@ class UpdateService {
         await streamedResponse.stream.pipe(sink);
         await sink.flush();
         await sink.close();
+
+        // Check for checksum in assets or release body
+        String? expectedChecksum;
+        final checksumAsset = release.assets.cast<ReleaseAsset?>().firstWhere(
+              (final a) =>
+                  a != null &&
+                  (a.name == '${asset.name}.sha256' ||
+                      a.name == '${asset.name}.sha256sum' ||
+                      a.name.endsWith('.sha256')),
+              orElse: () => null,
+            );
+
+        if (checksumAsset != null) {
+          final checksumRes = await httpClient.get(Uri.parse(checksumAsset.browserDownloadUrl));
+          if (checksumRes.statusCode == 200) {
+            expectedChecksum = checksumRes.body.trim().split(RegExp(r'\s+')).first;
+          }
+        } else if (release.body != null) {
+          final match = RegExp(r'sha256\s*[:=]\s*([a-f0-9]{64})', caseSensitive: false).firstMatch(release.body!);
+          if (match != null) {
+            expectedChecksum = match.group(1);
+          }
+        }
+
+        if (expectedChecksum != null && expectedChecksum.isNotEmpty) {
+          final fileBytes = await file.readAsBytes();
+          final computedHash = crypto.sha256.convert(fileBytes).toString();
+          if (computedHash.toLowerCase() != expectedChecksum.toLowerCase()) {
+            if (await file.exists()) await file.delete();
+            throw Exception(
+              'Security Error: Installer checksum verification failed. Expected: $expectedChecksum, Actual: $computedHash',
+            );
+          }
+        }
 
         // Run the installer
         if (startProcess != null) {

@@ -30,6 +30,17 @@ import 'package:invobharat/services/logger_service.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/client.dart';
 
+Widget _wrapMaterial(final Widget child) {
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
+    return Material(
+      child: ScaffoldMessenger(
+        child: child,
+      ),
+    );
+  }
+  return child;
+}
+
 final appRouter = GoRouter(
   initialLocation: '/',
   routes: [
@@ -71,11 +82,11 @@ final appRouter = GoRouter(
 
     GoRoute(
       path: '/payments',
-      builder: (final context, final state) => const PaymentHistoryScreen(),
+      builder: (final context, final state) => _wrapMaterial(const PaymentHistoryScreen()),
     ),
     GoRoute(
       path: '/audit',
-      builder: (final context, final state) => const AuditReportScreen(),
+      builder: (final context, final state) => _wrapMaterial(const AuditReportScreen()),
     ),
     GoRoute(
       path: '/recurring',
@@ -133,12 +144,12 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/invoices',
-      builder: (final context, final state) => const InvoicesListScreen(),
+      builder: (final context, final state) => _wrapMaterial(const InvoicesListScreen()),
     ),
     GoRoute(
       path: '/client-ledger',
       builder: (final context, final state) =>
-          ClientLedgerScreen(client: state.extra as Client),
+          _wrapMaterial(ClientLedgerScreen(client: state.extra as Client)),
     ),
     GoRoute(
       path: '/settings',
@@ -152,7 +163,7 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/invoice-detail',
       builder: (final context, final state) =>
-          InvoiceDetailScreen(invoice: state.extra as Invoice),
+          _wrapMaterial(InvoiceDetailScreen(invoice: state.extra as Invoice)),
     ),
     GoRoute(
       path: '/logs',

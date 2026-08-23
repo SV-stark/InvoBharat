@@ -2,7 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart' show PaneDisplayMode;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:gap/gap.dart';
@@ -65,28 +65,52 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _loadProfileData();
   }
 
+  bool _controllersInitialized = false;
+
   void _loadProfileData() {
     final profile = ref.read(businessProfileProvider);
-    _nameController = TextEditingController(text: profile.companyName);
-    _addressController = TextEditingController(text: profile.address);
-    _gstinController = TextEditingController(text: profile.gstin);
-    _emailController = TextEditingController(text: profile.email);
-    _phoneController = TextEditingController(text: profile.phone);
-    _stateController = TextEditingController(text: profile.state);
-    _seriesController = TextEditingController(text: profile.invoiceSeries);
-    _sequenceController = TextEditingController(
-      text: profile.invoiceSequence.toString(),
-    );
-    _termsController = TextEditingController(text: profile.termsAndConditions);
-    _notesController = TextEditingController(text: profile.defaultNotes);
-    _currencyController = TextEditingController(text: profile.currency);
-    _bankNameController = TextEditingController(text: profile.bankName);
-    _accountNumberController = TextEditingController(text: profile.accountNo);
-    _ifscCodeController = TextEditingController(text: profile.ifscCode);
-    _branchNameController = TextEditingController(text: profile.branch);
-    _upiIdController = TextEditingController(text: profile.upiId);
-    _upiNameController = TextEditingController(text: profile.upiName);
-    _panController = TextEditingController(text: profile.pan);
+    if (!_controllersInitialized) {
+      _nameController = TextEditingController(text: profile.companyName);
+      _addressController = TextEditingController(text: profile.address);
+      _gstinController = TextEditingController(text: profile.gstin);
+      _emailController = TextEditingController(text: profile.email);
+      _phoneController = TextEditingController(text: profile.phone);
+      _stateController = TextEditingController(text: profile.state);
+      _seriesController = TextEditingController(text: profile.invoiceSeries);
+      _sequenceController = TextEditingController(
+        text: profile.invoiceSequence.toString(),
+      );
+      _termsController = TextEditingController(text: profile.termsAndConditions);
+      _notesController = TextEditingController(text: profile.defaultNotes);
+      _currencyController = TextEditingController(text: profile.currency);
+      _bankNameController = TextEditingController(text: profile.bankName);
+      _accountNumberController = TextEditingController(text: profile.accountNo);
+      _ifscCodeController = TextEditingController(text: profile.ifscCode);
+      _branchNameController = TextEditingController(text: profile.branch);
+      _upiIdController = TextEditingController(text: profile.upiId);
+      _upiNameController = TextEditingController(text: profile.upiName);
+      _panController = TextEditingController(text: profile.pan);
+      _controllersInitialized = true;
+    } else {
+      _nameController.text = profile.companyName;
+      _addressController.text = profile.address;
+      _gstinController.text = profile.gstin;
+      _emailController.text = profile.email;
+      _phoneController.text = profile.phone;
+      _stateController.text = profile.state;
+      _seriesController.text = profile.invoiceSeries;
+      _sequenceController.text = profile.invoiceSequence.toString();
+      _termsController.text = profile.termsAndConditions;
+      _notesController.text = profile.defaultNotes;
+      _currencyController.text = profile.currency;
+      _bankNameController.text = profile.bankName;
+      _accountNumberController.text = profile.accountNo;
+      _ifscCodeController.text = profile.ifscCode;
+      _branchNameController.text = profile.branch;
+      _upiIdController.text = profile.upiId;
+      _upiNameController.text = profile.upiName;
+      _panController.text = profile.pan;
+    }
   }
 
   @override
@@ -148,12 +172,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _pickLogo() async {
     try {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      final result = await FilePicker.pickFile(
+        type: FileType.image,
+      );
 
-      if (pickedFile != null) {
+      if (result != null && result.path != null) {
         final currentProfile = ref.read(businessProfileProvider);
-        final newProfile = currentProfile.copyWith(logoPath: pickedFile.path);
+        final newProfile =
+            currentProfile.copyWith(logoPath: result.path!);
         await ref
             .read(businessProfileListProvider.notifier)
             .updateProfile(newProfile);
@@ -166,13 +192,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _pickSignature() async {
     try {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      final result = await FilePicker.pickFile(
+        type: FileType.image,
+      );
 
-      if (pickedFile != null) {
+      if (result != null && result.path != null) {
         final currentProfile = ref.read(businessProfileProvider);
         final newProfile = currentProfile.copyWith(
-          signaturePath: pickedFile.path,
+          signaturePath: result.path!,
         );
         await ref
             .read(businessProfileListProvider.notifier)
@@ -860,6 +887,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   onPressed: _isRestoreLoading
                       ? null
                       : () async {
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (final context) => AlertDialog(
+                              title: const Text("Restore Backup"),
+                              content: const Text(
+                                "Restoring a backup will overwrite your current business profiles, clients, invoices, and media files. This action cannot be undone.\n\nAre you sure you want to proceed?",
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, false),
+                                  child: const Text("Cancel"),
+                                ),
+                                FilledButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text("Restore Data"),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirmed != true) return;
+
                           setState(() => _isRestoreLoading = true);
                           try {
                             final result = await BackupService(
@@ -1526,6 +1575,16 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
         ).showSnackBar(const SnackBar(content: Text("Email Settings Saved")));
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _hostController.dispose();
+    _portController.dispose();
+    _emailController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override

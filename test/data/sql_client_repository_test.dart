@@ -8,16 +8,6 @@ import 'package:invobharat/data/sql_client_repository.dart';
 void main() {
   late AppDatabase database;
   late SqlClientRepository repository;
-
-  setUp(() {
-    database = AppDatabase(NativeDatabase.memory());
-    repository = SqlClientRepository(database, 'p1');
-  });
-
-  tearDown(() async {
-    await database.close();
-  });
-
   final testProfile = model.BusinessProfile(
     id: 'p1',
     companyName: 'Test Biz',
@@ -38,33 +28,41 @@ void main() {
     state: 'Maharashtra',
   );
 
+  setUp(() async {
+    database = AppDatabase(NativeDatabase.memory());
+    repository = SqlClientRepository(database, 'p1');
+    await database
+        .into(database.businessProfiles)
+        .insert(
+          BusinessProfilesCompanion.insert(
+            id: testProfile.id,
+            companyName: testProfile.companyName,
+            address: testProfile.address,
+            gstin: testProfile.gstin,
+            email: testProfile.email,
+            phone: testProfile.phone,
+            state: testProfile.state,
+            colorValue: testProfile.colorValue,
+            invoiceSeries: testProfile.invoiceSeries,
+            invoiceSequence: testProfile.invoiceSequence,
+            termsAndConditions: testProfile.termsAndConditions,
+            defaultNotes: testProfile.defaultNotes,
+            currencySymbol: testProfile.currency,
+            bankName: testProfile.bankName,
+            accountNo: testProfile.accountNo,
+            ifscCode: testProfile.ifscCode,
+            branch: testProfile.branch,
+            pan: testProfile.pan,
+          ),
+        );
+  });
+
+  tearDown(() async {
+    await database.close();
+  });
+
   group('SqlClientRepository', () {
     test('saveClient and getClient', () async {
-      await database
-          .into(database.businessProfiles)
-          .insert(
-            BusinessProfilesCompanion.insert(
-              id: testProfile.id,
-              companyName: testProfile.companyName,
-              address: testProfile.address,
-              gstin: testProfile.gstin,
-              email: testProfile.email,
-              phone: testProfile.phone,
-              state: testProfile.state,
-              colorValue: testProfile.colorValue,
-              invoiceSeries: testProfile.invoiceSeries,
-              invoiceSequence: testProfile.invoiceSequence,
-              termsAndConditions: testProfile.termsAndConditions,
-              defaultNotes: testProfile.defaultNotes,
-              currencySymbol: testProfile.currency,
-              bankName: testProfile.bankName,
-              accountNo: testProfile.accountNo,
-              ifscCode: testProfile.ifscCode,
-              branch: testProfile.branch,
-              pan: testProfile.pan,
-            ),
-          );
-
       await repository.saveClient(testClient);
       final client = await repository.getClient(testClient.id);
 

@@ -10,6 +10,7 @@ import 'package:archive/archive_io.dart';
 import 'package:invobharat/providers/app_config_provider.dart';
 import 'package:invobharat/providers/database_provider.dart';
 import 'package:invobharat/services/backup_service.dart';
+import 'package:invobharat/services/logger_service.dart';
 
 final autoBackupServiceProvider = Provider<AutoBackupService>((final ref) {
   final service = AutoBackupService(ref);
@@ -102,9 +103,9 @@ class AutoBackupService {
         await _ref
             .read(appConfigProvider.notifier)
             .updateLastBackupDate(DateTime.now());
-        debugPrint("Auto-backup completed successfully at ${DateTime.now()}");
-      } catch (e) {
-        debugPrint("Auto-backup failed: $e");
+        LoggerService.talker.info("Auto-backup completed successfully at ${DateTime.now()}");
+      } catch (e, st) {
+        LoggerService.talker.handle(e, st, "Auto-backup failed");
       }
     }
   }

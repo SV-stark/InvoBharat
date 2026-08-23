@@ -152,7 +152,8 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     if (existingEstimate == null) throw Exception('No estimate to convert');
 
     final profile = ref.read(businessProfileProvider);
-    final invoiceNo = '${profile.invoiceSeries}${profile.invoiceSequence}';
+    final invoiceNo =
+        '${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}';
 
     final newInvoice = Invoice(
       id: const Uuid().v4(),
@@ -174,11 +175,6 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     // Update Estimate Status
     final updatedEstimate = existingEstimate!.copyWith(status: 'Converted');
     await ref.read(estimateListProvider.notifier).saveEstimate(updatedEstimate);
-
-    // Increment sequence
-    await ref
-        .read(businessProfileListProvider.notifier)
-        .incrementInvoiceSequence(profile.id);
 
     return invoiceNo;
   }

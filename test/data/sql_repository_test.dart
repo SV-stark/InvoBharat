@@ -15,11 +15,16 @@ void main() {
   late SqlBusinessProfileRepository profileRepo;
   late SqlInvoiceRepository invoiceRepo;
 
-  setUp(() {
+  setUp(() async {
     database = AppDatabase(NativeDatabase.memory());
     clientRepo = SqlClientRepository(database, 'default');
     profileRepo = SqlBusinessProfileRepository(database);
     invoiceRepo = SqlInvoiceRepository(database, 'default');
+
+    await profileRepo.saveProfile(model.BusinessProfile.defaults().copyWith(
+      id: 'default',
+      companyName: 'Default Biz',
+    ));
   });
 
   tearDown(() async {

@@ -17,11 +17,16 @@ class CreativeTemplate extends BasePdfTemplate {
     final BusinessProfile profile,
     final pw.Font font,
     final pw.Font fontBold, {
+    final pw.Font? fontFallback,
     final String? title,
     final bool showHsnSummary = true,
   }) async {
     final pdf = pw.Document(
-      theme: pw.ThemeData.withFont(base: font, bold: fontBold),
+      theme: pw.ThemeData.withFont(
+        base: font,
+        bold: fontBold,
+        fontFallback: fontFallback != null ? [fontFallback] : const [],
+      ),
     );
 
     final themeColor = PdfColor.fromInt(profile.colorValue);
@@ -247,14 +252,15 @@ class CreativeTemplate extends BasePdfTemplate {
                                     "Place: ${invoice.placeOfSupply}",
                                     style: const pw.TextStyle(fontSize: 10),
                                   ),
-                                  if (invoice.reverseCharge == 'Y')
-                                    pw.Text(
-                                      "Reverse Charge: YES",
-                                      style: const pw.TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: pw.FontWeight.bold,
-                                      ),
+                                  pw.Text(
+                                    "Reverse Charge: ${invoice.reverseCharge == 'Y' ? 'YES' : 'NO'}",
+                                    style: pw.TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: invoice.reverseCharge == 'Y'
+                                          ? pw.FontWeight.bold
+                                          : pw.FontWeight.normal,
                                     ),
+                                  ),
                                 ],
                               ),
                             ],
@@ -279,7 +285,6 @@ class CreativeTemplate extends BasePdfTemplate {
                           ),
                           if (showHsnSummary)
                             buildHsnSummaryTable(invoice, font, fontBold),
-                          buildAmountInWords(invoice.grandTotal),
                           pw.SizedBox(height: 30),
 
                           // Calculation Row

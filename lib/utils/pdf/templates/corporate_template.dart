@@ -17,11 +17,16 @@ class CorporateTemplate extends BasePdfTemplate {
     final BusinessProfile profile,
     final pw.Font font,
     final pw.Font fontBold, {
+    final pw.Font? fontFallback,
     final String? title,
     final bool showHsnSummary = true,
   }) async {
     final pdf = pw.Document(
-      theme: pw.ThemeData.withFont(base: font, bold: fontBold),
+      theme: pw.ThemeData.withFont(
+        base: font,
+        bold: fontBold,
+        fontFallback: fontFallback != null ? [fontFallback] : const [],
+      ),
     );
 
     final themeColor = PdfColor.fromInt(profile.colorValue);
@@ -222,15 +227,16 @@ class CorporateTemplate extends BasePdfTemplate {
                             const pw.TextStyle(fontSize: 9),
                             const pw.TextStyle(fontSize: 9),
                           ),
-                          if (invoice.reverseCharge == 'Y')
                             pw.Text(
-                              "Reverse Charge: YES",
-                              style: const pw.TextStyle(
+                              "Reverse Charge: ${invoice.reverseCharge == 'Y' ? 'YES' : 'NO'}",
+                              style: pw.TextStyle(
                                 fontSize: 9,
-                                fontWeight: pw.FontWeight.bold,
+                                fontWeight: invoice.reverseCharge == 'Y'
+                                    ? pw.FontWeight.bold
+                                    : pw.FontWeight.normal,
                               ),
                             ),
-                        ],
+                          ],
                       ),
                     ],
                   ),
