@@ -347,23 +347,30 @@ class BackupService {
                 final type = m['type'] as String?;
                 final zipPath = m['zipPath'] as String?;
                 if (profileId != null && type != null && zipPath != null) {
-                  final fileName = p.basename(zipPath);
-                  final localPath = p.join(mediaDir.path, fileName);
-                  if (type == 'logo') {
-                    rawDb.execute(
-                      'UPDATE business_profiles SET logo_path = ? WHERE id = ?',
-                      [localPath, profileId],
-                    );
-                  } else if (type == 'signature') {
-                    rawDb.execute(
-                      'UPDATE business_profiles SET signature_path = ? WHERE id = ?',
-                      [localPath, profileId],
-                    );
-                  } else if (type == 'stamp') {
-                    rawDb.execute(
-                      'UPDATE business_profiles SET stamp_path = ? WHERE id = ?',
-                      [localPath, profileId],
-                    );
+                  final safeFileName = SecurityUtils.sanitizeFilename(
+                    p.basename(zipPath),
+                  );
+                  final resolvedPath = SecurityUtils.safeResolve(
+                    p.join(mediaDir.path, safeFileName),
+                    mediaDir.path,
+                  );
+                  if (resolvedPath != null) {
+                    if (type == 'logo') {
+                      rawDb.execute(
+                        'UPDATE business_profiles SET logo_path = ? WHERE id = ?',
+                        [resolvedPath, profileId],
+                      );
+                    } else if (type == 'signature') {
+                      rawDb.execute(
+                        'UPDATE business_profiles SET signature_path = ? WHERE id = ?',
+                        [resolvedPath, profileId],
+                      );
+                    } else if (type == 'stamp') {
+                      rawDb.execute(
+                        'UPDATE business_profiles SET stamp_path = ? WHERE id = ?',
+                        [resolvedPath, profileId],
+                      );
+                    }
                   }
                 }
               }

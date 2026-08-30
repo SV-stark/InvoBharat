@@ -42,27 +42,13 @@ class CreativeTemplate extends BasePdfTemplate {
 
     final pw.MemoryImage? logoImage = logoBytes != null
         ? pw.MemoryImage(logoBytes)
-        : (profile.logoPath != null &&
-                  profile.logoPath!.isNotEmpty &&
-                  File(profile.logoPath!).existsSync()
-              ? pw.MemoryImage(File(profile.logoPath!).readAsBytesSync())
-              : null);
-
+        : null;
     final pw.MemoryImage? stampImage = stampBytes != null
         ? pw.MemoryImage(stampBytes)
-        : (profile.stampPath != null &&
-                  profile.stampPath!.isNotEmpty &&
-                  File(profile.stampPath!).existsSync()
-              ? pw.MemoryImage(File(profile.stampPath!).readAsBytesSync())
-              : null);
-
+        : null;
     final pw.MemoryImage? signatureImage = signatureBytes != null
         ? pw.MemoryImage(signatureBytes)
-        : (profile.signaturePath != null &&
-                  profile.signaturePath!.isNotEmpty &&
-                  File(profile.signaturePath!).existsSync()
-              ? pw.MemoryImage(File(profile.signaturePath!).readAsBytesSync())
-              : null);
+        : null;
 
     pdf.addPage(
       pw.MultiPage(

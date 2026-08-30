@@ -33,7 +33,7 @@ jobs:
 
       - name: Install Inno Setup
         if: steps.cache-innosetup.outputs.cache-hit != 'true'
-        run: choco install innosetup --allow-empty-checksums --no-progress
+        run: choco install innosetup --no-progress
 
       - name: Install Dependencies
         run: flutter pub get

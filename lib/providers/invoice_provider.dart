@@ -46,6 +46,9 @@ Invoice _createDefaultInvoice(
 class InvoiceNotifier extends Notifier<Invoice> {
   @override
   Invoice build() {
+    // NOTE: Intentionally using ref.read instead of ref.watch so that background
+    // profile updates do not wipe active user invoice draft inputs. Profile switching
+    // explicitly triggers ref.invalidate(invoiceProvider) in BusinessProfileList.selectProfile.
     final profile = ref.read(businessProfileProvider);
     return _createDefaultInvoice(profile);
   }

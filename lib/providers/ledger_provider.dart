@@ -30,22 +30,12 @@ final clientLedgerProvider = FutureProvider.family<List<LedgerEntry>, String>((
 ) async {
   final repository = ref.watch(invoiceRepositoryProvider);
 
-  // 1. Fetch all invoices
-  final allInvoices = await repository.getAllInvoices();
-  final query = clientIdentifier.trim().toLowerCase();
-
-  // 2. Filter for this client matching name, GSTIN, phone, or email
-  final clientInvoices = allInvoices.where((final inv) {
-    final recName = inv.receiver.name.trim().toLowerCase();
-    final recGstin = inv.receiver.gstin.trim().toLowerCase();
-    final recPhone = inv.receiver.phone.trim().toLowerCase();
-    final recEmail = inv.receiver.email.trim().toLowerCase();
-
-    return recName == query ||
-        (recGstin.isNotEmpty && recGstin == query) ||
-        (recPhone.isNotEmpty && recPhone == query) ||
-        (recEmail.isNotEmpty && recEmail == query);
-  }).toList();
+  // 1. Fetch client-specific invoices via indexed query matching ID, GSTIN, or Name
+  final clientInvoices = await repository.getInvoicesForClient(
+    clientId: clientIdentifier,
+    gstin: clientIdentifier,
+    query: clientIdentifier,
+  );
 
   final List<LedgerEntry> entries = [];
 

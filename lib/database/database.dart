@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:invobharat/database/tables.dart';
+import 'package:invobharat/services/logger_service.dart';
 
 part 'database.g.dart';
 
@@ -86,10 +87,8 @@ class AppDatabase extends _$AppDatabase {
                 );
               }
             }
-          } catch (e) {
-            if (kDebugMode) {
-              print("Migration V2 Backfill Error: $e");
-            }
+          } catch (e, st) {
+            LoggerService.talker.handle(e, st, "Migration V2 Backfill Error");
           }
         }
         if (from < 3) {
@@ -119,10 +118,8 @@ class AppDatabase extends _$AppDatabase {
               receiver_email = (SELECT email FROM clients WHERE clients.id = invoices.client_id)
             WHERE client_id IS NOT NULL AND receiver_name IS NULL
            ''');
-          } catch (e) {
-            if (kDebugMode) {
-              print("Migration V4 Backfill Error: $e");
-            }
+          } catch (e, st) {
+            LoggerService.talker.handle(e, st, "Migration V4 Backfill Error");
           }
         }
         if (from < 5) {
@@ -199,10 +196,8 @@ class AppDatabase extends _$AppDatabase {
               FROM business_profiles
               WHERE bank_name IS NOT NULL AND bank_name != ''
             ''');
-          } catch (e) {
-            if (kDebugMode) {
-              print("Migration V9 Backfill Error: $e");
-            }
+          } catch (e, st) {
+            LoggerService.talker.handle(e, st, "Migration V9 Backfill Error");
           }
         }
         if (from < 10) {
@@ -490,10 +485,8 @@ class AppSettingsService {
         await secureStorage.write(key: 'smtp_password', value: legacyPassword);
         await prefs.remove('smtp_password');
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print("Settings Migration Error: $e");
-      }
+    } catch (e, st) {
+      LoggerService.talker.handle(e, st, "Settings Migration Error");
     }
   }
 

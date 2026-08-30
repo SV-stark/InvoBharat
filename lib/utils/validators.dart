@@ -34,8 +34,8 @@ class Validators {
 
   static ValidationResult validateEmail(final String? value) {
     if (value == null || value.isEmpty) return const ValidationResult.empty();
-    final emailRegex = RegExp(r'^[\w-\.\+]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value)) {
+    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]{2,63}$');
+    if (!emailRegex.hasMatch(value.trim())) {
       return const ValidationResult.invalid('Invalid email address');
     }
     return const ValidationResult.valid();

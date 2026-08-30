@@ -6,6 +6,11 @@ abstract class InvoiceRepository {
   Future<void> saveInvoice(final Invoice invoice);
   Future<Invoice?> getInvoice(final String id);
   Future<List<Invoice>> getAllInvoices();
+  Future<List<Invoice>> getInvoicesForClient({
+    final String? clientId,
+    final String? gstin,
+    final String? query,
+  });
   Future<List<Invoice>> getInvoicesPaginated({
     required final int limit,
     required final int offset,

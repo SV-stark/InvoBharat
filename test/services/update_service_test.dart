@@ -218,5 +218,40 @@ void main() {
         await downloadedFile.delete();
       },
     );
+
+    test(
+      'downloadAndInstallUpdate throws exception if checksum mismatch',
+      () async {
+        final release = Release(
+          tagName: 'v1.1.0',
+          htmlUrl: 'https://github.com/stable',
+          prerelease: false,
+          publishedAt: '2023-10-01',
+          body:
+              'SHA256: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+          assets: [
+            ReleaseAsset(
+              name: 'installer.exe',
+              browserDownloadUrl: 'https://github.com/installer.exe',
+            ),
+          ],
+        );
+
+        final client = MockClient((final request) async {
+          return http.Response('binary payload', 200);
+        });
+
+        expect(
+          () => UpdateService.downloadAndInstallUpdate(release, client: client),
+          throwsA(
+            isA<Exception>().having(
+              (final e) => e.toString(),
+              'message',
+              contains('checksum verification failed'),
+            ),
+          ),
+        );
+      },
+    );
   });
 }

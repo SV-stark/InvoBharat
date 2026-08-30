@@ -21,6 +21,7 @@ import 'package:invobharat/services/email_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:indian_formatters/indian_formatters.dart';
 import 'package:invobharat/utils/formatters.dart';
+import 'package:invobharat/utils/validators.dart';
 import 'package:flutter/services.dart';
 
 import 'package:invobharat/providers/bank_provider.dart';
@@ -490,7 +491,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const Gap(24),
             _buildSectionHeader("UPI Details"),
-            _buildTextField("UPI ID (VPA)", _upiIdController),
+            _buildTextField(
+              "UPI ID (VPA)",
+              _upiIdController,
+              validator: Validators.vpa,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+            ),
             _buildTextField("UPI Name", _upiNameController),
             _buildTextField(
               "Business PAN",
@@ -1212,6 +1218,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final int maxLines = 1,
     final List<TextInputFormatter>? formatters,
     final Function(String)? onChanged,
+    final String? Function(String?)? validator,
+    final AutovalidateMode? autovalidateMode,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -1220,14 +1228,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         maxLines: maxLines,
         inputFormatters: formatters,
         onChanged: onChanged,
+        autovalidateMode: autovalidateMode,
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
         ),
-        validator: (final value) =>
-            label == "Company Name" && (value == null || value.isEmpty)
-            ? 'Required'
-            : null,
+        validator:
+            validator ??
+            (final value) =>
+                label == "Company Name" && (value == null || value.isEmpty)
+                ? 'Required'
+                : null,
       ),
     );
   }

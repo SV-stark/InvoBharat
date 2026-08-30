@@ -347,6 +347,78 @@ class SqlInvoiceRepository implements InvoiceRepository {
   }
 
   @override
+  Future<List<model.Invoice>> getInvoicesForClient({
+    final String? clientId,
+    final String? gstin,
+    final String? query,
+  }) async {
+    final cleanGstin = gstin?.trim();
+    final cleanQuery = query?.trim();
+
+    final stmt = database.select(database.invoices)
+      ..where((final t) {
+        Expression<bool> predicate = t.profileId.equals(profileId);
+        if (clientId != null && clientId.isNotEmpty) {
+          if (cleanGstin != null && cleanGstin.isNotEmpty) {
+            predicate =
+                predicate &
+                (t.clientId.equals(clientId) |
+                    t.receiverGstin.equals(cleanGstin));
+          } else {
+            predicate =
+                predicate &
+                (t.clientId.equals(clientId) |
+                    (cleanQuery != null && cleanQuery.isNotEmpty
+                        ? t.receiverName.like('%$cleanQuery%')
+                        : const Constant(false)));
+          }
+        } else if (cleanGstin != null && cleanGstin.isNotEmpty) {
+          predicate = predicate & t.receiverGstin.equals(cleanGstin);
+        } else if (cleanQuery != null && cleanQuery.isNotEmpty) {
+          predicate =
+              predicate &
+              (t.receiverName.like('%$cleanQuery%') |
+                  t.receiverPhone.equals(cleanQuery) |
+                  t.receiverEmail.equals(cleanQuery));
+        }
+        return predicate;
+      })
+      ..orderBy([
+        (final t) =>
+            OrderingTerm(expression: t.invoiceDate, mode: OrderingMode.asc),
+      ]);
+
+    final invoiceRows = await stmt.get();
+    if (invoiceRows.isEmpty) return [];
+
+    final invoiceIds = invoiceRows.map((final r) => r.id).toList();
+    final allItems = await (database.select(
+      database.invoiceItems,
+    )..where((final t) => t.invoiceId.isIn(invoiceIds))).get();
+    final allPayments = await (database.select(
+      database.payments,
+    )..where((final t) => t.invoiceId.isIn(invoiceIds))).get();
+
+    final clientIds = invoiceRows
+        .map((final r) => r.clientId)
+        .whereType<String>()
+        .toSet()
+        .toList();
+
+    final clientRows = clientIds.isNotEmpty
+        ? await (database.select(
+            database.clients,
+          )..where((final t) => t.id.isIn(clientIds))).get()
+        : [];
+
+    final Map<String, dynamic> clientMap = <String, dynamic>{
+      for (var c in clientRows) c.id: c,
+    };
+
+    return _mapInvoices(invoiceRows, allItems, allPayments, clientMap);
+  }
+
+  @override
   Future<List<model.Invoice>> getInvoicesPaginated({
     required final int limit,
     required final int offset,

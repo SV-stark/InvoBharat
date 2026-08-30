@@ -34,6 +34,17 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
   }
 
   @override
+  void didUpdateWidget(covariant final FluentHome oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialTab != null &&
+        widget.initialTab != oldWidget.initialTab) {
+      setState(() {
+        topIndex = widget.initialTab!;
+      });
+    }
+  }
+
+  @override
   Widget build(final BuildContext context) {
     return CallbackShortcuts(
       bindings: {
