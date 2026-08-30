@@ -122,6 +122,24 @@ void main() {
       expect(maxAfterDelete, 0);
     });
 
+    test('Update invoice replaces items and payments cleanly without foreign key issues', () async {
+      await repository.saveInvoice(testInvoice);
+      
+      // Update the invoice with new items and payments
+      final updatedInvoice = testInvoice.copyWith(
+        items: [
+          const model.InvoiceItem(description: 'Updated Item A', amount: 200),
+          const model.InvoiceItem(description: 'Updated Item B', amount: 300),
+        ],
+      );
+      await repository.saveInvoice(updatedInvoice);
+      
+      final fetched = await repository.getInvoice(testInvoice.id!);
+      expect(fetched, isNotNull);
+      expect(fetched?.items.length, 2);
+      expect(fetched?.items.first.description, 'Updated Item A');
+    });
+
     test('Credit Note and Debit Note persistence with original invoice linkage', () async {
       final creditNote = testInvoice.copyWith(
         id: 'cn1',

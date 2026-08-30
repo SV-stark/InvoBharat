@@ -36,7 +36,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration {
@@ -135,6 +135,8 @@ class AppDatabase extends _$AppDatabase {
         if (from < 7) {
           // Migration for foreign key constraints and unique indices.
           // Recreating tables safely with data preservation.
+          await m.database.customStatement('PRAGMA foreign_keys = OFF;');
+          await m.database.customStatement('PRAGMA legacy_alter_table = ON;');
           await m.database.transaction(() async {
             final List<TableInfo<Table, dynamic>> tables = [
               businessProfiles as TableInfo<Table, dynamic>,
@@ -177,6 +179,8 @@ class AppDatabase extends _$AppDatabase {
               await m.database.customStatement('DROP TABLE `$tempName`');
             }
           });
+          await m.database.customStatement('PRAGMA legacy_alter_table = OFF;');
+          await m.database.customStatement('PRAGMA foreign_keys = ON;');
         }
         if (from < 8) {
           await m.addColumn(invoices, invoices.poNumber);
@@ -209,6 +213,7 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 12) {
           await m.database.customStatement('PRAGMA foreign_keys = OFF;');
+          await m.database.customStatement('PRAGMA legacy_alter_table = ON;');
           await m.database.transaction(() async {
             final table = clients;
             final tableName = table.actualTableName;
@@ -236,6 +241,7 @@ class AppDatabase extends _$AppDatabase {
               "CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null'",
             );
           });
+          await m.database.customStatement('PRAGMA legacy_alter_table = OFF;');
           await m.database.customStatement('PRAGMA foreign_keys = ON;');
         }
         if (from < 13) {
@@ -244,6 +250,7 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(recurringProfilesTable);
 
           await m.database.customStatement('PRAGMA foreign_keys = OFF;');
+          await m.database.customStatement('PRAGMA legacy_alter_table = ON;');
           await m.database.transaction(() async {
             final table = invoices;
             final tableName = table.actualTableName;
@@ -263,6 +270,7 @@ class AppDatabase extends _$AppDatabase {
 
             await m.database.customStatement('DROP TABLE `$tempName`');
           });
+          await m.database.customStatement('PRAGMA legacy_alter_table = OFF;');
           await m.database.customStatement('PRAGMA foreign_keys = ON;');
         }
         if (from < 14) {
@@ -288,14 +296,72 @@ class AppDatabase extends _$AppDatabase {
           }
           await _createIndexes(m.database);
         }
+        if (from < 16) {
+          await _repairCorruptedForeignKeys(m.database);
+          await _createIndexes(m.database);
+        }
       },
       beforeOpen: (final details) async {
+        await _repairCorruptedForeignKeys(this);
         await customStatement('PRAGMA foreign_keys = ON;');
         if (details.wasCreated) {
           // ...
         }
       },
     );
+  }
+
+  static Future<void> _repairCorruptedForeignKeys(final GeneratedDatabase db) async {
+    try {
+      await db.customStatement('PRAGMA foreign_keys = OFF;');
+      await db.customStatement('PRAGMA legacy_alter_table = ON;');
+
+      final tablesWithTemp = await db.customSelect(
+        "SELECT name, sql FROM sqlite_master WHERE type='table' AND sql LIKE '%_temp%'",
+      ).get();
+
+      if (tablesWithTemp.isNotEmpty) {
+        for (final row in tablesWithTemp) {
+          final tableName = row.read<String>('name');
+          final tableInfo = db.allTables.cast<TableInfo<Table, dynamic>?>().firstWhere(
+            (final t) => t?.actualTableName == tableName,
+            orElse: () => null,
+          );
+
+          if (tableInfo != null) {
+            final tempBackupName = '${tableName}_repair_tmp';
+            await db.customStatement(
+              'ALTER TABLE `$tableName` RENAME TO `$tempBackupName`',
+            );
+            await Migrator(db).createTable(tableInfo);
+
+            final pragmaResult = await db
+                .customSelect('PRAGMA table_info(`$tempBackupName`)')
+                .get();
+            final existingCols =
+                pragmaResult.map((final r) => r.read<String>('name')).toSet();
+            final columnsToCopy = tableInfo.$columns
+                .map((final c) => c.name)
+                .where((final name) => existingCols.contains(name))
+                .join(', ');
+
+            if (columnsToCopy.isNotEmpty) {
+              await db.customStatement(
+                'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempBackupName`',
+              );
+            }
+            await db.customStatement('DROP TABLE `$tempBackupName`');
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Schema Foreign Key Repair Error: $e");
+      }
+    } finally {
+      await db.customStatement('PRAGMA legacy_alter_table = OFF;');
+      await db.customStatement('PRAGMA foreign_keys = ON;');
+    }
   }
 
   static Future<void> _createIndexes(final GeneratedDatabase db) async {
