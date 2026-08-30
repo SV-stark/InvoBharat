@@ -39,12 +39,30 @@ Widget _wrapMaterial(final Widget child) {
 
 final appRouter = GoRouter(
   initialLocation: '/',
+  errorBuilder: (final context, final state) => Scaffold(
+    appBar: AppBar(title: const Text('Page Not Found')),
+    body: Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('Error: ${state.error ?? 'Unknown error'}'),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => context.go('/'),
+            child: const Text('Return Home'),
+          ),
+        ],
+      ),
+    ),
+  ),
   routes: [
     GoRoute(
       path: '/',
       builder: (final context, final state) {
+        final tabStr = state.uri.queryParameters['tab'];
+        final initialTab = int.tryParse(tabStr ?? '');
         if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
-          return const FluentHome();
+          return FluentHome(initialTab: initialTab);
         }
         return const DashboardScreen();
       },
@@ -134,10 +152,11 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/estimate-form',
       builder: (final context, final state) {
+        final estimateId = state.extra is String ? state.extra as String : null;
         if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
-          return FluentEstimateForm(estimateId: state.extra as String?);
+          return FluentEstimateForm(estimateId: estimateId);
         }
-        return EstimateForm(estimateId: state.extra as String?);
+        return EstimateForm(estimateId: estimateId);
       },
     ),
     GoRoute(
@@ -147,8 +166,12 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/client-ledger',
-      builder: (final context, final state) =>
-          _wrapMaterial(ClientLedgerScreen(client: state.extra as Client)),
+      builder: (final context, final state) {
+        final client = state.extra is Client
+            ? state.extra as Client
+            : const Client(id: '', name: 'Unknown');
+        return _wrapMaterial(ClientLedgerScreen(client: client));
+      },
     ),
     GoRoute(
       path: '/settings',
@@ -161,8 +184,31 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/invoice-detail',
-      builder: (final context, final state) =>
-          _wrapMaterial(InvoiceDetailScreen(invoice: state.extra as Invoice)),
+      builder: (final context, final state) {
+        if (state.extra is Invoice) {
+          return _wrapMaterial(
+            InvoiceDetailScreen(invoice: state.extra as Invoice),
+          );
+        }
+        return _wrapMaterial(
+          Scaffold(
+            appBar: AppBar(title: const Text('Invoice Details')),
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('No invoice data provided.'),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: () => context.go('/'),
+                    child: const Text('Go to Invoices'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     ),
     GoRoute(
       path: '/logs',

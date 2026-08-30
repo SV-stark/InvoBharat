@@ -25,6 +25,9 @@ class PdfGeneratorParams {
   final ByteData boldFont;
   final ByteData? fallbackFont;
   final bool showHsnSummary;
+  final Uint8List? logoBytes;
+  final Uint8List? stampBytes;
+  final Uint8List? signatureBytes;
 
   PdfGeneratorParams({
     required this.invoice,
@@ -34,6 +37,9 @@ class PdfGeneratorParams {
     this.fallbackFont,
     this.title,
     this.showHsnSummary = true,
+    this.logoBytes,
+    this.stampBytes,
+    this.signatureBytes,
   });
 }
 
@@ -91,6 +97,9 @@ Future<Uint8List> _generatePdfInIsolate(final PdfGeneratorParams params) async {
     fontFallback: fontFallback,
     title: effectiveTitle,
     showHsnSummary: params.showHsnSummary,
+    logoBytes: params.logoBytes,
+    stampBytes: params.stampBytes,
+    signatureBytes: params.signatureBytes,
   );
 }
 
@@ -109,6 +118,36 @@ Future<Uint8List> generateInvoicePdf(
     fallbackData = await rootBundle.load('fonts/NotoSans-Regular.ttf');
   } catch (_) {}
 
+  Uint8List? logoBytes;
+  if (profile.logoPath != null && profile.logoPath!.isNotEmpty) {
+    try {
+      final file = File(profile.logoPath!);
+      if (await file.exists()) {
+        logoBytes = await file.readAsBytes();
+      }
+    } catch (_) {}
+  }
+
+  Uint8List? stampBytes;
+  if (profile.stampPath != null && profile.stampPath!.isNotEmpty) {
+    try {
+      final file = File(profile.stampPath!);
+      if (await file.exists()) {
+        stampBytes = await file.readAsBytes();
+      }
+    } catch (_) {}
+  }
+
+  Uint8List? signatureBytes;
+  if (profile.signaturePath != null && profile.signaturePath!.isNotEmpty) {
+    try {
+      final file = File(profile.signaturePath!);
+      if (await file.exists()) {
+        signatureBytes = await file.readAsBytes();
+      }
+    } catch (_) {}
+  }
+
   final params = PdfGeneratorParams(
     invoice: invoice,
     profile: profile,
@@ -117,6 +156,9 @@ Future<Uint8List> generateInvoicePdf(
     boldFont: boldData,
     fallbackFont: fallbackData,
     showHsnSummary: showHsnSummary,
+    logoBytes: logoBytes,
+    stampBytes: stampBytes,
+    signatureBytes: signatureBytes,
   );
 
   if (Platform.environment.containsKey('FLUTTER_TEST')) {

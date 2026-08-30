@@ -20,6 +20,9 @@ class CreativeTemplate extends BasePdfTemplate {
     final pw.Font? fontFallback,
     final String? title,
     final bool showHsnSummary = true,
+    final Uint8List? logoBytes,
+    final Uint8List? stampBytes,
+    final Uint8List? signatureBytes,
   }) async {
     final pdf = pw.Document(
       theme: pw.ThemeData.withFont(
@@ -37,9 +40,29 @@ class CreativeTemplate extends BasePdfTemplate {
       supplyType = "RETAIL INVOICE";
     }
 
-    final logoPath = profile.logoPath;
-    final hasLogo =
-        logoPath != null && logoPath.isNotEmpty && File(logoPath).existsSync();
+    final pw.MemoryImage? logoImage = logoBytes != null
+        ? pw.MemoryImage(logoBytes)
+        : (profile.logoPath != null &&
+                  profile.logoPath!.isNotEmpty &&
+                  File(profile.logoPath!).existsSync()
+              ? pw.MemoryImage(File(profile.logoPath!).readAsBytesSync())
+              : null);
+
+    final pw.MemoryImage? stampImage = stampBytes != null
+        ? pw.MemoryImage(stampBytes)
+        : (profile.stampPath != null &&
+                  profile.stampPath!.isNotEmpty &&
+                  File(profile.stampPath!).existsSync()
+              ? pw.MemoryImage(File(profile.stampPath!).readAsBytesSync())
+              : null);
+
+    final pw.MemoryImage? signatureImage = signatureBytes != null
+        ? pw.MemoryImage(signatureBytes)
+        : (profile.signaturePath != null &&
+                  profile.signaturePath!.isNotEmpty &&
+                  File(profile.signaturePath!).existsSync()
+              ? pw.MemoryImage(File(profile.signaturePath!).readAsBytesSync())
+              : null);
 
     pdf.addPage(
       pw.MultiPage(
@@ -61,7 +84,7 @@ class CreativeTemplate extends BasePdfTemplate {
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        if (hasLogo)
+                        if (logoImage != null)
                           pw.Container(
                             height: 80,
                             margin: const pw.EdgeInsets.only(bottom: 20),
@@ -70,12 +93,7 @@ class CreativeTemplate extends BasePdfTemplate {
                               shape: pw.BoxShape.circle,
                             ),
                             child: pw.ClipOval(
-                              child: pw.Image(
-                                pw.MemoryImage(
-                                  File(logoPath).readAsBytesSync(),
-                                ),
-                                fit: pw.BoxFit.cover,
-                              ),
+                              child: pw.Image(logoImage, fit: pw.BoxFit.cover),
                             ),
                           )
                         else
@@ -417,40 +435,22 @@ class CreativeTemplate extends BasePdfTemplate {
                                       child: pw.Stack(
                                         alignment: pw.Alignment.center,
                                         children: [
-                                          if (profile.stampPath != null &&
-                                              profile.stampPath!.isNotEmpty &&
-                                              File(
-                                                profile.stampPath!,
-                                              ).existsSync())
+                                          if (stampImage != null)
                                             pw.Positioned(
                                               left: profile.stampX,
                                               top: profile.stampY,
                                               child: pw.Image(
-                                                pw.MemoryImage(
-                                                  File(
-                                                    profile.stampPath!,
-                                                  ).readAsBytesSync(),
-                                                ),
+                                                stampImage,
                                                 height: 60,
                                                 width: 60,
                                               ),
                                             ),
-                                          if (profile.signaturePath != null &&
-                                              profile
-                                                  .signaturePath!
-                                                  .isNotEmpty &&
-                                              File(
-                                                profile.signaturePath!,
-                                              ).existsSync())
+                                          if (signatureImage != null)
                                             pw.Positioned(
                                               left: profile.signatureX,
                                               top: profile.signatureY,
                                               child: pw.Image(
-                                                pw.MemoryImage(
-                                                  File(
-                                                    profile.signaturePath!,
-                                                  ).readAsBytesSync(),
-                                                ),
+                                                signatureImage,
                                                 height: 40,
                                               ),
                                             ),

@@ -297,68 +297,63 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                   onChanged: (final d) => notifier.updateOriginalInvoiceDate(d),
                 ),
               ],
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: InfoLabel(
-                      label: "Series Prefix",
-                      child: ComboBox<String>(
-                        value:
-                            ref
-                                .watch(invoiceSeriesProvider)
-                                .any(
-                                  (final s) =>
-                                      invoice.invoiceNo.startsWith(s.prefix),
-                                )
-                            ? ref
-                                  .watch(invoiceSeriesProvider)
-                                  .firstWhere(
-                                    (final s) =>
-                                        invoice.invoiceNo.startsWith(s.prefix),
-                                  )
-                                  .prefix
-                            : (ref.watch(invoiceSeriesProvider).isNotEmpty
-                                  ? ref
-                                        .watch(invoiceSeriesProvider)
-                                        .first
-                                        .prefix
-                                  : ""),
-                        items: ref
-                            .watch(invoiceSeriesProvider)
-                            .map(
-                              (final s) => ComboBoxItem(
-                                value: s.prefix,
-                                child: Text(s.prefix),
-                              ),
+              Builder(
+                builder: (final context) {
+                  final seriesList = ref.watch(invoiceSeriesProvider);
+                  final selectedPrefix =
+                      seriesList.any(
+                        (final s) => invoice.invoiceNo.startsWith(s.prefix),
+                      )
+                      ? seriesList
+                            .firstWhere(
+                              (final s) =>
+                                  invoice.invoiceNo.startsWith(s.prefix),
                             )
-                            .toList(),
-                        onChanged: (final val) async {
-                          if (val != null) {
-                            final nextNo = await generateNextInvoiceNumber(
-                              seriesPrefix: val,
-                            );
-                            invoiceNoCtrl.text = nextNo;
-                            notifier.updateInvoiceNo(nextNo);
-                          }
-                        },
+                            .prefix
+                      : (seriesList.isNotEmpty ? seriesList.first.prefix : "");
+
+                  return Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: InfoLabel(
+                          label: "Series Prefix",
+                          child: ComboBox<String>(
+                            value: selectedPrefix,
+                            items: seriesList
+                                .map(
+                                  (final s) => ComboBoxItem(
+                                    value: s.prefix,
+                                    child: Text(s.prefix),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (final val) async {
+                              if (val != null) {
+                                final nextNo = await generateNextInvoiceNumber(
+                                  seriesPrefix: val,
+                                );
+                                notifier.updateInvoiceNo(nextNo);
+                              }
+                            },
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    flex: 3,
-                    child: InfoLabel(
-                      label: "Invoice Number",
-                      child: TextBox(
-                        placeholder: "INV-001",
-                        controller: invoiceNoCtrl, // Mixin Controller
-                        onChanged: (final v) => notifier.updateInvoiceNo(v),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 3,
+                        child: InfoLabel(
+                          label: "Invoice No.",
+                          child: TextBox(
+                            placeholder: "e.g. 001",
+                            onChanged: (final v) => notifier.updateInvoiceNo(v),
+                            controller: invoiceNoCtrl,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ],
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 10),
               InfoLabel(

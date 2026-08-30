@@ -17,14 +17,21 @@ import 'package:invobharat/screens/windows/fluent_reports_screen.dart';
 import 'package:invobharat/providers/app_config_provider.dart';
 
 class FluentHome extends ConsumerStatefulWidget {
-  const FluentHome({super.key});
+  final int? initialTab;
+  const FluentHome({super.key, this.initialTab});
 
   @override
   ConsumerState<FluentHome> createState() => _FluentHomeState();
 }
 
 class _FluentHomeState extends ConsumerState<FluentHome> {
-  int topIndex = 0;
+  late int topIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    topIndex = widget.initialTab ?? 0;
+  }
 
   @override
   Widget build(final BuildContext context) {

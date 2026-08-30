@@ -20,6 +20,9 @@ class ClassicTemplate extends BasePdfTemplate {
     final pw.Font? fontFallback,
     final String? title,
     final bool showHsnSummary = true,
+    final Uint8List? logoBytes,
+    final Uint8List? stampBytes,
+    final Uint8List? signatureBytes,
   }) async {
     final pdf = pw.Document(
       theme: pw.ThemeData.withFont(
@@ -36,9 +39,29 @@ class ClassicTemplate extends BasePdfTemplate {
       supplyType = "RETAIL INVOICE";
     }
 
-    final logoPath = profile.logoPath;
-    final hasLogo =
-        logoPath != null && logoPath.isNotEmpty && File(logoPath).existsSync();
+    final pw.MemoryImage? logoImage = logoBytes != null
+        ? pw.MemoryImage(logoBytes)
+        : (profile.logoPath != null &&
+                  profile.logoPath!.isNotEmpty &&
+                  File(profile.logoPath!).existsSync()
+              ? pw.MemoryImage(File(profile.logoPath!).readAsBytesSync())
+              : null);
+
+    final pw.MemoryImage? stampImage = stampBytes != null
+        ? pw.MemoryImage(stampBytes)
+        : (profile.stampPath != null &&
+                  profile.stampPath!.isNotEmpty &&
+                  File(profile.stampPath!).existsSync()
+              ? pw.MemoryImage(File(profile.stampPath!).readAsBytesSync())
+              : null);
+
+    final pw.MemoryImage? signatureImage = signatureBytes != null
+        ? pw.MemoryImage(signatureBytes)
+        : (profile.signaturePath != null &&
+                  profile.signaturePath!.isNotEmpty &&
+                  File(profile.signaturePath!).existsSync()
+              ? pw.MemoryImage(File(profile.signaturePath!).readAsBytesSync())
+              : null);
 
     pdf.addPage(
       pw.MultiPage(
@@ -50,13 +73,11 @@ class ClassicTemplate extends BasePdfTemplate {
             pw.Row(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                if (hasLogo)
+                if (logoImage != null)
                   pw.Container(
                     width: 80,
                     height: 80,
-                    child: pw.Image(
-                      pw.MemoryImage(File(logoPath).readAsBytesSync()),
-                    ),
+                    child: pw.Image(logoImage),
                   ),
                 pw.Expanded(
                   child: pw.Column(
@@ -88,7 +109,7 @@ class ClassicTemplate extends BasePdfTemplate {
                     ],
                   ),
                 ),
-                if (hasLogo) pw.SizedBox(width: 80), // Balance
+                if (logoImage != null) pw.SizedBox(width: 80), // Balance
               ],
             ),
             pw.SizedBox(height: 10),
@@ -338,34 +359,21 @@ class ClassicTemplate extends BasePdfTemplate {
                         child: pw.Stack(
                           alignment: pw.Alignment.center,
                           children: [
-                            if (profile.stampPath != null &&
-                                profile.stampPath!.isNotEmpty &&
-                                File(profile.stampPath!).existsSync())
+                            if (stampImage != null)
                               pw.Positioned(
                                 left: profile.stampX,
                                 top: profile.stampY,
                                 child: pw.Image(
-                                  pw.MemoryImage(
-                                    File(profile.stampPath!).readAsBytesSync(),
-                                  ),
+                                  stampImage,
                                   height: 60,
                                   width: 60,
                                 ),
                               ),
-                            if (profile.signaturePath != null &&
-                                profile.signaturePath!.isNotEmpty &&
-                                File(profile.signaturePath!).existsSync())
+                            if (signatureImage != null)
                               pw.Positioned(
                                 left: profile.signatureX,
                                 top: profile.signatureY,
-                                child: pw.Image(
-                                  pw.MemoryImage(
-                                    File(
-                                      profile.signaturePath!,
-                                    ).readAsBytesSync(),
-                                  ),
-                                  height: 40,
-                                ),
+                                child: pw.Image(signatureImage, height: 40),
                               ),
                           ],
                         ),

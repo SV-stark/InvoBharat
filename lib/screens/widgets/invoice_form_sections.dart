@@ -30,42 +30,11 @@ class SectionCard extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: Theme.of(context).cardColor,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(icon, size: 20, color: Theme.of(context).primaryColor),
-                    const Gap(8),
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                action ?? const SizedBox.shrink(),
-              ],
-            ),
-            const Divider(height: 24),
-            ...children,
-          ],
-        ),
-      ),
+    return AdaptiveSectionCard(
+      title: title,
+      icon: icon,
+      action: action,
+      children: children,
     );
   }
 }
@@ -93,6 +62,14 @@ class InvoiceHeaderSection extends ConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final invoice = ref.watch(invoiceProvider);
+    final seriesList = ref.watch(invoiceSeriesProvider);
+    final selectedPrefix =
+        seriesList.any((final s) => invoice.invoiceNo.startsWith(s.prefix))
+        ? seriesList
+              .firstWhere((final s) => invoice.invoiceNo.startsWith(s.prefix))
+              .prefix
+        : (seriesList.isNotEmpty ? seriesList.first.prefix : "");
+
     return SectionCard(
       title: "Invoice Details",
       icon: Icons.description_outlined,
@@ -118,25 +95,8 @@ class InvoiceHeaderSection extends ConsumerWidget {
               flex: 3,
               child: _buildDropdownField(
                 label: "Series Prefix",
-                value:
-                    ref
-                        .watch(invoiceSeriesProvider)
-                        .any(
-                          (final s) => invoice.invoiceNo.startsWith(s.prefix),
-                        )
-                    ? ref
-                          .watch(invoiceSeriesProvider)
-                          .firstWhere(
-                            (final s) => invoice.invoiceNo.startsWith(s.prefix),
-                          )
-                          .prefix
-                    : (ref.watch(invoiceSeriesProvider).isNotEmpty
-                          ? ref.watch(invoiceSeriesProvider).first.prefix
-                          : ""),
-                items: ref
-                    .watch(invoiceSeriesProvider)
-                    .map((final s) => s.prefix)
-                    .toList(),
+                value: selectedPrefix,
+                items: seriesList.map((final s) => s.prefix).toList(),
                 onChanged: (final val) async {
                   if (val != null) {
                     final repo = ref.read(invoiceRepositoryProvider);

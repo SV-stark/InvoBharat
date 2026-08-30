@@ -20,6 +20,9 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
     final pw.Font? fontFallback,
     final String? title,
     final bool showHsnSummary = true,
+    final Uint8List? logoBytes,
+    final Uint8List? stampBytes,
+    final Uint8List? signatureBytes,
   });
 
   pw.Widget buildBadge(
