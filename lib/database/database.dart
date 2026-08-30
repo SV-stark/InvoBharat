@@ -37,7 +37,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration {
@@ -306,6 +306,21 @@ class AppDatabase extends _$AppDatabase {
           await _repairCorruptedForeignKeys(m.database);
           await _createIndexes(m.database);
         }
+        if (from < 17) {
+          final pragmaResult = await m.database
+              .customSelect('PRAGMA table_info(`clients`)')
+              .get();
+          final existingCols = pragmaResult
+              .map((final r) => r.read<String>('name'))
+              .toSet();
+          if (!existingCols.contains('primary_contact')) {
+            await m.addColumn(clients, clients.primaryContact);
+          }
+          if (!existingCols.contains('notes')) {
+            await m.addColumn(clients, clients.notes);
+          }
+          await _createIndexes(m.database);
+        }
       },
       beforeOpen: (final details) async {
         await _repairCorruptedForeignKeys(this);
@@ -367,10 +382,8 @@ class AppDatabase extends _$AppDatabase {
           }
         }
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print("Schema Foreign Key Repair Error: $e");
-      }
+    } catch (e, st) {
+      debugPrint("Schema Foreign Key Repair Error: $e\n$st");
     } finally {
       await db.customStatement('PRAGMA legacy_alter_table = OFF;');
       await db.customStatement('PRAGMA foreign_keys = ON;');
@@ -378,6 +391,9 @@ class AppDatabase extends _$AppDatabase {
   }
 
   static Future<void> _createIndexes(final GeneratedDatabase db) async {
+    await db.customStatement(
+      "CREATE UNIQUE INDEX IF NOT EXISTS `idx_business_profiles_gstin` ON `business_profiles` (gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null';",
+    );
     await db.customStatement(
       "CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null';",
     );
@@ -389,6 +405,12 @@ class AppDatabase extends _$AppDatabase {
     );
     await db.customStatement(
       'CREATE INDEX IF NOT EXISTS idx_invoices_profile_type ON invoices (profile_id, type);',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_invoices_profile_client ON invoices (profile_id, client_id);',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_invoices_client_id ON invoices (client_id);',
     );
     await db.customStatement(
       'CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice_id ON invoice_items (invoice_id);',

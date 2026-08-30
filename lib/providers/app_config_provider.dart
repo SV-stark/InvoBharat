@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:invobharat/providers/database_provider.dart';
 
 final appConfigProvider = NotifierProvider<AppConfigNotifier, AppConfig>(
   AppConfigNotifier.new,
@@ -70,99 +71,138 @@ class AppConfigNotifier extends Notifier<AppConfig> {
     return AppConfig();
   }
 
+  Future<void> loadConfig() => _loadConfig();
+
   Future<void> _loadConfig() async {
-    final prefs = await SharedPreferences.getInstance();
-    final paneIndex = prefs.getInt(_paneKey);
-    final channelIndex = prefs.getInt(_updateChannelKey);
-    final autoBackupEnabled = prefs.getBool(_autoBackupEnabledKey) ?? false;
-    final frequencyIndex = prefs.getInt(_backupFrequencyKey) ?? 0;
-    final backupTime = prefs.getString(_backupTimeKey) ?? "00:00";
-    final lastBackupStr = prefs.getString(_lastAutoBackupKey);
-    final backupPath = prefs.getString(_backupPathKey);
-    final showHsnSummaryInPdf = prefs.getBool(_showHsnSummaryInPdfKey) ?? true;
+    try {
+      final settingsService = ref.read(appSettingsServiceProvider);
+      final prefs = await SharedPreferences.getInstance();
 
-    var newState = state.copyWith(
-      autoBackupEnabled: autoBackupEnabled,
-      backupFrequency: BackupFrequency.values[frequencyIndex],
-      backupTime: backupTime,
-      lastAutoBackup: lastBackupStr != null
-          ? DateTime.tryParse(lastBackupStr)
-          : null,
-      backupPath: backupPath,
-      showHsnSummaryInPdf: showHsnSummaryInPdf,
-    );
+      final paneVal =
+          await settingsService.getSetting(_paneKey) ??
+          prefs.getInt(_paneKey)?.toString();
+      final channelVal =
+          await settingsService.getSetting(_updateChannelKey) ??
+          prefs.getInt(_updateChannelKey)?.toString();
+      final autoBackupVal =
+          await settingsService.getSetting(_autoBackupEnabledKey) ??
+          prefs.getBool(_autoBackupEnabledKey)?.toString();
+      final freqVal =
+          await settingsService.getSetting(_backupFrequencyKey) ??
+          prefs.getInt(_backupFrequencyKey)?.toString();
+      final backupTime =
+          await settingsService.getSetting(_backupTimeKey) ??
+          prefs.getString(_backupTimeKey) ??
+          "00:00";
+      final lastBackupStr =
+          await settingsService.getSetting(_lastAutoBackupKey) ??
+          prefs.getString(_lastAutoBackupKey);
+      final backupPath =
+          await settingsService.getSetting(_backupPathKey) ??
+          prefs.getString(_backupPathKey);
+      final showHsnVal =
+          await settingsService.getSetting(_showHsnSummaryInPdfKey) ??
+          prefs.getBool(_showHsnSummaryInPdfKey)?.toString();
 
-    if (paneIndex != null &&
-        paneIndex >= 0 &&
-        paneIndex < PaneDisplayMode.values.length) {
-      var loadedMode = PaneDisplayMode.values[paneIndex];
-      if (loadedMode == PaneDisplayMode.auto ||
-          loadedMode == PaneDisplayMode.minimal) {
-        loadedMode = PaneDisplayMode.expanded;
-      }
-      newState = newState.copyWith(paneDisplayMode: loadedMode);
-    }
+      final paneIndex = int.tryParse(paneVal ?? '');
+      final channelIndex = int.tryParse(channelVal ?? '');
+      final autoBackupEnabled = autoBackupVal?.toLowerCase() == 'true';
+      final frequencyIndex = int.tryParse(freqVal ?? '') ?? 0;
+      final showHsnSummaryInPdf =
+          showHsnVal == null || showHsnVal.toLowerCase() == 'true';
 
-    if (channelIndex != null &&
-        channelIndex >= 0 &&
-        channelIndex < UpdateChannel.values.length) {
-      newState = newState.copyWith(
-        updateChannel: UpdateChannel.values[channelIndex],
+      var newState = state.copyWith(
+        autoBackupEnabled: autoBackupEnabled,
+        backupFrequency:
+            frequencyIndex >= 0 &&
+                frequencyIndex < BackupFrequency.values.length
+            ? BackupFrequency.values[frequencyIndex]
+            : BackupFrequency.none,
+        backupTime: backupTime,
+        lastAutoBackup: lastBackupStr != null
+            ? DateTime.tryParse(lastBackupStr)
+            : null,
+        backupPath: backupPath,
+        showHsnSummaryInPdf: showHsnSummaryInPdf,
       );
-    }
 
-    state = newState;
+      if (paneIndex != null &&
+          paneIndex >= 0 &&
+          paneIndex < PaneDisplayMode.values.length) {
+        var loadedMode = PaneDisplayMode.values[paneIndex];
+        if (loadedMode == PaneDisplayMode.auto ||
+            loadedMode == PaneDisplayMode.minimal) {
+          loadedMode = PaneDisplayMode.expanded;
+        }
+        newState = newState.copyWith(paneDisplayMode: loadedMode);
+      }
+
+      if (channelIndex != null &&
+          channelIndex >= 0 &&
+          channelIndex < UpdateChannel.values.length) {
+        newState = newState.copyWith(
+          updateChannel: UpdateChannel.values[channelIndex],
+        );
+      }
+
+      state = newState;
+    } catch (_) {}
   }
 
   Future<void> setPaneDisplayMode(final PaneDisplayMode mode) async {
     state = state.copyWith(paneDisplayMode: mode);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_paneKey, mode.index);
+    final settingsService = ref.read(appSettingsServiceProvider);
+    await settingsService.setSetting(_paneKey, mode.index.toString());
   }
 
   Future<void> setUpdateChannel(final UpdateChannel channel) async {
     state = state.copyWith(updateChannel: channel);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_updateChannelKey, channel.index);
+    final settingsService = ref.read(appSettingsServiceProvider);
+    await settingsService.setSetting(
+      _updateChannelKey,
+      channel.index.toString(),
+    );
   }
 
   Future<void> setAutoBackupEnabled(final bool enabled) async {
     state = state.copyWith(autoBackupEnabled: enabled);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_autoBackupEnabledKey, enabled);
+    final settingsService = ref.read(appSettingsServiceProvider);
+    await settingsService.setSetting(_autoBackupEnabledKey, enabled.toString());
   }
 
   Future<void> setBackupFrequency(final BackupFrequency freq) async {
     state = state.copyWith(backupFrequency: freq);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_backupFrequencyKey, freq.index);
+    final settingsService = ref.read(appSettingsServiceProvider);
+    await settingsService.setSetting(
+      _backupFrequencyKey,
+      freq.index.toString(),
+    );
   }
 
   Future<void> setBackupTime(final String time) async {
     state = state.copyWith(backupTime: time);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_backupTimeKey, time);
+    final settingsService = ref.read(appSettingsServiceProvider);
+    await settingsService.setSetting(_backupTimeKey, time);
   }
 
   Future<void> setBackupPath(final String? path) async {
     state = state.copyWith(backupPath: path);
-    final prefs = await SharedPreferences.getInstance();
-    if (path == null) {
-      await prefs.remove(_backupPathKey);
-    } else {
-      await prefs.setString(_backupPathKey, path);
-    }
+    final settingsService = ref.read(appSettingsServiceProvider);
+    await settingsService.setSetting(_backupPathKey, path ?? '');
   }
 
   Future<void> updateLastBackupDate(final DateTime date) async {
     state = state.copyWith(lastAutoBackup: date);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_lastAutoBackupKey, date.toIso8601String());
+    final settingsService = ref.read(appSettingsServiceProvider);
+    await settingsService.setSetting(
+      _lastAutoBackupKey,
+      date.toIso8601String(),
+    );
   }
 
   Future<void> setShowHsnSummaryInPdf(final bool value) async {
     state = state.copyWith(showHsnSummaryInPdf: value);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_showHsnSummaryInPdfKey, value);
+    final settingsService = ref.read(appSettingsServiceProvider);
+    await settingsService.setSetting(_showHsnSummaryInPdfKey, value.toString());
   }
 }

@@ -520,22 +520,39 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
   @override
   Future<void> deleteInvoice(final String id) async {
-    await (database.delete(
-      database.invoiceItems,
-    )..where((final t) => t.invoiceId.equals(id))).go();
-    await (database.delete(
-      database.payments,
-    )..where((final t) => t.invoiceId.equals(id))).go();
-    await (database.delete(database.invoices)
-          ..where((final t) => t.id.equals(id) & t.profileId.equals(profileId)))
-        .go();
+    await database.transaction(() async {
+      await (database.delete(
+        database.invoiceItems,
+      )..where((final t) => t.invoiceId.equals(id))).go();
+      await (database.delete(
+        database.payments,
+      )..where((final t) => t.invoiceId.equals(id))).go();
+      await (database.delete(database.invoices)..where(
+            (final t) => t.id.equals(id) & t.profileId.equals(profileId),
+          ))
+          .go();
+    });
   }
 
   @override
   Future<void> deleteAll() async {
-    await (database.delete(
-      database.invoices,
-    )..where((final t) => t.profileId.equals(profileId))).go();
+    await database.transaction(() async {
+      final invoices = await (database.select(
+        database.invoices,
+      )..where((final t) => t.profileId.equals(profileId))).get();
+      final ids = invoices.map((final i) => i.id).toList();
+      if (ids.isNotEmpty) {
+        await (database.delete(
+          database.invoiceItems,
+        )..where((final t) => t.invoiceId.isIn(ids))).go();
+        await (database.delete(
+          database.payments,
+        )..where((final t) => t.invoiceId.isIn(ids))).go();
+      }
+      await (database.delete(
+        database.invoices,
+      )..where((final t) => t.profileId.equals(profileId))).go();
+    });
   }
 
   @override
@@ -744,12 +761,15 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
   @override
   Future<void> deleteEstimate(final String id) async {
-    await (database.delete(
-      database.estimateItems,
-    )..where((final t) => t.estimateId.equals(id))).go();
-    await (database.delete(database.estimates)
-          ..where((final t) => t.id.equals(id) & t.profileId.equals(profileId)))
-        .go();
+    await database.transaction(() async {
+      await (database.delete(
+        database.estimateItems,
+      )..where((final t) => t.estimateId.equals(id))).go();
+      await (database.delete(database.estimates)..where(
+            (final t) => t.id.equals(id) & t.profileId.equals(profileId),
+          ))
+          .go();
+    });
   }
 
   @override

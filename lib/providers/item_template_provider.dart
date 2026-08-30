@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:invobharat/models/item_template.dart';
+import 'package:invobharat/providers/database_provider.dart';
 
 final itemTemplateListProvider =
     NotifierProvider<ItemTemplateNotifier, List<ItemTemplate>>(
@@ -18,13 +19,29 @@ class ItemTemplateNotifier extends Notifier<List<ItemTemplate>> {
   static const _key = 'item_templates';
 
   Future<void> _loadTemplates() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonList = prefs.getStringList(_key);
-    if (jsonList != null) {
-      state = jsonList
-          .map((final e) => ItemTemplate.fromJson(jsonDecode(e)))
-          .toList();
-    }
+    try {
+      final settingsService = ref.read(appSettingsServiceProvider);
+      final jsonStr = await settingsService.getSetting(_key);
+      if (jsonStr != null && jsonStr.isNotEmpty) {
+        final List<dynamic> decoded = jsonDecode(jsonStr);
+        state = decoded
+            .map((final e) => ItemTemplate.fromJson(e as Map<String, dynamic>))
+            .toList();
+        return;
+      }
+
+      // Fallback migration from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final jsonList = prefs.getStringList(_key);
+      if (jsonList != null && jsonList.isNotEmpty) {
+        final list = jsonList
+            .map((final e) => ItemTemplate.fromJson(jsonDecode(e)))
+            .toList();
+        state = list;
+        await _saveTemplates();
+        await prefs.remove(_key);
+      }
+    } catch (_) {}
   }
 
   Future<void> addTemplate(final ItemTemplate template) async {
@@ -46,8 +63,10 @@ class ItemTemplateNotifier extends Notifier<List<ItemTemplate>> {
   }
 
   Future<void> _saveTemplates() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonList = state.map((final e) => jsonEncode(e.toJson())).toList();
-    await prefs.setStringList(_key, jsonList);
+    try {
+      final settingsService = ref.read(appSettingsServiceProvider);
+      final jsonStr = jsonEncode(state.map((final e) => e.toJson()).toList());
+      await settingsService.setSetting(_key, jsonStr);
+    } catch (_) {}
   }
 }

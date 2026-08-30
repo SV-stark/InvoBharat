@@ -5,9 +5,8 @@ import 'package:invobharat/services/auto_backup_service.dart';
 import 'dart:async';
 
 final databaseProvider = Provider<AppDatabase>((final ref) {
-  final database = AppDatabase();
-  ref.onDispose(database.close);
-  return database;
+  ref.keepAlive();
+  return AppDatabase.instance;
 });
 
 final appSettingsServiceProvider = Provider<AppSettingsService>((final ref) {

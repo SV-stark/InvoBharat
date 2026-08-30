@@ -62,6 +62,26 @@ void main() {
   });
 
   group('SqlClientRepository', () {
+    test(
+      'saveClient and getClient preserves primaryContact and notes',
+      () async {
+        final clientWithDetails = const model.Client(
+          id: 'c_details',
+          profileId: 'p1',
+          name: 'Client Details Ltd',
+          primaryContact: 'John Doe',
+          notes: 'VIP Client, net 30 terms',
+        );
+        await repository.saveClient(clientWithDetails);
+        final client = await repository.getClient('c_details');
+
+        expect(client, isNotNull);
+        expect(client?.name, 'Client Details Ltd');
+        expect(client?.primaryContact, 'John Doe');
+        expect(client?.notes, 'VIP Client, net 30 terms');
+      },
+    );
+
     test('saveClient and getClient', () async {
       await repository.saveClient(testClient);
       final client = await repository.getClient(testClient.id);

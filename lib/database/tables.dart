@@ -31,9 +31,6 @@ class BusinessProfiles extends Table {
 
   @override
   Set<Column> get primaryKey => {id};
-
-  @override
-  List<String> get customConstraints => ['UNIQUE (gstin)'];
 }
 
 class Clients extends Table {
@@ -48,6 +45,8 @@ class Clients extends Table {
   TextColumn get stateCode => text()();
   TextColumn get email => text()();
   TextColumn get phone => text()();
+  TextColumn get primaryContact => text().nullable()();
+  TextColumn get notes => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

@@ -125,14 +125,8 @@ class RecurringService {
     );
 
     await repo.saveInvoice(newInvoice);
-
-    await ref
-        .read(invoiceSeriesProvider.notifier)
-        .updateSequence(targetPrefix, currentSeq + 1);
-
-    await ref
-        .read(businessProfileListProvider.notifier)
-        .incrementInvoiceSequence(profile.profileId);
+    ref.invalidate(invoiceSeriesProvider);
+    ref.invalidate(businessProfileListProvider);
   }
 }
 

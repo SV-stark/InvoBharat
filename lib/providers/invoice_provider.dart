@@ -178,12 +178,12 @@ class InvoiceNotifier extends Notifier<Invoice> {
   }
 
   void updateReceiverState(final String val) {
+    final oldReceiverState = state.receiver.state;
     state = state.copyWith(
       receiver: state.receiver.copyWith(state: val),
-      // Auto-update place of supply to match receiver state by default
+      // Auto-update place of supply to match receiver state if placeOfSupply was empty or matching old state
       placeOfSupply:
-          state.placeOfSupply.isEmpty ||
-              state.placeOfSupply == state.receiver.state
+          state.placeOfSupply.isEmpty || state.placeOfSupply == oldReceiverState
           ? val
           : state.placeOfSupply,
     );

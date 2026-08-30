@@ -26,6 +26,8 @@ class SqlClientRepository implements ClientRepository {
             stateCode: Value(client.stateCode),
             email: Value(client.email),
             phone: Value(client.phone),
+            primaryContact: Value(client.primaryContact),
+            notes: Value(client.notes),
           ),
         );
   }
@@ -72,6 +74,8 @@ class SqlClientRepository implements ClientRepository {
       address: row.address,
       email: row.email,
       phone: row.phone,
+      primaryContact: row.primaryContact ?? '',
+      notes: row.notes ?? '',
       state: row.state,
       pan: row.pan,
       stateCode: row.stateCode,

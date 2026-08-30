@@ -123,6 +123,7 @@ void main() {
       final service = container.read(autoBackupServiceProvider);
 
       // Force Riverpod to instantiate notifier and load state
+      await container.read(appConfigProvider.notifier).loadConfig();
       await container
           .read(appConfigProvider.notifier)
           .setAutoBackupEnabled(true);
@@ -154,6 +155,7 @@ void main() {
       final service = container.read(autoBackupServiceProvider);
 
       // Trigger config load
+      await container.read(appConfigProvider.notifier).loadConfig();
       await container
           .read(appConfigProvider.notifier)
           .setAutoBackupEnabled(true);

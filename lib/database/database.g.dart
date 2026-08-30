@@ -1556,6 +1556,26 @@ class $ClientsTable extends Clients with TableInfo<$ClientsTable, Client> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _primaryContactMeta = const VerificationMeta(
+    'primaryContact',
+  );
+  @override
+  late final GeneratedColumn<String> primaryContact = GeneratedColumn<String>(
+    'primary_contact',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1568,6 +1588,8 @@ class $ClientsTable extends Clients with TableInfo<$ClientsTable, Client> {
     stateCode,
     email,
     phone,
+    primaryContact,
+    notes,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1658,6 +1680,21 @@ class $ClientsTable extends Clients with TableInfo<$ClientsTable, Client> {
     } else if (isInserting) {
       context.missing(_phoneMeta);
     }
+    if (data.containsKey('primary_contact')) {
+      context.handle(
+        _primaryContactMeta,
+        primaryContact.isAcceptableOrUnknown(
+          data['primary_contact']!,
+          _primaryContactMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
     return context;
   }
 
@@ -1707,6 +1744,14 @@ class $ClientsTable extends Clients with TableInfo<$ClientsTable, Client> {
         DriftSqlType.string,
         data['${effectivePrefix}phone'],
       )!,
+      primaryContact: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}primary_contact'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
     );
   }
 
@@ -1727,6 +1772,8 @@ class Client extends DataClass implements Insertable<Client> {
   final String stateCode;
   final String email;
   final String phone;
+  final String? primaryContact;
+  final String? notes;
   const Client({
     required this.id,
     required this.profileId,
@@ -1738,6 +1785,8 @@ class Client extends DataClass implements Insertable<Client> {
     required this.stateCode,
     required this.email,
     required this.phone,
+    this.primaryContact,
+    this.notes,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1752,6 +1801,12 @@ class Client extends DataClass implements Insertable<Client> {
     map['state_code'] = Variable<String>(stateCode);
     map['email'] = Variable<String>(email);
     map['phone'] = Variable<String>(phone);
+    if (!nullToAbsent || primaryContact != null) {
+      map['primary_contact'] = Variable<String>(primaryContact);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
     return map;
   }
 
@@ -1767,6 +1822,12 @@ class Client extends DataClass implements Insertable<Client> {
       stateCode: Value(stateCode),
       email: Value(email),
       phone: Value(phone),
+      primaryContact: primaryContact == null && nullToAbsent
+          ? const Value.absent()
+          : Value(primaryContact),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
     );
   }
 
@@ -1786,6 +1847,8 @@ class Client extends DataClass implements Insertable<Client> {
       stateCode: serializer.fromJson<String>(json['stateCode']),
       email: serializer.fromJson<String>(json['email']),
       phone: serializer.fromJson<String>(json['phone']),
+      primaryContact: serializer.fromJson<String?>(json['primaryContact']),
+      notes: serializer.fromJson<String?>(json['notes']),
     );
   }
   @override
@@ -1802,6 +1865,8 @@ class Client extends DataClass implements Insertable<Client> {
       'stateCode': serializer.toJson<String>(stateCode),
       'email': serializer.toJson<String>(email),
       'phone': serializer.toJson<String>(phone),
+      'primaryContact': serializer.toJson<String?>(primaryContact),
+      'notes': serializer.toJson<String?>(notes),
     };
   }
 
@@ -1816,6 +1881,8 @@ class Client extends DataClass implements Insertable<Client> {
     String? stateCode,
     String? email,
     String? phone,
+    Value<String?> primaryContact = const Value.absent(),
+    Value<String?> notes = const Value.absent(),
   }) => Client(
     id: id ?? this.id,
     profileId: profileId ?? this.profileId,
@@ -1827,6 +1894,10 @@ class Client extends DataClass implements Insertable<Client> {
     stateCode: stateCode ?? this.stateCode,
     email: email ?? this.email,
     phone: phone ?? this.phone,
+    primaryContact: primaryContact.present
+        ? primaryContact.value
+        : this.primaryContact,
+    notes: notes.present ? notes.value : this.notes,
   );
   Client copyWithCompanion(ClientsCompanion data) {
     return Client(
@@ -1840,6 +1911,10 @@ class Client extends DataClass implements Insertable<Client> {
       stateCode: data.stateCode.present ? data.stateCode.value : this.stateCode,
       email: data.email.present ? data.email.value : this.email,
       phone: data.phone.present ? data.phone.value : this.phone,
+      primaryContact: data.primaryContact.present
+          ? data.primaryContact.value
+          : this.primaryContact,
+      notes: data.notes.present ? data.notes.value : this.notes,
     );
   }
 
@@ -1855,7 +1930,9 @@ class Client extends DataClass implements Insertable<Client> {
           ..write('state: $state, ')
           ..write('stateCode: $stateCode, ')
           ..write('email: $email, ')
-          ..write('phone: $phone')
+          ..write('phone: $phone, ')
+          ..write('primaryContact: $primaryContact, ')
+          ..write('notes: $notes')
           ..write(')'))
         .toString();
   }
@@ -1872,6 +1949,8 @@ class Client extends DataClass implements Insertable<Client> {
     stateCode,
     email,
     phone,
+    primaryContact,
+    notes,
   );
   @override
   bool operator ==(Object other) =>
@@ -1886,7 +1965,9 @@ class Client extends DataClass implements Insertable<Client> {
           other.state == this.state &&
           other.stateCode == this.stateCode &&
           other.email == this.email &&
-          other.phone == this.phone);
+          other.phone == this.phone &&
+          other.primaryContact == this.primaryContact &&
+          other.notes == this.notes);
 }
 
 class ClientsCompanion extends UpdateCompanion<Client> {
@@ -1900,6 +1981,8 @@ class ClientsCompanion extends UpdateCompanion<Client> {
   final Value<String> stateCode;
   final Value<String> email;
   final Value<String> phone;
+  final Value<String?> primaryContact;
+  final Value<String?> notes;
   final Value<int> rowid;
   const ClientsCompanion({
     this.id = const Value.absent(),
@@ -1912,6 +1995,8 @@ class ClientsCompanion extends UpdateCompanion<Client> {
     this.stateCode = const Value.absent(),
     this.email = const Value.absent(),
     this.phone = const Value.absent(),
+    this.primaryContact = const Value.absent(),
+    this.notes = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ClientsCompanion.insert({
@@ -1925,6 +2010,8 @@ class ClientsCompanion extends UpdateCompanion<Client> {
     required String stateCode,
     required String email,
     required String phone,
+    this.primaryContact = const Value.absent(),
+    this.notes = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        profileId = Value(profileId),
@@ -1947,6 +2034,8 @@ class ClientsCompanion extends UpdateCompanion<Client> {
     Expression<String>? stateCode,
     Expression<String>? email,
     Expression<String>? phone,
+    Expression<String>? primaryContact,
+    Expression<String>? notes,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1960,6 +2049,8 @@ class ClientsCompanion extends UpdateCompanion<Client> {
       if (stateCode != null) 'state_code': stateCode,
       if (email != null) 'email': email,
       if (phone != null) 'phone': phone,
+      if (primaryContact != null) 'primary_contact': primaryContact,
+      if (notes != null) 'notes': notes,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1975,6 +2066,8 @@ class ClientsCompanion extends UpdateCompanion<Client> {
     Value<String>? stateCode,
     Value<String>? email,
     Value<String>? phone,
+    Value<String?>? primaryContact,
+    Value<String?>? notes,
     Value<int>? rowid,
   }) {
     return ClientsCompanion(
@@ -1988,6 +2081,8 @@ class ClientsCompanion extends UpdateCompanion<Client> {
       stateCode: stateCode ?? this.stateCode,
       email: email ?? this.email,
       phone: phone ?? this.phone,
+      primaryContact: primaryContact ?? this.primaryContact,
+      notes: notes ?? this.notes,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2025,6 +2120,12 @@ class ClientsCompanion extends UpdateCompanion<Client> {
     if (phone.present) {
       map['phone'] = Variable<String>(phone.value);
     }
+    if (primaryContact.present) {
+      map['primary_contact'] = Variable<String>(primaryContact.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2044,6 +2145,8 @@ class ClientsCompanion extends UpdateCompanion<Client> {
           ..write('stateCode: $stateCode, ')
           ..write('email: $email, ')
           ..write('phone: $phone, ')
+          ..write('primaryContact: $primaryContact, ')
+          ..write('notes: $notes, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -9632,6 +9735,8 @@ typedef $$ClientsTableCreateCompanionBuilder =
       required String stateCode,
       required String email,
       required String phone,
+      Value<String?> primaryContact,
+      Value<String?> notes,
       Value<int> rowid,
     });
 typedef $$ClientsTableUpdateCompanionBuilder =
@@ -9646,6 +9751,8 @@ typedef $$ClientsTableUpdateCompanionBuilder =
       Value<String> stateCode,
       Value<String> email,
       Value<String> phone,
+      Value<String?> primaryContact,
+      Value<String?> notes,
       Value<int> rowid,
     });
 
@@ -9742,6 +9849,16 @@ class $$ClientsTableFilterComposer
 
   ColumnFilters<String> get phone => $composableBuilder(
     column: $table.phone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get primaryContact => $composableBuilder(
+    column: $table.primaryContact,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9848,6 +9965,16 @@ class $$ClientsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get primaryContact => $composableBuilder(
+    column: $table.primaryContact,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$BusinessProfilesTableOrderingComposer get profileId {
     final $$BusinessProfilesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -9907,6 +10034,14 @@ class $$ClientsTableAnnotationComposer
 
   GeneratedColumn<String> get phone =>
       $composableBuilder(column: $table.phone, builder: (column) => column);
+
+  GeneratedColumn<String> get primaryContact => $composableBuilder(
+    column: $table.primaryContact,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
 
   $$BusinessProfilesTableAnnotationComposer get profileId {
     final $$BusinessProfilesTableAnnotationComposer composer = $composerBuilder(
@@ -9995,6 +10130,8 @@ class $$ClientsTableTableManager
                 Value<String> stateCode = const Value.absent(),
                 Value<String> email = const Value.absent(),
                 Value<String> phone = const Value.absent(),
+                Value<String?> primaryContact = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ClientsCompanion(
                 id: id,
@@ -10007,6 +10144,8 @@ class $$ClientsTableTableManager
                 stateCode: stateCode,
                 email: email,
                 phone: phone,
+                primaryContact: primaryContact,
+                notes: notes,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -10021,6 +10160,8 @@ class $$ClientsTableTableManager
                 required String stateCode,
                 required String email,
                 required String phone,
+                Value<String?> primaryContact = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ClientsCompanion.insert(
                 id: id,
@@ -10033,6 +10174,8 @@ class $$ClientsTableTableManager
                 stateCode: stateCode,
                 email: email,
                 phone: phone,
+                primaryContact: primaryContact,
+                notes: notes,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
