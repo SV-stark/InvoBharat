@@ -305,18 +305,40 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                     child: InfoLabel(
                       label: "Series Prefix",
                       child: ComboBox<String>(
-                        value: ref.watch(invoiceSeriesProvider).any((final s) => invoice.invoiceNo.startsWith(s.prefix))
-                            ? ref.watch(invoiceSeriesProvider).firstWhere((final s) => invoice.invoiceNo.startsWith(s.prefix)).prefix
+                        value:
+                            ref
+                                .watch(invoiceSeriesProvider)
+                                .any(
+                                  (final s) =>
+                                      invoice.invoiceNo.startsWith(s.prefix),
+                                )
+                            ? ref
+                                  .watch(invoiceSeriesProvider)
+                                  .firstWhere(
+                                    (final s) =>
+                                        invoice.invoiceNo.startsWith(s.prefix),
+                                  )
+                                  .prefix
                             : (ref.watch(invoiceSeriesProvider).isNotEmpty
-                                ? ref.watch(invoiceSeriesProvider).first.prefix
-                                : ""),
-                        items: ref.watch(invoiceSeriesProvider).map((final s) => ComboBoxItem(
-                          value: s.prefix,
-                          child: Text(s.prefix),
-                        )).toList(),
+                                  ? ref
+                                        .watch(invoiceSeriesProvider)
+                                        .first
+                                        .prefix
+                                  : ""),
+                        items: ref
+                            .watch(invoiceSeriesProvider)
+                            .map(
+                              (final s) => ComboBoxItem(
+                                value: s.prefix,
+                                child: Text(s.prefix),
+                              ),
+                            )
+                            .toList(),
                         onChanged: (final val) async {
                           if (val != null) {
-                            final nextNo = await generateNextInvoiceNumber(seriesPrefix: val);
+                            final nextNo = await generateNextInvoiceNumber(
+                              seriesPrefix: val,
+                            );
                             invoiceNoCtrl.text = nextNo;
                             notifier.updateInvoiceNo(nextNo);
                           }
@@ -943,11 +965,7 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
 
   void _showPreviewDialog(final Invoice invoice) {
     final profile = ref.read(businessProfileProvider);
-    InvoicePdfPreviewDialog.show(
-      context,
-      invoice: invoice,
-      profile: profile,
-    );
+    InvoicePdfPreviewDialog.show(context, invoice: invoice, profile: profile);
   }
 
   Widget _buildBankSection() {

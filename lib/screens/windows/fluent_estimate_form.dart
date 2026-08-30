@@ -200,20 +200,23 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                           if (pattern.trim().isEmpty) return [];
                           final q = pattern.toLowerCase();
                           return clients
-                              .where((final c) =>
-                                  c.name.toLowerCase().contains(q) ||
-                                  c.gstin.toLowerCase().contains(q) ||
-                                  c.phone.contains(q))
+                              .where(
+                                (final c) =>
+                                    c.name.toLowerCase().contains(q) ||
+                                    c.gstin.toLowerCase().contains(q) ||
+                                    c.phone.contains(q),
+                              )
                               .toList();
                         },
-                        builder: (final context, final controller, final focusNode) {
-                          return AppTextInput(
-                            label: "Client Name",
-                            controller: receiverNameCtrl,
-                            focusNode: focusNode,
-                            placeholder: "Name (type to search clients)",
-                          );
-                        },
+                        builder:
+                            (final context, final controller, final focusNode) {
+                              return AppTextInput(
+                                label: "Client Name",
+                                controller: receiverNameCtrl,
+                                focusNode: focusNode,
+                                placeholder: "Name (type to search clients)",
+                              );
+                            },
                         itemBuilder: (final context, final client) {
                           return Container(
                             color: FluentTheme.of(context).cardColor,
@@ -237,10 +240,9 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                                     "GSTIN: ${client.gstin}",
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: FluentTheme.of(context)
-                                          .typography
-                                          .caption
-                                          ?.color,
+                                      color: FluentTheme.of(
+                                        context,
+                                      ).typography.caption?.color,
                                     ),
                                   ),
                               ],
@@ -550,10 +552,9 @@ class _FluentItemEditDialogState extends State<_FluentItemEditDialog> {
                       "${suggestion.type}: ${suggestion.code}",
                       style: TextStyle(
                         fontSize: 11,
-                        color: FluentTheme.of(context)
-                            .typography
-                            .caption
-                            ?.color,
+                        color: FluentTheme.of(
+                          context,
+                        ).typography.caption?.color,
                       ),
                     ),
                   ],

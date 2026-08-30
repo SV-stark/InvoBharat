@@ -58,7 +58,9 @@ void main() {
 
     when(() => mockInvoiceRepo.getAllInvoices()).thenAnswer((_) async => []);
     when(() => mockInvoiceRepo.getAllEstimates()).thenAnswer((_) async => []);
-    when(() => mockInvoiceRepo.getAllRecurringProfiles()).thenAnswer((_) async => []);
+    when(
+      () => mockInvoiceRepo.getAllRecurringProfiles(),
+    ).thenAnswer((_) async => []);
     when(
       () => mockInvoiceRepo.checkInvoiceExists(
         any(),

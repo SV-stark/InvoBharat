@@ -265,7 +265,7 @@ class CreativeTemplate extends BasePdfTemplate {
                               ),
                             ],
                           ),
-                        buildOriginalInvoiceInfo(invoice),
+                          buildOriginalInvoiceInfo(invoice),
                           buildEwayBillAndEinvoiceInfo(invoice, font, fontBold),
                           pw.SizedBox(height: 30),
 
@@ -392,7 +392,8 @@ class CreativeTemplate extends BasePdfTemplate {
                               pw.Expanded(
                                 child: profile.upiId.isNotEmpty
                                     ? pw.Column(
-                                        mainAxisAlignment: pw.MainAxisAlignment.end,
+                                        mainAxisAlignment:
+                                            pw.MainAxisAlignment.end,
                                         children: [
                                           buildPaymentQRCode(
                                             profile.upiId,

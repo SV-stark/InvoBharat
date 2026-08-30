@@ -71,7 +71,9 @@ void main() {
         final WidgetTester tester,
       ) async {
         if (Platform.environment.containsKey('FLUTTER_TEST')) {
-          debugPrint('Skipping $style golden test (headless test environment).');
+          debugPrint(
+            'Skipping $style golden test (headless test environment).',
+          );
           return;
         }
 
@@ -79,11 +81,13 @@ void main() {
 
         Uint8List? pdfBytes;
         try {
-          pdfBytes = await tester.runAsync(() => generateInvoicePdf(styledInvoice, profile));
+          pdfBytes = await tester.runAsync(
+            () => generateInvoicePdf(styledInvoice, profile),
+          );
         } catch (e) {
           fail('Failed to generate PDF for $style: $e');
         }
-        
+
         if (pdfBytes == null) {
           fail('PDF generation returned null for $style');
         }
@@ -95,10 +99,9 @@ void main() {
         // Try rasterizing - if it fails with MissingPluginException, we are headless and should skip
         List<PdfRaster>? rasterPages;
         try {
-          rasterPages = await tester.runAsync(() => Printing.raster(
-            pdfBytes!,
-            pages: [0],
-          ).toList());
+          rasterPages = await tester.runAsync(
+            () => Printing.raster(pdfBytes!, pages: [0]).toList(),
+          );
         } on MissingPluginException {
           // Skip the test gracefully in headless mode
           debugPrint(
@@ -143,7 +146,9 @@ void main() {
         );
         debugPrint('[DEBUG] Pumping done for $style. Running pumpAndSettle...');
         await tester.pumpAndSettle();
-        debugPrint('[DEBUG] pumpAndSettle done for $style. Comparing golden...');
+        debugPrint(
+          '[DEBUG] pumpAndSettle done for $style. Comparing golden...',
+        );
 
         // Golden image assertion
         await expectLater(

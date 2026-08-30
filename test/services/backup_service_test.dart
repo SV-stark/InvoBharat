@@ -20,7 +20,9 @@ import 'package:invobharat/data/sql_invoice_repository.dart';
 import 'package:invobharat/models/invoice.dart';
 
 class MockFilePickerWrapper extends Mock implements FilePickerWrapper {}
+
 class MockCsvExportService extends Mock implements CsvExportService {}
+
 class MockInvoiceRepository extends Mock implements SqlInvoiceRepository {}
 
 class FakePathProviderPlatform extends PathProviderPlatform
@@ -29,19 +31,23 @@ class FakePathProviderPlatform extends PathProviderPlatform
   Future<String?> getTemporaryPath() async => Directory.systemTemp.path;
 
   @override
-  Future<String?> getApplicationSupportPath() async => Directory.systemTemp.path;
+  Future<String?> getApplicationSupportPath() async =>
+      Directory.systemTemp.path;
 
   @override
   Future<String?> getLibraryPath() async => Directory.systemTemp.path;
 
   @override
-  Future<String?> getApplicationDocumentsPath() async => Directory.systemTemp.path;
+  Future<String?> getApplicationDocumentsPath() async =>
+      Directory.systemTemp.path;
 
   @override
   Future<String?> getExternalStoragePath() async => Directory.systemTemp.path;
 
   @override
-  Future<List<String>?> getExternalCachePaths() async => [Directory.systemTemp.path];
+  Future<List<String>?> getExternalCachePaths() async => [
+    Directory.systemTemp.path,
+  ];
 
   @override
   Future<List<String>?> getExternalStoragePaths({
@@ -82,7 +88,9 @@ void main() {
   tearDown(() async {
     await db.close();
     // Clean up destination folder if created
-    final destDbDir = Directory(p.join(Directory.systemTemp.path, 'InvoBharat'));
+    final destDbDir = Directory(
+      p.join(Directory.systemTemp.path, 'InvoBharat'),
+    );
     if (await destDbDir.exists()) {
       await destDbDir.delete(recursive: true);
     }
@@ -96,7 +104,9 @@ void main() {
         () => mockCsvService.generateInvoiceCsv(any()),
       ).thenAnswer((_) async => 'csvContent');
 
-      final tempFile = File('${Directory.systemTemp.path}/test_backup_${DateTime.now().microsecondsSinceEpoch}.csv');
+      final tempFile = File(
+        '${Directory.systemTemp.path}/test_backup_${DateTime.now().microsecondsSinceEpoch}.csv',
+      );
       when(
         () => mockFilePicker.saveFile(
           dialogTitle: any(named: 'dialogTitle'),
@@ -137,115 +147,145 @@ void main() {
       },
     );
 
-    test('exportFullBackup should create a ZIP with db.sqlite and manifest.json', () async {
-      final tempZipPath = p.join(Directory.systemTemp.path, 'test_full_backup_${DateTime.now().microsecondsSinceEpoch}.zip');
-      when(
-        () => mockFilePicker.saveFile(
-          dialogTitle: any(named: 'dialogTitle'),
-          fileName: any(named: 'fileName'),
-          allowedExtensions: any(named: 'allowedExtensions'),
-          type: any(named: 'type'),
-          bytes: any(named: 'bytes'),
-        ),
-      ).thenAnswer((_) async => tempZipPath);
+    test(
+      'exportFullBackup should create a ZIP with db.sqlite and manifest.json',
+      () async {
+        final tempZipPath = p.join(
+          Directory.systemTemp.path,
+          'test_full_backup_${DateTime.now().microsecondsSinceEpoch}.zip',
+        );
+        when(
+          () => mockFilePicker.saveFile(
+            dialogTitle: any(named: 'dialogTitle'),
+            fileName: any(named: 'fileName'),
+            allowedExtensions: any(named: 'allowedExtensions'),
+            type: any(named: 'type'),
+            bytes: any(named: 'bytes'),
+          ),
+        ).thenAnswer((_) async => tempZipPath);
 
-      final result = await backupService.exportFullBackup();
-      expect(result, contains('Full Backup saved to'));
+        final result = await backupService.exportFullBackup();
+        expect(result, contains('Full Backup saved to'));
 
-      final zipFile = File(tempZipPath);
-      expect(await zipFile.exists(), isTrue);
+        final zipFile = File(tempZipPath);
+        expect(await zipFile.exists(), isTrue);
 
-      // Verify zip contents
-      final bytes = await zipFile.readAsBytes();
-      final archive = ZipDecoder().decodeBytes(bytes);
-      
-      final dbEntry = archive.findFile('db.sqlite');
-      final manifestEntry = archive.findFile('manifest.json');
+        // Verify zip contents
+        final bytes = await zipFile.readAsBytes();
+        final archive = ZipDecoder().decodeBytes(bytes);
 
-      expect(dbEntry, isNotNull);
-      expect(manifestEntry, isNotNull);
+        final dbEntry = archive.findFile('db.sqlite');
+        final manifestEntry = archive.findFile('manifest.json');
 
-      final manifestContent = utf8.decode(manifestEntry!.content as List<int>);
-      final manifestMap = jsonDecode(manifestContent) as Map<String, dynamic>;
-      expect(manifestMap['schemaVersion'], equals(db.schemaVersion));
+        expect(dbEntry, isNotNull);
+        expect(manifestEntry, isNotNull);
 
-      // Clean up ZIP
-      await zipFile.delete();
-    });
+        final manifestContent = utf8.decode(
+          manifestEntry!.content as List<int>,
+        );
+        final manifestMap = jsonDecode(manifestContent) as Map<String, dynamic>;
+        expect(manifestMap['schemaVersion'], equals(db.schemaVersion));
 
-    test('restoreFullBackup should restore db.sqlite and verify manifest.json version', () async {
-      // 1. Create a dummy backup zip in memory
-      final archive = Archive();
-      
-      // Add db.sqlite
-      final dbBytes = utf8.encode('sqlite data contents');
-      archive.addFile(ArchiveFile('db.sqlite', dbBytes.length, dbBytes));
-      
-      // Add manifest.json with valid schema version
-      final manifestBytes = utf8.encode(jsonEncode({
-        'schemaVersion': db.schemaVersion,
-        'createdAt': DateTime.now().toIso8601String(),
-        'app': 'InvoBharat',
-      }));
-      archive.addFile(ArchiveFile('manifest.json', manifestBytes.length, manifestBytes));
-      
-      final zipBytes = ZipEncoder().encode(archive);
-      expect(zipBytes, isNotNull);
+        // Clean up ZIP
+        await zipFile.delete();
+      },
+    );
 
-      final tempZipPath = p.join(Directory.systemTemp.path, 'test_valid_backup_${DateTime.now().microsecondsSinceEpoch}.zip');
-      final tempZipFile = File(tempZipPath);
-      await tempZipFile.writeAsBytes(zipBytes!, flush: true);
+    test(
+      'restoreFullBackup should restore db.sqlite and verify manifest.json version',
+      () async {
+        // 1. Create a dummy backup zip in memory
+        final archive = Archive();
 
-      // Mock picking this zip file
-      when(
-        () => mockFilePicker.pickFile(
-          dialogTitle: any(named: 'dialogTitle'),
-          type: any(named: 'type'),
-          allowedExtensions: any(named: 'allowedExtensions'),
-        ),
-      ).thenAnswer((_) async => WindowsPlatformFile.fromPath(
-            tempZipPath,
-          ));
+        // Add db.sqlite
+        final dbBytes = utf8.encode('sqlite data contents');
+        archive.addFile(ArchiveFile('db.sqlite', dbBytes.length, dbBytes));
 
-      final result = await backupService.restoreFullBackup();
-      expect(result, contains('Restore Successful'));
-    });
+        // Add manifest.json with valid schema version
+        final manifestBytes = utf8.encode(
+          jsonEncode({
+            'schemaVersion': db.schemaVersion,
+            'createdAt': DateTime.now().toIso8601String(),
+            'app': 'InvoBharat',
+          }),
+        );
+        archive.addFile(
+          ArchiveFile('manifest.json', manifestBytes.length, manifestBytes),
+        );
 
-    test('restoreFullBackup should throw exception for incompatible schema version', () async {
-      // 1. Create an incompatible dummy backup zip in memory
-      final archive = Archive();
-      
-      final dbBytes = utf8.encode('sqlite data contents');
-      archive.addFile(ArchiveFile('db.sqlite', dbBytes.length, dbBytes));
-      
-      final manifestBytes = utf8.encode(jsonEncode({'schemaVersion': 3})); // incompatible
-      archive.addFile(ArchiveFile('manifest.json', manifestBytes.length, manifestBytes));
-      
-      final zipBytes = ZipEncoder().encode(archive);
-      expect(zipBytes, isNotNull);
+        final zipBytes = ZipEncoder().encode(archive);
+        expect(zipBytes, isNotNull);
 
-      final tempZipPath = p.join(Directory.systemTemp.path, 'test_incompatible_${DateTime.now().microsecondsSinceEpoch}.zip');
-      final tempZipFile = File(tempZipPath);
-      await tempZipFile.writeAsBytes(zipBytes!, flush: true);
+        final tempZipPath = p.join(
+          Directory.systemTemp.path,
+          'test_valid_backup_${DateTime.now().microsecondsSinceEpoch}.zip',
+        );
+        final tempZipFile = File(tempZipPath);
+        await tempZipFile.writeAsBytes(zipBytes!, flush: true);
 
-      // Mock picking this zip file
-      when(
-        () => mockFilePicker.pickFile(
-          dialogTitle: any(named: 'dialogTitle'),
-          type: any(named: 'type'),
-          allowedExtensions: any(named: 'allowedExtensions'),
-        ),
-      ).thenAnswer((_) async => WindowsPlatformFile.fromPath(
-            tempZipPath,
-          ));
+        // Mock picking this zip file
+        when(
+          () => mockFilePicker.pickFile(
+            dialogTitle: any(named: 'dialogTitle'),
+            type: any(named: 'type'),
+            allowedExtensions: any(named: 'allowedExtensions'),
+          ),
+        ).thenAnswer((_) async => WindowsPlatformFile.fromPath(tempZipPath));
 
-      await expectLater(
-        backupService.restoreFullBackup(),
-        throwsA(isA<Exception>().having((final e) => e.toString(), 'message', contains('Incompatible backup: schema version 3'))),
-      );
+        final result = await backupService.restoreFullBackup();
+        expect(result, contains('Restore Successful'));
+      },
+    );
 
-      // Cleanup
-      if (await tempZipFile.exists()) await tempZipFile.delete();
-    });
+    test(
+      'restoreFullBackup should throw exception for incompatible schema version',
+      () async {
+        // 1. Create an incompatible dummy backup zip in memory
+        final archive = Archive();
+
+        final dbBytes = utf8.encode('sqlite data contents');
+        archive.addFile(ArchiveFile('db.sqlite', dbBytes.length, dbBytes));
+
+        final manifestBytes = utf8.encode(
+          jsonEncode({'schemaVersion': 3}),
+        ); // incompatible
+        archive.addFile(
+          ArchiveFile('manifest.json', manifestBytes.length, manifestBytes),
+        );
+
+        final zipBytes = ZipEncoder().encode(archive);
+        expect(zipBytes, isNotNull);
+
+        final tempZipPath = p.join(
+          Directory.systemTemp.path,
+          'test_incompatible_${DateTime.now().microsecondsSinceEpoch}.zip',
+        );
+        final tempZipFile = File(tempZipPath);
+        await tempZipFile.writeAsBytes(zipBytes!, flush: true);
+
+        // Mock picking this zip file
+        when(
+          () => mockFilePicker.pickFile(
+            dialogTitle: any(named: 'dialogTitle'),
+            type: any(named: 'type'),
+            allowedExtensions: any(named: 'allowedExtensions'),
+          ),
+        ).thenAnswer((_) async => WindowsPlatformFile.fromPath(tempZipPath));
+
+        await expectLater(
+          backupService.restoreFullBackup(),
+          throwsA(
+            isA<Exception>().having(
+              (final e) => e.toString(),
+              'message',
+              contains('Incompatible backup: schema version 3'),
+            ),
+          ),
+        );
+
+        // Cleanup
+        if (await tempZipFile.exists()) await tempZipFile.delete();
+      },
+    );
   });
 }

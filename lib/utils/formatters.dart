@@ -14,7 +14,10 @@ class CurrencyFormatter {
     return _indianFormat.format(amount);
   }
 
-  static Money toMoney(final double amount, [final String currencyCode = 'INR']) {
+  static Money toMoney(
+    final double amount, [
+    final String currencyCode = 'INR',
+  ]) {
     final currency = Currencies().find(currencyCode) ?? CommonCurrencies().inr;
     return Money.fromNumWithCurrency(amount, currency);
   }
@@ -65,8 +68,10 @@ class MobileNumberFormatter extends TextInputFormatter {
     if (digitsOnly.length > 10) return oldValue;
 
     int cursorOffset = 0;
-    final int rawCursor =
-        newValue.selection.baseOffset.clamp(0, newValue.text.length);
+    final int rawCursor = newValue.selection.baseOffset.clamp(
+      0,
+      newValue.text.length,
+    );
     for (int i = 0; i < rawCursor; i++) {
       if (RegExp(r'\d').hasMatch(newValue.text[i])) {
         cursorOffset++;

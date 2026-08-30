@@ -70,28 +70,31 @@ void main() {
       expect(map['ValDtls']['TotInvVal'], 11210.0);
     });
 
-    test('generateEWayBillJson creates valid NIC schema payload with billLists and vehicle', () {
-      final jsonStr = EInvoiceExporter.generateEWayBillJson(invoice, profile);
-      final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+    test(
+      'generateEWayBillJson creates valid NIC schema payload with billLists and vehicle',
+      () {
+        final jsonStr = EInvoiceExporter.generateEWayBillJson(invoice, profile);
+        final map = jsonDecode(jsonStr) as Map<String, dynamic>;
 
-      expect(map['version'], '1.0.0621');
-      expect(map['billLists'], isA<List>());
-      final bill = (map['billLists'] as List)[0] as Map<String, dynamic>;
+        expect(map['version'], '1.0.0621');
+        expect(map['billLists'], isA<List>());
+        final bill = (map['billLists'] as List)[0] as Map<String, dynamic>;
 
-      expect(bill['userGstin'], '07AAAAA0000A1Z5');
-      expect(bill['supplyType'], 'O');
-      expect(bill['docType'], 'INV');
-      expect(bill['docNo'], 'INV-101');
-      expect(bill['fromGstin'], '07AAAAA0000A1Z5');
-      expect(bill['toGstin'], '27BBBBB1111B1Z2');
-      expect(bill['vehicleNo'], 'DL01AB1234');
-      expect(bill['transDocNo'], 'EWB998877');
-      expect(bill['itemList'].length, 1);
-      expect(bill['itemList'][0]['hsnCode'], 998311);
-      expect(bill['itemList'][0]['taxableAmount'], 9500.0);
-      expect(bill['itemList'][0]['igstRate'], 18.0);
-      expect(bill['totInvValue'], 11210.0);
-    });
+        expect(bill['userGstin'], '07AAAAA0000A1Z5');
+        expect(bill['supplyType'], 'O');
+        expect(bill['docType'], 'INV');
+        expect(bill['docNo'], 'INV-101');
+        expect(bill['fromGstin'], '07AAAAA0000A1Z5');
+        expect(bill['toGstin'], '27BBBBB1111B1Z2');
+        expect(bill['vehicleNo'], 'DL01AB1234');
+        expect(bill['transDocNo'], 'EWB998877');
+        expect(bill['itemList'].length, 1);
+        expect(bill['itemList'][0]['hsnCode'], 998311);
+        expect(bill['itemList'][0]['taxableAmount'], 9500.0);
+        expect(bill['itemList'][0]['igstRate'], 18.0);
+        expect(bill['totInvValue'], 11210.0);
+      },
+    );
 
     test('Credit Note generates CRN docType in E-Invoice and E-Way Bill', () {
       final creditNote = invoice.copyWith(
@@ -99,7 +102,10 @@ void main() {
         invoiceNo: 'CN-001',
       );
 
-      final eInvStr = EInvoiceExporter.generateEInvoiceJson(creditNote, profile);
+      final eInvStr = EInvoiceExporter.generateEInvoiceJson(
+        creditNote,
+        profile,
+      );
       final eInvMap = jsonDecode(eInvStr) as Map<String, dynamic>;
       expect(eInvMap['DocDtls']['Typ'], 'CRN');
 

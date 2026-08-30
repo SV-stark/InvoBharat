@@ -14,7 +14,7 @@ class ExcelExportService {
 
   static List<int> _generateInvoiceExcelSync(final List<Invoice> invoices) {
     final excel = Excel.createExcel();
-    
+
     // Rename default sheet to 'Invoices Summary'
     final String defaultSheet = excel.getDefaultSheet() ?? 'Sheet1';
     excel.rename(defaultSheet, 'Invoices Summary');
@@ -58,9 +58,13 @@ class ExcelExportService {
       summarySheet.appendRow([
         TextCellValue(inv.invoiceNo),
         TextCellValue(dateFormat.format(inv.invoiceDate)),
-        TextCellValue(inv.dueDate != null ? dateFormat.format(inv.dueDate!) : '-'),
+        TextCellValue(
+          inv.dueDate != null ? dateFormat.format(inv.dueDate!) : '-',
+        ),
         TextCellValue(inv.receiver.name),
-        TextCellValue(inv.receiver.gstin.isNotEmpty ? inv.receiver.gstin : 'URP'),
+        TextCellValue(
+          inv.receiver.gstin.isNotEmpty ? inv.receiver.gstin : 'URP',
+        ),
         TextCellValue(inv.placeOfSupply),
         TextCellValue(inv.reverseCharge),
         DoubleCellValue(inv.totalTaxableValue),

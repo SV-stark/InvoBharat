@@ -205,7 +205,11 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   ) async {
     try {
       final showHsn = ref.read(appConfigProvider).showHsnSummaryInPdf;
-      final pdfBytes = await generateInvoicePdf(invoice, profile, showHsnSummary: showHsn);
+      final pdfBytes = await generateInvoicePdf(
+        invoice,
+        profile,
+        showHsnSummary: showHsn,
+      );
       await Printing.layoutPdf(onLayout: (_) => pdfBytes);
     } catch (e) {
       debugPrint("Error printing invoice: $e");
@@ -248,7 +252,10 @@ mixin InvoiceFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     String candidate = '$targetPrefix${currentSeq.toString().padLeft(3, '0')}';
 
     // Verify candidate against repository to guarantee uniqueness within financial year
-    while (await repository.checkInvoiceExists(candidate, invoiceDate: targetDate)) {
+    while (await repository.checkInvoiceExists(
+      candidate,
+      invoiceDate: targetDate,
+    )) {
       currentSeq++;
       candidate = '$targetPrefix${currentSeq.toString().padLeft(3, '0')}';
     }

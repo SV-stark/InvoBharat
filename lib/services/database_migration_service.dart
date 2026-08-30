@@ -27,8 +27,9 @@ class DatabaseMigrationService {
     final isV13Migrated = prefs.getBool('db_migration_completed_v13') ?? false;
     if (!isV13Migrated) {
       try {
-        final sqliteProfiles =
-            await database.select(database.businessProfiles).get();
+        final sqliteProfiles = await database
+            .select(database.businessProfiles)
+            .get();
         for (final profile in sqliteProfiles) {
           await _migrateEstimates(profile.id, onProgress);
           await _migrateRecurring(profile.id, onProgress);
@@ -252,8 +253,7 @@ class DatabaseMigrationService {
     final sqlRepo = SqlInvoiceRepository(database, profileId);
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final path =
-          '${directory.path}/InvoBharat/profiles/$profileId/estimates';
+      final path = '${directory.path}/InvoBharat/profiles/$profileId/estimates';
       final dir = Directory(path);
       if (!await dir.exists()) return;
 

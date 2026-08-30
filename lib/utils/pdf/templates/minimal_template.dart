@@ -205,7 +205,9 @@ class MinimalTemplate extends BasePdfTemplate {
                     if (invoice.comments.isNotEmpty) ...[
                       pw.Text(
                         "Notes",
-                        style: const pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        style: const pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                        ),
                       ),
                       pw.SizedBox(height: 4),
                       pw.Text(
@@ -217,7 +219,9 @@ class MinimalTemplate extends BasePdfTemplate {
                     if (invoice.paymentTerms.isNotEmpty) ...[
                       pw.Text(
                         "Terms",
-                        style: const pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        style: const pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                        ),
                       ),
                       pw.SizedBox(height: 4),
                       pw.Text(

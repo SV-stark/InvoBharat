@@ -18,8 +18,8 @@ class SqlInvoiceRepository implements InvoiceRepository {
   Future<void> saveInvoice(final model.Invoice invoice) async {
     final targetProfileId =
         (invoice.profileId != null && invoice.profileId!.isNotEmpty)
-            ? invoice.profileId!
-            : profileId;
+        ? invoice.profileId!
+        : profileId;
 
     // Ensure we have a valid Invoice ID
     String invoiceId = invoice.id ?? '';
@@ -62,30 +62,41 @@ class SqlInvoiceRepository implements InvoiceRepository {
       String? resolvedClientId;
       final gstin = invoice.receiver.gstin.trim();
       if (gstin.isNotEmpty) {
-        final matchByGstin = await (database.select(database.clients)
-              ..where((final t) =>
-                  t.profileId.equals(targetProfileId) &
-                  t.gstin.equals(gstin)))
-            .getSingleOrNull();
+        final matchByGstin =
+            await (database.select(database.clients)..where(
+                  (final t) =>
+                      t.profileId.equals(targetProfileId) &
+                      t.gstin.equals(gstin),
+                ))
+                .getSingleOrNull();
         if (matchByGstin != null) {
           resolvedClientId = matchByGstin.id;
         }
       }
 
       if (resolvedClientId == null && invoice.receiver.name.trim().isNotEmpty) {
-        final matchesByName = await (database.select(database.clients)
-              ..where((final t) =>
-                  t.profileId.equals(targetProfileId) &
-                  t.name.equals(invoice.receiver.name.trim())))
-            .get();
+        final matchesByName =
+            await (database.select(database.clients)..where(
+                  (final t) =>
+                      t.profileId.equals(targetProfileId) &
+                      t.name.equals(invoice.receiver.name.trim()),
+                ))
+                .get();
         if (matchesByName.length == 1) {
           resolvedClientId = matchesByName.first.id;
         } else if (matchesByName.length > 1) {
-          final exact = matchesByName.where((final c) =>
-              (invoice.receiver.phone.isNotEmpty && c.phone == invoice.receiver.phone) ||
-              (invoice.receiver.email.isNotEmpty && c.email == invoice.receiver.email) ||
-              (invoice.receiver.state.isNotEmpty && c.state == invoice.receiver.state));
-          resolvedClientId = exact.isNotEmpty ? exact.first.id : matchesByName.first.id;
+          final exact = matchesByName.where(
+            (final c) =>
+                (invoice.receiver.phone.isNotEmpty &&
+                    c.phone == invoice.receiver.phone) ||
+                (invoice.receiver.email.isNotEmpty &&
+                    c.email == invoice.receiver.email) ||
+                (invoice.receiver.state.isNotEmpty &&
+                    c.state == invoice.receiver.state),
+          );
+          resolvedClientId = exact.isNotEmpty
+              ? exact.first.id
+              : matchesByName.first.id;
         }
       }
 
@@ -297,25 +308,24 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
   @override
   Future<List<model.Invoice>> getAllInvoices() async {
-    final invoiceRows = await (database.select(
-      database.invoices,
-    )
-          ..where((final t) => t.profileId.equals(profileId))
-          ..orderBy([
-            (final t) => OrderingTerm(
+    final invoiceRows =
+        await (database.select(database.invoices)
+              ..where((final t) => t.profileId.equals(profileId))
+              ..orderBy([
+                (final t) => OrderingTerm(
                   expression: t.invoiceDate,
                   mode: OrderingMode.desc,
                 ),
-          ]))
-        .get();
+              ]))
+            .get();
     if (invoiceRows.isEmpty) return [];
     final invoiceIds = invoiceRows.map((final r) => r.id).toList();
-    final allItems = await (database.select(database.invoiceItems)
-          ..where((final t) => t.invoiceId.isIn(invoiceIds)))
-        .get();
-    final allPayments = await (database.select(database.payments)
-          ..where((final t) => t.invoiceId.isIn(invoiceIds)))
-        .get();
+    final allItems = await (database.select(
+      database.invoiceItems,
+    )..where((final t) => t.invoiceId.isIn(invoiceIds))).get();
+    final allPayments = await (database.select(
+      database.payments,
+    )..where((final t) => t.invoiceId.isIn(invoiceIds))).get();
 
     final clientIds = invoiceRows
         .map((final r) => r.clientId)
@@ -324,9 +334,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
         .toList();
 
     final clientRows = clientIds.isNotEmpty
-        ? await (database.select(database.clients)
-              ..where((final t) => t.id.isIn(clientIds)))
-            .get()
+        ? await (database.select(
+            database.clients,
+          )..where((final t) => t.id.isIn(clientIds))).get()
         : [];
 
     final Map<String, dynamic> clientMap = <String, dynamic>{
@@ -354,12 +364,12 @@ class SqlInvoiceRepository implements InvoiceRepository {
             .get();
     if (invoiceRows.isEmpty) return [];
     final invoiceIds = invoiceRows.map((final r) => r.id).toSet();
-    final allItems = await (database.select(database.invoiceItems)
-          ..where((final t) => t.invoiceId.isIn(invoiceIds)))
-        .get();
-    final allPayments = await (database.select(database.payments)
-          ..where((final t) => t.invoiceId.isIn(invoiceIds)))
-        .get();
+    final allItems = await (database.select(
+      database.invoiceItems,
+    )..where((final t) => t.invoiceId.isIn(invoiceIds))).get();
+    final allPayments = await (database.select(
+      database.payments,
+    )..where((final t) => t.invoiceId.isIn(invoiceIds))).get();
     final filteredItems = allItems
         .where((final i) => invoiceIds.contains(i.invoiceId))
         .toList();
@@ -374,16 +384,21 @@ class SqlInvoiceRepository implements InvoiceRepository {
         .toList();
 
     final clientRows = clientIds.isNotEmpty
-        ? await (database.select(database.clients)
-              ..where((final t) => t.id.isIn(clientIds)))
-            .get()
+        ? await (database.select(
+            database.clients,
+          )..where((final t) => t.id.isIn(clientIds))).get()
         : [];
 
     final Map<String, dynamic> clientMap = <String, dynamic>{
       for (var c in clientRows) c.id: c,
     };
 
-    return _mapInvoices(invoiceRows, filteredItems, filteredPayments, clientMap);
+    return _mapInvoices(
+      invoiceRows,
+      filteredItems,
+      filteredPayments,
+      clientMap,
+    );
   }
 
   @override
@@ -437,8 +452,8 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
       final clientRow = row.clientId != null ? clientMap[row.clientId] : null;
 
-      final receiver = (row.receiverName != null &&
-              row.receiverName.toString().isNotEmpty)
+      final receiver =
+          (row.receiverName != null && row.receiverName.toString().isNotEmpty)
           ? model.Receiver(
               name: row.receiverName,
               address: row.receiverAddress ?? "",
@@ -543,14 +558,13 @@ class SqlInvoiceRepository implements InvoiceRepository {
     }
 
     final targetDate = invoiceDate ?? DateTime.now();
-    final fyStartYear =
-        targetDate.month >= 4 ? targetDate.year : targetDate.year - 1;
+    final fyStartYear = targetDate.month >= 4
+        ? targetDate.year
+        : targetDate.year - 1;
     final fyStart = DateTime(fyStartYear, 4);
     final fyEnd = DateTime(fyStartYear + 1, 3, 31, 23, 59, 59);
 
-    query.where(
-      (final tbl) => tbl.invoiceDate.isBetweenValues(fyStart, fyEnd),
-    );
+    query.where((final tbl) => tbl.invoiceDate.isBetweenValues(fyStart, fyEnd));
 
     final result = await query.get();
     return result.isNotEmpty;
@@ -562,8 +576,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
     final DateTime? invoiceDate,
   }) async {
     final targetDate = invoiceDate ?? DateTime.now();
-    final fyStartYear =
-        targetDate.month >= 4 ? targetDate.year : targetDate.year - 1;
+    final fyStartYear = targetDate.month >= 4
+        ? targetDate.year
+        : targetDate.year - 1;
     final fyStart = DateTime(fyStartYear, 4);
     final fyEnd = DateTime(fyStartYear + 1, 3, 31, 23, 59, 59);
 
@@ -619,7 +634,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
     }).toList();
 
     await database.transaction(() async {
-      await database.into(database.estimates).insertOnConflictUpdate(
+      await database
+          .into(database.estimates)
+          .insertOnConflictUpdate(
             EstimatesCompanion(
               id: Value(estimateId),
               profileId: Value(profileId),
@@ -647,9 +664,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
             ),
           );
 
-      await (database.delete(database.estimateItems)
-            ..where((final t) => t.estimateId.equals(estimateId)))
-          .go();
+      await (database.delete(
+        database.estimateItems,
+      )..where((final t) => t.estimateId.equals(estimateId))).go();
 
       for (final item in items) {
         await database.into(database.estimateItems).insert(item);
@@ -659,21 +676,20 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
   @override
   Future<List<model.Estimate>> getAllEstimates() async {
-    final estimateRows = await (database.select(database.estimates)
-          ..where((final t) => t.profileId.equals(profileId))
-          ..orderBy([
-            (final t) => OrderingTerm(
-                  expression: t.date,
-                  mode: OrderingMode.desc,
-                ),
-          ]))
-        .get();
+    final estimateRows =
+        await (database.select(database.estimates)
+              ..where((final t) => t.profileId.equals(profileId))
+              ..orderBy([
+                (final t) =>
+                    OrderingTerm(expression: t.date, mode: OrderingMode.desc),
+              ]))
+            .get();
     if (estimateRows.isEmpty) return [];
 
     final estimateIds = estimateRows.map((final r) => r.id).toList();
-    final allItems = await (database.select(database.estimateItems)
-          ..where((final t) => t.estimateId.isIn(estimateIds)))
-        .get();
+    final allItems = await (database.select(
+      database.estimateItems,
+    )..where((final t) => t.estimateId.isIn(estimateIds))).get();
 
     return estimateRows.map((final row) {
       final items = allItems
@@ -728,9 +744,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
   @override
   Future<void> deleteEstimate(final String id) async {
-    await (database.delete(database.estimateItems)
-          ..where((final t) => t.estimateId.equals(id)))
-        .go();
+    await (database.delete(
+      database.estimateItems,
+    )..where((final t) => t.estimateId.equals(id))).go();
     await (database.delete(database.estimates)
           ..where((final t) => t.id.equals(id) & t.profileId.equals(profileId)))
         .go();
@@ -740,9 +756,12 @@ class SqlInvoiceRepository implements InvoiceRepository {
   Future<void> saveRecurringProfile(
     final model.RecurringProfile profile,
   ) async {
-    final targetProfileId =
-        profile.profileId.isNotEmpty ? profile.profileId : profileId;
-    await database.into(database.recurringProfilesTable).insertOnConflictUpdate(
+    final targetProfileId = profile.profileId.isNotEmpty
+        ? profile.profileId
+        : profileId;
+    await database
+        .into(database.recurringProfilesTable)
+        .insertOnConflictUpdate(
           RecurringProfilesTableCompanion(
             id: Value(profile.id),
             profileId: Value(targetProfileId),
@@ -758,9 +777,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
   @override
   Future<List<model.RecurringProfile>> getAllRecurringProfiles() async {
-    final rows = await (database.select(database.recurringProfilesTable)
-          ..where((final t) => t.profileId.equals(profileId)))
-        .get();
+    final rows = await (database.select(
+      database.recurringProfilesTable,
+    )..where((final t) => t.profileId.equals(profileId))).get();
 
     return rows.map((final row) {
       return model.RecurringProfile(

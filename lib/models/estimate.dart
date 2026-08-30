@@ -43,13 +43,19 @@ abstract class Estimate with _$Estimate {
 
   bool get isInterState {
     final posInput = receiver.state;
-    final posCode = GstUtils.getStateCodeFromInput(posInput) ??
-        (receiver.gstin.length >= 2 ? GstUtils.getStateCodeFromInput(receiver.gstin.substring(0, 2)) : null) ??
+    final posCode =
+        GstUtils.getStateCodeFromInput(posInput) ??
+        (receiver.gstin.length >= 2
+            ? GstUtils.getStateCodeFromInput(receiver.gstin.substring(0, 2))
+            : null) ??
         GstUtils.getStateCodeFromInput(receiver.stateCode);
 
     final suppInput = supplier.state;
-    final suppCode = GstUtils.getStateCodeFromInput(suppInput) ??
-        (supplier.gstin.length >= 2 ? GstUtils.getStateCodeFromInput(supplier.gstin.substring(0, 2)) : null);
+    final suppCode =
+        GstUtils.getStateCodeFromInput(suppInput) ??
+        (supplier.gstin.length >= 2
+            ? GstUtils.getStateCodeFromInput(supplier.gstin.substring(0, 2))
+            : null);
 
     if (suppCode != null && posCode != null) {
       return suppCode != posCode;

@@ -80,7 +80,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       _sequenceController = TextEditingController(
         text: profile.invoiceSequence.toString(),
       );
-      _termsController = TextEditingController(text: profile.termsAndConditions);
+      _termsController = TextEditingController(
+        text: profile.termsAndConditions,
+      );
       _notesController = TextEditingController(text: profile.defaultNotes);
       _currencyController = TextEditingController(text: profile.currency);
       _bankNameController = TextEditingController(text: profile.bankName);
@@ -172,14 +174,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _pickLogo() async {
     try {
-      final result = await FilePicker.pickFile(
-        type: FileType.image,
-      );
+      final result = await FilePicker.pickFile(type: FileType.image);
 
       if (result != null && result.path != null) {
         final currentProfile = ref.read(businessProfileProvider);
-        final newProfile =
-            currentProfile.copyWith(logoPath: result.path!);
+        final newProfile = currentProfile.copyWith(logoPath: result.path!);
         await ref
             .read(businessProfileListProvider.notifier)
             .updateProfile(newProfile);
@@ -192,15 +191,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _pickSignature() async {
     try {
-      final result = await FilePicker.pickFile(
-        type: FileType.image,
-      );
+      final result = await FilePicker.pickFile(type: FileType.image);
 
       if (result != null && result.path != null) {
         final currentProfile = ref.read(businessProfileProvider);
-        final newProfile = currentProfile.copyWith(
-          signaturePath: result.path!,
-        );
+        final newProfile = currentProfile.copyWith(signaturePath: result.path!);
         await ref
             .read(businessProfileListProvider.notifier)
             .updateProfile(newProfile);
@@ -387,45 +382,64 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const Gap(24),
             _buildSectionHeader("Invoice Series Prefixes"),
-            ...ref.watch(invoiceSeriesProvider).map((final s) => ListTile(
-              title: Text("Prefix: ${s.prefix}"),
-              subtitle: Text("Next sequence: ${s.sequence}"),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () async {
-                      final controller = TextEditingController(text: s.sequence.toString());
-                      final val = await showDialog<String>(
-                        context: context,
-                        builder: (final context) => AlertDialog(
-                          title: Text("Update ${s.prefix} sequence"),
-                          content: TextField(
-                            controller: controller,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(labelText: "Next sequence"),
-                          ),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-                            TextButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text("Update")),
-                          ],
+            ...ref
+                .watch(invoiceSeriesProvider)
+                .map(
+                  (final s) => ListTile(
+                    title: Text("Prefix: ${s.prefix}"),
+                    subtitle: Text("Next sequence: ${s.sequence}"),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () async {
+                            final controller = TextEditingController(
+                              text: s.sequence.toString(),
+                            );
+                            final val = await showDialog<String>(
+                              context: context,
+                              builder: (final context) => AlertDialog(
+                                title: Text("Update ${s.prefix} sequence"),
+                                content: TextField(
+                                  controller: controller,
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(
+                                    labelText: "Next sequence",
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text("Cancel"),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, controller.text),
+                                    child: const Text("Update"),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (val != null) {
+                              final seq = int.tryParse(val) ?? s.sequence;
+                              await ref
+                                  .read(invoiceSeriesProvider.notifier)
+                                  .updateSequence(s.prefix, seq);
+                            }
+                          },
                         ),
-                      );
-                      if (val != null) {
-                        final seq = int.tryParse(val) ?? s.sequence;
-                        await ref.read(invoiceSeriesProvider.notifier).updateSequence(s.prefix, seq);
-                      }
-                    },
-                  ),
-                  if (ref.watch(invoiceSeriesProvider).length > 1)
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () async => await ref.read(invoiceSeriesProvider.notifier).removeSeries(s.prefix),
+                        if (ref.watch(invoiceSeriesProvider).length > 1)
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () async => await ref
+                                .read(invoiceSeriesProvider.notifier)
+                                .removeSeries(s.prefix),
+                          ),
+                      ],
                     ),
-                ],
-              ),
-            )),
+                  ),
+                ),
             TextButton.icon(
               icon: const Icon(Icons.add),
               label: const Text("Add Series Prefix"),
@@ -439,19 +453,38 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     content: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        TextField(controller: prefixCtrl, decoration: const InputDecoration(labelText: "Prefix (e.g. SRV/)")),
-                        TextField(controller: seqCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: "Starting sequence")),
+                        TextField(
+                          controller: prefixCtrl,
+                          decoration: const InputDecoration(
+                            labelText: "Prefix (e.g. SRV/)",
+                          ),
+                        ),
+                        TextField(
+                          controller: seqCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: "Starting sequence",
+                          ),
+                        ),
                       ],
                     ),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
-                      TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Add")),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text("Cancel"),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text("Add"),
+                      ),
                     ],
                   ),
                 );
                 if (added == true && prefixCtrl.text.isNotEmpty) {
                   final seq = int.tryParse(seqCtrl.text) ?? 1;
-                  await ref.read(invoiceSeriesProvider.notifier).addSeries(prefixCtrl.text, seq);
+                  await ref
+                      .read(invoiceSeriesProvider.notifier)
+                      .addSeries(prefixCtrl.text, seq);
                 }
               },
             ),
@@ -896,7 +929,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               ),
                               actions: [
                                 TextButton(
-                                  onPressed: () => Navigator.pop(context, false),
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
                                   child: const Text("Cancel"),
                                 ),
                                 FilledButton(
@@ -947,11 +981,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           Card(
             elevation: 0,
             shape: RoundedRectangleBorder(
-              side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
               borderRadius: BorderRadius.circular(12),
             ),
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
@@ -1254,8 +1293,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       const Color(0xFFFFC107),
       const Color(0xFF795548),
     ];
-    final isCustomSelected = !presets.any((final c) => c.toARGB32() == selectedColorVal);
-    final displayColor = isCustomSelected ? Color(selectedColorVal) : Colors.grey.shade300;
+    final isCustomSelected = !presets.any(
+      (final c) => c.toARGB32() == selectedColorVal,
+    );
+    final displayColor = isCustomSelected
+        ? Color(selectedColorVal)
+        : Colors.grey.shade300;
 
     return Tooltip(
       message: 'Custom Color',
@@ -1287,7 +1330,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Icon(
               isCustomSelected ? Icons.check : Icons.palette_outlined,
               color: isCustomSelected
-                  ? (displayColor.computeLuminance() > 0.5 ? Colors.black : Colors.white)
+                  ? (displayColor.computeLuminance() > 0.5
+                        ? Colors.black
+                        : Colors.white)
                   : Colors.grey.shade700,
               size: 20,
             ),
@@ -1302,7 +1347,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final selectedColor = Color(profile.colorValue);
     final newColor = await showDialog<Color>(
       context: context,
-      builder: (final context) => CustomColorPickerDialog(initialColor: selectedColor),
+      builder: (final context) =>
+          CustomColorPickerDialog(initialColor: selectedColor),
     );
 
     if (newColor != null) {
@@ -1319,7 +1365,8 @@ class CustomColorPickerDialog extends StatefulWidget {
   const CustomColorPickerDialog({super.key, required this.initialColor});
 
   @override
-  State<CustomColorPickerDialog> createState() => _CustomColorPickerDialogState();
+  State<CustomColorPickerDialog> createState() =>
+      _CustomColorPickerDialogState();
 }
 
 class _CustomColorPickerDialogState extends State<CustomColorPickerDialog> {
@@ -1345,15 +1392,32 @@ class _CustomColorPickerDialogState extends State<CustomColorPickerDialog> {
   }
 
   void _updateHexText(final Color color) {
-    final r = (color.r * 255.0).round().clamp(0, 255).toRadixString(16).padLeft(2, '0');
-    final g = (color.g * 255.0).round().clamp(0, 255).toRadixString(16).padLeft(2, '0');
-    final b = (color.b * 255.0).round().clamp(0, 255).toRadixString(16).padLeft(2, '0');
+    final r = (color.r * 255.0)
+        .round()
+        .clamp(0, 255)
+        .toRadixString(16)
+        .padLeft(2, '0');
+    final g = (color.g * 255.0)
+        .round()
+        .clamp(0, 255)
+        .toRadixString(16)
+        .padLeft(2, '0');
+    final b = (color.b * 255.0)
+        .round()
+        .clamp(0, 255)
+        .toRadixString(16)
+        .padLeft(2, '0');
     _hexController.text = '#$r$g$b'.toUpperCase();
   }
 
   void _onHslChanged() {
     setState(() {
-      _currentColor = HSLColor.fromAHSL(1.0, _hue, _saturation, _lightness).toColor();
+      _currentColor = HSLColor.fromAHSL(
+        1.0,
+        _hue,
+        _saturation,
+        _lightness,
+      ).toColor();
       _updateHexText(_currentColor);
     });
   }
@@ -1382,11 +1446,26 @@ class _CustomColorPickerDialogState extends State<CustomColorPickerDialog> {
   @override
   Widget build(final BuildContext context) {
     final presetGridColors = [
-      Colors.red, Colors.pink, Colors.purple, Colors.deepPurple,
-      Colors.indigo, Colors.blue, Colors.lightBlue, Colors.cyan,
-      Colors.teal, Colors.green, Colors.lightGreen, Colors.lime,
-      Colors.yellow, Colors.amber, Colors.orange, Colors.deepOrange,
-      Colors.brown, Colors.grey, Colors.blueGrey, Colors.black,
+      Colors.red,
+      Colors.pink,
+      Colors.purple,
+      Colors.deepPurple,
+      Colors.indigo,
+      Colors.blue,
+      Colors.lightBlue,
+      Colors.cyan,
+      Colors.teal,
+      Colors.green,
+      Colors.lightGreen,
+      Colors.lime,
+      Colors.yellow,
+      Colors.amber,
+      Colors.orange,
+      Colors.deepOrange,
+      Colors.brown,
+      Colors.grey,
+      Colors.blueGrey,
+      Colors.black,
     ];
 
     return AlertDialog(
@@ -1430,9 +1509,12 @@ class _CustomColorPickerDialogState extends State<CustomColorPickerDialog> {
               ],
             ),
             const SizedBox(height: 20),
-            
+
             // HSL Sliders
-            Text("Hue: ${_hue.round()}°", style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              "Hue: ${_hue.round()}°",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             Slider(
               value: _hue,
               max: 360.0,
@@ -1445,7 +1527,10 @@ class _CustomColorPickerDialogState extends State<CustomColorPickerDialog> {
               },
             ),
 
-            Text("Saturation: ${(_saturation * 100).round()}%", style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              "Saturation: ${(_saturation * 100).round()}%",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             Slider(
               value: _saturation,
               onChanged: (final val) {
@@ -1456,7 +1541,10 @@ class _CustomColorPickerDialogState extends State<CustomColorPickerDialog> {
               },
             ),
 
-            Text("Lightness: ${(_lightness * 100).round()}%", style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              "Lightness: ${(_lightness * 100).round()}%",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             Slider(
               value: _lightness,
               onChanged: (final val) {
@@ -1469,7 +1557,10 @@ class _CustomColorPickerDialogState extends State<CustomColorPickerDialog> {
             const SizedBox(height: 16),
 
             // Color Grid
-            const Text("Presets", style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              "Presets",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -1493,7 +1584,7 @@ class _CustomColorPickerDialogState extends State<CustomColorPickerDialog> {
                                 color: Colors.black26,
                                 blurRadius: 4,
                                 spreadRadius: 1,
-                              )
+                              ),
                             ]
                           : null,
                     ),

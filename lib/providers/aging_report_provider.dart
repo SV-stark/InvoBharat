@@ -57,8 +57,9 @@ final agingReportProvider = FutureProvider<AgingReportData>((final ref) async {
 
     // Aggregate by Client
     clientMoneyMap[inv.receiver.name] =
-        (clientMoneyMap[inv.receiver.name] ?? Money.fromNumWithCurrency(0, inr)) +
-            balanceMoney;
+        (clientMoneyMap[inv.receiver.name] ??
+            Money.fromNumWithCurrency(0, inr)) +
+        balanceMoney;
 
     if (now.isBefore(due)) {
       current += balanceMoney;
@@ -82,13 +83,20 @@ final agingReportProvider = FutureProvider<AgingReportData>((final ref) async {
   }
 
   final total = current + days30 + days60 + days90 + days90Plus;
-  final clientMap = clientMoneyMap.map((key, val) => MapEntry(key, val.toDouble()));
+  final clientMap = clientMoneyMap.map(
+    (key, val) => MapEntry(key, val.toDouble()),
+  );
 
   return AgingReportData(
     totalReceivable: total.toDouble(),
     clientBreakdown: clientMap,
     buckets: [
-      AgingBucket("Current (Not Overdue)", current.toDouble(), countCurrent, Colors.green),
+      AgingBucket(
+        "Current (Not Overdue)",
+        current.toDouble(),
+        countCurrent,
+        Colors.green,
+      ),
       AgingBucket("1-30 Days", days30.toDouble(), count30, Colors.teal),
       AgingBucket("31-60 Days", days60.toDouble(), count60, Colors.orange),
       AgingBucket("61-90 Days", days90.toDouble(), count90, Colors.deepOrange),

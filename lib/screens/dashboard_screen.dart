@@ -628,7 +628,9 @@ class _DashboardQuickActions extends ConsumerWidget {
         await InvoiceImportService.downloadImportTemplate();
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Import template downloaded successfully")),
+          const SnackBar(
+            content: Text("Import template downloaded successfully"),
+          ),
         );
       } catch (e) {
         if (!context.mounted) return;
@@ -800,7 +802,9 @@ class _DashboardRecentActivity extends ConsumerWidget {
                             } else if (value == 'print') {
                               final profile = ref.read(businessProfileProvider);
                               try {
-                                final showHsn = ref.read(appConfigProvider).showHsnSummaryInPdf;
+                                final showHsn = ref
+                                    .read(appConfigProvider)
+                                    .showHsnSummaryInPdf;
                                 final pdfBytes = await generateInvoicePdf(
                                   inv,
                                   profile,

@@ -103,7 +103,9 @@ class AutoBackupService {
         await _ref
             .read(appConfigProvider.notifier)
             .updateLastBackupDate(DateTime.now());
-        LoggerService.talker.info("Auto-backup completed successfully at ${DateTime.now()}");
+        LoggerService.talker.info(
+          "Auto-backup completed successfully at ${DateTime.now()}",
+        );
       } catch (e, st) {
         LoggerService.talker.handle(e, st, "Auto-backup failed");
       }
@@ -143,7 +145,9 @@ class AutoBackupService {
 
       final tempFile = File(tempDbPath);
       final manifestFile = File(tempManifestPath);
-      await manifestFile.writeAsString(jsonEncode({'schemaVersion': db.schemaVersion}));
+      await manifestFile.writeAsString(
+        jsonEncode({'schemaVersion': db.schemaVersion}),
+      );
 
       final outputFile = p.join(
         backupDir.path,

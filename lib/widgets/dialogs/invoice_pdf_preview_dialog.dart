@@ -23,10 +23,8 @@ class InvoicePdfPreviewDialog extends ConsumerStatefulWidget {
   }) {
     return showDialog(
       context: context,
-      builder: (final ctx) => InvoicePdfPreviewDialog(
-        invoice: invoice,
-        profile: profile,
-      ),
+      builder: (final ctx) =>
+          InvoicePdfPreviewDialog(invoice: invoice, profile: profile),
     );
   }
 
@@ -53,7 +51,9 @@ class _InvoicePdfPreviewDialogState
   @override
   void initState() {
     super.initState();
-    _selectedStyle = widget.invoice.style.isEmpty ? 'Modern' : widget.invoice.style;
+    _selectedStyle = widget.invoice.style.isEmpty
+        ? 'Modern'
+        : widget.invoice.style;
     _showHsnSummary = ref.read(appConfigProvider).showHsnSummaryInPdf;
   }
 
@@ -78,7 +78,9 @@ class _InvoicePdfPreviewDialogState
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
                 border: Border(
-                  bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.15)),
+                  bottom: BorderSide(
+                    color: theme.dividerColor.withValues(alpha: 0.15),
+                  ),
                 ),
               ),
               child: Column(
@@ -86,7 +88,10 @@ class _InvoicePdfPreviewDialogState
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.picture_as_pdf_rounded, color: Colors.redAccent),
+                      const Icon(
+                        Icons.picture_as_pdf_rounded,
+                        color: Colors.redAccent,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
@@ -157,7 +162,9 @@ class _InvoicePdfPreviewDialogState
                               color: isSelected
                                   ? theme.colorScheme.onPrimary
                                   : theme.colorScheme.onSurface,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                               fontSize: 13,
                             ),
                             onSelected: (selected) {
@@ -200,19 +207,29 @@ class _InvoicePdfPreviewDialogState
                               "Invoice_${effectiveInvoice.invoiceNo.isEmpty ? 'Draft' : effectiveInvoice.invoiceNo}.pdf";
                           await saveInvoicePdf(bytes, fileName);
                           if (actionCtx.mounted) {
-                            final messenger = ScaffoldMessenger.maybeOf(actionCtx);
+                            final messenger = ScaffoldMessenger.maybeOf(
+                              actionCtx,
+                            );
                             if (messenger != null) {
                               messenger.showSnackBar(
-                                SnackBar(content: Text("PDF Saved successfully: $fileName")),
+                                SnackBar(
+                                  content: Text(
+                                    "PDF Saved successfully: $fileName",
+                                  ),
+                                ),
                               );
                             }
                           }
                         } catch (e) {
                           if (actionCtx.mounted) {
-                            final messenger = ScaffoldMessenger.maybeOf(actionCtx);
+                            final messenger = ScaffoldMessenger.maybeOf(
+                              actionCtx,
+                            );
                             if (messenger != null) {
                               messenger.showSnackBar(
-                                SnackBar(content: Text("Failed to save PDF: $e")),
+                                SnackBar(
+                                  content: Text("Failed to save PDF: $e"),
+                                ),
                               );
                             }
                           }

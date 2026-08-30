@@ -51,10 +51,7 @@ void main() {
       status: 'Sent',
       invoiceDate: DateTime(2025, 4),
       supplier: const Supplier(state: 'Karnataka'),
-      receiver: const Receiver(
-        name: 'Jane Doe',
-        state: 'Karnataka',
-      ),
+      receiver: const Receiver(name: 'Jane Doe', state: 'Karnataka'),
       items: [
         const InvoiceItem(
           description: 'Item 2',
@@ -74,35 +71,38 @@ void main() {
     );
   });
 
-  test('generateGstr1Csv calculates IGST correctly for inter-state transactions', () {
-    final invoice = Invoice(
-      id: '3',
-      invoiceNo: 'INV-003',
-      status: 'Sent',
-      invoiceDate: DateTime(2025, 4),
-      placeOfSupply: 'Maharashtra',
-      supplier: const Supplier(state: 'Karnataka'),
-      receiver: const Receiver(
-        name: 'Maharashtra Client',
-        state: 'Maharashtra',
-        gstin: '27ABCDE1234F1Z3',
-      ),
-      items: [
-        const InvoiceItem(
-          description: 'Item 3',
-          sacCode: '998313',
-          amount: 1000,
+  test(
+    'generateGstr1Csv calculates IGST correctly for inter-state transactions',
+    () {
+      final invoice = Invoice(
+        id: '3',
+        invoiceNo: 'INV-003',
+        status: 'Sent',
+        invoiceDate: DateTime(2025, 4),
+        placeOfSupply: 'Maharashtra',
+        supplier: const Supplier(state: 'Karnataka'),
+        receiver: const Receiver(
+          name: 'Maharashtra Client',
+          state: 'Maharashtra',
+          gstin: '27ABCDE1234F1Z3',
         ),
-      ],
-    );
+        items: [
+          const InvoiceItem(
+            description: 'Item 3',
+            sacCode: '998313',
+            amount: 1000,
+          ),
+        ],
+      );
 
-    final csv = GstrService().generateGstr1Csv([invoice]);
+      final csv = GstrService().generateGstr1Csv([invoice]);
 
-    expect(
-      csv,
-      contains(
-        '27ABCDE1234F1Z3,Maharashtra Client,INV-003,01-04-2025,1180.00,18.00,1000.00,0.00,0.00,180.00,0.00,27-Maharashtra,N,998313,Item 3,B2B',
-      ),
-    );
-  });
+      expect(
+        csv,
+        contains(
+          '27ABCDE1234F1Z3,Maharashtra Client,INV-003,01-04-2025,1180.00,18.00,1000.00,0.00,0.00,180.00,0.00,27-Maharashtra,N,998313,Item 3,B2B',
+        ),
+      );
+    },
+  );
 }

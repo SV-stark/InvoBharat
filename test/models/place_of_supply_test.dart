@@ -23,12 +23,7 @@ void main() {
           stateCode: '07',
         ),
         placeOfSupply: 'Delhi',
-        items: const [
-          InvoiceItem(
-            description: 'Item 1',
-            amount: 10000,
-          ),
-        ],
+        items: const [InvoiceItem(description: 'Item 1', amount: 10000)],
       );
 
       expect(invoice.isInterState, isFalse);
@@ -51,12 +46,7 @@ void main() {
           stateCode: '27',
         ),
         placeOfSupply: 'Maharashtra',
-        items: const [
-          InvoiceItem(
-            description: 'Consulting',
-            amount: 10000,
-          ),
-        ],
+        items: const [InvoiceItem(description: 'Consulting', amount: 10000)],
       );
 
       expect(invoice.isInterState, isTrue);
@@ -84,11 +74,7 @@ void main() {
         ),
         placeOfSupply: '07',
         items: const [
-          InvoiceItem(
-            description: 'Goods',
-            amount: 5000,
-            gstRate: 12,
-          ),
+          InvoiceItem(description: 'Goods', amount: 5000, gstRate: 12),
         ],
       );
 
@@ -112,10 +98,7 @@ void main() {
         ),
         placeOfSupply: 'Haryana', // Ship To / Delivered in Haryana (06)
         items: const [
-          InvoiceItem(
-            description: 'Warehouse shipment',
-            amount: 20000,
-          ),
+          InvoiceItem(description: 'Warehouse shipment', amount: 20000),
         ],
       );
 
@@ -138,10 +121,7 @@ void main() {
           state: 'Karnataka',
         ),
         items: const [
-          InvoiceItem(
-            description: 'Design Services',
-            amount: 10000,
-          ),
+          InvoiceItem(description: 'Design Services', amount: 10000),
         ],
       );
 

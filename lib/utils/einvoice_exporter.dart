@@ -16,7 +16,10 @@ class EInvoiceExporter {
       }
     }
 
-    final normalized = stateName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+    final normalized = stateName.toLowerCase().replaceAll(
+      RegExp(r'[^a-z0-9]'),
+      '',
+    );
     const stateCodes = {
       'jammu': '01',
       'kashmir': '01',
@@ -94,51 +97,114 @@ class EInvoiceExporter {
   }
 
   /// Truncates string to a safe maximum length and provides fallback for empty fields
-  static String cleanText(final String value, final int maxLength, final String fallback) {
+  static String cleanText(
+    final String value,
+    final int maxLength,
+    final String fallback,
+  ) {
     final cleaned = value.trim();
     if (cleaned.isEmpty) return fallback;
-    return cleaned.length > maxLength ? cleaned.substring(0, maxLength) : cleaned;
+    return cleaned.length > maxLength
+        ? cleaned.substring(0, maxLength)
+        : cleaned;
   }
 
   /// Maps internal unit labels to standard GST Unit Codes
   static String getGstUnitCode(final String unit) {
     final u = unit.trim().toUpperCase();
-    if (u.contains('NOS') || u.contains('NUMBER')) return 'NOS';
-    if (u.contains('PCS') || u.contains('PIECE')) return 'PCS';
-    if (u.contains('BOX')) return 'BOX';
-    if (u.contains('KGS') || u.contains('KG') || u.contains('KILOGRAM')) return 'KGS';
-    if (u.contains('MTR') || u.contains('METER')) return 'MTR';
-    if (u.contains('LTR') || u.contains('LITER')) return 'LTR';
-    if (u.contains('SET')) return 'SET';
-    if (u.contains('BAG')) return 'BAG';
-    if (u.contains('HRS') || u.contains('HOUR')) return 'HRS';
-    if (u.contains('OTH') || u.contains('OTHER')) return 'OTH';
+    if (u.contains('NOS') || u.contains('NUMBER')) {
+      return 'NOS';
+    }
+    if (u.contains('PCS') || u.contains('PIECE')) {
+      return 'PCS';
+    }
+    if (u.contains('BOX')) {
+      return 'BOX';
+    }
+    if (u.contains('KGS') || u.contains('KG') || u.contains('KILOGRAM')) {
+      return 'KGS';
+    }
+    if (u.contains('MTR') || u.contains('METER')) {
+      return 'MTR';
+    }
+    if (u.contains('LTR') || u.contains('LITER')) {
+      return 'LTR';
+    }
+    if (u.contains('SET')) {
+      return 'SET';
+    }
+    if (u.contains('BAG')) {
+      return 'BAG';
+    }
+    if (u.contains('HRS') || u.contains('HOUR')) {
+      return 'HRS';
+    }
+    if (u.contains('OTH') || u.contains('OTHER')) {
+      return 'OTH';
+    }
     return u.isEmpty ? 'OTH' : (u.length > 8 ? u.substring(0, 8) : u);
   }
 
   /// Generates the standard NIC E-Invoice JSON payload
-  static String generateEInvoiceJson(final Invoice invoice, final BusinessProfile profile) {
+  static String generateEInvoiceJson(
+    final Invoice invoice,
+    final BusinessProfile profile,
+  ) {
     final docType = invoice.type == InvoiceType.creditNote
         ? 'CRN'
         : invoice.type == InvoiceType.debitNote
-            ? 'DBN'
-            : 'INV';
+        ? 'DBN'
+        : 'INV';
 
-    final sellerGstin = (invoice.supplier.gstin.isNotEmpty ? invoice.supplier.gstin : profile.gstin).trim();
+    final sellerGstin =
+        (invoice.supplier.gstin.isNotEmpty
+                ? invoice.supplier.gstin
+                : profile.gstin)
+            .trim();
     if (sellerGstin.isEmpty) {
       throw Exception('Seller GSTIN is required for E-Invoice generation.');
     }
-    final sellerName = cleanText(invoice.supplier.name.isNotEmpty ? invoice.supplier.name : profile.companyName, 100, 'Supplier Legal Name');
-    final sellerAddress = cleanText(invoice.supplier.address.isNotEmpty ? invoice.supplier.address : profile.address, 100, 'Supplier Address');
-    final sellerState = cleanText(invoice.supplier.state.isNotEmpty ? invoice.supplier.state : profile.state, 50, '');
+    final sellerName = cleanText(
+      invoice.supplier.name.isNotEmpty
+          ? invoice.supplier.name
+          : profile.companyName,
+      100,
+      'Supplier Legal Name',
+    );
+    final sellerAddress = cleanText(
+      invoice.supplier.address.isNotEmpty
+          ? invoice.supplier.address
+          : profile.address,
+      100,
+      'Supplier Address',
+    );
+    final sellerState = cleanText(
+      invoice.supplier.state.isNotEmpty
+          ? invoice.supplier.state
+          : profile.state,
+      50,
+      '',
+    );
     final sellerStateCode = getStateCode(sellerState, sellerGstin);
-    final sellerPin = getPincode(invoice.supplier.address.isNotEmpty ? invoice.supplier.address : profile.address);
+    final sellerPin = getPincode(
+      invoice.supplier.address.isNotEmpty
+          ? invoice.supplier.address
+          : profile.address,
+    );
 
-    final buyerGstin = invoice.receiver.gstin.trim().isNotEmpty ? cleanText(invoice.receiver.gstin, 15, 'URP') : 'URP';
+    final buyerGstin = invoice.receiver.gstin.trim().isNotEmpty
+        ? cleanText(invoice.receiver.gstin, 15, 'URP')
+        : 'URP';
     final buyerName = cleanText(invoice.receiver.name, 100, 'Buyer Legal Name');
-    final buyerAddress = cleanText(invoice.receiver.address, 100, 'Buyer Address');
+    final buyerAddress = cleanText(
+      invoice.receiver.address,
+      100,
+      'Buyer Address',
+    );
     final buyerState = cleanText(invoice.receiver.state, 50, '');
-    final buyerStateCode = invoice.receiver.stateCode.isNotEmpty && invoice.receiver.stateCode.trim().length == 2
+    final buyerStateCode =
+        invoice.receiver.stateCode.isNotEmpty &&
+            invoice.receiver.stateCode.trim().length == 2
         ? invoice.receiver.stateCode.trim()
         : getStateCode(buyerState, buyerGstin);
     final buyerPin = getPincode(invoice.receiver.address);
@@ -173,7 +239,7 @@ class EInvoiceExporter {
         "CgstAmt": double.parse(cgst.toStringAsFixed(2)),
         "SgstAmt": double.parse(sgst.toStringAsFixed(2)),
         "IgstAmt": double.parse(igst.toStringAsFixed(2)),
-        "TotItemVal": double.parse(item.totalAmount.toStringAsFixed(2))
+        "TotItemVal": double.parse(item.totalAmount.toStringAsFixed(2)),
       });
     }
 
@@ -183,7 +249,9 @@ class EInvoiceExporter {
     final igstVal = double.parse(invoice.totalIGST.toStringAsFixed(2));
     final discountVal = double.parse(invoice.discountAmount.toStringAsFixed(2));
     // Strict NIC formula: TotInvVal = AssVal + CgstVal + SgstVal + IgstVal - Discount
-    final totInvVal = double.parse((assVal + cgstVal + sgstVal + igstVal - discountVal).toStringAsFixed(2));
+    final totInvVal = double.parse(
+      (assVal + cgstVal + sgstVal + igstVal - discountVal).toStringAsFixed(2),
+    );
 
     final payload = {
       "Version": "1.1",
@@ -191,12 +259,12 @@ class EInvoiceExporter {
         "TaxSch": "GST",
         "SupTyp": buyerGstin == 'URP' ? 'B2C' : 'B2B',
         "RegRev": invoice.reverseCharge == 'Y' ? 'Y' : 'N',
-        "IgstOnIntra": "N"
+        "IgstOnIntra": "N",
       },
       "DocDtls": {
         "Typ": docType,
         "No": invoice.invoiceNo.isEmpty ? 'TEMP-NO' : invoice.invoiceNo,
-        "Dt": DateFormat('dd/MM/yyyy').format(invoice.invoiceDate)
+        "Dt": DateFormat('dd/MM/yyyy').format(invoice.invoiceDate),
       },
       "SellerDtls": {
         "Gstin": sellerGstin,
@@ -204,7 +272,7 @@ class EInvoiceExporter {
         "Addr1": sellerAddress,
         "Loc": sellerState.isNotEmpty ? sellerState : 'State',
         "Pin": sellerPin,
-        "Stcd": sellerStateCode
+        "Stcd": sellerStateCode,
       },
       "BuyerDtls": {
         "Gstin": buyerGstin,
@@ -213,7 +281,7 @@ class EInvoiceExporter {
         "Addr1": buyerAddress,
         "Loc": buyerState.isNotEmpty ? buyerState : 'State',
         "Pin": buyerPin,
-        "Stcd": buyerStateCode
+        "Stcd": buyerStateCode,
       },
       "ItemList": itemsList,
       "ValDtls": {
@@ -222,8 +290,8 @@ class EInvoiceExporter {
         "SgstVal": sgstVal,
         "IgstVal": igstVal,
         "Discount": discountVal,
-        "TotInvVal": totInvVal
-      }
+        "TotInvVal": totInvVal,
+      },
     };
 
     return const JsonEncoder.withIndent('  ').convert(payload);
@@ -236,9 +304,13 @@ class EInvoiceExporter {
   ) async {
     final jsonContent = generateEInvoiceJson(invoice, profile);
     final bytes = Uint8List.fromList(utf8.encode(jsonContent));
-    
-    final cleanInvoiceNo = invoice.invoiceNo.replaceAll(RegExp(r'[^\w\s\-]+'), '_');
-    final fileName = 'einvoice_${cleanInvoiceNo.isEmpty ? "draft" : cleanInvoiceNo}';
+
+    final cleanInvoiceNo = invoice.invoiceNo.replaceAll(
+      RegExp(r'[^\w\s\-]+'),
+      '_',
+    );
+    final fileName =
+        'einvoice_${cleanInvoiceNo.isEmpty ? "draft" : cleanInvoiceNo}';
 
     return FileSaver.instance.saveFile(
       name: fileName,
@@ -249,33 +321,56 @@ class EInvoiceExporter {
   }
 
   /// Generates the standard NIC E-Way Bill JSON payload
-  static String generateEWayBillJson(final Invoice invoice, final BusinessProfile profile) {
+  static String generateEWayBillJson(
+    final Invoice invoice,
+    final BusinessProfile profile,
+  ) {
     final sellerGstin = cleanText(
-        invoice.supplier.gstin.isNotEmpty ? invoice.supplier.gstin : profile.gstin,
-        15,
-        'GSTIN_PENDING');
+      invoice.supplier.gstin.isNotEmpty
+          ? invoice.supplier.gstin
+          : profile.gstin,
+      15,
+      'GSTIN_PENDING',
+    );
     final sellerName = cleanText(
-        invoice.supplier.name.isNotEmpty ? invoice.supplier.name : profile.companyName,
-        100,
-        'Supplier Legal Name');
+      invoice.supplier.name.isNotEmpty
+          ? invoice.supplier.name
+          : profile.companyName,
+      100,
+      'Supplier Legal Name',
+    );
     final sellerAddress = cleanText(
-        invoice.supplier.address.isNotEmpty ? invoice.supplier.address : profile.address,
-        100,
-        'Supplier Address');
+      invoice.supplier.address.isNotEmpty
+          ? invoice.supplier.address
+          : profile.address,
+      100,
+      'Supplier Address',
+    );
     final sellerState = cleanText(
-        invoice.supplier.state.isNotEmpty ? invoice.supplier.state : profile.state,
-        50,
-        '');
+      invoice.supplier.state.isNotEmpty
+          ? invoice.supplier.state
+          : profile.state,
+      50,
+      '',
+    );
     final sellerStateCodeStr = getStateCode(sellerState, sellerGstin);
     final sellerStateCode = int.parse(sellerStateCodeStr);
     final sellerPin = getPincode(
-        invoice.supplier.address.isNotEmpty ? invoice.supplier.address : profile.address);
+      invoice.supplier.address.isNotEmpty
+          ? invoice.supplier.address
+          : profile.address,
+    );
 
     final buyerGstin = cleanText(invoice.receiver.gstin, 15, 'URP');
     final buyerName = cleanText(invoice.receiver.name, 100, 'Buyer Legal Name');
-    final buyerAddress = cleanText(invoice.receiver.address, 100, 'Buyer Address');
+    final buyerAddress = cleanText(
+      invoice.receiver.address,
+      100,
+      'Buyer Address',
+    );
     final buyerState = cleanText(invoice.receiver.state, 50, '');
-    final buyerStateCodeStr = invoice.receiver.stateCode.isNotEmpty &&
+    final buyerStateCodeStr =
+        invoice.receiver.stateCode.isNotEmpty &&
             invoice.receiver.stateCode.trim().length == 2
         ? invoice.receiver.stateCode.trim()
         : getStateCode(buyerState, buyerGstin);
@@ -285,8 +380,8 @@ class EInvoiceExporter {
     final docType = invoice.type == InvoiceType.creditNote
         ? 'CRN'
         : invoice.type == InvoiceType.debitNote
-            ? 'DBN'
-            : (invoice.type == InvoiceType.deliveryChallan ? 'CHL' : 'INV');
+        ? 'DBN'
+        : (invoice.type == InvoiceType.deliveryChallan ? 'CHL' : 'INV');
 
     final List<Map<String, dynamic>> itemsList = [];
     for (int i = 0; i < invoice.items.length; i++) {
@@ -306,11 +401,17 @@ class EInvoiceExporter {
         "quantity": double.parse(qty.toStringAsFixed(2)),
         "qtyUnit": getGstUnitCode(item.unit),
         "taxableAmount": double.parse(assAmt.toStringAsFixed(2)),
-        "cgstRate": invoice.isInterState ? 0.0 : double.parse((rate / 2).toStringAsFixed(2)),
-        "sgstRate": invoice.isInterState ? 0.0 : double.parse((rate / 2).toStringAsFixed(2)),
-        "igstRate": invoice.isInterState ? double.parse(rate.toStringAsFixed(2)) : 0.0,
+        "cgstRate": invoice.isInterState
+            ? 0.0
+            : double.parse((rate / 2).toStringAsFixed(2)),
+        "sgstRate": invoice.isInterState
+            ? 0.0
+            : double.parse((rate / 2).toStringAsFixed(2)),
+        "igstRate": invoice.isInterState
+            ? double.parse(rate.toStringAsFixed(2))
+            : 0.0,
         "cessRate": 0.0,
-        "cessNonAdvol": 0.0
+        "cessNonAdvol": 0.0,
       });
     }
 
@@ -352,12 +453,12 @@ class EInvoiceExporter {
       "transDocDate": "",
       "vehicleNo": invoice.vehicleNo ?? "",
       "vehicleType": "R",
-      "itemList": itemsList
+      "itemList": itemsList,
     };
 
     final payload = {
       "version": "1.0.0621",
-      "billLists": [billObj]
+      "billLists": [billObj],
     };
 
     return const JsonEncoder.withIndent('  ').convert(payload);
@@ -371,8 +472,12 @@ class EInvoiceExporter {
     final jsonContent = generateEWayBillJson(invoice, profile);
     final bytes = Uint8List.fromList(utf8.encode(jsonContent));
 
-    final cleanInvoiceNo = invoice.invoiceNo.replaceAll(RegExp(r'[^\w\s\-]+'), '_');
-    final fileName = 'ewaybill_${cleanInvoiceNo.isEmpty ? "draft" : cleanInvoiceNo}';
+    final cleanInvoiceNo = invoice.invoiceNo.replaceAll(
+      RegExp(r'[^\w\s\-]+'),
+      '_',
+    );
+    final fileName =
+        'ewaybill_${cleanInvoiceNo.isEmpty ? "draft" : cleanInvoiceNo}';
 
     return FileSaver.instance.saveFile(
       name: fileName,
@@ -421,10 +526,7 @@ class EInvoiceExporter {
       }
     }
 
-    final payload = {
-      "version": "1.0.0621",
-      "billLists": allBills,
-    };
+    final payload = {"version": "1.0.0621", "billLists": allBills};
 
     final content = const JsonEncoder.withIndent('  ').convert(payload);
     final bytes = Uint8List.fromList(utf8.encode(content));

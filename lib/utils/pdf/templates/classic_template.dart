@@ -168,7 +168,9 @@ class ClassicTemplate extends BasePdfTemplate {
                     children: [
                       pw.Text(
                         "Bill To:",
-                        style: const pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        style: const pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                        ),
                       ),
                       pw.Text(invoice.receiver.name),
                       pw.Text(

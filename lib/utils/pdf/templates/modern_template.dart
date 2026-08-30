@@ -336,7 +336,9 @@ class ModernTemplate extends BasePdfTemplate {
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
               pw.Expanded(
-                child: (profile.termsAndConditions.isNotEmpty || invoice.comments.isNotEmpty)
+                child:
+                    (profile.termsAndConditions.isNotEmpty ||
+                        invoice.comments.isNotEmpty)
                     ? pw.SizedBox() // Already shown above in summary
                     : pw.SizedBox(),
               ),

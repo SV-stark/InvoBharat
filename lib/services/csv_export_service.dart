@@ -71,7 +71,12 @@ class CsvExportService {
     final str = value.toString();
     if (str.isEmpty) return str;
     final firstChar = str[0];
-    if (firstChar == '=' || firstChar == '+' || firstChar == '-' || firstChar == '@' || firstChar == '\t' || firstChar == '\r') {
+    if (firstChar == '=' ||
+        firstChar == '+' ||
+        firstChar == '-' ||
+        firstChar == '@' ||
+        firstChar == '\t' ||
+        firstChar == '\r') {
       return "'$str";
     }
     return str;

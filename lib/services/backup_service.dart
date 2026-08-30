@@ -167,8 +167,9 @@ class BackupService {
 
         final List<Map<String, String>> mediaEntries = [];
         if (currentDb != null) {
-          final profiles =
-              await currentDb.select(currentDb.businessProfiles).get();
+          final profiles = await currentDb
+              .select(currentDb.businessProfiles)
+              .get();
           for (final prof in profiles) {
             for (final entry in [
               {'type': 'logo', 'path': prof.logoPath},
@@ -306,7 +307,9 @@ class BackupService {
           }
 
           final docDir = await getApplicationDocumentsDirectory();
-          final mediaDir = Directory(p.join(docDir.path, 'InvoBharat', 'media'));
+          final mediaDir = Directory(
+            p.join(docDir.path, 'InvoBharat', 'media'),
+          );
           if (!await mediaDir.exists()) {
             await mediaDir.create(recursive: true);
           }
@@ -365,7 +368,10 @@ class BackupService {
           if (activeProfileIdToRestore != null &&
               activeProfileIdToRestore.isNotEmpty) {
             final prefs = await SharedPreferences.getInstance();
-            await prefs.setString('active_profile_id', activeProfileIdToRestore);
+            await prefs.setString(
+              'active_profile_id',
+              activeProfileIdToRestore,
+            );
           }
 
           return "Restore Successful. Please restart the app to apply changes.";
@@ -380,7 +386,11 @@ class BackupService {
             if (await walFile.exists()) await walFile.delete();
             if (await shmFile.exists()) await shmFile.delete();
           }
-          LoggerService.talker.handle(e, st, "Database Restore Failed during write/media update");
+          LoggerService.talker.handle(
+            e,
+            st,
+            "Database Restore Failed during write/media update",
+          );
           rethrow;
         }
       } else {

@@ -17,28 +17,32 @@ void main() {
   }
 
   group('RevenueChart Tests', () {
-    testWidgets('renders empty state correctly', (final WidgetTester tester) async {
+    testWidgets('renders empty state correctly', (
+      final WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createChartWidget({}));
       await tester.pumpAndSettle();
 
       expect(find.text("No data for chart"), findsOneWidget);
     });
 
-    testWidgets('renders zero data without crashing', (final WidgetTester tester) async {
-      await tester.pumpWidget(createChartWidget({
-        '2024-01': 0.0,
-        '2024-02': 0.0,
-      }));
+    testWidgets('renders zero data without crashing', (
+      final WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        createChartWidget({'2024-01': 0.0, '2024-02': 0.0}),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text("Revenue Trend (Last 6 Months)"), findsOneWidget);
     });
 
-    testWidgets('handles malformed date key gracefully', (final WidgetTester tester) async {
-      await tester.pumpWidget(createChartWidget({
-        '2024-01': 100.0,
-        'bad-date-format': 200.0,
-      }));
+    testWidgets('handles malformed date key gracefully', (
+      final WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        createChartWidget({'2024-01': 100.0, 'bad-date-format': 200.0}),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text("Revenue Trend (Last 6 Months)"), findsOneWidget);

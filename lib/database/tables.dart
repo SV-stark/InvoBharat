@@ -231,4 +231,3 @@ class RecurringProfilesTable extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
-

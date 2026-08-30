@@ -562,11 +562,7 @@ class _InvoiceFormScreenState extends ConsumerState<InvoiceFormScreen>
     final Invoice invoice,
     final BusinessProfile profile,
   ) {
-    InvoicePdfPreviewDialog.show(
-      context,
-      invoice: invoice,
-      profile: profile,
-    );
+    InvoicePdfPreviewDialog.show(context, invoice: invoice, profile: profile);
   }
 
   Widget _buildGstinField() {

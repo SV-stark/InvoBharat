@@ -15,8 +15,9 @@ import 'package:invobharat/providers/recurring_provider.dart';
 import 'package:invobharat/providers/bank_provider.dart';
 import 'package:invobharat/providers/invoice_series_provider.dart';
 
-final businessProfileRepositoryProvider =
-    Provider<BusinessProfileRepository>((final ref) {
+final businessProfileRepositoryProvider = Provider<BusinessProfileRepository>((
+  final ref,
+) {
   final db = ref.watch(databaseProvider);
   return SqlBusinessProfileRepository(db);
 });
@@ -146,8 +147,8 @@ class BusinessProfileList extends Notifier<List<BusinessProfile>> {
 
 final businessProfileListProvider =
     NotifierProvider<BusinessProfileList, List<BusinessProfile>>(
-  BusinessProfileList.new,
-);
+      BusinessProfileList.new,
+    );
 
 class ActiveProfileId extends Notifier<String> {
   @override
@@ -191,8 +192,9 @@ class ActiveProfileId extends Notifier<String> {
   }
 }
 
-final activeProfileIdProvider =
-    NotifierProvider<ActiveProfileId, String>(ActiveProfileId.new);
+final activeProfileIdProvider = NotifierProvider<ActiveProfileId, String>(
+  ActiveProfileId.new,
+);
 
 final businessProfileProvider = Provider<BusinessProfile>((final ref) {
   final profiles = ref.watch(businessProfileListProvider);

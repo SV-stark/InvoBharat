@@ -169,7 +169,8 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
                     return TextFormBox(
                       controller: descCtrl,
                       focusNode: focusNode,
-                      placeholder: "Item Name / Description (search goods/services)",
+                      placeholder:
+                          "Item Name / Description (search goods/services)",
                     );
                   },
                   itemBuilder: (final context, final suggestion) {
@@ -194,10 +195,9 @@ class FluentItemTemplatesScreen extends ConsumerWidget {
                             "${suggestion.type}: ${suggestion.code}",
                             style: TextStyle(
                               fontSize: 11,
-                              color: FluentTheme.of(context)
-                                  .typography
-                                  .caption
-                                  ?.color,
+                              color: FluentTheme.of(
+                                context,
+                              ).typography.caption?.color,
                             ),
                           ),
                         ],

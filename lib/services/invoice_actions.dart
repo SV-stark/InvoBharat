@@ -22,8 +22,12 @@ class InvoiceActions {
     final profile = ref.read(businessProfileProvider);
     final seriesList = ref.read(invoiceSeriesProvider);
     final repository = ref.read(invoiceRepositoryProvider);
-    final targetPrefix = (invoice.invoiceNo.isNotEmpty && seriesList.any((final s) => invoice.invoiceNo.startsWith(s.prefix)))
-        ? seriesList.firstWhere((final s) => invoice.invoiceNo.startsWith(s.prefix)).prefix
+    final targetPrefix =
+        (invoice.invoiceNo.isNotEmpty &&
+            seriesList.any((final s) => invoice.invoiceNo.startsWith(s.prefix)))
+        ? seriesList
+              .firstWhere((final s) => invoice.invoiceNo.startsWith(s.prefix))
+              .prefix
         : (profile.invoiceSeries.isNotEmpty ? profile.invoiceSeries : 'INV-');
 
     final targetDate = DateTime.now();
@@ -33,7 +37,10 @@ class InvoiceActions {
     );
     int seq = maxInFy + 1;
     String candidate = '$targetPrefix${seq.toString().padLeft(3, '0')}';
-    while (await repository.checkInvoiceExists(candidate, invoiceDate: targetDate)) {
+    while (await repository.checkInvoiceExists(
+      candidate,
+      invoiceDate: targetDate,
+    )) {
       seq++;
       candidate = '$targetPrefix${seq.toString().padLeft(3, '0')}';
     }
@@ -69,7 +76,10 @@ class InvoiceActions {
     );
     int seq = maxInFy + 1;
     String candidate = '$prefix${seq.toString().padLeft(3, '0')}';
-    while (await repository.checkInvoiceExists(candidate, invoiceDate: targetDate)) {
+    while (await repository.checkInvoiceExists(
+      candidate,
+      invoiceDate: targetDate,
+    )) {
       seq++;
       candidate = '$prefix${seq.toString().padLeft(3, '0')}';
     }
@@ -102,7 +112,10 @@ class InvoiceActions {
     );
     int seq = maxInFy + 1;
     String candidate = '$prefix${seq.toString().padLeft(3, '0')}';
-    while (await repository.checkInvoiceExists(candidate, invoiceDate: targetDate)) {
+    while (await repository.checkInvoiceExists(
+      candidate,
+      invoiceDate: targetDate,
+    )) {
       seq++;
       candidate = '$prefix${seq.toString().padLeft(3, '0')}';
     }

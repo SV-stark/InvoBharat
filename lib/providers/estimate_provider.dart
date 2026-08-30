@@ -4,8 +4,8 @@ import 'package:invobharat/providers/invoice_repository_provider.dart';
 
 final estimateListProvider =
     AsyncNotifierProvider<EstimateListNotifier, List<Estimate>>(
-  EstimateListNotifier.new,
-);
+      EstimateListNotifier.new,
+    );
 
 class EstimateListNotifier extends AsyncNotifier<List<Estimate>> {
   @override

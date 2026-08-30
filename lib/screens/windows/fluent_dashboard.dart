@@ -244,13 +244,13 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 case 'number_desc':
                   return b.invoiceNo.compareTo(a.invoiceNo);
                 case 'client_asc':
-                  return a.receiver.name
-                      .toLowerCase()
-                      .compareTo(b.receiver.name.toLowerCase());
+                  return a.receiver.name.toLowerCase().compareTo(
+                    b.receiver.name.toLowerCase(),
+                  );
                 case 'client_desc':
-                  return b.receiver.name
-                      .toLowerCase()
-                      .compareTo(a.receiver.name.toLowerCase());
+                  return b.receiver.name.toLowerCase().compareTo(
+                    a.receiver.name.toLowerCase(),
+                  );
                 case 'date_desc':
                 default:
                   return b.invoiceDate.compareTo(a.invoiceDate);
@@ -311,7 +311,9 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                             context,
                             builder: (final context, final close) => InfoBar(
                               title: const Text("Success"),
-                              content: const Text("Import template downloaded successfully"),
+                              content: const Text(
+                                "Import template downloaded successfully",
+                              ),
                               severity: InfoBarSeverity.success,
                               onClose: close,
                             ),
@@ -1142,21 +1144,30 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     ref.invalidate(invoiceListProvider);
   }
 
-  void _createCreditNote(final BuildContext context, final Invoice invoice) async {
+  void _createCreditNote(
+    final BuildContext context,
+    final Invoice invoice,
+  ) async {
     final creditNote = await InvoiceActions.buildCreditNote(ref, invoice);
     if (!context.mounted) return;
     await context.push('/invoice-form', extra: creditNote);
     ref.invalidate(invoiceListProvider);
   }
 
-  void _createDebitNote(final BuildContext context, final Invoice invoice) async {
+  void _createDebitNote(
+    final BuildContext context,
+    final Invoice invoice,
+  ) async {
     final debitNote = await InvoiceActions.buildDebitNote(ref, invoice);
     if (!context.mounted) return;
     await context.push('/invoice-form', extra: debitNote);
     ref.invalidate(invoiceListProvider);
   }
 
-  void _exportEWayBillJson(final BuildContext context, final Invoice invoice) async {
+  void _exportEWayBillJson(
+    final BuildContext context,
+    final Invoice invoice,
+  ) async {
     try {
       final profile = ref.read(businessProfileProvider);
       final path = await EInvoiceExporter.exportEWayBill(invoice, profile);
@@ -1190,7 +1201,11 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     try {
       final profile = ref.read(businessProfileProvider);
       final showHsn = ref.read(appConfigProvider).showHsnSummaryInPdf;
-      final pdfBytes = await generateInvoicePdf(invoice, profile, showHsnSummary: showHsn);
+      final pdfBytes = await generateInvoicePdf(
+        invoice,
+        profile,
+        showHsnSummary: showHsn,
+      );
       final filename =
           'Invoice_${invoice.invoiceNo.replaceAll(RegExp(r'[^\w\s]+'), '_')}.pdf';
 
@@ -1216,7 +1231,10 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     }
   }
 
-  void _exportEInvoiceJson(final BuildContext context, final Invoice invoice) async {
+  void _exportEInvoiceJson(
+    final BuildContext context,
+    final Invoice invoice,
+  ) async {
     try {
       final profile = ref.read(businessProfileProvider);
       final path = await EInvoiceExporter.exportEInvoice(invoice, profile);
@@ -1308,7 +1326,9 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                   context,
                   builder: (final context, final close) => InfoBar(
                     title: const Text("Success"),
-                    content: const Text("Import template downloaded successfully"),
+                    content: const Text(
+                      "Import template downloaded successfully",
+                    ),
                     severity: InfoBarSeverity.success,
                     onClose: close,
                   ),

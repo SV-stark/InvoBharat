@@ -162,8 +162,9 @@ class AppDatabase extends _$AppDatabase {
               final pragmaResult = await m.database
                   .customSelect('PRAGMA table_info(`$tempName`)')
                   .get();
-              final existingCols =
-                  pragmaResult.map((final r) => r.read<String>('name')).toSet();
+              final existingCols = pragmaResult
+                  .map((final r) => r.read<String>('name'))
+                  .toSet();
               final columnsToCopy = table.$columns
                   .map((final c) => c.name)
                   .where((final name) => existingCols.contains(name))
@@ -228,7 +229,9 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(table);
 
             // 3. Copy all columns
-            final columnsToCopy = table.$columns.map((final c) => c.name).join(', ');
+            final columnsToCopy = table.$columns
+                .map((final c) => c.name)
+                .join(', ');
             await m.database.customStatement(
               'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
             );
@@ -262,8 +265,9 @@ class AppDatabase extends _$AppDatabase {
 
             await m.createTable(table);
 
-            final columnsToCopy =
-                table.$columns.map((final c) => c.name).join(', ');
+            final columnsToCopy = table.$columns
+                .map((final c) => c.name)
+                .join(', ');
             await m.database.customStatement(
               'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
             );
@@ -280,8 +284,9 @@ class AppDatabase extends _$AppDatabase {
           final pragmaResult = await m.database
               .customSelect('PRAGMA table_info(`business_profiles`)')
               .get();
-          final existingCols =
-              pragmaResult.map((final r) => r.read<String>('name')).toSet();
+          final existingCols = pragmaResult
+              .map((final r) => r.read<String>('name'))
+              .toSet();
           if (!existingCols.contains('stamp_x')) {
             await m.addColumn(businessProfiles, businessProfiles.stampX);
           }
@@ -311,22 +316,28 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  static Future<void> _repairCorruptedForeignKeys(final GeneratedDatabase db) async {
+  static Future<void> _repairCorruptedForeignKeys(
+    final GeneratedDatabase db,
+  ) async {
     try {
       await db.customStatement('PRAGMA foreign_keys = OFF;');
       await db.customStatement('PRAGMA legacy_alter_table = ON;');
 
-      final tablesWithTemp = await db.customSelect(
-        "SELECT name, sql FROM sqlite_master WHERE type='table' AND sql LIKE '%_temp%'",
-      ).get();
+      final tablesWithTemp = await db
+          .customSelect(
+            "SELECT name, sql FROM sqlite_master WHERE type='table' AND sql LIKE '%_temp%'",
+          )
+          .get();
 
       if (tablesWithTemp.isNotEmpty) {
         for (final row in tablesWithTemp) {
           final tableName = row.read<String>('name');
-          final tableInfo = db.allTables.cast<TableInfo<Table, dynamic>?>().firstWhere(
-            (final t) => t?.actualTableName == tableName,
-            orElse: () => null,
-          );
+          final tableInfo = db.allTables
+              .cast<TableInfo<Table, dynamic>?>()
+              .firstWhere(
+                (final t) => t?.actualTableName == tableName,
+                orElse: () => null,
+              );
 
           if (tableInfo != null) {
             final tempBackupName = '${tableName}_repair_tmp';
@@ -338,8 +349,9 @@ class AppDatabase extends _$AppDatabase {
             final pragmaResult = await db
                 .customSelect('PRAGMA table_info(`$tempBackupName`)')
                 .get();
-            final existingCols =
-                pragmaResult.map((final r) => r.read<String>('name')).toSet();
+            final existingCols = pragmaResult
+                .map((final r) => r.read<String>('name'))
+                .toSet();
             final columnsToCopy = tableInfo.$columns
                 .map((final c) => c.name)
                 .where((final name) => existingCols.contains(name))

@@ -227,16 +227,16 @@ class CorporateTemplate extends BasePdfTemplate {
                             const pw.TextStyle(fontSize: 9),
                             const pw.TextStyle(fontSize: 9),
                           ),
-                            pw.Text(
-                              "Reverse Charge: ${invoice.reverseCharge == 'Y' ? 'YES' : 'NO'}",
-                              style: pw.TextStyle(
-                                fontSize: 9,
-                                fontWeight: invoice.reverseCharge == 'Y'
-                                    ? pw.FontWeight.bold
-                                    : pw.FontWeight.normal,
-                              ),
+                          pw.Text(
+                            "Reverse Charge: ${invoice.reverseCharge == 'Y' ? 'YES' : 'NO'}",
+                            style: pw.TextStyle(
+                              fontSize: 9,
+                              fontWeight: invoice.reverseCharge == 'Y'
+                                  ? pw.FontWeight.bold
+                                  : pw.FontWeight.normal,
                             ),
-                          ],
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -259,7 +259,8 @@ class CorporateTemplate extends BasePdfTemplate {
                       horizontalInside: pw.BorderSide(color: PdfColors.grey100),
                     ),
                   ),
-                  if (showHsnSummary) buildHsnSummaryTable(invoice, font, fontBold),
+                  if (showHsnSummary)
+                    buildHsnSummaryTable(invoice, font, fontBold),
                   pw.SizedBox(height: 20),
 
                   // Totals

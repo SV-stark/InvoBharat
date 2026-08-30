@@ -107,14 +107,12 @@ class RecurringService {
     final repo = ref.read(invoiceRepositoryProvider);
     final targetPrefix = defaultSeries.prefix;
     int currentSeq = defaultSeries.sequence;
-    String candidate =
-        '$targetPrefix${currentSeq.toString().padLeft(3, '0')}';
+    String candidate = '$targetPrefix${currentSeq.toString().padLeft(3, '0')}';
     final now = DateTime.now();
 
     while (await repo.checkInvoiceExists(candidate, invoiceDate: now)) {
       currentSeq++;
-      candidate =
-          '$targetPrefix${currentSeq.toString().padLeft(3, '0')}';
+      candidate = '$targetPrefix${currentSeq.toString().padLeft(3, '0')}';
     }
 
     final newInvoice = profile.baseInvoice.copyWith(
@@ -122,9 +120,7 @@ class RecurringService {
       profileId: profile.profileId,
       invoiceNo: candidate,
       invoiceDate: now,
-      dueDate: now.add(
-        Duration(days: profile.dueDays ?? 7),
-      ),
+      dueDate: now.add(Duration(days: profile.dueDays ?? 7)),
       payments: [],
     );
 

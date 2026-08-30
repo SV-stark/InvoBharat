@@ -118,12 +118,25 @@ class InvoiceHeaderSection extends ConsumerWidget {
               flex: 3,
               child: _buildDropdownField(
                 label: "Series Prefix",
-                value: ref.watch(invoiceSeriesProvider).any((final s) => invoice.invoiceNo.startsWith(s.prefix))
-                    ? ref.watch(invoiceSeriesProvider).firstWhere((final s) => invoice.invoiceNo.startsWith(s.prefix)).prefix
+                value:
+                    ref
+                        .watch(invoiceSeriesProvider)
+                        .any(
+                          (final s) => invoice.invoiceNo.startsWith(s.prefix),
+                        )
+                    ? ref
+                          .watch(invoiceSeriesProvider)
+                          .firstWhere(
+                            (final s) => invoice.invoiceNo.startsWith(s.prefix),
+                          )
+                          .prefix
                     : (ref.watch(invoiceSeriesProvider).isNotEmpty
-                        ? ref.watch(invoiceSeriesProvider).first.prefix
-                        : ""),
-                items: ref.watch(invoiceSeriesProvider).map((final s) => s.prefix).toList(),
+                          ? ref.watch(invoiceSeriesProvider).first.prefix
+                          : ""),
+                items: ref
+                    .watch(invoiceSeriesProvider)
+                    .map((final s) => s.prefix)
+                    .toList(),
                 onChanged: (final val) async {
                   if (val != null) {
                     final repo = ref.read(invoiceRepositoryProvider);
@@ -131,16 +144,25 @@ class InvoiceHeaderSection extends ConsumerWidget {
                     final seriesList = ref.read(invoiceSeriesProvider);
                     final series = seriesList.firstWhere(
                       (final s) => s.prefix == val,
-                      orElse: () => InvoiceSeries(prefix: val, sequence: profile.invoiceSequence > 0 ? profile.invoiceSequence : 1),
+                      orElse: () => InvoiceSeries(
+                        prefix: val,
+                        sequence: profile.invoiceSequence > 0
+                            ? profile.invoiceSequence
+                            : 1,
+                      ),
                     );
                     int seq = series.sequence;
-                    String candidate = '${series.prefix}${seq.toString().padLeft(3, '0')}';
+                    String candidate =
+                        '${series.prefix}${seq.toString().padLeft(3, '0')}';
                     while (await repo.checkInvoiceExists(candidate)) {
                       seq++;
-                      candidate = '${series.prefix}${seq.toString().padLeft(3, '0')}';
+                      candidate =
+                          '${series.prefix}${seq.toString().padLeft(3, '0')}';
                     }
                     invoiceNoCtrl.text = candidate;
-                    ref.read(invoiceProvider.notifier).updateInvoiceNo(candidate);
+                    ref
+                        .read(invoiceProvider.notifier)
+                        .updateInvoiceNo(candidate);
                   }
                 },
               ),

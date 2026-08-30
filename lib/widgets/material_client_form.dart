@@ -162,7 +162,9 @@ class _MaterialClientFormDialogState
                   }
                   final stateCode = GstUtils.getStateCode(val);
                   if (stateCode != null) {
-                    ref.read(clientFormProvider.notifier).updateStateCode(stateCode);
+                    ref
+                        .read(clientFormProvider.notifier)
+                        .updateStateCode(stateCode);
                   }
                 },
               ),

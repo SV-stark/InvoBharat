@@ -47,10 +47,7 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
     );
   }
 
-  pw.Widget buildStatusBadge(
-    final Invoice invoice, {
-    final pw.Font? font,
-  }) {
+  pw.Widget buildStatusBadge(final Invoice invoice, {final pw.Font? font}) {
     final balance = invoice.balanceDue;
     final total = invoice.grandTotal;
     String text = invoice.status.toUpperCase();
@@ -65,7 +62,9 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
       text = 'PARTIAL';
       bg = PdfColor.fromHex('#FEF9C3'); // Soft Amber
       textCol = PdfColor.fromHex('#854D0E');
-    } else if (invoice.dueDate != null && invoice.dueDate!.isBefore(DateTime.now()) && balance > 0) {
+    } else if (invoice.dueDate != null &&
+        invoice.dueDate!.isBefore(DateTime.now()) &&
+        balance > 0) {
       text = 'OVERDUE';
       bg = PdfColor.fromHex('#FEE2E2'); // Soft Rose/Red
       textCol = PdfColor.fromHex('#991B1B');
@@ -152,8 +151,11 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
           headerStyle ??
           const pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
       cellStyle: cellStyle ?? const pw.TextStyle(fontSize: 8),
-      headerDecoration: headerDecoration ?? const pw.BoxDecoration(color: PdfColors.grey100),
-      oddRowDecoration: oddRowDecoration ?? pw.BoxDecoration(color: PdfColor.fromHex('#FAFAFA')),
+      headerDecoration:
+          headerDecoration ?? const pw.BoxDecoration(color: PdfColors.grey100),
+      oddRowDecoration:
+          oddRowDecoration ??
+          pw.BoxDecoration(color: PdfColor.fromHex('#FAFAFA')),
       columnWidths:
           columnWidths ??
           {
@@ -238,12 +240,18 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
         children: [
           pw.Text(
             "Amount in words: ",
-            style: const pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
+            style: const pw.TextStyle(
+              fontSize: 9,
+              fontWeight: pw.FontWeight.bold,
+            ),
           ),
           pw.Expanded(
             child: pw.Text(
               amount.toChequeFormat(),
-              style: const pw.TextStyle(fontSize: 9, fontStyle: pw.FontStyle.italic),
+              style: const pw.TextStyle(
+                fontSize: 9,
+                fontStyle: pw.FontStyle.italic,
+              ),
             ),
           ),
         ],
@@ -258,13 +266,22 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
     final pw.Font? font,
     final pw.Font? fontBold,
   }) {
-    final bankName = invoice.bankName.isNotEmpty ? invoice.bankName : profile.bankName;
-    final accountNo = invoice.accountNo.isNotEmpty ? invoice.accountNo : profile.accountNo;
-    final ifsc = invoice.ifscCode.isNotEmpty ? invoice.ifscCode : profile.ifscCode;
+    final bankName = invoice.bankName.isNotEmpty
+        ? invoice.bankName
+        : profile.bankName;
+    final accountNo = invoice.accountNo.isNotEmpty
+        ? invoice.accountNo
+        : profile.accountNo;
+    final ifsc = invoice.ifscCode.isNotEmpty
+        ? invoice.ifscCode
+        : profile.ifscCode;
     final branch = invoice.branch.isNotEmpty ? invoice.branch : profile.branch;
     final upiId = profile.upiId;
 
-    if (bankName.isEmpty && accountNo.isEmpty && ifsc.isEmpty && upiId.isEmpty) {
+    if (bankName.isEmpty &&
+        accountNo.isEmpty &&
+        ifsc.isEmpty &&
+        upiId.isEmpty) {
       return pw.SizedBox();
     }
 
@@ -291,23 +308,42 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
           pw.Row(
             children: [
               if (bankName.isNotEmpty) ...[
-                pw.Text("Bank: $bankName", style: pw.TextStyle(font: font, fontSize: 8)),
+                pw.Text(
+                  "Bank: $bankName",
+                  style: pw.TextStyle(font: font, fontSize: 8),
+                ),
                 pw.SizedBox(width: 12),
               ],
               if (accountNo.isNotEmpty) ...[
-                pw.Text("A/C No: $accountNo", style: pw.TextStyle(font: fontBold, fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                pw.Text(
+                  "A/C No: $accountNo",
+                  style: pw.TextStyle(
+                    font: fontBold,
+                    fontSize: 8,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
                 pw.SizedBox(width: 12),
               ],
               if (ifsc.isNotEmpty) ...[
-                pw.Text("IFSC: $ifsc", style: pw.TextStyle(font: font, fontSize: 8)),
+                pw.Text(
+                  "IFSC: $ifsc",
+                  style: pw.TextStyle(font: font, fontSize: 8),
+                ),
                 pw.SizedBox(width: 12),
               ],
               if (branch.isNotEmpty) ...[
-                pw.Text("Branch: $branch", style: pw.TextStyle(font: font, fontSize: 8)),
+                pw.Text(
+                  "Branch: $branch",
+                  style: pw.TextStyle(font: font, fontSize: 8),
+                ),
                 pw.SizedBox(width: 12),
               ],
               if (upiId.isNotEmpty)
-                pw.Text("UPI ID: $upiId", style: pw.TextStyle(font: font, fontSize: 8)),
+                pw.Text(
+                  "UPI ID: $upiId",
+                  style: pw.TextStyle(font: font, fontSize: 8),
+                ),
             ],
           ),
         ],
@@ -376,7 +412,10 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
         children: [
           pw.Text(
             "Original Invoice Reference",
-            style: const pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold),
+            style: const pw.TextStyle(
+              fontSize: 9,
+              fontWeight: pw.FontWeight.bold,
+            ),
           ),
           pw.Row(
             children: [
@@ -402,8 +441,10 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
     final pw.Font font,
     final pw.Font fontBold,
   ) {
-    final hasEway = invoice.ewayBillNo != null && invoice.ewayBillNo!.isNotEmpty;
-    final hasVehicle = invoice.vehicleNo != null && invoice.vehicleNo!.isNotEmpty;
+    final hasEway =
+        invoice.ewayBillNo != null && invoice.ewayBillNo!.isNotEmpty;
+    final hasVehicle =
+        invoice.vehicleNo != null && invoice.vehicleNo!.isNotEmpty;
     final hasIrn = invoice.irnNo != null && invoice.irnNo!.isNotEmpty;
 
     if (!hasEway && !hasVehicle && !hasIrn) {
@@ -422,19 +463,35 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
         children: [
           pw.Text(
             "Transportation & E-Invoice Details",
-            style: pw.TextStyle(font: fontBold, fontSize: 9, fontWeight: pw.FontWeight.bold),
+            style: pw.TextStyle(
+              font: fontBold,
+              fontSize: 9,
+              fontWeight: pw.FontWeight.bold,
+            ),
           ),
           pw.SizedBox(height: 4),
           pw.Row(
             children: [
               if (hasEway) ...[
-                pw.Text("E-Way Bill No: ", style: pw.TextStyle(font: fontBold, fontSize: 9)),
-                pw.Text(invoice.ewayBillNo!, style: pw.TextStyle(font: font, fontSize: 9)),
+                pw.Text(
+                  "E-Way Bill No: ",
+                  style: pw.TextStyle(font: fontBold, fontSize: 9),
+                ),
+                pw.Text(
+                  invoice.ewayBillNo!,
+                  style: pw.TextStyle(font: font, fontSize: 9),
+                ),
                 pw.SizedBox(width: 16),
               ],
               if (hasVehicle) ...[
-                pw.Text("Vehicle No: ", style: pw.TextStyle(font: fontBold, fontSize: 9)),
-                pw.Text(invoice.vehicleNo!, style: pw.TextStyle(font: font, fontSize: 9)),
+                pw.Text(
+                  "Vehicle No: ",
+                  style: pw.TextStyle(font: fontBold, fontSize: 9),
+                ),
+                pw.Text(
+                  invoice.vehicleNo!,
+                  style: pw.TextStyle(font: font, fontSize: 9),
+                ),
               ],
             ],
           ),
@@ -442,7 +499,10 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
             pw.SizedBox(height: 4),
             pw.Row(
               children: [
-                pw.Text("E-Invoice IRN: ", style: pw.TextStyle(font: fontBold, fontSize: 9)),
+                pw.Text(
+                  "E-Invoice IRN: ",
+                  style: pw.TextStyle(font: fontBold, fontSize: 9),
+                ),
                 pw.Expanded(
                   child: pw.Text(
                     invoice.irnNo!,
@@ -457,7 +517,11 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
     );
   }
 
-  pw.Widget buildHsnSummaryTable(final Invoice invoice, final pw.Font font, final pw.Font fontBold) {
+  pw.Widget buildHsnSummaryTable(
+    final Invoice invoice,
+    final pw.Font font,
+    final pw.Font fontBold,
+  ) {
     // 1. Group items by HSN Code AND GST Rate
     final Map<String, List<InvoiceItem>> grouped = {};
     for (final item in invoice.items) {
@@ -466,7 +530,17 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
       grouped.putIfAbsent(key, () => []).add(item);
     }
 
-    final headers = ['HSN/SAC', 'Taxable Value', 'CGST %', 'CGST Amt', 'SGST %', 'SGST Amt', 'IGST %', 'IGST Amt', 'Total Tax'];
+    final headers = [
+      'HSN/SAC',
+      'Taxable Value',
+      'CGST %',
+      'CGST Amt',
+      'SGST %',
+      'SGST Amt',
+      'IGST %',
+      'IGST Amt',
+      'Total Tax',
+    ];
     final isInterState = invoice.isInterState;
 
     final data = grouped.entries.map((final entry) {
@@ -474,7 +548,7 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
       final code = keyParts[0];
       final gstRate = double.tryParse(keyParts[1]) ?? 0.0;
       final items = entry.value;
-      
+
       double taxableVal = 0;
       double cgstAmt = 0;
       double sgstAmt = 0;
@@ -506,7 +580,14 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.SizedBox(height: 10),
-        pw.Text("HSN/SAC Tax Summary", style: pw.TextStyle(font: fontBold, fontSize: 9, fontWeight: pw.FontWeight.bold)),
+        pw.Text(
+          "HSN/SAC Tax Summary",
+          style: pw.TextStyle(
+            font: fontBold,
+            fontSize: 9,
+            fontWeight: pw.FontWeight.bold,
+          ),
+        ),
         pw.SizedBox(height: 4),
         pw.TableHelper.fromTextArray(
           headers: headers,
@@ -517,7 +598,11 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
             horizontalInside: pw.BorderSide(color: PdfColors.grey200),
             verticalInside: pw.BorderSide(color: PdfColors.grey200),
           ),
-          headerStyle: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold, font: fontBold),
+          headerStyle: pw.TextStyle(
+            fontSize: 7,
+            fontWeight: pw.FontWeight.bold,
+            font: fontBold,
+          ),
           cellStyle: pw.TextStyle(fontSize: 7, font: font),
           cellAlignments: {
             0: pw.Alignment.centerLeft,
@@ -530,9 +615,12 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
             7: pw.Alignment.centerRight,
             8: pw.Alignment.centerRight,
           },
-          cellPadding: const pw.EdgeInsets.symmetric(vertical: 2, horizontal: 3),
+          cellPadding: const pw.EdgeInsets.symmetric(
+            vertical: 2,
+            horizontal: 3,
+          ),
         ),
-      ]
+      ],
     );
   }
 }

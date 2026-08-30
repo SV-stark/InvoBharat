@@ -18,19 +18,23 @@ class FakePathProviderPlatform extends PathProviderPlatform
   Future<String?> getTemporaryPath() async => Directory.systemTemp.path;
 
   @override
-  Future<String?> getApplicationSupportPath() async => Directory.systemTemp.path;
+  Future<String?> getApplicationSupportPath() async =>
+      Directory.systemTemp.path;
 
   @override
   Future<String?> getLibraryPath() async => Directory.systemTemp.path;
 
   @override
-  Future<String?> getApplicationDocumentsPath() async => Directory.systemTemp.path;
+  Future<String?> getApplicationDocumentsPath() async =>
+      Directory.systemTemp.path;
 
   @override
   Future<String?> getExternalStoragePath() async => Directory.systemTemp.path;
 
   @override
-  Future<List<String>?> getExternalCachePaths() async => [Directory.systemTemp.path];
+  Future<List<String>?> getExternalCachePaths() async => [
+    Directory.systemTemp.path,
+  ];
 
   @override
   Future<List<String>?> getExternalStoragePaths({
@@ -52,7 +56,9 @@ void main() {
 
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
-    tempBackupDir = Directory(p.join(Directory.systemTemp.path, 'InvoBharat_Backup_Tests'));
+    tempBackupDir = Directory(
+      p.join(Directory.systemTemp.path, 'InvoBharat_Backup_Tests'),
+    );
     if (await tempBackupDir.exists()) {
       await tempBackupDir.delete(recursive: true);
     }
@@ -81,9 +87,7 @@ void main() {
     });
 
     container = ProviderContainer(
-      overrides: [
-        databaseProvider.overrideWithValue(db),
-      ],
+      overrides: [databaseProvider.overrideWithValue(db)],
     );
   }
 
@@ -96,10 +100,12 @@ void main() {
       );
 
       final service = container.read(autoBackupServiceProvider);
-      
+
       // Wait for notifier to load config from SharedPrefs
-      await container.read(appConfigProvider.notifier).setAutoBackupEnabled(false);
-      
+      await container
+          .read(appConfigProvider.notifier)
+          .setAutoBackupEnabled(false);
+
       await service.checkAndBackup();
 
       // Check that no ZIP file is created
@@ -115,9 +121,11 @@ void main() {
       );
 
       final service = container.read(autoBackupServiceProvider);
-      
+
       // Force Riverpod to instantiate notifier and load state
-      await container.read(appConfigProvider.notifier).setAutoBackupEnabled(true);
+      await container
+          .read(appConfigProvider.notifier)
+          .setAutoBackupEnabled(true);
 
       await service.checkAndBackup();
 
@@ -144,9 +152,11 @@ void main() {
       );
 
       final service = container.read(autoBackupServiceProvider);
-      
+
       // Trigger config load
-      await container.read(appConfigProvider.notifier).setAutoBackupEnabled(true);
+      await container
+          .read(appConfigProvider.notifier)
+          .setAutoBackupEnabled(true);
       // Wait for a small bit so config values populate
       await Future.delayed(const Duration(milliseconds: 50));
 

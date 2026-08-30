@@ -21,10 +21,12 @@ void main() {
     profileRepo = SqlBusinessProfileRepository(database);
     invoiceRepo = SqlInvoiceRepository(database, 'default');
 
-    await profileRepo.saveProfile(model.BusinessProfile.defaults().copyWith(
-      id: 'default',
-      companyName: 'Default Biz',
-    ));
+    await profileRepo.saveProfile(
+      model.BusinessProfile.defaults().copyWith(
+        id: 'default',
+        companyName: 'Default Biz',
+      ),
+    );
   });
 
   tearDown(() async {

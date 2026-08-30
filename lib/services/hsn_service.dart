@@ -47,7 +47,10 @@ class HsnService {
     }
   }
 
-  Future<List<HsnEntry>> search(final String query, {final int limit = 15}) async {
+  Future<List<HsnEntry>> search(
+    final String query, {
+    final int limit = 15,
+  }) async {
     if (_entries == null) {
       await init();
     }
@@ -63,7 +66,8 @@ class HsnService {
           results.add(entry);
         }
       } else {
-        if (entry.description.toLowerCase().contains(q) || entry.code.toLowerCase().contains(q)) {
+        if (entry.description.toLowerCase().contains(q) ||
+            entry.code.toLowerCase().contains(q)) {
           results.add(entry);
         }
       }

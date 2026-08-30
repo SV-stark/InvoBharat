@@ -55,14 +55,20 @@ abstract class Invoice with _$Invoice {
   bool get isInterState {
     // 1. Effective Place of Supply (POS)
     final posInput = placeOfSupply.isNotEmpty ? placeOfSupply : receiver.state;
-    final posCode = GstUtils.getStateCodeFromInput(posInput) ??
-        (receiver.gstin.length >= 2 ? GstUtils.getStateCodeFromInput(receiver.gstin.substring(0, 2)) : null) ??
+    final posCode =
+        GstUtils.getStateCodeFromInput(posInput) ??
+        (receiver.gstin.length >= 2
+            ? GstUtils.getStateCodeFromInput(receiver.gstin.substring(0, 2))
+            : null) ??
         GstUtils.getStateCodeFromInput(receiver.stateCode);
 
     // 2. Effective Supplier State
     final suppInput = supplier.state;
-    final suppCode = GstUtils.getStateCodeFromInput(suppInput) ??
-        (supplier.gstin.length >= 2 ? GstUtils.getStateCodeFromInput(supplier.gstin.substring(0, 2)) : null);
+    final suppCode =
+        GstUtils.getStateCodeFromInput(suppInput) ??
+        (supplier.gstin.length >= 2
+            ? GstUtils.getStateCodeFromInput(supplier.gstin.substring(0, 2))
+            : null);
 
     if (suppCode != null && posCode != null) {
       return suppCode != posCode;

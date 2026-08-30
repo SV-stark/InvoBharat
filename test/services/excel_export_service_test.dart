@@ -16,7 +16,10 @@ void main() {
       id: 'inv1',
       invoiceNo: 'INV-2026-001',
       invoiceDate: now,
-      supplier: const Supplier(name: 'InvoBharat Corp', gstin: '27AAAAA0000A1Z6'),
+      supplier: const Supplier(
+        name: 'InvoBharat Corp',
+        gstin: '27AAAAA0000A1Z6',
+      ),
       receiver: const Receiver(name: 'Acme Pvt Ltd', gstin: '27BBBBB0000B1ZX'),
       items: [
         const InvoiceItem(
@@ -28,18 +31,21 @@ void main() {
       ],
     );
 
-    test('generateInvoiceExcel generates valid non-empty byte buffer with sheets', () async {
-      final bytes = await excelService.generateInvoiceExcel([invoice]);
-      expect(bytes, isNotEmpty);
+    test(
+      'generateInvoiceExcel generates valid non-empty byte buffer with sheets',
+      () async {
+        final bytes = await excelService.generateInvoiceExcel([invoice]);
+        expect(bytes, isNotEmpty);
 
-      final excel = Excel.decodeBytes(bytes);
-      expect(excel.tables.keys, contains('Invoices Summary'));
-      expect(excel.tables.keys, contains('Itemized Details'));
-      expect(excel.tables.keys, contains('GSTR1 B2B Summary'));
+        final excel = Excel.decodeBytes(bytes);
+        expect(excel.tables.keys, contains('Invoices Summary'));
+        expect(excel.tables.keys, contains('Itemized Details'));
+        expect(excel.tables.keys, contains('GSTR1 B2B Summary'));
 
-      final summarySheet = excel.tables['Invoices Summary'];
-      expect(summarySheet, isNotNull);
-      expect(summarySheet!.maxRows, greaterThanOrEqualTo(2));
-    });
+        final summarySheet = excel.tables['Invoices Summary'];
+        expect(summarySheet, isNotNull);
+        expect(summarySheet!.maxRows, greaterThanOrEqualTo(2));
+      },
+    );
   });
 }

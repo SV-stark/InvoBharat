@@ -302,9 +302,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                         ref
                             .read(businessProfileListProvider.notifier)
                             .updateProfile(
-                              profile.copyWith(
-                                logoPath: result.path!,
-                              ),
+                              profile.copyWith(logoPath: result.path!),
                             );
                       }
                     } catch (e) {
@@ -450,9 +448,7 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                                 ref
                                     .read(businessProfileListProvider.notifier)
                                     .updateProfile(
-                                      profile.copyWith(
-                                        stampPath: result.path!,
-                                      ),
+                                      profile.copyWith(stampPath: result.path!),
                                     );
                               }
                             } catch (e) {
@@ -651,7 +647,10 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           ),
         ),
         const Gap(16),
-        const Text("PDF Invoice Configuration", style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text(
+          "PDF Invoice Configuration",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         const Gap(10),
         ToggleSwitch(
           checked: ref.watch(appConfigProvider).showHsnSummaryInPdf,
@@ -661,52 +660,67 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           },
         ),
         const Gap(24),
-        const Text("Invoice Number Sequences", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const Text(
+          "Invoice Number Sequences",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         const Gap(10),
-        ...ref.watch(invoiceSeriesProvider).map((final s) => Padding(
-          padding: const EdgeInsets.only(bottom: 8.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: InfoLabel(
-                  label: "Prefix",
-                  child: TextFormBox(
-                    initialValue: s.prefix,
-                    readOnly: true,
-                  ),
+        ...ref
+            .watch(invoiceSeriesProvider)
+            .map(
+              (final s) => Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: InfoLabel(
+                        label: "Prefix",
+                        child: TextFormBox(
+                          initialValue: s.prefix,
+                          readOnly: true,
+                        ),
+                      ),
+                    ),
+                    const Gap(10),
+                    Expanded(
+                      child: InfoLabel(
+                        label: "Next Sequence No",
+                        child: NumberBox(
+                          value: s.sequence,
+                          onChanged: (final val) {
+                            if (val != null) {
+                              ref
+                                  .read(invoiceSeriesProvider.notifier)
+                                  .updateSequence(s.prefix, val);
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    const Gap(10),
+                    if (ref.watch(invoiceSeriesProvider).length > 1)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 18.0),
+                        child: Button(
+                          child: Icon(FluentIcons.delete, color: Colors.red),
+                          onPressed: () => ref
+                              .read(invoiceSeriesProvider.notifier)
+                              .removeSeries(s.prefix),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              const Gap(10),
-              Expanded(
-                child: InfoLabel(
-                  label: "Next Sequence No",
-                  child: NumberBox(
-                    value: s.sequence,
-                    onChanged: (final val) {
-                      if (val != null) {
-                        ref.read(invoiceSeriesProvider.notifier).updateSequence(s.prefix, val);
-                      }
-                    },
-                  ),
-                ),
-              ),
-              const Gap(10),
-              if (ref.watch(invoiceSeriesProvider).length > 1)
-                Padding(
-                  padding: const EdgeInsets.only(top: 18.0),
-                  child: Button(
-                    child: Icon(FluentIcons.delete, color: Colors.red),
-                    onPressed: () => ref.read(invoiceSeriesProvider.notifier).removeSeries(s.prefix),
-                  ),
-                ),
-            ],
-          ),
-        )),
+            ),
         const Gap(10),
         Button(
           child: const Row(
             mainAxisSize: MainAxisSize.min,
-            children: [Icon(FluentIcons.add), Gap(8), Text("Add Series Prefix")],
+            children: [
+              Icon(FluentIcons.add),
+              Gap(8),
+              Text("Add Series Prefix"),
+            ],
           ),
           onPressed: () => _showAddSeriesDialog(context),
         ),
@@ -726,16 +740,12 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           children: [
             InfoLabel(
               label: "Prefix (e.g. SRV/)",
-              child: TextBox(
-                controller: prefixCtrl,
-              ),
+              child: TextBox(controller: prefixCtrl),
             ),
             const Gap(10),
             InfoLabel(
               label: "Starting Sequence",
-              child: TextBox(
-                controller: seqCtrl,
-              ),
+              child: TextBox(controller: seqCtrl),
             ),
           ],
         ),
@@ -749,7 +759,9 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
             onPressed: () {
               if (prefixCtrl.text.isNotEmpty) {
                 final seq = int.tryParse(seqCtrl.text) ?? 1;
-                ref.read(invoiceSeriesProvider.notifier).addSeries(prefixCtrl.text, seq);
+                ref
+                    .read(invoiceSeriesProvider.notifier)
+                    .addSeries(prefixCtrl.text, seq);
                 Navigator.pop(context);
               }
             },
@@ -1578,7 +1590,8 @@ class _EmailSettingsSection extends ConsumerStatefulWidget {
   const _EmailSettingsSection();
 
   @override
-  ConsumerState<_EmailSettingsSection> createState() => _EmailSettingsSectionState();
+  ConsumerState<_EmailSettingsSection> createState() =>
+      _EmailSettingsSectionState();
 }
 
 class _EmailSettingsSectionState extends ConsumerState<_EmailSettingsSection> {
@@ -1710,7 +1723,11 @@ class _EmailSettingsSectionState extends ConsumerState<_EmailSettingsSection> {
                   padding: const EdgeInsets.only(top: 20.0),
                   child: ToggleSwitch(
                     checked: _isSecure,
-                    content: Text(_isSecure ? "Secure Connection (SSL/TLS)" : "Insecure Connection"),
+                    content: Text(
+                      _isSecure
+                          ? "Secure Connection (SSL/TLS)"
+                          : "Insecure Connection",
+                    ),
                     onChanged: (final v) => setState(() => _isSecure = v),
                   ),
                 ),
@@ -1741,8 +1758,11 @@ class _EmailSettingsSectionState extends ConsumerState<_EmailSettingsSection> {
               obscureText: _obscurePassword,
               placeholder: "16-character app password",
               suffix: IconButton(
-                icon: Icon(_obscurePassword ? FluentIcons.hide : FluentIcons.red_eye),
-                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                icon: Icon(
+                  _obscurePassword ? FluentIcons.hide : FluentIcons.red_eye,
+                ),
+                onPressed: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
               ),
             ),
           ),

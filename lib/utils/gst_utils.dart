@@ -52,7 +52,7 @@ class GstUtils {
   static String? getStateCodeFromInput(final String? input) {
     if (input == null || input.trim().isEmpty) return null;
     final clean = input.trim();
-    
+
     // Check if it's already a 2-digit code or starts with 2 digits like "07-Delhi"
     final digitMatch = RegExp(r'^(\d{2})').firstMatch(clean);
     if (digitMatch != null) {
@@ -63,8 +63,13 @@ class GstUtils {
     // Match by state name (case-insensitive, ignore punctuation)
     final normalized = clean.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
     for (final entry in stateCodeMap.entries) {
-      final entryNorm = entry.value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
-      if (normalized == entryNorm || normalized.contains(entryNorm) || entryNorm.contains(normalized)) {
+      final entryNorm = entry.value.toLowerCase().replaceAll(
+        RegExp(r'[^a-z0-9]'),
+        '',
+      );
+      if (normalized == entryNorm ||
+          normalized.contains(entryNorm) ||
+          entryNorm.contains(normalized)) {
         return entry.key;
       }
     }

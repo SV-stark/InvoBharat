@@ -123,7 +123,11 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
               try {
                 final profile = ref.read(businessProfileProvider);
                 final showHsn = ref.read(appConfigProvider).showHsnSummaryInPdf;
-                final bytes = await generateInvoicePdf(_invoice, profile, showHsnSummary: showHsn);
+                final bytes = await generateInvoicePdf(
+                  _invoice,
+                  profile,
+                  showHsnSummary: showHsn,
+                );
                 await Printing.sharePdf(
                   bytes: bytes,
                   filename: 'invoice_${_invoice.invoiceNo}.pdf',
@@ -678,7 +682,11 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
     try {
       final profile = ref.read(businessProfileProvider);
       final showHsn = ref.read(appConfigProvider).showHsnSummaryInPdf;
-      final pdfBytes = await generateInvoicePdf(_invoice, profile, showHsnSummary: showHsn);
+      final pdfBytes = await generateInvoicePdf(
+        _invoice,
+        profile,
+        showHsnSummary: showHsn,
+      );
 
       // Save temp file and send email
       final tempDir = await getTemporaryDirectory();

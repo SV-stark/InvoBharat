@@ -202,13 +202,12 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
 
     try {
       await Printing.layoutPdf(
-        onLayout: (final format) =>
-            generateInvoicePdf(
-              estimateInvoice,
-              profile,
-              title: "ESTIMATE",
-              showHsnSummary: ref.read(appConfigProvider).showHsnSummaryInPdf,
-            ),
+        onLayout: (final format) => generateInvoicePdf(
+          estimateInvoice,
+          profile,
+          title: "ESTIMATE",
+          showHsnSummary: ref.read(appConfigProvider).showHsnSummaryInPdf,
+        ),
       );
     } catch (e) {
       debugPrint("Error printing estimate: $e");

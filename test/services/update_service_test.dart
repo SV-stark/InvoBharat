@@ -14,19 +14,23 @@ class FakePathProviderPlatform extends PathProviderPlatform
   Future<String?> getTemporaryPath() async => Directory.systemTemp.path;
 
   @override
-  Future<String?> getApplicationSupportPath() async => Directory.systemTemp.path;
+  Future<String?> getApplicationSupportPath() async =>
+      Directory.systemTemp.path;
 
   @override
   Future<String?> getLibraryPath() async => Directory.systemTemp.path;
 
   @override
-  Future<String?> getApplicationDocumentsPath() async => Directory.systemTemp.path;
+  Future<String?> getApplicationDocumentsPath() async =>
+      Directory.systemTemp.path;
 
   @override
   Future<String?> getExternalStoragePath() async => Directory.systemTemp.path;
 
   @override
-  Future<List<String>?> getExternalCachePaths() async => [Directory.systemTemp.path];
+  Future<List<String>?> getExternalCachePaths() async => [
+    Directory.systemTemp.path,
+  ];
 
   @override
   Future<List<String>?> getExternalStoragePaths({
@@ -108,81 +112,111 @@ void main() {
       expect(results['nightly'], isNull);
     });
 
-    test('downloadAndInstallUpdate throws exception if no Windows installer is found', () async {
-      final release = Release(
-        tagName: 'v1.1.0',
-        htmlUrl: 'https://github.com/stable',
-        prerelease: false,
-        publishedAt: '2023-10-01',
-        assets: [
-          ReleaseAsset(name: 'source_code.zip', browserDownloadUrl: 'https://github.com/zip'),
-        ],
-      );
+    test(
+      'downloadAndInstallUpdate throws exception if no Windows installer is found',
+      () async {
+        final release = Release(
+          tagName: 'v1.1.0',
+          htmlUrl: 'https://github.com/stable',
+          prerelease: false,
+          publishedAt: '2023-10-01',
+          assets: [
+            ReleaseAsset(
+              name: 'source_code.zip',
+              browserDownloadUrl: 'https://github.com/zip',
+            ),
+          ],
+        );
 
-      final client = MockClient((final request) async {
-        return http.Response('OK', 200);
-      });
+        final client = MockClient((final request) async {
+          return http.Response('OK', 200);
+        });
 
-      expect(
-        () => UpdateService.downloadAndInstallUpdate(release, client: client),
-        throwsA(isA<Exception>().having((final e) => e.toString(), 'message', contains('No Windows installer found in release'))),
-      );
-    });
+        expect(
+          () => UpdateService.downloadAndInstallUpdate(release, client: client),
+          throwsA(
+            isA<Exception>().having(
+              (final e) => e.toString(),
+              'message',
+              contains('No Windows installer found in release'),
+            ),
+          ),
+        );
+      },
+    );
 
-    test('downloadAndInstallUpdate throws exception if download fails', () async {
-      final release = Release(
-        tagName: 'v1.1.0',
-        htmlUrl: 'https://github.com/stable',
-        prerelease: false,
-        publishedAt: '2023-10-01',
-        assets: [
-          ReleaseAsset(name: 'installer.exe', browserDownloadUrl: 'https://github.com/installer.exe'),
-        ],
-      );
+    test(
+      'downloadAndInstallUpdate throws exception if download fails',
+      () async {
+        final release = Release(
+          tagName: 'v1.1.0',
+          htmlUrl: 'https://github.com/stable',
+          prerelease: false,
+          publishedAt: '2023-10-01',
+          assets: [
+            ReleaseAsset(
+              name: 'installer.exe',
+              browserDownloadUrl: 'https://github.com/installer.exe',
+            ),
+          ],
+        );
 
-      final client = MockClient((final request) async {
-        return http.Response('Not Found', 404);
-      });
+        final client = MockClient((final request) async {
+          return http.Response('Not Found', 404);
+        });
 
-      expect(
-        () => UpdateService.downloadAndInstallUpdate(release, client: client),
-        throwsA(isA<Exception>().having((final e) => e.toString(), 'message', contains('Failed to download update: 404'))),
-      );
-    });
+        expect(
+          () => UpdateService.downloadAndInstallUpdate(release, client: client),
+          throwsA(
+            isA<Exception>().having(
+              (final e) => e.toString(),
+              'message',
+              contains('Failed to download update: 404'),
+            ),
+          ),
+        );
+      },
+    );
 
-    test('downloadAndInstallUpdate successfully downloads and calls startProcess', () async {
-      final release = Release(
-        tagName: 'v1.1.0',
-        htmlUrl: 'https://github.com/stable',
-        prerelease: false,
-        publishedAt: '2023-10-01',
-        assets: [
-          ReleaseAsset(name: 'installer.exe', browserDownloadUrl: 'https://github.com/installer.exe'),
-        ],
-      );
+    test(
+      'downloadAndInstallUpdate successfully downloads and calls startProcess',
+      () async {
+        final release = Release(
+          tagName: 'v1.1.0',
+          htmlUrl: 'https://github.com/stable',
+          prerelease: false,
+          publishedAt: '2023-10-01',
+          assets: [
+            ReleaseAsset(
+              name: 'installer.exe',
+              browserDownloadUrl: 'https://github.com/installer.exe',
+            ),
+          ],
+        );
 
-      final client = MockClient((final request) async {
-        return http.Response('binary payload', 200);
-      });
+        final client = MockClient((final request) async {
+          return http.Response('binary payload', 200);
+        });
 
-      String? executedPath;
-      await UpdateService.downloadAndInstallUpdate(
-        release,
-        client: client,
-        startProcess: (final path) async {
-          executedPath = path;
-        },
-      );
+        String? executedPath;
+        await UpdateService.downloadAndInstallUpdate(
+          release,
+          client: client,
+          startProcess: (final path) async {
+            executedPath = path;
+          },
+        );
 
-      expect(executedPath, isNotNull);
-      expect(executedPath, endsWith('installer.exe'));
-      
-      final downloadedFile = File(executedPath!);
-      expect(await downloadedFile.exists(), isTrue);
-      expect(await downloadedFile.readAsString(), 'binary payload');
+        expect(executedPath, isNotNull);
+        expect(executedPath, endsWith('installer.exe'));
 
-      // Cleanup
-      await downloadedFile.delete();
-    });
+        final downloadedFile = File(executedPath!);
+        expect(await downloadedFile.exists(), isTrue);
+        expect(await downloadedFile.readAsString(), 'binary payload');
+
+        // Cleanup
+        await downloadedFile.delete();
+      },
+    );
   });
 }

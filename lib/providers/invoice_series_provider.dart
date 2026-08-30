@@ -21,8 +21,8 @@ class InvoiceSeries {
 
 final invoiceSeriesProvider =
     NotifierProvider<InvoiceSeriesNotifier, List<InvoiceSeries>>(
-  InvoiceSeriesNotifier.new,
-);
+      InvoiceSeriesNotifier.new,
+    );
 
 class InvoiceSeriesNotifier extends Notifier<List<InvoiceSeries>> {
   @override

@@ -15,17 +15,25 @@ class GstrService {
     final str = value.toString();
     if (str.isEmpty) return str;
     final firstChar = str[0];
-    if (firstChar == '=' || firstChar == '+' || firstChar == '-' || firstChar == '@' || firstChar == '\t' || firstChar == '\r') {
+    if (firstChar == '=' ||
+        firstChar == '+' ||
+        firstChar == '-' ||
+        firstChar == '@' ||
+        firstChar == '\t' ||
+        firstChar == '\r') {
       return "'$str";
     }
     return str;
   }
 
   String generateGstr1Csv(final List<Invoice> invoices) {
-    final validInvoices = invoices.where((inv) =>
-      inv.status.toLowerCase() != 'draft' &&
-      inv.type != InvoiceType.deliveryChallan
-    ).toList();
+    final validInvoices = invoices
+        .where(
+          (inv) =>
+              inv.status.toLowerCase() != 'draft' &&
+              inv.type != InvoiceType.deliveryChallan,
+        )
+        .toList();
 
     // Header based on user request
     final List<List<dynamic>> rows = [];
@@ -65,10 +73,12 @@ class GstrService {
       final stateCode = inv.receiver.stateCode.trim().isNotEmpty
           ? inv.receiver.stateCode.trim()
           : (gstin.length >= 2
-              ? (GstUtils.getStateCode(gstin) ?? EInvoiceExporter.getStateCode(state, gstin))
-              : EInvoiceExporter.getStateCode(state, gstin));
+                ? (GstUtils.getStateCode(gstin) ??
+                      EInvoiceExporter.getStateCode(state, gstin))
+                : EInvoiceExporter.getStateCode(state, gstin));
 
-      final placeOfSupply = (stateCode.isNotEmpty && !state.startsWith('$stateCode-'))
+      final placeOfSupply =
+          (stateCode.isNotEmpty && !state.startsWith('$stateCode-'))
           ? "$stateCode-$state"
           : state;
 

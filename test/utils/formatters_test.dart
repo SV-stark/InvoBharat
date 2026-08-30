@@ -27,7 +27,10 @@ void main() {
         text: '98769543210',
         selection: TextSelection.collapsed(offset: 5),
       );
-      final overLimitResult = formatter.formatEditUpdate(oldValue, newValueOverLimit);
+      final overLimitResult = formatter.formatEditUpdate(
+        oldValue,
+        newValueOverLimit,
+      );
       expect(overLimitResult.text, '9876543210');
 
       // User edits inside an 8-digit number: '98764321' -> inserts '5' at offset 4 -> '987654321'

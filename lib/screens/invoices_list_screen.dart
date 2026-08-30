@@ -95,9 +95,9 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
               }
               ref.invalidate(invoiceListProvider);
               if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Deletion undone")),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text("Deletion undone")));
             },
           ),
         ),
@@ -681,7 +681,8 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
                   ),
                   if (tempDateRange != null)
                     TextButton(
-                      onPressed: () => setDialogState(() => tempDateRange = null),
+                      onPressed: () =>
+                          setDialogState(() => tempDateRange = null),
                       child: const Text("Clear Date Filter"),
                     ),
                 ],

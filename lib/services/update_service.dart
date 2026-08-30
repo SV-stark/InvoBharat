@@ -75,12 +75,16 @@ class UpdateService {
     final cachedReleasesStr = prefs?.getString(_cacheKey);
     final lastCheckTimeStr = prefs?.getString(_cacheTimeKey);
 
-    if (!forceRefresh && lastCheckTimeStr != null && cachedReleasesStr != null) {
+    if (!forceRefresh &&
+        lastCheckTimeStr != null &&
+        cachedReleasesStr != null) {
       try {
         final lastCheckTime = DateTime.parse(lastCheckTimeStr);
         if (DateTime.now().difference(lastCheckTime).inHours < 2) {
           final List<dynamic> jsonList = jsonDecode(cachedReleasesStr);
-          final releases = jsonList.map((final json) => Release.fromJson(json)).toList();
+          final releases = jsonList
+              .map((final json) => Release.fromJson(json))
+              .toList();
           return _parseReleases(releases);
         }
       } catch (e) {
@@ -98,14 +102,18 @@ class UpdateService {
       while (attempt < maxAttempts) {
         attempt++;
         try {
-          response = await httpClient.get(
-            Uri.parse('https://api.github.com/repos/$_repoOwner/$_repoName/releases'),
-            headers: {
-              'Accept': 'application/vnd.github+json',
-              'X-GitHub-Api-Version': '2022-11-28',
-              'User-Agent': 'InvoBharat-App',
-            },
-          ).timeout(const Duration(seconds: 8));
+          response = await httpClient
+              .get(
+                Uri.parse(
+                  'https://api.github.com/repos/$_repoOwner/$_repoName/releases',
+                ),
+                headers: {
+                  'Accept': 'application/vnd.github+json',
+                  'X-GitHub-Api-Version': '2022-11-28',
+                  'User-Agent': 'InvoBharat-App',
+                },
+              )
+              .timeout(const Duration(seconds: 8));
 
           if (response.statusCode == 200) {
             break;
@@ -129,11 +137,16 @@ class UpdateService {
         final body = response.body;
         if (prefs != null) {
           await prefs.setString(_cacheKey, body);
-          await prefs.setString(_cacheTimeKey, DateTime.now().toIso8601String());
+          await prefs.setString(
+            _cacheTimeKey,
+            DateTime.now().toIso8601String(),
+          );
         }
 
         final List<dynamic> jsonList = jsonDecode(body);
-        final releases = jsonList.map((final json) => Release.fromJson(json)).toList();
+        final releases = jsonList
+            .map((final json) => Release.fromJson(json))
+            .toList();
         return _parseReleases(releases);
       } catch (e) {
         debugPrint('Error decoding response: $e');
@@ -144,7 +157,9 @@ class UpdateService {
     if (cachedReleasesStr != null) {
       try {
         final List<dynamic> jsonList = jsonDecode(cachedReleasesStr);
-        final releases = jsonList.map((final json) => Release.fromJson(json)).toList();
+        final releases = jsonList
+            .map((final json) => Release.fromJson(json))
+            .toList();
         return _parseReleases(releases);
       } catch (e) {
         debugPrint('Error parsing cached releases on fallback: $e');
@@ -178,7 +193,10 @@ class UpdateService {
     final http.Client? client,
     @visibleForTesting final Future<void> Function(String path)? startProcess,
   }) async {
-    if (!Platform.isWindows && !Platform.environment.containsKey('FLUTTER_TEST')) return;
+    if (!Platform.isWindows &&
+        !Platform.environment.containsKey('FLUTTER_TEST')) {
+      return;
+    }
 
     final asset = release.assets.firstWhere(
       (final a) => a.name.endsWith('.exe') || a.name.endsWith('.msi'),
@@ -203,21 +221,29 @@ class UpdateService {
         // Check for checksum in assets or release body
         String? expectedChecksum;
         final checksumAsset = release.assets.cast<ReleaseAsset?>().firstWhere(
-              (final a) =>
-                  a != null &&
-                  (a.name == '${asset.name}.sha256' ||
-                      a.name == '${asset.name}.sha256sum' ||
-                      a.name.endsWith('.sha256')),
-              orElse: () => null,
-            );
+          (final a) =>
+              a != null &&
+              (a.name == '${asset.name}.sha256' ||
+                  a.name == '${asset.name}.sha256sum' ||
+                  a.name.endsWith('.sha256')),
+          orElse: () => null,
+        );
 
         if (checksumAsset != null) {
-          final checksumRes = await httpClient.get(Uri.parse(checksumAsset.browserDownloadUrl));
+          final checksumRes = await httpClient.get(
+            Uri.parse(checksumAsset.browserDownloadUrl),
+          );
           if (checksumRes.statusCode == 200) {
-            expectedChecksum = checksumRes.body.trim().split(RegExp(r'\s+')).first;
+            expectedChecksum = checksumRes.body
+                .trim()
+                .split(RegExp(r'\s+'))
+                .first;
           }
         } else if (release.body != null) {
-          final match = RegExp(r'sha256\s*[:=]\s*([a-f0-9]{64})', caseSensitive: false).firstMatch(release.body!);
+          final match = RegExp(
+            r'sha256\s*[:=]\s*([a-f0-9]{64})',
+            caseSensitive: false,
+          ).firstMatch(release.body!);
           if (match != null) {
             expectedChecksum = match.group(1);
           }
@@ -242,7 +268,9 @@ class UpdateService {
           exit(0); // Exit app to let installer run
         }
       } else {
-        throw Exception('Failed to download update: ${streamedResponse.statusCode}');
+        throw Exception(
+          'Failed to download update: ${streamedResponse.statusCode}',
+        );
       }
     } finally {
       if (shouldCloseClient) {

@@ -191,7 +191,10 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
                       horizontalMargin: 12,
                       columns: const [
                         DataColumn2(label: Text('Date'), size: ColumnSize.S),
-                        DataColumn2(label: Text('Particulars'), size: ColumnSize.L),
+                        DataColumn2(
+                          label: Text('Particulars'),
+                          size: ColumnSize.L,
+                        ),
                         DataColumn2(label: Text('Type'), size: ColumnSize.S),
                         DataColumn2(label: Text('Debit (+)'), numeric: true),
                         DataColumn2(label: Text('Credit (-)'), numeric: true),

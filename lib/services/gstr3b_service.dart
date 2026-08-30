@@ -14,17 +14,25 @@ class Gstr3bService {
     final str = value.toString();
     if (str.isEmpty) return str;
     final firstChar = str[0];
-    if (firstChar == '=' || firstChar == '+' || firstChar == '-' || firstChar == '@' || firstChar == '\t' || firstChar == '\r') {
+    if (firstChar == '=' ||
+        firstChar == '+' ||
+        firstChar == '-' ||
+        firstChar == '@' ||
+        firstChar == '\t' ||
+        firstChar == '\r') {
       return "'$str";
     }
     return str;
   }
 
   String generateGstr3bCsv(final List<Invoice> invoices) {
-    final validInvoices = invoices.where((inv) =>
-      inv.status.toLowerCase() != 'draft' &&
-      inv.type != InvoiceType.deliveryChallan
-    ).toList();
+    final validInvoices = invoices
+        .where(
+          (inv) =>
+              inv.status.toLowerCase() != 'draft' &&
+              inv.type != InvoiceType.deliveryChallan,
+        )
+        .toList();
 
     final List<List<dynamic>> rows = [];
 
@@ -86,10 +94,13 @@ class Gstr3bService {
         entry['taxableValue'] = (entry['taxableValue'] as double) + taxable;
 
         if (isInter) {
-          entry['igst'] = (entry['igst'] as double) + (item.igstAmount * multiplier);
+          entry['igst'] =
+              (entry['igst'] as double) + (item.igstAmount * multiplier);
         } else {
-          entry['cgst'] = (entry['cgst'] as double) + (item.cgstAmount * multiplier);
-          entry['sgst'] = (entry['sgst'] as double) + (item.sgstAmount * multiplier);
+          entry['cgst'] =
+              (entry['cgst'] as double) + (item.cgstAmount * multiplier);
+          entry['sgst'] =
+              (entry['sgst'] as double) + (item.sgstAmount * multiplier);
         }
       }
     }

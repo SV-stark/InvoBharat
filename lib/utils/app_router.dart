@@ -32,11 +32,7 @@ import 'package:invobharat/models/client.dart';
 
 Widget _wrapMaterial(final Widget child) {
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
-    return Material(
-      child: ScaffoldMessenger(
-        child: child,
-      ),
-    );
+    return Material(child: ScaffoldMessenger(child: child));
   }
   return child;
 }
@@ -82,11 +78,13 @@ final appRouter = GoRouter(
 
     GoRoute(
       path: '/payments',
-      builder: (final context, final state) => _wrapMaterial(const PaymentHistoryScreen()),
+      builder: (final context, final state) =>
+          _wrapMaterial(const PaymentHistoryScreen()),
     ),
     GoRoute(
       path: '/audit',
-      builder: (final context, final state) => _wrapMaterial(const AuditReportScreen()),
+      builder: (final context, final state) =>
+          _wrapMaterial(const AuditReportScreen()),
     ),
     GoRoute(
       path: '/recurring',
@@ -144,7 +142,8 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/invoices',
-      builder: (final context, final state) => _wrapMaterial(const InvoicesListScreen()),
+      builder: (final context, final state) =>
+          _wrapMaterial(const InvoicesListScreen()),
     ),
     GoRoute(
       path: '/client-ledger',

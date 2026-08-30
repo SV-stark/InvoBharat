@@ -314,7 +314,11 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
                     children: [
                       const Icon(FluentIcons.download, size: 14),
                       const Gap(6),
-                      Text(_gstTab == 0 ? 'Export GSTR-1 CSV' : 'Export GSTR-3B CSV'),
+                      Text(
+                        _gstTab == 0
+                            ? 'Export GSTR-1 CSV'
+                            : 'Export GSTR-3B CSV',
+                      ),
                     ],
                   ),
                   onPressed: () => _exportReport(context, filteredInvoices),
@@ -329,7 +333,8 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
                       Text('Export Excel (.xlsx)'),
                     ],
                   ),
-                  onPressed: () => _exportExcelReport(context, filteredInvoices),
+                  onPressed: () =>
+                      _exportExcelReport(context, filteredInvoices),
                 ),
                 const Gap(8),
                 DropDownButton(
@@ -339,12 +344,14 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
                     MenuFlyoutItem(
                       text: const Text('Export E-Invoice JSON (Batch)'),
                       leading: const Icon(FluentIcons.download),
-                      onPressed: () => _exportBatchEInvoice(context, filteredInvoices),
+                      onPressed: () =>
+                          _exportBatchEInvoice(context, filteredInvoices),
                     ),
                     MenuFlyoutItem(
                       text: const Text('Export E-Way Bill JSON (Batch)'),
                       leading: const Icon(FluentIcons.car),
-                      onPressed: () => _exportBatchEWayBill(context, filteredInvoices),
+                      onPressed: () =>
+                          _exportBatchEWayBill(context, filteredInvoices),
                     ),
                   ],
                 ),
@@ -511,7 +518,11 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
         columns: const [
           DataColumn2(label: Text('Section')),
           DataColumn2(label: Text('Nature of Supplies'), size: ColumnSize.L),
-          DataColumn2(label: Text('GST Rate'), size: ColumnSize.S, numeric: true),
+          DataColumn2(
+            label: Text('GST Rate'),
+            size: ColumnSize.S,
+            numeric: true,
+          ),
           DataColumn2(label: Text('Taxable Value'), numeric: true),
           DataColumn2(label: Text('IGST'), size: ColumnSize.S, numeric: true),
           DataColumn2(label: Text('CGST'), size: ColumnSize.S, numeric: true),
@@ -580,7 +591,9 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
         );
         String? outputFile = saveUri?.toFilePath();
         if (outputFile != null) {
-          if (!outputFile.toLowerCase().endsWith('.csv')) outputFile = '$outputFile.csv';
+          if (!outputFile.toLowerCase().endsWith('.csv')) {
+            outputFile = '$outputFile.csv';
+          }
           await File(outputFile).writeAsString(csvData);
           if (context.mounted) {
             unawaited(
@@ -607,7 +620,9 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
         );
         String? outputFile = saveUri?.toFilePath();
         if (outputFile != null) {
-          if (!outputFile.toLowerCase().endsWith('.csv')) outputFile = '$outputFile.csv';
+          if (!outputFile.toLowerCase().endsWith('.csv')) {
+            outputFile = '$outputFile.csv';
+          }
           await File(outputFile).writeAsString(csvData);
           if (context.mounted) {
             unawaited(
@@ -646,7 +661,9 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
     final List<Invoice> invoices,
   ) async {
     try {
-      final excelBytes = await ExcelExportService().generateInvoiceExcel(invoices);
+      final excelBytes = await ExcelExportService().generateInvoiceExcel(
+        invoices,
+      );
       final savedPath = await ExcelExportService().saveExcelFile(
         excelBytes,
         'Invoices_Export_$_selectedMonth.xlsx',
@@ -693,7 +710,9 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
               context,
               builder: (final context, final close) => InfoBar(
                 title: const Text('Export Notice'),
-                content: const Text('No invoices available in selected period to export.'),
+                content: const Text(
+                  'No invoices available in selected period to export.',
+                ),
                 severity: InfoBarSeverity.warning,
                 onClose: close,
               ),
@@ -703,7 +722,10 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
         return;
       }
       final profile = ref.read(businessProfileProvider);
-      final savedPath = await EInvoiceExporter.exportBatchEInvoice(invoices, profile);
+      final savedPath = await EInvoiceExporter.exportBatchEInvoice(
+        invoices,
+        profile,
+      );
       if (savedPath != null && context.mounted) {
         unawaited(
           displayInfoBar(
@@ -746,7 +768,9 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
               context,
               builder: (final context, final close) => InfoBar(
                 title: const Text('Export Notice'),
-                content: const Text('No invoices available in selected period to export.'),
+                content: const Text(
+                  'No invoices available in selected period to export.',
+                ),
                 severity: InfoBarSeverity.warning,
                 onClose: close,
               ),
@@ -756,7 +780,10 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
         return;
       }
       final profile = ref.read(businessProfileProvider);
-      final savedPath = await EInvoiceExporter.exportBatchEWayBill(invoices, profile);
+      final savedPath = await EInvoiceExporter.exportBatchEWayBill(
+        invoices,
+        profile,
+      );
       if (savedPath != null && context.mounted) {
         unawaited(
           displayInfoBar(
