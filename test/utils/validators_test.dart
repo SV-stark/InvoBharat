@@ -38,11 +38,25 @@ void main() {
       // Valid Maharashtra GSTIN (with correct checksum T)
       expect(Validators.gstin('27AAPFU0939F1ZT'), null);
 
+      // Invalid checksum character X (should be T)
+      expect(Validators.gstin('27AAPFU0939F1ZX'), 'Invalid GST number');
+
       expect(Validators.gstin('123'), 'Invalid GST number');
       expect(
         Validators.gstin('27AAPFU0939F1Z'),
         'Invalid GST number',
       ); // Too short
+    });
+
+    test('vpa should validate UPI ID formats correctly', () {
+      expect(Validators.vpa(null), null);
+      expect(Validators.vpa(''), null);
+      expect(Validators.vpa('merchant@okaxis'), null);
+      expect(Validators.vpa('john.doe@upi'), null);
+
+      expect(Validators.vpa('invalid-vpa'), 'Invalid UPI ID (e.g. name@bank)');
+      expect(Validators.vpa('user@'), 'Invalid UPI ID (e.g. name@bank)');
+      expect(Validators.vpa('@bank'), 'Invalid UPI ID (e.g. name@bank)');
     });
 
     test('doubleValue should validate numeric inputs', () {

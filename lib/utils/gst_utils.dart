@@ -5,7 +5,7 @@ class GstUtils {
   /// Returns true if GSTIN is valid, false otherwise
   static bool isValidGstin(final String gstin) {
     if (gstin.isEmpty) return true; // Empty is allowed (optional field)
-    return IndianValidators.isGST(gstin.toUpperCase(), verifyChecksum: false);
+    return IndianValidators.isGST(gstin.toUpperCase());
   }
 
   static const Map<String, String> stateCodeMap = {
@@ -103,10 +103,7 @@ class GstUtils {
       return GstinValidationResult.valid();
     }
 
-    final error = IndianValidators.validateGST(
-      gstin.toUpperCase(),
-      verifyChecksum: false,
-    );
+    final error = IndianValidators.validateGST(gstin.toUpperCase());
     if (error != null) {
       return GstinValidationResult.invalid(error);
     }

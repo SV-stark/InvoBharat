@@ -12,6 +12,7 @@ import 'package:invobharat/services/csv_export_service.dart';
 import 'package:invobharat/data/sql_invoice_repository.dart';
 import 'package:invobharat/database/database.dart';
 import 'package:invobharat/services/logger_service.dart';
+import 'package:invobharat/utils/security_utils.dart';
 import 'package:sqlite3/sqlite3.dart' as sqlite3;
 
 const kDbFileName = 'db.sqlite';
@@ -319,12 +320,20 @@ class BackupService {
             if (zipPath != null) {
               final mediaArchiveFile = archive.findFile(zipPath);
               if (mediaArchiveFile != null && mediaArchiveFile.isFile) {
-                final fileName = p.basename(zipPath);
-                final targetFile = File(p.join(mediaDir.path, fileName));
-                await targetFile.writeAsBytes(
-                  mediaArchiveFile.content as List<int>,
-                  flush: true,
+                final safeFileName = SecurityUtils.sanitizeFilename(
+                  p.basename(zipPath),
                 );
+                final resolvedPath = SecurityUtils.safeResolve(
+                  p.join(mediaDir.path, safeFileName),
+                  mediaDir.path,
+                );
+                if (resolvedPath != null) {
+                  final targetFile = File(resolvedPath);
+                  await targetFile.writeAsBytes(
+                    mediaArchiveFile.content as List<int>,
+                    flush: true,
+                  );
+                }
               }
             }
           }

@@ -76,6 +76,22 @@ class Validators {
     return result.errorMessage;
   }
 
+  static ValidationResult validateVpa(final String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return const ValidationResult.empty();
+    }
+    final vpaRegex = RegExp(r'^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$');
+    if (!vpaRegex.hasMatch(value.trim())) {
+      return const ValidationResult.invalid('Invalid UPI ID (e.g. name@bank)');
+    }
+    return const ValidationResult.valid();
+  }
+
+  static String? vpa(final String? value) {
+    final result = validateVpa(value);
+    return result.errorMessage;
+  }
+
   static String? doubleValue(final String? value) {
     if (value == null || value.isEmpty) return null;
     final num = double.tryParse(value);

@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:drift/native.dart';
+import 'package:invobharat/database/database.dart' hide Invoice;
 import 'package:invobharat/services/email_service.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:mailer/mailer.dart';
@@ -68,5 +70,36 @@ void main() {
         expect(called, isTrue);
       },
     );
+
+    test('saveSettings and getSettings securely stores credentials', () async {
+      FlutterSecureStorage.setMockInitialValues({});
+      final db = AppDatabase(NativeDatabase.memory());
+      final service = EmailService(settingsService: AppSettingsService(db));
+
+      final settings = EmailSettings(
+        smtpHost: 'smtp.office365.com',
+        smtpPort: 587,
+        email: 'billing@company.com',
+        username: 'Billing Dept',
+        password: 'SuperSecretPassword123!',
+      );
+
+      await service.saveSettings(settings);
+
+      final retrieved = await service.getSettings();
+      expect(retrieved, isNotNull);
+      expect(retrieved!.smtpHost, 'smtp.office365.com');
+      expect(retrieved.smtpPort, 587);
+      expect(retrieved.email, 'billing@company.com');
+      expect(retrieved.username, 'Billing Dept');
+      expect(retrieved.password, 'SuperSecretPassword123!');
+      expect(retrieved.isSecure, isTrue);
+
+      await service.clearSettings();
+      final afterClear = await service.getSettings();
+      expect(afterClear, isNull);
+
+      await db.close();
+    });
   });
 }

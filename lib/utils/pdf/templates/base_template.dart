@@ -364,7 +364,7 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
 
     // Standard UPI deep link format
     String upiUrl =
-        "upi://pay?pa=$upiId&pn=${Uri.encodeComponent(name)}&am=${amount.toStringAsFixed(2)}&cu=INR";
+        "upi://pay?pa=${Uri.encodeComponent(upiId)}&pn=${Uri.encodeComponent(name)}&am=${amount.toStringAsFixed(2)}&cu=INR";
     if (invoiceNo != null && invoiceNo.isNotEmpty) {
       upiUrl +=
           "&tr=${Uri.encodeComponent(invoiceNo)}&tn=${Uri.encodeComponent('Invoice $invoiceNo')}";

@@ -1650,6 +1650,30 @@ class _EmailSettingsTabState extends State<_EmailSettingsTab> {
 
   Future<void> _saveSettings() async {
     if (_formKey.currentState!.validate()) {
+      if (!_isSecure) {
+        final proceed = await showDialog<bool>(
+          context: context,
+          builder: (final ctx) => AlertDialog(
+            title: const Text("Insecure SMTP Connection Warning"),
+            content: const Text(
+              "You have disabled SSL/TLS. Your email credentials and messages will be sent in cleartext without encryption. Are you sure you want to proceed?",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text("Cancel"),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(backgroundColor: Colors.orange),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text("Proceed Anyway"),
+              ),
+            ],
+          ),
+        );
+        if (proceed != true) return;
+      }
+
       final settings = EmailSettings(
         smtpHost: _hostController.text.trim(),
         smtpPort: int.tryParse(_portController.text.trim()) ?? 587,

@@ -39,43 +39,73 @@ class EmailService {
   EmailService({required this._settingsService});
 
   Future<void> saveSettings(final EmailSettings settings) async {
-    await _settingsService.setSetting(_keyHost, settings.smtpHost);
-    await _settingsService.setSetting(_keyPort, settings.smtpPort.toString());
-    await _settingsService.setSetting(_keyEmail, settings.email);
-    await _settingsService.setSetting(_keyUsername, settings.username);
-    await _settingsService.setSetting(_keySecure, settings.isSecure.toString());
+    await _storage.write(key: _keyHost, value: settings.smtpHost);
+    await _storage.write(key: _keyPort, value: settings.smtpPort.toString());
+    await _storage.write(key: _keyEmail, value: settings.email);
+    await _storage.write(key: _keyUsername, value: settings.username);
+    await _storage.write(key: _keySecure, value: settings.isSecure.toString());
 
     if (settings.password != null && settings.password!.isNotEmpty) {
       await _storage.write(key: _keyPassword, value: settings.password);
+    } else {
+      await _storage.delete(key: _keyPassword);
     }
+
+    // Clean up any plaintext records from AppSettings to prevent credentials leakage
+    await _settingsService.setSetting(_keyHost, '');
+    await _settingsService.setSetting(_keyPort, '');
+    await _settingsService.setSetting(_keyEmail, '');
+    await _settingsService.setSetting(_keyUsername, '');
+    await _settingsService.setSetting(_keySecure, '');
   }
 
   Future<EmailSettings?> getSettings() async {
-    final host = await _settingsService.getSetting(_keyHost);
-    if (host == null || host.isEmpty) return null;
+    String? host = await _storage.read(key: _keyHost);
+    if (host == null || host.isEmpty) {
+      // Backward compatibility: check AppSettings
+      host = await _settingsService.getSetting(_keyHost);
+      if (host == null || host.isEmpty) return null;
+    }
 
     final password = await _storage.read(key: _keyPassword);
-
-    final portStr = await _settingsService.getSetting(_keyPort);
-    final secureStr = await _settingsService.getSetting(_keySecure);
+    final portStr =
+        await _storage.read(key: _keyPort) ??
+        await _settingsService.getSetting(_keyPort);
+    final email =
+        await _storage.read(key: _keyEmail) ??
+        await _settingsService.getSetting(_keyEmail) ??
+        '';
+    final username =
+        await _storage.read(key: _keyUsername) ??
+        await _settingsService.getSetting(_keyUsername) ??
+        '';
+    final secureStr =
+        await _storage.read(key: _keySecure) ??
+        await _settingsService.getSetting(_keySecure);
 
     return EmailSettings(
       smtpHost: host,
       smtpPort: portStr != null ? int.tryParse(portStr) ?? 587 : 587,
-      email: await _settingsService.getSetting(_keyEmail) ?? '',
-      username: await _settingsService.getSetting(_keyUsername) ?? '',
+      email: email,
+      username: username,
       password: password,
       isSecure: secureStr != null ? secureStr.toLowerCase() == 'true' : true,
     );
   }
 
   Future<void> clearSettings() async {
+    await _storage.delete(key: _keyHost);
+    await _storage.delete(key: _keyPort);
+    await _storage.delete(key: _keyEmail);
+    await _storage.delete(key: _keyUsername);
+    await _storage.delete(key: _keySecure);
+    await _storage.delete(key: _keyPassword);
+
     await _settingsService.setSetting(_keyHost, '');
     await _settingsService.setSetting(_keyPort, '');
     await _settingsService.setSetting(_keyEmail, '');
     await _settingsService.setSetting(_keyUsername, '');
     await _settingsService.setSetting(_keySecure, '');
-    await _storage.delete(key: _keyPassword);
   }
 
   static Future<EmailSettings?> getSettingsStatic() async {

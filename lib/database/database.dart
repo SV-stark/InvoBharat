@@ -458,30 +458,30 @@ class AppSettingsService {
       }
 
       final smtpHost = prefs.getString('smtp_host');
-      if (smtpHost != null) {
-        await _db.customStatement(
-          'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
-          ['smtp_host', smtpHost],
+      if (smtpHost != null && smtpHost.isNotEmpty) {
+        const secureStorage = FlutterSecureStorage();
+        await secureStorage.write(key: 'smtp_host', value: smtpHost);
+        await secureStorage.write(
+          key: 'smtp_port',
+          value: (prefs.getInt('smtp_port') ?? 587).toString(),
         );
-        await _db.customStatement(
-          'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
-          ['smtp_port', (prefs.getInt('smtp_port') ?? 587).toString()],
+        await secureStorage.write(
+          key: 'smtp_email',
+          value: prefs.getString('smtp_email') ?? '',
         );
-        await _db.customStatement(
-          'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
-          ['smtp_email', prefs.getString('smtp_email') ?? ''],
+        await secureStorage.write(
+          key: 'smtp_username',
+          value: prefs.getString('smtp_username') ?? '',
         );
-        await _db.customStatement(
-          'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
-          ['smtp_username', prefs.getString('smtp_username') ?? ''],
+        await secureStorage.write(
+          key: 'smtp_is_secure',
+          value: (prefs.getBool('smtp_is_secure') ?? true).toString(),
         );
-        await _db.customStatement(
-          'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
-          [
-            'smtp_is_secure',
-            (prefs.getBool('smtp_is_secure') ?? true).toString(),
-          ],
-        );
+        await prefs.remove('smtp_host');
+        await prefs.remove('smtp_port');
+        await prefs.remove('smtp_email');
+        await prefs.remove('smtp_username');
+        await prefs.remove('smtp_is_secure');
       }
 
       final legacyPassword = prefs.getString('smtp_password');

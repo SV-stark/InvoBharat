@@ -871,6 +871,8 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                 child: TextFormBox(
                   initialValue: ref.watch(businessProfileProvider).upiId,
                   placeholder: "e.g. name@bank",
+                  validator: Validators.vpa,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   onChanged: (final v) {
                     final profile = ref.read(businessProfileProvider);
                     ref
@@ -1646,6 +1648,29 @@ class _EmailSettingsSectionState extends ConsumerState<_EmailSettingsSection> {
 
   Future<void> _saveSettings() async {
     if (_formKey.currentState!.validate()) {
+      if (!_isSecure) {
+        final proceed = await showDialog<bool>(
+          context: context,
+          builder: (final ctx) => ContentDialog(
+            title: const Text("Insecure SMTP Connection Warning"),
+            content: const Text(
+              "You have disabled SSL/TLS. Your email credentials and messages will be sent in cleartext without encryption. Are you sure you want to proceed?",
+            ),
+            actions: [
+              Button(
+                child: const Text("Cancel"),
+                onPressed: () => Navigator.pop(ctx, false),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text("Proceed Anyway"),
+              ),
+            ],
+          ),
+        );
+        if (proceed != true) return;
+      }
+
       setState(() {
         _isLoading = true;
       });
