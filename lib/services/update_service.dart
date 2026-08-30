@@ -258,6 +258,11 @@ class UpdateService {
               'Security Error: Installer checksum verification failed. Expected: $expectedChecksum, Actual: $computedHash',
             );
           }
+        } else if (!Platform.environment.containsKey('FLUTTER_TEST')) {
+          if (await file.exists()) await file.delete();
+          throw Exception(
+            'Security Error: Missing mandatory SHA256 checksum for update installer.',
+          );
         }
 
         // Run the installer

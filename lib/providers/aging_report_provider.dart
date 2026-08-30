@@ -55,10 +55,15 @@ final agingReportProvider = FutureProvider<AgingReportData>((final ref) async {
         inv.dueDate ?? inv.invoiceDate; // Use invoice date if due date missing
     final balanceMoney = Money.fromNumWithCurrency(inv.balanceDue, inr);
 
-    // Aggregate by Client
-    clientMoneyMap[inv.receiver.name] =
-        (clientMoneyMap[inv.receiver.name] ??
-            Money.fromNumWithCurrency(0, inr)) +
+    // Aggregate by Client safely
+    final clientKey = inv.receiver.name.trim().isNotEmpty
+        ? inv.receiver.name.trim()
+        : (inv.receiver.gstin.trim().isNotEmpty
+              ? inv.receiver.gstin.trim()
+              : 'Unknown Client');
+
+    clientMoneyMap[clientKey] =
+        (clientMoneyMap[clientKey] ?? Money.fromNumWithCurrency(0, inr)) +
         balanceMoney;
 
     if (now.isBefore(due)) {

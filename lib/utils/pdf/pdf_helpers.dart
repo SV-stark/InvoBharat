@@ -37,7 +37,7 @@ pw.Widget buildUpiQr(
       ? invoice.balanceDue
       : invoice.grandTotal;
   final upiUrl =
-      "upi://pay?pa=$upiId&pn=${Uri.encodeComponent(upiName ?? '')}&am=${amountDue.toStringAsFixed(2)}&tn=${Uri.encodeComponent('Inv ${invoice.invoiceNo}')}&cu=INR";
+      "upi://pay?pa=${Uri.encodeComponent(upiId)}&pn=${Uri.encodeComponent(upiName ?? '')}&am=${amountDue.toStringAsFixed(2)}&tn=${Uri.encodeComponent('Inv ${invoice.invoiceNo}')}&cu=INR";
 
   return pw.Column(
     children: [

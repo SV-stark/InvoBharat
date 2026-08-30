@@ -14,6 +14,7 @@ import 'package:invobharat/providers/estimate_provider.dart';
 import 'package:invobharat/providers/recurring_provider.dart';
 import 'package:invobharat/providers/bank_provider.dart';
 import 'package:invobharat/providers/invoice_series_provider.dart';
+import 'package:invobharat/providers/invoice_provider.dart';
 
 final businessProfileRepositoryProvider = Provider<BusinessProfileRepository>((
   final ref,
@@ -189,6 +190,7 @@ class ActiveProfileId extends Notifier<String> {
     ref.invalidate(recurringListProvider);
     ref.invalidate(bankListProvider);
     ref.invalidate(invoiceSeriesProvider);
+    ref.invalidate(invoiceProvider);
   }
 }
 

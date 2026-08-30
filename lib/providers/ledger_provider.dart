@@ -23,27 +23,29 @@ class LedgerEntry {
   });
 }
 
-// Provider that returns a list of LedgerEntry for a given Client Name (since we link by name mostly)
-// We use Family to pass arguments.
+// Provider that returns a list of LedgerEntry for a given Client identifier (Name, GSTIN, or ID)
 final clientLedgerProvider = FutureProvider.family<List<LedgerEntry>, String>((
   final ref,
-  final clientName,
+  final clientIdentifier,
 ) async {
   final repository = ref.watch(invoiceRepositoryProvider);
 
   // 1. Fetch all invoices
-  // Optimization: If repository supports filtering, use it. But File repo loads all.
   final allInvoices = await repository.getAllInvoices();
+  final query = clientIdentifier.trim().toLowerCase();
 
-  // 2. Filter for this client
-  // We match by Receiver Name as Invoice/Receiver models do not store a Client ID.
-  final clientInvoices = allInvoices
-      .where(
-        (final inv) =>
-            inv.receiver.name.trim().toLowerCase() ==
-            clientName.trim().toLowerCase(),
-      )
-      .toList();
+  // 2. Filter for this client matching name, GSTIN, phone, or email
+  final clientInvoices = allInvoices.where((final inv) {
+    final recName = inv.receiver.name.trim().toLowerCase();
+    final recGstin = inv.receiver.gstin.trim().toLowerCase();
+    final recPhone = inv.receiver.phone.trim().toLowerCase();
+    final recEmail = inv.receiver.email.trim().toLowerCase();
+
+    return recName == query ||
+        (recGstin.isNotEmpty && recGstin == query) ||
+        (recPhone.isNotEmpty && recPhone == query) ||
+        (recEmail.isNotEmpty && recEmail == query);
+  }).toList();
 
   final List<LedgerEntry> entries = [];
 

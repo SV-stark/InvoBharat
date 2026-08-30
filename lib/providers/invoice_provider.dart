@@ -46,7 +46,7 @@ Invoice _createDefaultInvoice(
 class InvoiceNotifier extends Notifier<Invoice> {
   @override
   Invoice build() {
-    final profile = ref.watch(businessProfileProvider);
+    final profile = ref.read(businessProfileProvider);
     return _createDefaultInvoice(profile);
   }
 

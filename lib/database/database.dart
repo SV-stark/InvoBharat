@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:invobharat/database/tables.dart';
 
@@ -459,6 +460,13 @@ class AppSettingsService {
             (prefs.getBool('smtp_is_secure') ?? true).toString(),
           ],
         );
+      }
+
+      final legacyPassword = prefs.getString('smtp_password');
+      if (legacyPassword != null && legacyPassword.isNotEmpty) {
+        const secureStorage = FlutterSecureStorage();
+        await secureStorage.write(key: 'smtp_password', value: legacyPassword);
+        await prefs.remove('smtp_password');
       }
     } catch (e) {
       if (kDebugMode) {

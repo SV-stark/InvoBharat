@@ -43,7 +43,30 @@ class InvoiceSeriesNotifier extends Notifier<List<InvoiceSeries>> {
     if (jsonStr != null && jsonStr.isNotEmpty) {
       try {
         final List<dynamic> decoded = jsonDecode(jsonStr);
-        state = decoded.map((final e) => InvoiceSeries.fromJson(e)).toList();
+        final list = decoded
+            .map((final e) => InvoiceSeries.fromJson(e))
+            .toList();
+
+        // Ensure default series exists and is synchronized with profile sequence
+        final hasDefault = list.any((final e) => e.prefix == defaultSeries);
+        if (!hasDefault) {
+          list.insert(
+            0,
+            InvoiceSeries(prefix: defaultSeries, sequence: defaultSequence),
+          );
+        } else {
+          for (int i = 0; i < list.length; i++) {
+            if (list[i].prefix == defaultSeries &&
+                list[i].sequence < defaultSequence) {
+              list[i] = InvoiceSeries(
+                prefix: defaultSeries,
+                sequence: defaultSequence,
+              );
+            }
+          }
+        }
+        state = list;
+        await _saveSeries(profileId);
         return;
       } catch (_) {}
     }
@@ -85,16 +108,33 @@ class InvoiceSeriesNotifier extends Notifier<List<InvoiceSeries>> {
       return e;
     }).toList();
     await _saveSeries(profile.id);
+
+    // Keep BusinessProfile in sync if updating the primary series
+    if (prefix == profile.invoiceSeries &&
+        profile.invoiceSequence != sequence) {
+      await ref
+          .read(businessProfileListProvider.notifier)
+          .updateProfile(profile.copyWith(invoiceSequence: sequence));
+    }
   }
 
   Future<void> incrementSequence(final String prefix) async {
     final profile = ref.read(businessProfileProvider);
+    int newSeq = 1;
     state = state.map((final e) {
       if (e.prefix == prefix) {
-        return InvoiceSeries(prefix: prefix, sequence: e.sequence + 1);
+        newSeq = e.sequence + 1;
+        return InvoiceSeries(prefix: prefix, sequence: newSeq);
       }
       return e;
     }).toList();
     await _saveSeries(profile.id);
+
+    // Keep BusinessProfile in sync if incrementing the primary series
+    if (prefix == profile.invoiceSeries) {
+      await ref
+          .read(businessProfileListProvider.notifier)
+          .updateProfile(profile.copyWith(invoiceSequence: newSeq));
+    }
   }
 }

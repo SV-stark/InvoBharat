@@ -112,7 +112,6 @@ class EmailService {
       username: settings.username,
       password: settings.password,
       ssl: settings.isSecure && settings.smtpPort == 465,
-      allowInsecure: !settings.isSecure,
     );
 
     final message = Message()
