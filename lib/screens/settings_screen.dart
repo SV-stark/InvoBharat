@@ -22,6 +22,7 @@ import 'package:go_router/go_router.dart';
 import 'package:indian_formatters/indian_formatters.dart';
 import 'package:invobharat/utils/formatters.dart';
 import 'package:invobharat/utils/validators.dart';
+import 'package:invobharat/utils/gst_utils.dart';
 import 'package:flutter/services.dart';
 
 import 'package:invobharat/providers/bank_provider.dart';
@@ -381,6 +382,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ref.read(appConfigProvider.notifier).setShowHsnSummaryInPdf(v);
               },
             ),
+            const Gap(16),
+            DropdownButtonFormField<String>(
+              key: const ValueKey('default_invoice_template_dropdown'),
+              value: ref.watch(appConfigProvider).defaultInvoiceTemplate,
+              decoration: const InputDecoration(
+                labelText: "Default Invoice Template",
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+              ),
+              items: const [
+                DropdownMenuItem(value: 'Modern', child: Text("Modern")),
+                DropdownMenuItem(
+                  value: 'Professional',
+                  child: Text("Professional"),
+                ),
+                DropdownMenuItem(value: 'Minimal', child: Text("Minimal")),
+                DropdownMenuItem(value: 'Classic', child: Text("Classic")),
+                DropdownMenuItem(value: 'Corporate', child: Text("Corporate")),
+                DropdownMenuItem(value: 'Creative', child: Text("Creative")),
+              ],
+              onChanged: (final val) {
+                if (val != null) {
+                  ref
+                      .read(appConfigProvider.notifier)
+                      .setDefaultInvoiceTemplate(val);
+                }
+              },
+            ),
             const Gap(24),
             _buildSectionHeader("Invoice Series Prefixes"),
             ...ref
@@ -591,7 +623,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _gstinController,
               formatters: [GSTNumberFormatter()],
               onChanged: (final val) {
-                final state = IndianValidators.getGSTState(val);
+                final state = GstUtils.getStateName(val);
                 if (state != null) {
                   _stateController.text = state;
                 }

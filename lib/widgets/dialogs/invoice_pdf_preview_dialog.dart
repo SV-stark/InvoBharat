@@ -52,7 +52,7 @@ class _InvoicePdfPreviewDialogState
   void initState() {
     super.initState();
     _selectedStyle = widget.invoice.style.isEmpty
-        ? 'Modern'
+        ? ref.read(appConfigProvider).defaultInvoiceTemplate
         : widget.invoice.style;
     _showHsnSummary = ref.read(appConfigProvider).showHsnSummaryInPdf;
   }

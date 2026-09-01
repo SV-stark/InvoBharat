@@ -652,6 +652,28 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         const Gap(10),
+        InfoLabel(
+          label: "Default Invoice Template",
+          child: ComboBox<String>(
+            value: ref.watch(appConfigProvider).defaultInvoiceTemplate,
+            items: const [
+              'Modern',
+              'Professional',
+              'Minimal',
+              'Classic',
+              'Corporate',
+              'Creative',
+            ].map((final e) => ComboBoxItem(value: e, child: Text(e))).toList(),
+            onChanged: (final val) {
+              if (val != null) {
+                ref
+                    .read(appConfigProvider.notifier)
+                    .setDefaultInvoiceTemplate(val);
+              }
+            },
+          ),
+        ),
+        const Gap(10),
         ToggleSwitch(
           checked: ref.watch(appConfigProvider).showHsnSummaryInPdf,
           content: const Text("Show HSN-wise tax summary in PDF footer"),

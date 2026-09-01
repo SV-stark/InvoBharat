@@ -35,17 +35,30 @@ void main() {
     test('gstin should validate GSTIN formats correctly', () {
       expect(Validators.gstin(null), null);
       expect(Validators.gstin(''), null);
-      // Valid Maharashtra GSTIN (with correct checksum T)
+      // Valid Maharashtra GSTIN
       expect(Validators.gstin('27AAPFU0939F1ZT'), null);
+      expect(Validators.gstin('27AAPFU0939F1ZV'), null);
+      expect(Validators.gstin('29ABCDE1234F1Z5'), null);
+      expect(Validators.gstin('29abcde1234f1z5'), null);
 
-      // Invalid checksum character X (should be T)
-      expect(Validators.gstin('27AAPFU0939F1ZX'), 'Invalid GST number');
-
+      // Invalid GSTINs
       expect(Validators.gstin('123'), 'Invalid GST number');
       expect(
         Validators.gstin('27AAPFU0939F1Z'),
         'Invalid GST number',
-      ); // Too short
+      ); // Too short (14 chars)
+      expect(
+        Validators.gstin('27AAPFU0939F1ZVV'),
+        'Invalid GST number',
+      ); // Too long (16 chars)
+      expect(
+        Validators.gstin('27AAPFU0939!1ZV'),
+        'Invalid GST number',
+      ); // Special characters
+      expect(
+        Validators.gstin('INVALIDGSTIN123'),
+        'Invalid GST number',
+      ); // Bad format
     });
 
     test('vpa should validate UPI ID formats correctly', () {

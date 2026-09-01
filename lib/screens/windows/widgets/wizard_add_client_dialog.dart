@@ -90,7 +90,7 @@ class _WizardAddClientDialogState extends ConsumerState<WizardAddClientDialog> {
                 inputFormatters: [GSTNumberFormatter()],
                 onChanged: (final v) {
                   gstin = v;
-                  final stateName = IndianValidators.getGSTState(v);
+                  final stateName = GstUtils.getStateName(v);
                   if (stateName != null) {
                     setState(() {
                       state = stateName;

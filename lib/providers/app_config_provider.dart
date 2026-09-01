@@ -20,6 +20,7 @@ class AppConfig {
   final DateTime? lastAutoBackup;
   final String? backupPath;
   final bool showHsnSummaryInPdf;
+  final String defaultInvoiceTemplate;
 
   AppConfig({
     this.paneDisplayMode = PaneDisplayMode.expanded,
@@ -30,6 +31,7 @@ class AppConfig {
     this.lastAutoBackup,
     this.backupPath,
     this.showHsnSummaryInPdf = true,
+    this.defaultInvoiceTemplate = 'Modern',
   });
 
   AppConfig copyWith({
@@ -41,6 +43,7 @@ class AppConfig {
     final DateTime? lastAutoBackup,
     final String? backupPath,
     final bool? showHsnSummaryInPdf,
+    final String? defaultInvoiceTemplate,
   }) {
     return AppConfig(
       paneDisplayMode: paneDisplayMode ?? this.paneDisplayMode,
@@ -51,6 +54,8 @@ class AppConfig {
       lastAutoBackup: lastAutoBackup ?? this.lastAutoBackup,
       backupPath: backupPath ?? this.backupPath,
       showHsnSummaryInPdf: showHsnSummaryInPdf ?? this.showHsnSummaryInPdf,
+      defaultInvoiceTemplate:
+          defaultInvoiceTemplate ?? this.defaultInvoiceTemplate,
     );
   }
 }
@@ -64,6 +69,7 @@ class AppConfigNotifier extends Notifier<AppConfig> {
   static const _lastAutoBackupKey = 'last_auto_backup';
   static const _backupPathKey = 'backup_path';
   static const _showHsnSummaryInPdfKey = 'show_hsn_summary_in_pdf';
+  static const _defaultInvoiceTemplateKey = 'default_invoice_template';
 
   @override
   AppConfig build() {
@@ -103,6 +109,9 @@ class AppConfigNotifier extends Notifier<AppConfig> {
       final showHsnVal =
           await settingsService.getSetting(_showHsnSummaryInPdfKey) ??
           prefs.getBool(_showHsnSummaryInPdfKey)?.toString();
+      final defaultTemplateVal =
+          await settingsService.getSetting(_defaultInvoiceTemplateKey) ??
+          prefs.getString(_defaultInvoiceTemplateKey);
 
       final paneIndex = int.tryParse(paneVal ?? '');
       final channelIndex = int.tryParse(channelVal ?? '');
@@ -124,6 +133,7 @@ class AppConfigNotifier extends Notifier<AppConfig> {
             : null,
         backupPath: backupPath,
         showHsnSummaryInPdf: showHsnSummaryInPdf,
+        defaultInvoiceTemplate: defaultTemplateVal ?? 'Modern',
       );
 
       if (paneIndex != null &&
@@ -204,5 +214,11 @@ class AppConfigNotifier extends Notifier<AppConfig> {
     state = state.copyWith(showHsnSummaryInPdf: value);
     final settingsService = ref.read(appSettingsServiceProvider);
     await settingsService.setSetting(_showHsnSummaryInPdfKey, value.toString());
+  }
+
+  Future<void> setDefaultInvoiceTemplate(final String template) async {
+    state = state.copyWith(defaultInvoiceTemplate: template);
+    final settingsService = ref.read(appSettingsServiceProvider);
+    await settingsService.setSetting(_defaultInvoiceTemplateKey, template);
   }
 }

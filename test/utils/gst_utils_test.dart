@@ -5,12 +5,16 @@ void main() {
   group('GstUtils', () {
     test('isValidGstin should correctly validate GSTIN formats', () {
       expect(GstUtils.isValidGstin(''), true); // Optional field
-      // Using a real valid GSTIN for testing (with correct checksum T)
       expect(GstUtils.isValidGstin('27AAPFU0939F1ZT'), true);
+      expect(GstUtils.isValidGstin('27AAPFU0939F1ZV'), true);
+      expect(GstUtils.isValidGstin('29ABCDE1234F1Z5'), true);
+      expect(GstUtils.isValidGstin('07AAAAA0000A1Z5'), true);
+      expect(GstUtils.isValidGstin(' 29ABCDE1234F1Z5 '), true);
 
       expect(GstUtils.isValidGstin('123'), false); // Too short
       expect(GstUtils.isValidGstin('27AAPFU0939F1Z'), false); // Too short
       expect(GstUtils.isValidGstin('27AAPFU0939F1ZVV'), false); // Too long
+      expect(GstUtils.isValidGstin('27AAPFU0939!1ZV'), false); // Invalid char
     });
 
     test('getStateCode should return state code from valid GSTIN', () {

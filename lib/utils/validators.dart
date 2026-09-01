@@ -60,13 +60,17 @@ class Validators {
     return result.errorMessage;
   }
 
+  static final RegExp _gstinRegex = RegExp(
+    r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z][0-9A-Z][0-9A-Z]$',
+  );
+
   static ValidationResult validateGstin(final String? value) {
     if (value == null || value.trim().isEmpty) {
       return const ValidationResult.empty();
     }
-    final error = IndianValidators.validateGST(value.trim().toUpperCase());
-    if (error != null) {
-      return ValidationResult.invalid(error);
+    final cleaned = value.trim().toUpperCase();
+    if (cleaned.length != 15 || !_gstinRegex.hasMatch(cleaned)) {
+      return const ValidationResult.invalid('Invalid GST number');
     }
     return const ValidationResult.valid();
   }

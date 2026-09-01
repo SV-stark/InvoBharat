@@ -161,7 +161,7 @@ class _ClientFormDialogState extends ConsumerState<ClientFormDialog> {
                 placeholder: 'e.g. 29ABCDE1234F1Z5',
                 inputFormatters: [GSTNumberFormatter()],
                 onChanged: (final val) {
-                  final state = IndianValidators.getGSTState(val);
+                  final state = GstUtils.getStateName(val);
                   if (state != null) {
                     _stateController.text = state;
                   }

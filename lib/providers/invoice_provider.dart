@@ -7,6 +7,7 @@ import 'package:invobharat/models/item_template.dart';
 
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/models/business_profile.dart';
+import 'package:invobharat/providers/app_config_provider.dart';
 
 const _uuid = Uuid();
 final invoiceProvider = NotifierProvider<InvoiceNotifier, Invoice>(
@@ -19,6 +20,7 @@ Invoice _createDefaultInvoice(
   final String? accountNo,
   final String? ifscCode,
   final String? branch,
+  final String? defaultStyle,
 }) {
   return Invoice(
     supplier: Supplier(
@@ -30,6 +32,7 @@ Invoice _createDefaultInvoice(
       state: profile.state,
     ),
     receiver: const Receiver(),
+    style: defaultStyle ?? 'Modern',
     invoiceDate: DateTime.now(),
     invoiceNo:
         "${profile.invoiceSeries}${profile.invoiceSequence.toString().padLeft(3, '0')}",
@@ -50,7 +53,11 @@ class InvoiceNotifier extends Notifier<Invoice> {
     // profile updates do not wipe active user invoice draft inputs. Profile switching
     // explicitly triggers ref.invalidate(invoiceProvider) in BusinessProfileList.selectProfile.
     final profile = ref.read(businessProfileProvider);
-    return _createDefaultInvoice(profile);
+    final appConfig = ref.read(appConfigProvider);
+    return _createDefaultInvoice(
+      profile,
+      defaultStyle: appConfig.defaultInvoiceTemplate,
+    );
   }
 
   void updateBankDetails(
@@ -73,7 +80,11 @@ class InvoiceNotifier extends Notifier<Invoice> {
 
   void reset() {
     final profile = ref.read(businessProfileProvider);
-    state = _createDefaultInvoice(profile);
+    final appConfig = ref.read(appConfigProvider);
+    state = _createDefaultInvoice(
+      profile,
+      defaultStyle: appConfig.defaultInvoiceTemplate,
+    );
   }
 
   void updateDate(final DateTime date) {

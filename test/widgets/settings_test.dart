@@ -139,5 +139,35 @@ void main() {
         ),
       ).called(1);
     });
+
+    testWidgets('default invoice template selection works', (
+      final WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(createTestWidget());
+      await tester.pumpAndSettle();
+
+      // Find default invoice template dropdown
+      final dropdown = find.byKey(
+        const ValueKey('default_invoice_template_dropdown'),
+      );
+      expect(dropdown, findsOneWidget);
+
+      await tester.ensureVisible(dropdown);
+      await tester.pumpAndSettle();
+
+      await tester.tap(dropdown);
+      await tester.pumpAndSettle();
+
+      // Tap "Professional"
+      await tester.tap(find.text('Professional').last);
+      await tester.pumpAndSettle();
+
+      verify(
+        () => mockSettingsService.setSetting(
+          'default_invoice_template',
+          'Professional',
+        ),
+      ).called(1);
+    });
   });
 }
