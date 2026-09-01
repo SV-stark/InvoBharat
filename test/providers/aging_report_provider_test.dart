@@ -34,12 +34,11 @@ void main() {
           invoiceNo: 'INV-101',
           invoiceDate: now,
           dueDate: now.add(const Duration(days: 10)),
-          items: [
+          items: const [
             InvoiceItem(
               id: '1',
               description: 'Service A',
               amount: 1000,
-              quantity: 1,
               gstRate: 0,
             ),
           ],
@@ -51,12 +50,11 @@ void main() {
           invoiceNo: 'INV-102',
           invoiceDate: now.subtract(const Duration(days: 45)),
           dueDate: now.subtract(const Duration(days: 15)),
-          items: [
+          items: const [
             InvoiceItem(
               id: '2',
               description: 'Service B',
               amount: 2000,
-              quantity: 1,
               gstRate: 0,
             ),
           ],

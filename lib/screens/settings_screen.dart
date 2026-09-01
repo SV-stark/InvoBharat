@@ -385,7 +385,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const Gap(16),
             DropdownButtonFormField<String>(
               key: const ValueKey('default_invoice_template_dropdown'),
-              value: ref.watch(appConfigProvider).defaultInvoiceTemplate,
+              initialValue: ref.watch(appConfigProvider).defaultInvoiceTemplate,
               decoration: const InputDecoration(
                 labelText: "Default Invoice Template",
                 border: OutlineInputBorder(),

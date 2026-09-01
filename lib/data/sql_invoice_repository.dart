@@ -384,8 +384,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
         return predicate;
       })
       ..orderBy([
-        (final t) =>
-            OrderingTerm(expression: t.invoiceDate, mode: OrderingMode.asc),
+        (final t) => OrderingTerm(expression: t.invoiceDate),
       ]);
 
     final invoiceRows = await stmt.get();

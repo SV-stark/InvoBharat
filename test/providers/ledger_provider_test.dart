@@ -33,15 +33,12 @@ void main() {
         Invoice(
           id: 'inv1',
           invoiceNo: 'INV-001',
-          type: InvoiceType.invoice,
           invoiceDate: now,
-          items: [
+          items: const [
             InvoiceItem(
               id: '1',
               description: 'Item A',
               amount: 1000,
-              quantity: 1,
-              gstRate: 18,
             ),
           ],
           payments: [
