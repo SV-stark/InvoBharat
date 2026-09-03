@@ -12,24 +12,52 @@ class SqlClientRepository implements ClientRepository {
 
   @override
   Future<void> saveClient(final model.Client client) async {
-    await database
-        .into(database.clients)
-        .insertOnConflictUpdate(
-          ClientsCompanion(
-            id: Value(client.id.isEmpty ? const Uuid().v4() : client.id),
-            profileId: Value(profileId), // Use repository profileId
-            name: Value(client.name),
-            address: Value(client.address),
-            gstin: Value(client.gstin),
-            pan: Value(client.pan),
-            state: Value(client.state),
-            stateCode: Value(client.stateCode),
-            email: Value(client.email),
-            phone: Value(client.phone),
-            primaryContact: Value(client.primaryContact),
-            notes: Value(client.notes),
+    final clientId = client.id.isEmpty ? const Uuid().v4() : client.id;
+    final isExisting = client.id.isNotEmpty;
+
+    await database.transaction(() async {
+      await database
+          .into(database.clients)
+          .insertOnConflictUpdate(
+            ClientsCompanion(
+              id: Value(clientId),
+              profileId: Value(profileId), // Use repository profileId
+              name: Value(client.name),
+              address: Value(client.address),
+              gstin: Value(client.gstin),
+              pan: Value(client.pan),
+              state: Value(client.state),
+              stateCode: Value(client.stateCode),
+              email: Value(client.email),
+              phone: Value(client.phone),
+              primaryContact: Value(client.primaryContact),
+              notes: Value(client.notes),
+            ),
+          );
+
+      if (isExisting) {
+        // Propagate edited client details to draft invoices linked to this client
+        await (database.update(database.invoices)
+              ..where((final tbl) =>
+                  tbl.profileId.equals(profileId) &
+                  (tbl.clientId.equals(clientId) |
+                      (tbl.clientId.isNull() &
+                          tbl.receiverName.equals(client.name))) &
+                  tbl.status.equals('Draft')))
+            .write(
+          InvoicesCompanion(
+            receiverName: Value(client.name),
+            receiverAddress: Value(client.address),
+            receiverGstin: Value(client.gstin),
+            receiverPan: Value(client.pan),
+            receiverState: Value(client.state),
+            receiverStateCode: Value(client.stateCode),
+            receiverEmail: Value(client.email),
+            receiverPhone: Value(client.phone),
           ),
         );
+      }
+    });
   }
 
   @override

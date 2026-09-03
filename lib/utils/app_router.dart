@@ -213,6 +213,13 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/logs',
       builder: (final context, final state) {
+        if (kReleaseMode) {
+          return const Scaffold(
+            body: Center(
+              child: Text("Diagnostics screen is disabled in production."),
+            ),
+          );
+        }
         return Consumer(
           builder: (final context, final ref, final child) {
             final talker = ref.watch(talkerProvider);

@@ -14,6 +14,10 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
   SqlInvoiceRepository(this.database, this.profileId);
 
+  static String _escapeSqlLike(final String input) {
+    return input.replaceAll(RegExp(r'[%_\\]'), '');
+  }
+
   @override
   Future<void> saveInvoice(final model.Invoice invoice) async {
     final targetProfileId =
@@ -364,20 +368,22 @@ class SqlInvoiceRepository implements InvoiceRepository {
                 predicate &
                 (t.clientId.equals(clientId) |
                     t.receiverGstin.equals(cleanGstin));
-          } else {
+          } else if (cleanQuery != null && cleanQuery.isNotEmpty) {
+            final escaped = _escapeSqlLike(cleanQuery);
             predicate =
                 predicate &
                 (t.clientId.equals(clientId) |
-                    (cleanQuery != null && cleanQuery.isNotEmpty
-                        ? t.receiverName.like('%$cleanQuery%')
-                        : const Constant(false)));
+                    t.receiverName.like('%$escaped%'));
+          } else {
+            predicate = predicate & t.clientId.equals(clientId);
           }
         } else if (cleanGstin != null && cleanGstin.isNotEmpty) {
           predicate = predicate & t.receiverGstin.equals(cleanGstin);
         } else if (cleanQuery != null && cleanQuery.isNotEmpty) {
+          final escaped = _escapeSqlLike(cleanQuery);
           predicate =
               predicate &
-              (t.receiverName.like('%$cleanQuery%') |
+              (t.receiverName.like('%$escaped%') |
                   t.receiverPhone.equals(cleanQuery) |
                   t.receiverEmail.equals(cleanQuery));
         }
@@ -670,16 +676,21 @@ class SqlInvoiceRepository implements InvoiceRepository {
     final fyStart = DateTime(fyStartYear, 4);
     final fyEnd = DateTime(fyStartYear + 1, 3, 31, 23, 59, 59);
 
+    final cleanPrefix = prefix.trim();
+    final escapedPrefix = _escapeSqlLike(cleanPrefix);
+
     final query = database.select(database.invoices)
       ..where(
         (final tbl) =>
             tbl.profileId.equals(profileId) &
-            tbl.invoiceDate.isBetweenValues(fyStart, fyEnd),
+            tbl.invoiceDate.isBetweenValues(fyStart, fyEnd) &
+            (cleanPrefix.isEmpty
+                ? const Constant(true)
+                : tbl.invoiceNo.like('$escapedPrefix%')),
       );
 
     final rows = await query.get();
     int maxSeq = 0;
-    final cleanPrefix = prefix.trim();
 
     for (final row in rows) {
       final no = row.invoiceNo.trim();

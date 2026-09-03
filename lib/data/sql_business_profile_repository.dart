@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:uuid/uuid.dart';
 import 'package:invobharat/database/database.dart';
 import 'package:invobharat/models/business_profile.dart' as model;
 import 'package:invobharat/data/business_profile_repository.dart';
@@ -56,39 +57,97 @@ class SqlBusinessProfileRepository implements BusinessProfileRepository {
 
   @override
   Future<int> saveProfile(final model.BusinessProfile profile) async {
-    return await database
-        .into(database.businessProfiles)
-        .insertOnConflictUpdate(
-          BusinessProfilesCompanion(
-            id: Value(profile.id),
-            companyName: Value(profile.companyName),
-            address: Value(profile.address),
-            gstin: Value(profile.gstin),
-            email: Value(profile.email),
-            phone: Value(profile.phone),
-            state: Value(profile.state),
-            colorValue: Value(profile.colorValue),
-            logoPath: Value(profile.logoPath),
-            invoiceSeries: Value(profile.invoiceSeries),
-            invoiceSequence: Value(profile.invoiceSequence),
-            signaturePath: Value(profile.signaturePath),
-            stampPath: Value(profile.stampPath),
-            termsAndConditions: Value(profile.termsAndConditions),
-            defaultNotes: Value(profile.defaultNotes),
-            currencySymbol: Value(profile.currency),
+    return await database.transaction(() async {
+      final rowId = await database
+          .into(database.businessProfiles)
+          .insertOnConflictUpdate(
+            BusinessProfilesCompanion(
+              id: Value(profile.id),
+              companyName: Value(profile.companyName),
+              address: Value(profile.address),
+              gstin: Value(profile.gstin),
+              email: Value(profile.email),
+              phone: Value(profile.phone),
+              state: Value(profile.state),
+              colorValue: Value(profile.colorValue),
+              logoPath: Value(profile.logoPath),
+              invoiceSeries: Value(profile.invoiceSeries),
+              invoiceSequence: Value(profile.invoiceSequence),
+              signaturePath: Value(profile.signaturePath),
+              stampPath: Value(profile.stampPath),
+              termsAndConditions: Value(profile.termsAndConditions),
+              defaultNotes: Value(profile.defaultNotes),
+              currencySymbol: Value(profile.currency),
+              bankName: Value(profile.bankName),
+              accountNo: Value(profile.accountNo),
+              ifscCode: Value(profile.ifscCode),
+              branch: Value(profile.branch),
+              upiId: Value(profile.upiId),
+              upiName: Value(profile.upiName),
+              pan: Value(profile.pan),
+              stampX: Value(profile.stampX),
+              stampY: Value(profile.stampY),
+              signatureX: Value(profile.signatureX),
+              signatureY: Value(profile.signatureY),
+            ),
+          );
+
+      if (profile.bankName.trim().isNotEmpty ||
+          profile.accountNo.trim().isNotEmpty) {
+        final existingDefault = await (database.select(database.bankAccounts)
+              ..where((final tbl) =>
+                  tbl.profileId.equals(profile.id) &
+                  tbl.isDefault.equals(true)))
+            .getSingleOrNull();
+
+        if (existingDefault != null) {
+          await (database.update(database.bankAccounts)
+                ..where((final tbl) => tbl.id.equals(existingDefault.id)))
+              .write(
+            BankAccountsCompanion(
+              bankName: Value(profile.bankName),
+              accountNo: Value(profile.accountNo),
+              ifscCode: Value(profile.ifscCode),
+              branch: Value(profile.branch),
+            ),
+          );
+        } else {
+          // Check if any bank account exists
+          final anyBank = await (database.select(database.bankAccounts)
+                ..where((final tbl) => tbl.profileId.equals(profile.id)))
+              .get();
+          if (anyBank.isEmpty) {
+            await database.into(database.bankAccounts).insert(
+                  BankAccountsCompanion(
+                    id: Value(const Uuid().v4()),
+                    profileId: Value(profile.id),
+                    bankName: Value(profile.bankName),
+                    accountNo: Value(profile.accountNo),
+                    ifscCode: Value(profile.ifscCode),
+                    branch: Value(profile.branch),
+                    isDefault: const Value(true),
+                  ),
+                );
+          }
+        }
+
+        // Also update draft invoices with the profile's bank details
+        await (database.update(database.invoices)
+              ..where((final tbl) =>
+                  tbl.profileId.equals(profile.id) &
+                  tbl.status.equals('Draft')))
+            .write(
+          InvoicesCompanion(
             bankName: Value(profile.bankName),
             accountNo: Value(profile.accountNo),
             ifscCode: Value(profile.ifscCode),
             branch: Value(profile.branch),
-            upiId: Value(profile.upiId),
-            upiName: Value(profile.upiName),
-            pan: Value(profile.pan),
-            stampX: Value(profile.stampX),
-            stampY: Value(profile.stampY),
-            signatureX: Value(profile.signatureX),
-            signatureY: Value(profile.signatureY),
           ),
         );
+      }
+
+      return rowId;
+    });
   }
 
   @override

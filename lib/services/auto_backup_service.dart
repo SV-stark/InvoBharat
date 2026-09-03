@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:archive/archive_io.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 import 'package:invobharat/providers/app_config_provider.dart';
 import 'package:invobharat/providers/database_provider.dart';
 import 'package:invobharat/services/backup_service.dart';
@@ -21,6 +23,7 @@ final autoBackupServiceProvider = Provider<AutoBackupService>((final ref) {
 class AutoBackupService {
   final Ref _ref;
   Timer? _timer;
+  bool _isRunning = false;
 
   AutoBackupService(this._ref);
 
@@ -40,6 +43,8 @@ class AutoBackupService {
   }
 
   Future<void> checkAndBackup() async {
+    if (_isRunning) return;
+
     final config = _ref.read(appConfigProvider);
     if (!config.autoBackupEnabled ||
         config.backupFrequency == BackupFrequency.none) {
@@ -98,6 +103,7 @@ class AutoBackupService {
     }
 
     if (shouldBackup) {
+      _isRunning = true;
       try {
         await _performBackup();
         await _ref
@@ -108,6 +114,8 @@ class AutoBackupService {
         );
       } catch (e, st) {
         LoggerService.talker.handle(e, st, "Auto-backup failed");
+      } finally {
+        _isRunning = false;
       }
     }
   }
@@ -116,37 +124,83 @@ class AutoBackupService {
     final config = _ref.read(appConfigProvider);
     final db = _ref.read(databaseProvider);
 
-    // Get default backup directory
+    // Get validated backup directory
     final docDir = await getApplicationDocumentsDirectory();
-    final backupDir = config.backupPath != null
-        ? Directory(config.backupPath!)
-        : Directory(p.join(docDir.path, 'InvoBharat', 'AutoBackups'));
+    final defaultBackupDir = Directory(
+      p.join(docDir.path, 'InvoBharat', 'AutoBackups'),
+    );
+    Directory backupDir;
+
+    if (config.backupPath != null && config.backupPath!.trim().isNotEmpty) {
+      final cleanPath = p.normalize(p.absolute(config.backupPath!.trim()));
+      // Prevent path traversal sequences
+      if (!cleanPath.contains('..')) {
+        backupDir = Directory(cleanPath);
+      } else {
+        backupDir = defaultBackupDir;
+      }
+    } else {
+      backupDir = defaultBackupDir;
+    }
 
     if (!await backupDir.exists()) {
       await backupDir.create(recursive: true);
     }
 
-    final timestamp = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
+    final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+    final sessionId = const Uuid().v4();
+    final tempDir = Directory(
+      p.join(Directory.systemTemp.path, 'invobharat_autobackup_$sessionId'),
+    );
+    await tempDir.create(recursive: true);
 
-    // Create a temporary file for VACUUM INTO
-    // This ensures we get a clean, consistent copy of the DB including WAL data
-    final tempDbPath = p.join(
-      Directory.systemTemp.path,
-      'invobharat_backup_$timestamp.sqlite',
-    );
-    final tempManifestPath = p.join(
-      Directory.systemTemp.path,
-      'invobharat_manifest_$timestamp.json',
-    );
+    final tempDbPath = p.join(tempDir.path, 'export.sqlite');
+    final tempManifestPath = p.join(tempDir.path, 'manifest.json');
 
     try {
-      // 1. Create consistent copy
+      // 1. Create consistent copy of DB
       await db.vacuumInto(tempDbPath);
 
       final tempFile = File(tempDbPath);
       final manifestFile = File(tempManifestPath);
+
+      final prefs = await SharedPreferences.getInstance();
+      final activeProfileId = prefs.getString('active_profile_id') ?? '';
+      final schemaVersion = db.schemaVersion;
+
+      // Collect media entries (logos, stamps, signatures) to prevent media loss
+      final List<Map<String, String>> mediaEntries = [];
+      final profiles = await db.select(db.businessProfiles).get();
+      for (final prof in profiles) {
+        for (final entry in [
+          {'type': 'logo', 'path': prof.logoPath},
+          {'type': 'signature', 'path': prof.signaturePath},
+          {'type': 'stamp', 'path': prof.stampPath},
+        ]) {
+          final String? srcPath = entry['path'];
+          if (srcPath != null &&
+              srcPath.isNotEmpty &&
+              File(srcPath).existsSync()) {
+            final String ext = p.extension(srcPath);
+            final String zipMediaName =
+                'media/${prof.id}_${entry['type']}$ext';
+            mediaEntries.add({
+              'profileId': prof.id,
+              'type': entry['type']!,
+              'zipPath': zipMediaName,
+              'originalPath': srcPath,
+            });
+          }
+        }
+      }
+
       await manifestFile.writeAsString(
-        jsonEncode({'schemaVersion': db.schemaVersion}),
+        jsonEncode({
+          'schemaVersion': schemaVersion,
+          'activeProfileId': activeProfileId,
+          'exportTimestamp': timestamp,
+          'mediaEntries': mediaEntries,
+        }),
       );
 
       final outputFile = p.join(
@@ -154,34 +208,29 @@ class AutoBackupService {
         'invobharat_auto_backup_$timestamp.zip',
       );
 
-      // 2. Zip the consistent copy
+      // 2. Zip the consistent copy with media & manifest
       final zipEncoder = ZipFileEncoder();
       zipEncoder.create(outputFile);
       await zipEncoder.addFile(tempFile, kDbFileName);
       await zipEncoder.addFile(manifestFile, 'manifest.json');
+
+      for (final m in mediaEntries) {
+        final mediaFile = File(m['originalPath']!);
+        if (await mediaFile.exists()) {
+          await zipEncoder.addFile(mediaFile, m['zipPath']!);
+        }
+      }
+
       await zipEncoder.close();
 
-      // 3. Clean up temp files
-      if (await tempFile.exists()) {
-        await tempFile.delete();
-      }
-      if (await manifestFile.exists()) {
-        await manifestFile.delete();
-      }
-
-      // 4. Prune old backups to free disk space
+      // 3. Prune old backups
       await _pruneOldBackups(backupDir);
-    } catch (e) {
-      // Clean up on error
-      final tempFile = File(tempDbPath);
-      if (await tempFile.exists()) {
-        await tempFile.delete();
+    } finally {
+      if (await tempDir.exists()) {
+        try {
+          await tempDir.delete(recursive: true);
+        } catch (_) {}
       }
-      final manifestFile = File(tempManifestPath);
-      if (await manifestFile.exists()) {
-        await manifestFile.delete();
-      }
-      rethrow;
     }
   }
 

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:drift_flutter/drift_flutter.dart';
@@ -318,7 +317,6 @@ class AppDatabase extends _$AppDatabase {
         }
       },
       beforeOpen: (final details) async {
-        await _repairCorruptedForeignKeys(this);
         await customStatement('PRAGMA foreign_keys = ON;');
         if (details.wasCreated) {
           // ...
@@ -378,10 +376,52 @@ class AppDatabase extends _$AppDatabase {
         }
       }
     } catch (e, st) {
-      debugPrint("Schema Foreign Key Repair Error: $e\n$st");
+      LoggerService.talker.handle(e, st, "Schema Foreign Key Repair Error");
     } finally {
       await db.customStatement('PRAGMA legacy_alter_table = OFF;');
       await db.customStatement('PRAGMA foreign_keys = ON;');
+    }
+  }
+
+  static Future<void> _repairDuplicateInvoiceNumbers(
+    final GeneratedDatabase db,
+  ) async {
+    try {
+      final duplicates = await db.customSelect(
+        '''
+        SELECT profile_id, invoice_no, COUNT(*) as cnt
+        FROM invoices
+        GROUP BY profile_id, invoice_no
+        HAVING cnt > 1
+        ''',
+      ).get();
+
+      for (final dup in duplicates) {
+        final profileId = dup.read<String>('profile_id');
+        final invoiceNo = dup.read<String>('invoice_no');
+        final rows = await db.customSelect(
+          'SELECT id FROM invoices WHERE profile_id = ? AND invoice_no = ? ORDER BY invoice_date ASC, rowid ASC',
+          variables: [
+            Variable.withString(profileId),
+            Variable.withString(invoiceNo),
+          ],
+        ).get();
+
+        for (int i = 1; i < rows.length; i++) {
+          final id = rows[i].read<String>('id');
+          final newNo = '$invoiceNo-dup$i';
+          await db.customStatement(
+            'UPDATE invoices SET invoice_no = ? WHERE id = ?',
+            [newNo, id],
+          );
+        }
+      }
+    } catch (e, st) {
+      LoggerService.talker.handle(
+        e,
+        st,
+        "Error resolving duplicate invoice numbers",
+      );
     }
   }
 
@@ -395,8 +435,9 @@ class AppDatabase extends _$AppDatabase {
     await db.customStatement(
       'CREATE INDEX IF NOT EXISTS idx_invoices_profile_date ON invoices (profile_id, invoice_date);',
     );
+    await _repairDuplicateInvoiceNumbers(db);
     await db.customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_invoices_profile_no ON invoices (profile_id, invoice_no);',
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_invoices_profile_number ON invoices (profile_id, invoice_no);',
     );
     await db.customStatement(
       'CREATE INDEX IF NOT EXISTS idx_invoices_profile_type ON invoices (profile_id, type);',

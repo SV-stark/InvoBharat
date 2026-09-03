@@ -62,32 +62,56 @@ class EmailService {
   Future<EmailSettings?> getSettings() async {
     String? host = await _storage.read(key: _keyHost);
     if (host == null || host.isEmpty) {
-      // Backward compatibility: check AppSettings
+      // One-time backward compatibility migration: check AppSettings, migrate, and delete plaintext
       host = await _settingsService.getSetting(_keyHost);
       if (host == null || host.isEmpty) return null;
+      await _storage.write(key: _keyHost, value: host);
+      await _settingsService.setSetting(_keyHost, '');
     }
 
     final password = await _storage.read(key: _keyPassword);
-    final portStr =
-        await _storage.read(key: _keyPort) ??
-        await _settingsService.getSetting(_keyPort);
-    final email =
-        await _storage.read(key: _keyEmail) ??
-        await _settingsService.getSetting(_keyEmail) ??
-        '';
-    final username =
-        await _storage.read(key: _keyUsername) ??
-        await _settingsService.getSetting(_keyUsername) ??
-        '';
-    final secureStr =
-        await _storage.read(key: _keySecure) ??
-        await _settingsService.getSetting(_keySecure);
+
+    String? portStr = await _storage.read(key: _keyPort);
+    if (portStr == null) {
+      portStr = await _settingsService.getSetting(_keyPort);
+      if (portStr != null) {
+        await _storage.write(key: _keyPort, value: portStr);
+        await _settingsService.setSetting(_keyPort, '');
+      }
+    }
+
+    String? email = await _storage.read(key: _keyEmail);
+    if (email == null) {
+      email = await _settingsService.getSetting(_keyEmail);
+      if (email != null) {
+        await _storage.write(key: _keyEmail, value: email);
+        await _settingsService.setSetting(_keyEmail, '');
+      }
+    }
+
+    String? username = await _storage.read(key: _keyUsername);
+    if (username == null) {
+      username = await _settingsService.getSetting(_keyUsername);
+      if (username != null) {
+        await _storage.write(key: _keyUsername, value: username);
+        await _settingsService.setSetting(_keyUsername, '');
+      }
+    }
+
+    String? secureStr = await _storage.read(key: _keySecure);
+    if (secureStr == null) {
+      secureStr = await _settingsService.getSetting(_keySecure);
+      if (secureStr != null) {
+        await _storage.write(key: _keySecure, value: secureStr);
+        await _settingsService.setSetting(_keySecure, '');
+      }
+    }
 
     return EmailSettings(
       smtpHost: host,
       smtpPort: portStr != null ? int.tryParse(portStr) ?? 587 : 587,
-      email: email,
-      username: username,
+      email: email ?? '',
+      username: username ?? '',
       password: password,
       isSecure: secureStr != null ? secureStr.toLowerCase() == 'true' : true,
     );

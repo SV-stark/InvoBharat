@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/data/business_profile_repository.dart';
 import 'package:invobharat/data/sql_business_profile_repository.dart';
@@ -15,6 +16,8 @@ import 'package:invobharat/providers/recurring_provider.dart';
 import 'package:invobharat/providers/bank_provider.dart';
 import 'package:invobharat/providers/invoice_series_provider.dart';
 import 'package:invobharat/providers/invoice_provider.dart';
+import 'package:invobharat/utils/security_utils.dart';
+import 'package:invobharat/services/logger_service.dart';
 
 final businessProfileRepositoryProvider = Provider<BusinessProfileRepository>((
   final ref,
@@ -80,10 +83,13 @@ class BusinessProfileList extends Notifier<List<BusinessProfile>> {
 
   Future<void> _migrateLegacyInvoices(final String newProfileId) async {
     try {
+      final safeProfileId = SecurityUtils.sanitizeFilename(newProfileId);
       final directory = await getApplicationDocumentsDirectory();
-      final oldPath = '${directory.path}/InvoBharat/invoices';
-      final newPath =
-          '${directory.path}/InvoBharat/profiles/$newProfileId/invoices';
+      final baseDir = p.join(directory.path, 'InvoBharat');
+      final oldPath = p.join(baseDir, 'invoices');
+      final newPath = p.join(baseDir, 'profiles', safeProfileId, 'invoices');
+
+      if (!SecurityUtils.isValidPath(newPath, baseDir)) return;
 
       final oldDir = Directory(oldPath);
       if (await oldDir.exists()) {
@@ -95,12 +101,19 @@ class BusinessProfileList extends Notifier<List<BusinessProfile>> {
         final files = oldDir.listSync();
         for (var file in files) {
           if (file is File && file.path.endsWith('.json')) {
-            final filename = file.uri.pathSegments.last;
-            await file.rename('${newDir.path}/$filename');
+            final filename = SecurityUtils.sanitizeFilename(
+              file.uri.pathSegments.last,
+            );
+            final destPath = p.join(newDir.path, filename);
+            if (SecurityUtils.isValidPath(destPath, newDir.path)) {
+              await file.rename(destPath);
+            }
           }
         }
       }
-    } catch (_) {}
+    } catch (e, st) {
+      LoggerService.talker.handle(e, st, "Error migrating legacy invoices");
+    }
   }
 
   Future<void> addProfile(final BusinessProfile profile) async {

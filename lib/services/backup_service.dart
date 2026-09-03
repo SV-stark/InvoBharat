@@ -14,6 +14,7 @@ import 'package:invobharat/database/database.dart';
 import 'package:invobharat/services/logger_service.dart';
 import 'package:invobharat/utils/security_utils.dart';
 import 'package:sqlite3/sqlite3.dart' as sqlite3;
+import 'package:uuid/uuid.dart';
 
 const kDbFileName = 'db.sqlite';
 const kMinCompatibleSchemaVersion = 5;
@@ -122,12 +123,45 @@ class BackupService {
     return p.join(dbFolder.path, 'InvoBharat', kDbFileName);
   }
 
+  Future<void> _pruneDbBackups(
+    final Directory dir,
+    final String baseName,
+  ) async {
+    try {
+      if (!await dir.exists()) return;
+      final files = await dir.list().toList();
+      final backupFiles = <File>[];
+      for (final entity in files) {
+        if (entity is File) {
+          final name = p.basename(entity.path);
+          if (name.startsWith('$baseName.') && name.endsWith('.bak')) {
+            backupFiles.add(entity);
+          }
+        }
+      }
+      if (backupFiles.length > 3) {
+        backupFiles.sort(
+          (final a, final b) =>
+              a.lastModifiedSync().compareTo(b.lastModifiedSync()),
+        );
+        final toDelete = backupFiles.take(backupFiles.length - 3);
+        for (final f in toDelete) {
+          try {
+            await f.delete();
+          } catch (_) {}
+        }
+      }
+    } catch (e) {
+      debugPrint("Failed to prune db backups: $e");
+    }
+  }
+
   Future<String> exportFullBackup() async {
     try {
+      final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
       String? outputFile = await _filePicker.saveFile(
         dialogTitle: 'Save Full Backup (ZIP)',
-        fileName:
-            'invobharat_backup_${DateFormat('yyyyMMdd_HHmm').format(DateTime.now())}.zip',
+        fileName: 'invobharat_backup_$timestamp.zip',
         allowedExtensions: ['zip'],
         type: FileType.custom,
         bytes: Uint8List(0),
@@ -139,13 +173,14 @@ class BackupService {
         outputFile = '$outputFile.zip';
       }
 
-      final timestamp = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
-      final tempDbPath = p.join(
-        Directory.systemTemp.path,
-        'invobharat_export_$timestamp.sqlite',
+      final sessionId = const Uuid().v4();
+      final tempDir = Directory(
+        p.join(Directory.systemTemp.path, 'invobharat_export_$sessionId'),
       );
+      await tempDir.create(recursive: true);
 
-      final List<File> tempFilesToClean = [];
+      final tempDbPath = p.join(tempDir.path, 'export.sqlite');
+      final tempManifestPath = p.join(tempDir.path, 'manifest.json');
 
       try {
         File dbFile;
@@ -160,11 +195,10 @@ class BackupService {
             throw Exception("Database file not found at $dbPath");
           }
         }
-        tempFilesToClean.add(File(tempDbPath));
 
         final prefs = await SharedPreferences.getInstance();
         final activeProfileId = prefs.getString('active_profile_id') ?? '';
-        final schemaVersion = db?.schemaVersion ?? 13;
+        final schemaVersion = db?.schemaVersion ?? 17;
 
         final List<Map<String, String>> mediaEntries = [];
         if (currentDb != null) {
@@ -195,10 +229,6 @@ class BackupService {
           }
         }
 
-        final tempManifestPath = p.join(
-          Directory.systemTemp.path,
-          'invobharat_manifest_$timestamp.json',
-        );
         final manifestFile = File(tempManifestPath);
         await manifestFile.writeAsString(
           jsonEncode({
@@ -208,7 +238,6 @@ class BackupService {
             'mediaEntries': mediaEntries,
           }),
         );
-        tempFilesToClean.add(manifestFile);
 
         final zipEncoder = ZipFileEncoder();
         zipEncoder.create(outputFile);
@@ -225,10 +254,10 @@ class BackupService {
         await zipEncoder.close();
         return "Full Backup saved to $outputFile";
       } finally {
-        for (final f in tempFilesToClean) {
-          if (await f.exists()) {
-            await f.delete();
-          }
+        if (await tempDir.exists()) {
+          try {
+            await tempDir.delete(recursive: true);
+          } catch (_) {}
         }
       }
     } catch (e) {
@@ -245,81 +274,169 @@ class BackupService {
         allowedExtensions: ['zip'],
       );
 
-      if (file != null && file.path != null) {
-        final zipFile = File(file.path!);
-        final bytes = await zipFile.readAsBytes();
-        final archive = ZipDecoder().decodeBytes(bytes);
+      if (file == null || file.path == null) {
+        return "Restore cancelled";
+      }
 
-        final dbEntry = archive.findFile(kDbFileName);
-        if (dbEntry == null) {
+      final zipFile = File(file.path!);
+      final bytes = await zipFile.readAsBytes();
+      final archive = ZipDecoder().decodeBytes(bytes);
+
+      // Zip-bomb & malformed entry protection
+      const int maxTotalUncompressedBytes = 500 * 1024 * 1024; // 500 MB max
+      const int maxFileCount = 10000;
+      if (archive.length > maxFileCount) {
+        throw Exception(
+          "Invalid backup: File count (${archive.length}) exceeds safe limit ($maxFileCount).",
+        );
+      }
+
+      int totalUncompressedBytes = 0;
+      for (final entry in archive) {
+        totalUncompressedBytes += entry.size;
+        if (totalUncompressedBytes > maxTotalUncompressedBytes) {
           throw Exception(
-            "Invalid Backup: '$kDbFileName' not found inside zip.",
+            "Invalid backup: Total uncompressed size exceeds 500 MB limit (potential zip-bomb).",
           );
         }
-
-        String? activeProfileIdToRestore;
-        List<dynamic> mediaEntries = [];
-        final manifestEntry = archive.findFile('manifest.json');
-        if (manifestEntry != null) {
-          final manifestContent = utf8.decode(
-            manifestEntry.content as List<int>,
+        if (entry.name.contains('..') ||
+            entry.name.startsWith('/') ||
+            entry.name.startsWith('\\')) {
+          throw Exception(
+            "Invalid backup: Malicious entry name detected '${entry.name}'.",
           );
-          final manifest = jsonDecode(manifestContent) as Map<String, dynamic>;
-          final backedUpSchemaVersion = manifest['schemaVersion'] as int?;
-          if (backedUpSchemaVersion != null &&
-              backedUpSchemaVersion < kMinCompatibleSchemaVersion) {
+        }
+      }
+
+      final dbEntry = archive.findFile(kDbFileName);
+      if (dbEntry == null || !dbEntry.isFile) {
+        throw Exception("Invalid Backup: '$kDbFileName' not found inside zip.");
+      }
+
+      String? activeProfileIdToRestore;
+      List<dynamic> mediaEntries = [];
+      final manifestEntry = archive.findFile('manifest.json');
+      final currentSchemaVersion = db?.schemaVersion ?? 17;
+
+      if (manifestEntry != null && manifestEntry.isFile) {
+        final manifestContent = utf8.decode(
+          manifestEntry.content as List<int>,
+        );
+        final manifest = jsonDecode(manifestContent) as Map<String, dynamic>;
+        final backedUpSchemaVersion = manifest['schemaVersion'] as int?;
+        if (backedUpSchemaVersion != null) {
+          if (backedUpSchemaVersion < kMinCompatibleSchemaVersion) {
             throw Exception(
-              "Incompatible backup: schema version $backedUpSchemaVersion (minimum: $kMinCompatibleSchemaVersion)",
+              "Incompatible backup: schema version $backedUpSchemaVersion (minimum supported: $kMinCompatibleSchemaVersion)",
             );
           }
-          activeProfileIdToRestore = manifest['activeProfileId'] as String?;
-          mediaEntries = (manifest['mediaEntries'] as List<dynamic>?) ?? [];
+          if (backedUpSchemaVersion > currentSchemaVersion) {
+            throw Exception(
+              "Incompatible backup: backup was created with a newer app schema ($backedUpSchemaVersion vs current $currentSchemaVersion). Please update InvoBharat.",
+            );
+          }
+        }
+        activeProfileIdToRestore = manifest['activeProfileId'] as String?;
+        mediaEntries = (manifest['mediaEntries'] as List<dynamic>?) ?? [];
+      }
+
+      final dbPath = await _getDbPath();
+      final dbDestFile = File(dbPath);
+      final tempRestoredDbPath = p.join(
+        Directory.systemTemp.path,
+        'invobharat_restore_${const Uuid().v4()}.sqlite',
+      );
+      final tempRestoredFile = File(tempRestoredDbPath);
+
+      String? backupPath;
+      try {
+        // 1. Write to temp file and verify SQLite integrity
+        final dbData = dbEntry.content as List<int>;
+        await tempRestoredFile.writeAsBytes(dbData, flush: true);
+
+        try {
+          final testDb = sqlite3.sqlite3.open(tempRestoredDbPath);
+          final check = testDb.select('PRAGMA integrity_check(1);');
+          testDb.close();
+          if (check.isEmpty || check.first.columnAt(0) != 'ok') {
+            throw Exception("Database integrity check failed on backup file.");
+          }
+        } catch (e) {
+          throw Exception("Restored database integrity check failed: $e");
         }
 
-        final dbPath = await _getDbPath();
-        final dbDestFile = File(dbPath);
-
+        // 2. Close active Drift database connection
         final currentDb = db;
         if (currentDb != null) {
           await currentDb.close();
           AppDatabase.resetInstance();
         }
 
-        String? backupPath;
+        // 3. Backup live database file with timestamped multi-generation retention
         if (await dbDestFile.exists()) {
-          backupPath = '$dbPath.bak';
+          final ts = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+          backupPath = '$dbPath.$ts.bak';
           await dbDestFile.copy(backupPath);
+          await _pruneDbBackups(dbDestFile.parent, p.basename(dbPath));
         } else {
-          final dbFolder = await getApplicationDocumentsDirectory();
-          await Directory(
-            '${dbFolder.path}/InvoBharat',
-          ).create(recursive: true);
+          await dbDestFile.parent.create(recursive: true);
         }
 
+        // 4. Atomic move into destination
         try {
-          if (dbEntry.isFile) {
-            final data = dbEntry.content as List<int>;
-            await dbDestFile.writeAsBytes(data, flush: true);
-
-            final walFile = File('$dbPath-wal');
-            final shmFile = File('$dbPath-shm');
-            if (await walFile.exists()) await walFile.delete();
-            if (await shmFile.exists()) await shmFile.delete();
+          if (await dbDestFile.exists()) {
+            await dbDestFile.delete();
           }
+          await tempRestoredFile.rename(dbPath);
+        } catch (_) {
+          await tempRestoredFile.copy(dbPath);
+          await tempRestoredFile.delete();
+        }
 
-          final docDir = await getApplicationDocumentsDirectory();
-          final mediaDir = Directory(
-            p.join(docDir.path, 'InvoBharat', 'media'),
-          );
-          if (!await mediaDir.exists()) {
-            await mediaDir.create(recursive: true);
+        final walFile = File('$dbPath-wal');
+        final shmFile = File('$dbPath-shm');
+        if (await walFile.exists()) await walFile.delete();
+        if (await shmFile.exists()) await shmFile.delete();
+
+        // 5. Extract Media files safely
+        final docDir = await getApplicationDocumentsDirectory();
+        final mediaDir = Directory(p.join(docDir.path, 'InvoBharat', 'media'));
+        if (!await mediaDir.exists()) {
+          await mediaDir.create(recursive: true);
+        }
+
+        for (final m in mediaEntries) {
+          final String? zipPath = m['zipPath'];
+          if (zipPath != null) {
+            final mediaArchiveFile = archive.findFile(zipPath);
+            if (mediaArchiveFile != null && mediaArchiveFile.isFile) {
+              final safeFileName = SecurityUtils.sanitizeFilename(
+                p.basename(zipPath),
+              );
+              final resolvedPath = SecurityUtils.safeResolve(
+                p.join(mediaDir.path, safeFileName),
+                mediaDir.path,
+              );
+              if (resolvedPath != null) {
+                final targetFile = File(resolvedPath);
+                await targetFile.writeAsBytes(
+                  mediaArchiveFile.content as List<int>,
+                  flush: true,
+                );
+              }
+            }
           }
+        }
 
-          for (final m in mediaEntries) {
-            final String? zipPath = m['zipPath'];
-            if (zipPath != null) {
-              final mediaArchiveFile = archive.findFile(zipPath);
-              if (mediaArchiveFile != null && mediaArchiveFile.isFile) {
+        // 6. Rewrite media paths in restored database
+        if (mediaEntries.isNotEmpty && await dbDestFile.exists()) {
+          try {
+            final rawDb = sqlite3.sqlite3.open(dbPath);
+            for (final m in mediaEntries) {
+              final profileId = m['profileId'] as String?;
+              final type = m['type'] as String?;
+              final zipPath = m['zipPath'] as String?;
+              if (profileId != null && type != null && zipPath != null) {
                 final safeFileName = SecurityUtils.sanitizeFilename(
                   p.basename(zipPath),
                 );
@@ -328,89 +445,64 @@ class BackupService {
                   mediaDir.path,
                 );
                 if (resolvedPath != null) {
-                  final targetFile = File(resolvedPath);
-                  await targetFile.writeAsBytes(
-                    mediaArchiveFile.content as List<int>,
-                    flush: true,
-                  );
-                }
-              }
-            }
-          }
-
-          // Rewrite media paths in restored database
-          if (mediaEntries.isNotEmpty && await dbDestFile.exists()) {
-            try {
-              final rawDb = sqlite3.sqlite3.open(dbPath);
-              for (final m in mediaEntries) {
-                final profileId = m['profileId'] as String?;
-                final type = m['type'] as String?;
-                final zipPath = m['zipPath'] as String?;
-                if (profileId != null && type != null && zipPath != null) {
-                  final safeFileName = SecurityUtils.sanitizeFilename(
-                    p.basename(zipPath),
-                  );
-                  final resolvedPath = SecurityUtils.safeResolve(
-                    p.join(mediaDir.path, safeFileName),
-                    mediaDir.path,
-                  );
-                  if (resolvedPath != null) {
-                    if (type == 'logo') {
-                      rawDb.execute(
-                        'UPDATE business_profiles SET logo_path = ? WHERE id = ?',
-                        [resolvedPath, profileId],
-                      );
-                    } else if (type == 'signature') {
-                      rawDb.execute(
-                        'UPDATE business_profiles SET signature_path = ? WHERE id = ?',
-                        [resolvedPath, profileId],
-                      );
-                    } else if (type == 'stamp') {
-                      rawDb.execute(
-                        'UPDATE business_profiles SET stamp_path = ? WHERE id = ?',
-                        [resolvedPath, profileId],
-                      );
-                    }
+                  if (type == 'logo') {
+                    rawDb.execute(
+                      'UPDATE business_profiles SET logo_path = ? WHERE id = ?',
+                      [resolvedPath, profileId],
+                    );
+                  } else if (type == 'signature') {
+                    rawDb.execute(
+                      'UPDATE business_profiles SET signature_path = ? WHERE id = ?',
+                      [resolvedPath, profileId],
+                    );
+                  } else if (type == 'stamp') {
+                    rawDb.execute(
+                      'UPDATE business_profiles SET stamp_path = ? WHERE id = ?',
+                      [resolvedPath, profileId],
+                    );
                   }
                 }
               }
-              rawDb.execute('PRAGMA wal_checkpoint(TRUNCATE);');
-              rawDb.close();
-            } catch (e, st) {
-              LoggerService.talker.handle(e, st, "Media path rewrite error");
             }
+            rawDb.execute('PRAGMA wal_checkpoint(TRUNCATE);');
+            rawDb.close();
+          } catch (e, st) {
+            LoggerService.talker.handle(e, st, "Media path rewrite error");
           }
-
-          if (activeProfileIdToRestore != null &&
-              activeProfileIdToRestore.isNotEmpty) {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString(
-              'active_profile_id',
-              activeProfileIdToRestore,
-            );
-          }
-
-          return "Restore Successful. Please restart the app to apply changes.";
-        } catch (e, st) {
-          if (backupPath != null) {
-            final backupFile = File(backupPath);
-            if (await backupFile.exists()) {
-              await backupFile.copy(dbPath);
-            }
-            final walFile = File('$dbPath-wal');
-            final shmFile = File('$dbPath-shm');
-            if (await walFile.exists()) await walFile.delete();
-            if (await shmFile.exists()) await shmFile.delete();
-          }
-          LoggerService.talker.handle(
-            e,
-            st,
-            "Database Restore Failed during write/media update",
-          );
-          rethrow;
         }
-      } else {
-        return "Restore cancelled";
+
+        if (activeProfileIdToRestore != null &&
+            activeProfileIdToRestore.isNotEmpty) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(
+            'active_profile_id',
+            activeProfileIdToRestore,
+          );
+        }
+
+        return "Restore Successful. Database has been safely restored. Please restart the app to refresh all views.";
+      } catch (e, st) {
+        if (await tempRestoredFile.exists()) {
+          try {
+            await tempRestoredFile.delete();
+          } catch (_) {}
+        }
+        if (backupPath != null) {
+          final backupFile = File(backupPath);
+          if (await backupFile.exists()) {
+            await backupFile.copy(dbPath);
+          }
+          final walFile = File('$dbPath-wal');
+          final shmFile = File('$dbPath-shm');
+          if (await walFile.exists()) await walFile.delete();
+          if (await shmFile.exists()) await shmFile.delete();
+        }
+        LoggerService.talker.handle(
+          e,
+          st,
+          "Database Restore Failed during write/media update",
+        );
+        rethrow;
       }
     } catch (e, st) {
       LoggerService.talker.handle(e, st, "Restore Error");

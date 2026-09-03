@@ -11,6 +11,9 @@ import 'package:invobharat/data/sql_client_repository.dart';
 
 import 'package:invobharat/database/database.dart';
 import 'dart:convert';
+import 'package:path/path.dart' as p;
+import 'package:invobharat/utils/security_utils.dart';
+import 'package:invobharat/services/logger_service.dart';
 
 class DatabaseMigrationService {
   final AppDatabase database;
@@ -112,6 +115,10 @@ class DatabaseMigrationService {
         }
         final nextSeq = maxSeq > 0 ? maxSeq + 1 : 1;
 
+        LoggerService.talker.warning(
+          "AUDIT: Creating default business profile during orphan repair",
+        );
+
         await database.customStatement(
           '''
           INSERT OR IGNORE INTO business_profiles (
@@ -147,6 +154,10 @@ class DatabaseMigrationService {
       if (profiles.isEmpty) return;
       final targetProfileId = profiles.first.id;
 
+      LoggerService.talker.info(
+        "AUDIT: Reassigning orphan invoices/clients to profile '$targetProfileId'",
+      );
+
       // Update invoices with empty or orphan profileId
       await database.customStatement(
         'UPDATE invoices SET profile_id = ? WHERE profile_id = ? OR profile_id IS NULL',
@@ -158,8 +169,8 @@ class DatabaseMigrationService {
         'UPDATE clients SET profile_id = ? WHERE profile_id = ? OR profile_id IS NULL',
         [targetProfileId, ''],
       );
-    } catch (e) {
-      if (kDebugMode) print("Error fixing orphan data: $e");
+    } catch (e, st) {
+      LoggerService.talker.handle(e, st, "Error fixing orphan data");
     }
   }
 
@@ -168,14 +179,16 @@ class DatabaseMigrationService {
     final Function(String) onProgress,
   ) async {
     final sqlRepo = SqlClientRepository(database, profileId);
-
     onProgress("Starting Client Migration...");
 
     try {
+      final safeProfileId = SecurityUtils.sanitizeFilename(profileId);
       final directory = await getApplicationDocumentsDirectory();
-      final path = '${directory.path}/InvoBharat/profiles/$profileId/clients';
-      final dir = Directory(path);
+      final baseDir = p.join(directory.path, 'InvoBharat');
+      final path = p.join(baseDir, 'profiles', safeProfileId, 'clients');
 
+      if (!SecurityUtils.isValidPath(path, baseDir)) return;
+      final dir = Directory(path);
       if (!await dir.exists()) return;
 
       int count = 0;
@@ -191,16 +204,18 @@ class DatabaseMigrationService {
             if (count % 5 == 0) {
               onProgress("Migrated $count clients...");
             }
-          } catch (e) {
-            if (kDebugMode) {
-              print("Error migrating client file ${file.path}: $e");
-            }
+          } catch (e, st) {
+            LoggerService.talker.handle(
+              e,
+              st,
+              "Error migrating client file ${file.path}",
+            );
           }
         }
       }
-      if (kDebugMode) print("Migrated $count clients.");
-    } catch (e) {
-      if (kDebugMode) print("Error accessing client directory: $e");
+      LoggerService.talker.info("Migrated $count clients for $safeProfileId.");
+    } catch (e, st) {
+      LoggerService.talker.handle(e, st, "Error accessing client directory");
     }
   }
 
@@ -209,14 +224,16 @@ class DatabaseMigrationService {
     final Function(String) onProgress,
   ) async {
     final sqlRepo = SqlInvoiceRepository(database, profileId);
-
     onProgress("Starting Invoice Migration...");
 
     try {
+      final safeProfileId = SecurityUtils.sanitizeFilename(profileId);
       final directory = await getApplicationDocumentsDirectory();
-      final path = '${directory.path}/InvoBharat/profiles/$profileId/invoices';
-      final dir = Directory(path);
+      final baseDir = p.join(directory.path, 'InvoBharat');
+      final path = p.join(baseDir, 'profiles', safeProfileId, 'invoices');
 
+      if (!SecurityUtils.isValidPath(path, baseDir)) return;
+      final dir = Directory(path);
       if (!await dir.exists()) return;
 
       int count = 0;
@@ -233,16 +250,18 @@ class DatabaseMigrationService {
             if (count % 5 == 0) {
               onProgress("Migrated $count invoices...");
             }
-          } catch (e) {
-            if (kDebugMode) {
-              print("Error migrating invoice file ${file.path}: $e");
-            }
+          } catch (e, st) {
+            LoggerService.talker.handle(
+              e,
+              st,
+              "Error migrating invoice file ${file.path}",
+            );
           }
         }
       }
-      if (kDebugMode) print("Migrated $count invoices.");
-    } catch (e) {
-      if (kDebugMode) print("Error accessing invoice directory: $e");
+      LoggerService.talker.info("Migrated $count invoices for $safeProfileId.");
+    } catch (e, st) {
+      LoggerService.talker.handle(e, st, "Error accessing invoice directory");
     }
   }
 
@@ -252,8 +271,12 @@ class DatabaseMigrationService {
   ) async {
     final sqlRepo = SqlInvoiceRepository(database, profileId);
     try {
+      final safeProfileId = SecurityUtils.sanitizeFilename(profileId);
       final directory = await getApplicationDocumentsDirectory();
-      final path = '${directory.path}/InvoBharat/profiles/$profileId/estimates';
+      final baseDir = p.join(directory.path, 'InvoBharat');
+      final path = p.join(baseDir, 'profiles', safeProfileId, 'estimates');
+
+      if (!SecurityUtils.isValidPath(path, baseDir)) return;
       final dir = Directory(path);
       if (!await dir.exists()) return;
 
@@ -267,16 +290,18 @@ class DatabaseMigrationService {
             );
             await sqlRepo.saveEstimate(estimate);
             count++;
-          } catch (e) {
-            if (kDebugMode) {
-              print("Error migrating estimate file ${file.path}: $e");
-            }
+          } catch (e, st) {
+            LoggerService.talker.handle(
+              e,
+              st,
+              "Error migrating estimate file ${file.path}",
+            );
           }
         }
       }
-      if (kDebugMode) print("Migrated $count estimates.");
-    } catch (e) {
-      if (kDebugMode) print("Error accessing estimates directory: $e");
+      LoggerService.talker.info("Migrated $count estimates for $safeProfileId.");
+    } catch (e, st) {
+      LoggerService.talker.handle(e, st, "Error accessing estimates directory");
     }
   }
 
@@ -287,7 +312,10 @@ class DatabaseMigrationService {
     final sqlRepo = SqlInvoiceRepository(database, profileId);
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final path = '${directory.path}/InvoBharat/recurring';
+      final baseDir = p.join(directory.path, 'InvoBharat');
+      final path = p.join(baseDir, 'recurring');
+
+      if (!SecurityUtils.isValidPath(path, baseDir)) return;
       final dir = Directory(path);
       if (!await dir.exists()) return;
 
@@ -303,16 +331,18 @@ class DatabaseMigrationService {
               await sqlRepo.saveRecurringProfile(rec);
               count++;
             }
-          } catch (e) {
-            if (kDebugMode) {
-              print("Error migrating recurring file ${file.path}: $e");
-            }
+          } catch (e, st) {
+            LoggerService.talker.handle(
+              e,
+              st,
+              "Error migrating recurring file ${file.path}",
+            );
           }
         }
       }
-      if (kDebugMode) print("Migrated $count recurring profiles.");
-    } catch (e) {
-      if (kDebugMode) print("Error accessing recurring directory: $e");
+      LoggerService.talker.info("Migrated $count recurring profiles for $profileId.");
+    } catch (e, st) {
+      LoggerService.talker.handle(e, st, "Error accessing recurring directory");
     }
   }
 

@@ -12,6 +12,7 @@ import 'package:path_provider_platform_interface/path_provider_platform_interfac
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqlite3/sqlite3.dart' as sqlite3;
 
 import 'package:invobharat/database/database.dart' hide Invoice;
 import 'package:invobharat/services/backup_service.dart';
@@ -194,11 +195,20 @@ void main() {
     test(
       'restoreFullBackup should restore db.sqlite and verify manifest.json version',
       () async {
-        // 1. Create a dummy backup zip in memory
+        // 1. Create a valid SQLite db in memory
         final archive = Archive();
 
-        // Add db.sqlite
-        final dbBytes = utf8.encode('sqlite data contents');
+        final testDbFile = File(
+          p.join(
+            Directory.systemTemp.path,
+            'seed_${DateTime.now().microsecondsSinceEpoch}.sqlite',
+          ),
+        );
+        final raw = sqlite3.sqlite3.open(testDbFile.path);
+        raw.execute('CREATE TABLE t (id INTEGER PRIMARY KEY);');
+        raw.close();
+        final dbBytes = await testDbFile.readAsBytes();
+        await testDbFile.delete();
         archive.addFile(ArchiveFile('db.sqlite', dbBytes.length, dbBytes));
 
         // Add manifest.json with valid schema version
@@ -234,13 +244,14 @@ void main() {
 
         final result = await backupService.restoreFullBackup();
         expect(result, contains('Restore Successful'));
+
+        if (await tempZipFile.exists()) await tempZipFile.delete();
       },
     );
 
     test(
       'restoreFullBackup should throw exception for incompatible schema version',
       () async {
-        // 1. Create an incompatible dummy backup zip in memory
         final archive = Archive();
 
         final dbBytes = utf8.encode('sqlite data contents');
@@ -248,7 +259,7 @@ void main() {
 
         final manifestBytes = utf8.encode(
           jsonEncode({'schemaVersion': 3}),
-        ); // incompatible
+        ); // incompatible (below min)
         archive.addFile(
           ArchiveFile('manifest.json', manifestBytes.length, manifestBytes),
         );
@@ -284,6 +295,91 @@ void main() {
         );
 
         // Cleanup
+        if (await tempZipFile.exists()) await tempZipFile.delete();
+      },
+    );
+
+    test(
+      'restoreFullBackup should throw exception for newer schema version',
+      () async {
+        final archive = Archive();
+        final dbBytes = utf8.encode('sqlite data contents');
+        archive.addFile(ArchiveFile('db.sqlite', dbBytes.length, dbBytes));
+
+        final manifestBytes = utf8.encode(
+          jsonEncode({'schemaVersion': 99}),
+        );
+        archive.addFile(
+          ArchiveFile('manifest.json', manifestBytes.length, manifestBytes),
+        );
+
+        final zipBytes = ZipEncoder().encode(archive);
+        final tempZipPath = p.join(
+          Directory.systemTemp.path,
+          'test_newer_schema_${DateTime.now().microsecondsSinceEpoch}.zip',
+        );
+        final tempZipFile = File(tempZipPath);
+        await tempZipFile.writeAsBytes(zipBytes!, flush: true);
+
+        when(
+          () => mockFilePicker.pickFile(
+            dialogTitle: any(named: 'dialogTitle'),
+            type: any(named: 'type'),
+            allowedExtensions: any(named: 'allowedExtensions'),
+          ),
+        ).thenAnswer((_) async => WindowsPlatformFile.fromPath(tempZipPath));
+
+        await expectLater(
+          backupService.restoreFullBackup(),
+          throwsA(
+            isA<Exception>().having(
+              (final e) => e.toString(),
+              'message',
+              contains('backup was created with a newer app schema'),
+            ),
+          ),
+        );
+
+        if (await tempZipFile.exists()) await tempZipFile.delete();
+      },
+    );
+
+    test(
+      'restoreFullBackup should reject zip entry with path traversal',
+      () async {
+        final archive = Archive();
+        final dummyBytes = utf8.encode('malicious');
+        archive.addFile(
+          ArchiveFile('../../etc/passwd', dummyBytes.length, dummyBytes),
+        );
+
+        final zipBytes = ZipEncoder().encode(archive);
+        final tempZipPath = p.join(
+          Directory.systemTemp.path,
+          'test_traversal_${DateTime.now().microsecondsSinceEpoch}.zip',
+        );
+        final tempZipFile = File(tempZipPath);
+        await tempZipFile.writeAsBytes(zipBytes!, flush: true);
+
+        when(
+          () => mockFilePicker.pickFile(
+            dialogTitle: any(named: 'dialogTitle'),
+            type: any(named: 'type'),
+            allowedExtensions: any(named: 'allowedExtensions'),
+          ),
+        ).thenAnswer((_) async => WindowsPlatformFile.fromPath(tempZipPath));
+
+        await expectLater(
+          backupService.restoreFullBackup(),
+          throwsA(
+            isA<Exception>().having(
+              (final e) => e.toString(),
+              'message',
+              contains('Malicious entry name detected'),
+            ),
+          ),
+        );
+
         if (await tempZipFile.exists()) await tempZipFile.delete();
       },
     );
