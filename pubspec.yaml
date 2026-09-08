@@ -61,7 +61,7 @@ dev_dependencies:
   path_provider_platform_interface: ^2.1.3
   plugin_platform_interface: ^2.1.8
 
-  windows_file_picker: ^1.1.0
+  windows_file_picker: ^1.2.0
 dependency_overrides:
   # Overridden for compatibility with excel package
   xml: ^7.0.1
