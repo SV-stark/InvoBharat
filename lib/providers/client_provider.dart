@@ -18,6 +18,10 @@ final clientListProvider = NotifierProvider<ClientListNotifier, List<Client>>(
   ClientListNotifier.new,
 );
 
+final clientListAsyncProvider = FutureProvider<List<Client>>((final ref) async {
+  return ref.watch(clientRepositoryProvider).getAllClients();
+});
+
 class ClientListNotifier extends Notifier<List<Client>> {
   @override
   List<Client> build() {
@@ -31,6 +35,7 @@ class ClientListNotifier extends Notifier<List<Client>> {
     try {
       final repository = ref.read(clientRepositoryProvider);
       state = await repository.getAllClients();
+      ref.invalidate(clientListAsyncProvider);
     } catch (e, st) {
       LoggerService.talker.handle(e, st, "Error loading clients");
     }

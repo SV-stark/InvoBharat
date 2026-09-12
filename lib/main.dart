@@ -92,10 +92,12 @@ class InvoBharatApp extends ConsumerWidget {
     final profile = ref.watch(businessProfileProvider);
     final appInit = ref.watch(appInitializationProvider);
 
+    final isDesktop = !kIsWeb && (Platform.isWindows || Platform.isLinux);
+
     return appInit.when(
       data: (_) {
         final profileColor = Color(profile.colorValue);
-        if (Platform.isWindows || Platform.isLinux) {
+        if (isDesktop) {
           final accentColor = _getAccentColor(profileColor);
           return fluent.FluentApp.router(
             title: 'InvoBharat',
@@ -144,7 +146,7 @@ class InvoBharatApp extends ConsumerWidget {
         );
       },
       loading: () {
-        if (Platform.isWindows || Platform.isLinux) {
+        if (isDesktop) {
           return fluent.FluentApp(
             home: fluent.ScaffoldPage(
               content: Center(
@@ -192,9 +194,16 @@ class InvoBharatApp extends ConsumerWidget {
         );
       },
       error: (final err, final stack) {
-        return fluent.FluentApp(
-          home: fluent.ScaffoldPage(
-            content: Center(child: Text("Error initializing app: $err")),
+        if (isDesktop) {
+          return fluent.FluentApp(
+            home: fluent.ScaffoldPage(
+              content: Center(child: Text("Error initializing app: $err")),
+            ),
+          );
+        }
+        return MaterialApp(
+          home: Scaffold(
+            body: Center(child: Text("Error initializing app: $err")),
           ),
         );
       },

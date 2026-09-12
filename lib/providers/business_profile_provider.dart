@@ -165,15 +165,21 @@ final businessProfileListProvider =
     );
 
 class ActiveProfileId extends Notifier<String> {
+  String? _cachedId;
+
   @override
   String build() {
     final profiles = ref.watch(businessProfileListProvider);
     if (profiles.isEmpty) return "";
-    if (state.isNotEmpty && profiles.any((final p) => p.id == state)) {
-      return state;
+    if (_cachedId != null &&
+        _cachedId!.isNotEmpty &&
+        profiles.any((final p) => p.id == _cachedId)) {
+      return _cachedId!;
     }
     Future.microtask(() => _loadActiveId(profiles));
-    return profiles.first.id;
+    final defaultId = profiles.first.id;
+    _cachedId = defaultId;
+    return defaultId;
   }
 
   Future<void> _loadActiveId(final List<BusinessProfile> profiles) async {
@@ -182,10 +188,12 @@ class ActiveProfileId extends Notifier<String> {
 
     if (storedId != null && profiles.any((final p) => p.id == storedId)) {
       if (state != storedId) {
+        _cachedId = storedId;
         state = storedId;
       }
     } else if (profiles.isNotEmpty) {
       if (state != profiles.first.id) {
+        _cachedId = profiles.first.id;
         state = profiles.first.id;
         await prefs.setString('active_profile_id', state);
       }
@@ -193,6 +201,7 @@ class ActiveProfileId extends Notifier<String> {
   }
 
   Future<void> selectProfile(final String id) async {
+    _cachedId = id;
     state = id;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('active_profile_id', id);

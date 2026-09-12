@@ -1,14 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:archive/archive_io.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
 import 'package:invobharat/providers/app_config_provider.dart';
 import 'package:invobharat/providers/database_provider.dart';
 import 'package:invobharat/services/backup_service.dart';
@@ -148,90 +144,19 @@ class AutoBackupService {
     }
 
     final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-    final sessionId = const Uuid().v4();
-    final tempDir = Directory(
-      p.join(Directory.systemTemp.path, 'invobharat_autobackup_$sessionId'),
+    final outputFile = p.join(
+      backupDir.path,
+      'invobharat_auto_backup_$timestamp.zip',
     );
-    await tempDir.create(recursive: true);
 
-    final tempDbPath = p.join(tempDir.path, 'export.sqlite');
-    final tempManifestPath = p.join(tempDir.path, 'manifest.json');
+    final backupService = _ref.read(backupServiceProvider);
+    await backupService.createBackupArchive(
+      outputFilePath: outputFile,
+      database: db,
+    );
 
-    try {
-      // 1. Create consistent copy of DB
-      await db.vacuumInto(tempDbPath);
-
-      final tempFile = File(tempDbPath);
-      final manifestFile = File(tempManifestPath);
-
-      final prefs = await SharedPreferences.getInstance();
-      final activeProfileId = prefs.getString('active_profile_id') ?? '';
-      final schemaVersion = db.schemaVersion;
-
-      // Collect media entries (logos, stamps, signatures) to prevent media loss
-      final List<Map<String, String>> mediaEntries = [];
-      final profiles = await db.select(db.businessProfiles).get();
-      for (final prof in profiles) {
-        for (final entry in [
-          {'type': 'logo', 'path': prof.logoPath},
-          {'type': 'signature', 'path': prof.signaturePath},
-          {'type': 'stamp', 'path': prof.stampPath},
-        ]) {
-          final String? srcPath = entry['path'];
-          if (srcPath != null &&
-              srcPath.isNotEmpty &&
-              File(srcPath).existsSync()) {
-            final String ext = p.extension(srcPath);
-            final String zipMediaName =
-                'media/${prof.id}_${entry['type']}$ext';
-            mediaEntries.add({
-              'profileId': prof.id,
-              'type': entry['type']!,
-              'zipPath': zipMediaName,
-              'originalPath': srcPath,
-            });
-          }
-        }
-      }
-
-      await manifestFile.writeAsString(
-        jsonEncode({
-          'schemaVersion': schemaVersion,
-          'activeProfileId': activeProfileId,
-          'exportTimestamp': timestamp,
-          'mediaEntries': mediaEntries,
-        }),
-      );
-
-      final outputFile = p.join(
-        backupDir.path,
-        'invobharat_auto_backup_$timestamp.zip',
-      );
-
-      // 2. Zip the consistent copy with media & manifest
-      final zipEncoder = ZipFileEncoder();
-      zipEncoder.create(outputFile);
-      await zipEncoder.addFile(tempFile, kDbFileName);
-      await zipEncoder.addFile(manifestFile, 'manifest.json');
-
-      for (final m in mediaEntries) {
-        final mediaFile = File(m['originalPath']!);
-        if (await mediaFile.exists()) {
-          await zipEncoder.addFile(mediaFile, m['zipPath']!);
-        }
-      }
-
-      await zipEncoder.close();
-
-      // 3. Prune old backups
-      await _pruneOldBackups(backupDir);
-    } finally {
-      if (await tempDir.exists()) {
-        try {
-          await tempDir.delete(recursive: true);
-        } catch (_) {}
-      }
-    }
+    // Prune old backups
+    await _pruneOldBackups(backupDir);
   }
 
   Future<void> _pruneOldBackups(final Directory backupDir) async {

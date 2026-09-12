@@ -357,88 +357,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
       ),
       body: invoiceListAsync.when(
         data: (final invoices) {
-          final filtered = invoices.where((final inv) {
-            final query = _searchCtrl.text.toLowerCase().trim();
-            final matchesSearch =
-                query.isEmpty ||
-                inv.receiver.name.toLowerCase().contains(query) ||
-                inv.invoiceNo.toLowerCase().contains(query) ||
-                inv.grandTotal.toStringAsFixed(2).contains(query);
-
-            if (!matchesSearch) return false;
-
-            if (_dateRange != null) {
-              if (inv.invoiceDate.isBefore(_dateRange!.start) ||
-                  inv.invoiceDate.isAfter(
-                    _dateRange!.end.add(const Duration(days: 1)),
-                  )) {
-                return false;
-              }
-            }
-
-            if (_filter == 'Archived') {
-              if (!inv.isArchived) return false;
-            } else {
-              if (inv.isArchived) return false;
-
-              if (_filter == 'Paid') {
-                if (inv.paymentStatus != 'Paid') return false;
-              } else if (_filter == 'Unpaid') {
-                if (inv.paymentStatus == 'Paid') {
-                  return false;
-                }
-              } else if (_filter == 'Overdue') {
-                if (inv.paymentStatus != 'Overdue') return false;
-              }
-            }
-
-            return true;
-          }).toList();
-
-          switch (_sortBy) {
-            case 'date_desc':
-              filtered.sort(
-                (final a, final b) => b.invoiceDate.compareTo(a.invoiceDate),
-              );
-              break;
-            case 'date_asc':
-              filtered.sort(
-                (final a, final b) => a.invoiceDate.compareTo(b.invoiceDate),
-              );
-              break;
-            case 'amount_desc':
-              filtered.sort(
-                (final a, final b) => b.grandTotal.compareTo(a.grandTotal),
-              );
-              break;
-            case 'amount_asc':
-              filtered.sort(
-                (final a, final b) => a.grandTotal.compareTo(b.grandTotal),
-              );
-              break;
-            case 'no_desc':
-              filtered.sort(
-                (final a, final b) => b.invoiceNo.compareTo(a.invoiceNo),
-              );
-              break;
-            case 'no_asc':
-              filtered.sort(
-                (final a, final b) => a.invoiceNo.compareTo(b.invoiceNo),
-              );
-              break;
-            case 'client_asc':
-              filtered.sort(
-                (final a, final b) =>
-                    a.receiver.name.compareTo(b.receiver.name),
-              );
-              break;
-            case 'client_desc':
-              filtered.sort(
-                (final a, final b) =>
-                    b.receiver.name.compareTo(a.receiver.name),
-              );
-              break;
-          }
+          final filtered = _filterAndSortInvoices(invoices);
 
           if (filtered.isEmpty) {
             return Center(
@@ -748,5 +667,72 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
       default:
         return "Newest First";
     }
+  }
+
+  List<Invoice> _filterAndSortInvoices(final List<Invoice> invoices) {
+    final query = _searchCtrl.text.toLowerCase().trim();
+    final filtered = invoices.where((final inv) {
+      final matchesSearch = query.isEmpty ||
+          inv.receiver.name.toLowerCase().contains(query) ||
+          inv.invoiceNo.toLowerCase().contains(query) ||
+          inv.grandTotal.toStringAsFixed(2).contains(query);
+
+      if (!matchesSearch) return false;
+
+      if (_dateRange != null) {
+        if (inv.invoiceDate.isBefore(_dateRange!.start) ||
+            inv.invoiceDate.isAfter(
+              _dateRange!.end.add(const Duration(days: 1)),
+            )) {
+          return false;
+        }
+      }
+
+      if (_filter == 'Archived') {
+        if (!inv.isArchived) return false;
+      } else {
+        if (inv.isArchived) return false;
+
+        if (_filter == 'Paid') {
+          if (inv.paymentStatus != 'Paid') return false;
+        } else if (_filter == 'Unpaid') {
+          if (inv.paymentStatus == 'Paid') {
+            return false;
+          }
+        } else if (_filter == 'Overdue') {
+          if (inv.paymentStatus != 'Overdue') return false;
+        }
+      }
+
+      return true;
+    }).toList();
+
+    switch (_sortBy) {
+      case 'date_desc':
+        filtered.sort((final a, final b) => b.invoiceDate.compareTo(a.invoiceDate));
+        break;
+      case 'date_asc':
+        filtered.sort((final a, final b) => a.invoiceDate.compareTo(b.invoiceDate));
+        break;
+      case 'amount_desc':
+        filtered.sort((final a, final b) => b.grandTotal.compareTo(a.grandTotal));
+        break;
+      case 'amount_asc':
+        filtered.sort((final a, final b) => a.grandTotal.compareTo(b.grandTotal));
+        break;
+      case 'no_desc':
+        filtered.sort((final a, final b) => b.invoiceNo.compareTo(a.invoiceNo));
+        break;
+      case 'no_asc':
+        filtered.sort((final a, final b) => a.invoiceNo.compareTo(b.invoiceNo));
+        break;
+      case 'client_asc':
+        filtered.sort((final a, final b) => a.receiver.name.compareTo(b.receiver.name));
+        break;
+      case 'client_desc':
+        filtered.sort((final a, final b) => b.receiver.name.compareTo(a.receiver.name));
+        break;
+    }
+    return filtered;
   }
 }

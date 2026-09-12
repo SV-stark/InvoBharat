@@ -193,7 +193,7 @@ class UpdateService {
     final http.Client? client,
     @visibleForTesting final Future<void> Function(String path)? startProcess,
   }) async {
-    if (!Platform.isWindows &&
+    if ((kIsWeb || !Platform.isWindows) &&
         !Platform.environment.containsKey('FLUTTER_TEST')) {
       return;
     }
@@ -250,8 +250,8 @@ class UpdateService {
         }
 
         if (expectedChecksum != null && expectedChecksum.isNotEmpty) {
-          final fileBytes = await file.readAsBytes();
-          final computedHash = crypto.sha256.convert(fileBytes).toString();
+          final digest = await crypto.sha256.bind(file.openRead()).first;
+          final computedHash = digest.toString();
           if (computedHash.toLowerCase() != expectedChecksum.toLowerCase()) {
             if (await file.exists()) await file.delete();
             throw Exception(

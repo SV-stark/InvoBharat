@@ -454,6 +454,18 @@ class AppDatabase extends _$AppDatabase {
     await db.customStatement(
       'CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON payments (invoice_id);',
     );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_bank_accounts_profile_id ON bank_accounts (profile_id);',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_estimates_profile_id ON estimates (profile_id);',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_estimate_items_estimate_id ON estimate_items (estimate_id);',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_recurring_profiles_profile_id ON recurring_profiles_table (profile_id);',
+    );
   }
 
   Future<void> vacuumInto(final String path) async {

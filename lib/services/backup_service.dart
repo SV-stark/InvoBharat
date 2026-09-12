@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -11,10 +13,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:invobharat/services/csv_export_service.dart';
 import 'package:invobharat/data/sql_invoice_repository.dart';
 import 'package:invobharat/database/database.dart';
+import 'package:invobharat/providers/database_provider.dart';
 import 'package:invobharat/services/logger_service.dart';
 import 'package:invobharat/utils/security_utils.dart';
 import 'package:sqlite3/sqlite3.dart' as sqlite3;
 import 'package:uuid/uuid.dart';
+
+final backupServiceProvider = Provider<BackupService>((final ref) {
+  return BackupService(db: ref.watch(databaseProvider));
+});
 
 const kDbFileName = 'db.sqlite';
 const kMinCompatibleSchemaVersion = 5;
@@ -173,97 +180,118 @@ class BackupService {
         outputFile = '$outputFile.zip';
       }
 
-      final sessionId = const Uuid().v4();
-      final tempDir = Directory(
-        p.join(Directory.systemTemp.path, 'invobharat_export_$sessionId'),
-      );
-      await tempDir.create(recursive: true);
-
-      final tempDbPath = p.join(tempDir.path, 'export.sqlite');
-      final tempManifestPath = p.join(tempDir.path, 'manifest.json');
-
-      try {
-        File dbFile;
-        final currentDb = db;
-        if (currentDb != null) {
-          await currentDb.vacuumInto(tempDbPath);
-          dbFile = File(tempDbPath);
-        } else {
-          final dbPath = await _getDbPath();
-          dbFile = File(dbPath);
-          if (!await dbFile.exists()) {
-            throw Exception("Database file not found at $dbPath");
-          }
-        }
-
-        final prefs = await SharedPreferences.getInstance();
-        final activeProfileId = prefs.getString('active_profile_id') ?? '';
-        final schemaVersion = db?.schemaVersion ?? 17;
-
-        final List<Map<String, String>> mediaEntries = [];
-        if (currentDb != null) {
-          final profiles = await currentDb
-              .select(currentDb.businessProfiles)
-              .get();
-          for (final prof in profiles) {
-            for (final entry in [
-              {'type': 'logo', 'path': prof.logoPath},
-              {'type': 'signature', 'path': prof.signaturePath},
-              {'type': 'stamp', 'path': prof.stampPath},
-            ]) {
-              final String? srcPath = entry['path'];
-              if (srcPath != null &&
-                  srcPath.isNotEmpty &&
-                  File(srcPath).existsSync()) {
-                final String ext = p.extension(srcPath);
-                final String zipMediaName =
-                    'media/${prof.id}_${entry['type']}$ext';
-                mediaEntries.add({
-                  'profileId': prof.id,
-                  'type': entry['type']!,
-                  'zipPath': zipMediaName,
-                  'originalPath': srcPath,
-                });
-              }
-            }
-          }
-        }
-
-        final manifestFile = File(tempManifestPath);
-        await manifestFile.writeAsString(
-          jsonEncode({
-            'schemaVersion': schemaVersion,
-            'activeProfileId': activeProfileId,
-            'exportTimestamp': timestamp,
-            'mediaEntries': mediaEntries,
-          }),
-        );
-
-        final zipEncoder = ZipFileEncoder();
-        zipEncoder.create(outputFile);
-        await zipEncoder.addFile(dbFile, kDbFileName);
-        await zipEncoder.addFile(manifestFile, 'manifest.json');
-
-        for (final m in mediaEntries) {
-          final mediaFile = File(m['originalPath']!);
-          if (await mediaFile.exists()) {
-            await zipEncoder.addFile(mediaFile, m['zipPath']!);
-          }
-        }
-
-        await zipEncoder.close();
-        return "Full Backup saved to $outputFile";
-      } finally {
-        if (await tempDir.exists()) {
-          try {
-            await tempDir.delete(recursive: true);
-          } catch (_) {}
-        }
-      }
+      await createBackupArchive(outputFilePath: outputFile, database: db);
+      return "Full Backup saved to $outputFile";
     } catch (e) {
       debugPrint("Full Backup Error: $e");
       throw Exception("Failed to create full backup: $e");
     }
+  }
+
+  /// Creates a complete backup zip archive containing SQLite DB, manifest, and all profile media.
+  /// Shared between manual export and automated background backups.
+  Future<void> createBackupArchive({
+    required final String outputFilePath,
+    final AppDatabase? database,
+  }) async {
+    final currentDb = database ?? db;
+    final sessionId = const Uuid().v4();
+    final tempDir = Directory(
+      p.join(Directory.systemTemp.path, 'invobharat_backup_$sessionId'),
+    );
+    await tempDir.create(recursive: true);
+
+    final tempDbPath = p.join(tempDir.path, 'export.sqlite');
+    final tempManifestPath = p.join(tempDir.path, 'manifest.json');
+    final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+
+    try {
+      File dbFile;
+      if (currentDb != null) {
+        await currentDb.vacuumInto(tempDbPath);
+        dbFile = File(tempDbPath);
+      } else {
+        final dbPath = await _getDbPath();
+        dbFile = File(dbPath);
+        if (!await dbFile.exists()) {
+          throw Exception("Database file not found at $dbPath");
+        }
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      final activeProfileId = prefs.getString('active_profile_id') ?? '';
+      final schemaVersion = currentDb?.schemaVersion ?? 17;
+
+      final List<Map<String, String>> mediaEntries = [];
+      if (currentDb != null) {
+        final profiles = await currentDb
+            .select(currentDb.businessProfiles)
+            .get();
+        for (final prof in profiles) {
+          for (final entry in [
+            {'type': 'logo', 'path': prof.logoPath},
+            {'type': 'signature', 'path': prof.signaturePath},
+            {'type': 'stamp', 'path': prof.stampPath},
+          ]) {
+            final String? srcPath = entry['path'];
+            if (srcPath != null &&
+                srcPath.isNotEmpty &&
+                File(srcPath).existsSync()) {
+              final String ext = p.extension(srcPath);
+              final String zipMediaName =
+                  'media/${prof.id}_${entry['type']}$ext';
+              mediaEntries.add({
+                'profileId': prof.id,
+                'type': entry['type']!,
+                'zipPath': zipMediaName,
+                'originalPath': srcPath,
+              });
+            }
+          }
+        }
+      }
+
+      final manifestFile = File(tempManifestPath);
+      await manifestFile.writeAsString(
+        jsonEncode({
+          'schemaVersion': schemaVersion,
+          'activeProfileId': activeProfileId,
+          'exportTimestamp': timestamp,
+          'mediaEntries': mediaEntries,
+        }),
+      );
+
+      final zipEncoder = ZipFileEncoder();
+      zipEncoder.create(outputFilePath);
+      await zipEncoder.addFile(dbFile, kDbFileName);
+      await zipEncoder.addFile(manifestFile, 'manifest.json');
+
+      for (final m in mediaEntries) {
+        final mediaFile = File(m['originalPath']!);
+        if (await mediaFile.exists()) {
+          await zipEncoder.addFile(mediaFile, m['zipPath']!);
+        }
+      }
+
+      await zipEncoder.close();
+    } finally {
+      if (await tempDir.exists()) {
+        try {
+          await tempDir.delete(recursive: true);
+        } catch (_) {}
+      }
+    }
+  }
+
+  static Archive _decodeArchive(final Uint8List bytes) {
+    return ZipDecoder().decodeBytes(bytes);
+  }
+
+  static Future<Archive> decodeZipInIsolate(final Uint8List bytes) async {
+    if (Platform.environment.containsKey('FLUTTER_TEST')) {
+      return _decodeArchive(bytes);
+    }
+    return Isolate.run(() => _decodeArchive(bytes));
   }
 
   Future<String> restoreFullBackup() async {
@@ -280,7 +308,7 @@ class BackupService {
 
       final zipFile = File(file.path!);
       final bytes = await zipFile.readAsBytes();
-      final archive = ZipDecoder().decodeBytes(bytes);
+      final archive = await decodeZipInIsolate(bytes);
 
       // Zip-bomb & malformed entry protection
       const int maxTotalUncompressedBytes = 500 * 1024 * 1024; // 500 MB max
