@@ -43,7 +43,7 @@ dependencies:
   talker_flutter: ^5.1.20
   flutter_riverpod: ^3.3.1
   package_info_plus: ^10.2.0
-  data_table_2: ^2.5.15
+  data_table_2: ^3.0.0
   flutter_typeahead: ^6.0.0
   crypto: ^3.0.6
 dev_dependencies:
