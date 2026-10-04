@@ -5,6 +5,7 @@ import 'package:invobharat/utils/formatters.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/services/invoice_actions.dart';
 import 'package:invobharat/widgets/skeleton_widgets.dart';
 import 'package:go_router/go_router.dart';
 
@@ -106,20 +107,22 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
   }
 
   Future<void> _duplicateInvoice(final Invoice invoice) async {
-    final duplicated = invoice.copyWith(
-      id: null,
-      invoiceNo: '',
-      invoiceDate: DateTime.now(),
-      payments: [],
-      status: 'Draft',
-    );
-
-    await context.push('/invoice-form', extra: duplicated);
-    ref.invalidate(invoiceListProvider);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Invoice duplicated for editing")),
-    );
+    try {
+      final newInv = await InvoiceActions.duplicateInvoice(ref, invoice);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Invoice duplicated as ${newInv.invoiceNo}")),
+        );
+        await context.push('/invoice-form', extra: newInv);
+        ref.invalidate(invoiceListProvider);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to duplicate invoice: $e")),
+        );
+      }
+    }
   }
 
   @override

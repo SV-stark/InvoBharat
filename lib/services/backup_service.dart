@@ -408,11 +408,11 @@ class BackupService {
         final dbData = dbEntry.content as List<int>;
         await tempRestoredFile.writeAsBytes(dbData, flush: true);
 
+        sqlite3.Database? testDb;
         try {
-          final testDb = sqlite3.sqlite3.open(tempRestoredDbPath);
+          testDb = sqlite3.sqlite3.open(tempRestoredDbPath);
           final check = testDb.select('PRAGMA integrity_check(1);');
           if (check.isEmpty || check.first.columnAt(0) != 'ok') {
-            testDb.close();
             throw Exception("Database integrity check failed on backup file.");
           }
           if (backedUpSchemaVersion == null) {
@@ -421,9 +421,10 @@ class BackupService {
               backedUpSchemaVersion = uvRes.first.columnAt(0) as int?;
             }
           }
-          testDb.close();
         } catch (e) {
           throw Exception("Restored database integrity check failed: $e");
+        } finally {
+          testDb?.close();
         }
 
         if (backedUpSchemaVersion != null) {
@@ -504,8 +505,9 @@ class BackupService {
 
         // 6. Rewrite media paths in restored database
         if (mediaEntries.isNotEmpty && await dbDestFile.exists()) {
+          sqlite3.Database? rawDb;
           try {
-            final rawDb = sqlite3.sqlite3.open(dbPath);
+            rawDb = sqlite3.sqlite3.open(dbPath);
             for (final m in mediaEntries) {
               final profileId = m['profileId'] as String?;
               final type = m['type'] as String?;
@@ -539,9 +541,10 @@ class BackupService {
               }
             }
             rawDb.execute('PRAGMA wal_checkpoint(TRUNCATE);');
-            rawDb.close();
           } catch (e, st) {
             LoggerService.talker.handle(e, st, "Media path rewrite error");
+          } finally {
+            rawDb?.close();
           }
         }
 

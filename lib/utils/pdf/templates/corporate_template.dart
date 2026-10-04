@@ -326,6 +326,18 @@ class CorporateTemplate extends BasePdfTemplate {
                           ),
                           child: pw.Column(
                             children: [
+                              if (invoice.discountAmount > 0) ...[
+                                buildSummaryRow(
+                                  "Subtotal",
+                                  invoice.grossTaxableValue,
+                                  profile.currencySymbol,
+                                ),
+                                buildSummaryRow(
+                                  "Discount",
+                                  -invoice.discountAmount,
+                                  profile.currencySymbol,
+                                ),
+                              ],
                               buildSummaryRow(
                                 "Taxable Value",
                                 invoice.totalTaxableValue,
@@ -346,12 +358,6 @@ class CorporateTemplate extends BasePdfTemplate {
                                 buildSummaryRow(
                                   "IGST",
                                   invoice.totalIGST,
-                                  profile.currencySymbol,
-                                ),
-                              if (invoice.discountAmount > 0)
-                                buildSummaryRow(
-                                  "Discount",
-                                  -invoice.discountAmount,
                                   profile.currencySymbol,
                                 ),
                               pw.Divider(color: PdfColors.white),

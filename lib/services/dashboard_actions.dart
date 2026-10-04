@@ -28,8 +28,8 @@ class DashboardActions {
 
     for (var inv in invoices) {
       if (inv.paymentStatus == 'Paid') continue;
-      final due = inv.dueDate;
-      final diff = now.difference(due ?? now).inDays;
+      final due = inv.dueDate ?? inv.invoiceDate;
+      final diff = now.difference(due).inDays;
 
       if (diff <= 0) {
         current += inv.balanceDue;

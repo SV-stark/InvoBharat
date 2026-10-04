@@ -134,53 +134,56 @@ class AppDatabase extends _$AppDatabase {
         if (from < 7) {
           // Migration for foreign key constraints and unique indices.
           // Recreating tables safely with data preservation.
-          await m.database.customStatement('PRAGMA foreign_keys = OFF;');
-          await m.database.customStatement('PRAGMA legacy_alter_table = ON;');
-          await m.database.transaction(() async {
-            final List<TableInfo<Table, dynamic>> tables = [
-              businessProfiles as TableInfo<Table, dynamic>,
-              clients as TableInfo<Table, dynamic>,
-              invoices as TableInfo<Table, dynamic>,
-              invoiceItems as TableInfo<Table, dynamic>,
-              payments as TableInfo<Table, dynamic>,
-            ];
+          await m.database.exclusively(() async {
+            await m.database.customStatement('PRAGMA foreign_keys = OFF;');
+            await m.database.customStatement('PRAGMA legacy_alter_table = ON;');
+            try {
+              final List<TableInfo<Table, dynamic>> tables = [
+                businessProfiles as TableInfo<Table, dynamic>,
+                clients as TableInfo<Table, dynamic>,
+                invoices as TableInfo<Table, dynamic>,
+                invoiceItems as TableInfo<Table, dynamic>,
+                payments as TableInfo<Table, dynamic>,
+              ];
 
-            for (final table in tables) {
-              final tableName = table.actualTableName;
-              final tempName = '${tableName}_temp';
+              for (final table in tables) {
+                final tableName = table.actualTableName;
+                final tempName = '${tableName}_temp';
 
-              // 1. Rename existing table to temp
-              await m.database.customStatement(
-                'ALTER TABLE `$tableName` RENAME TO `$tempName`',
-              );
-
-              // 2. Create new table with updated constraints
-              await m.createTable(table);
-
-              // 3. Copy data from temp to new table (only columns that existed in temp table)
-              final pragmaResult = await m.database
-                  .customSelect('PRAGMA table_info(`$tempName`)')
-                  .get();
-              final existingCols = pragmaResult
-                  .map((final r) => r.read<String>('name'))
-                  .toSet();
-              final columnsToCopy = table.$columns
-                  .map((final c) => c.name)
-                  .where((final name) => existingCols.contains(name))
-                  .join(', ');
-
-              if (columnsToCopy.isNotEmpty) {
+                // 1. Rename existing table to temp
                 await m.database.customStatement(
-                  'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
+                  'ALTER TABLE `$tableName` RENAME TO `$tempName`',
                 );
-              }
 
-              // 4. Drop temp table
-              await m.database.customStatement('DROP TABLE `$tempName`');
+                // 2. Create new table with updated constraints
+                await m.createTable(table);
+
+                // 3. Copy data from temp to new table (only columns that existed in temp table)
+                final pragmaResult = await m.database
+                    .customSelect('PRAGMA table_info(`$tempName`)')
+                    .get();
+                final existingCols = pragmaResult
+                    .map((final r) => r.read<String>('name'))
+                    .toSet();
+                final columnsToCopy = table.$columns
+                    .map((final c) => c.name)
+                    .where((final name) => existingCols.contains(name))
+                    .join(', ');
+
+                if (columnsToCopy.isNotEmpty) {
+                  await m.database.customStatement(
+                    'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
+                  );
+                }
+
+                // 4. Drop temp table
+                await m.database.customStatement('DROP TABLE `$tempName`');
+              }
+            } finally {
+              await m.database.customStatement('PRAGMA legacy_alter_table = OFF;');
+              await m.database.customStatement('PRAGMA foreign_keys = ON;');
             }
           });
-          await m.database.customStatement('PRAGMA legacy_alter_table = OFF;');
-          await m.database.customStatement('PRAGMA foreign_keys = ON;');
         }
         if (from < 8) {
           await m.addColumn(invoices, invoices.poNumber);
@@ -210,69 +213,75 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(invoices, invoices.irnNo);
         }
         if (from < 12) {
-          await m.database.customStatement('PRAGMA foreign_keys = OFF;');
-          await m.database.customStatement('PRAGMA legacy_alter_table = ON;');
-          await m.database.transaction(() async {
-            final table = clients;
-            final tableName = table.actualTableName;
-            final tempName = '${tableName}_temp';
+          await m.database.exclusively(() async {
+            await m.database.customStatement('PRAGMA foreign_keys = OFF;');
+            await m.database.customStatement('PRAGMA legacy_alter_table = ON;');
+            try {
+              final table = clients;
+              final tableName = table.actualTableName;
+              final tempName = '${tableName}_temp';
 
-            // 1. Rename existing table to temp
-            await m.database.customStatement(
-              'ALTER TABLE `$tableName` RENAME TO `$tempName`',
-            );
+              // 1. Rename existing table to temp
+              await m.database.customStatement(
+                'ALTER TABLE `$tableName` RENAME TO `$tempName`',
+              );
 
-            // 2. Create new table with updated constraints (no UNIQUE constraint)
-            await m.createTable(table);
+              // 2. Create new table with updated constraints (no UNIQUE constraint)
+              await m.createTable(table);
 
-            // 3. Copy all columns
-            final columnsToCopy = table.$columns
-                .map((final c) => c.name)
-                .join(', ');
-            await m.database.customStatement(
-              'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
-            );
+              // 3. Copy all columns
+              final columnsToCopy = table.$columns
+                  .map((final c) => c.name)
+                  .join(', ');
+              await m.database.customStatement(
+                'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
+              );
 
-            // 4. Drop temp table
-            await m.database.customStatement('DROP TABLE `$tempName`');
+              // 4. Drop temp table
+              await m.database.customStatement('DROP TABLE `$tempName`');
 
-            // 5. Create partial unique index where gstin is not empty/null
-            await m.database.customStatement(
-              "CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null'",
-            );
+              // 5. Create partial unique index where gstin is not empty/null
+              await m.database.customStatement(
+                "CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null'",
+              );
+            } finally {
+              await m.database.customStatement('PRAGMA legacy_alter_table = OFF;');
+              await m.database.customStatement('PRAGMA foreign_keys = ON;');
+            }
           });
-          await m.database.customStatement('PRAGMA legacy_alter_table = OFF;');
-          await m.database.customStatement('PRAGMA foreign_keys = ON;');
         }
         if (from < 13) {
           await m.createTable(estimates);
           await m.createTable(estimateItems);
           await m.createTable(recurringProfilesTable);
 
-          await m.database.customStatement('PRAGMA foreign_keys = OFF;');
-          await m.database.customStatement('PRAGMA legacy_alter_table = ON;');
-          await m.database.transaction(() async {
-            final table = invoices;
-            final tableName = table.actualTableName;
-            final tempName = '${tableName}_temp';
+          await m.database.exclusively(() async {
+            await m.database.customStatement('PRAGMA foreign_keys = OFF;');
+            await m.database.customStatement('PRAGMA legacy_alter_table = ON;');
+            try {
+              final table = invoices;
+              final tableName = table.actualTableName;
+              final tempName = '${tableName}_temp';
 
-            await m.database.customStatement(
-              'ALTER TABLE `$tableName` RENAME TO `$tempName`',
-            );
+              await m.database.customStatement(
+                'ALTER TABLE `$tableName` RENAME TO `$tempName`',
+              );
 
-            await m.createTable(table);
+              await m.createTable(table);
 
-            final columnsToCopy = table.$columns
-                .map((final c) => c.name)
-                .join(', ');
-            await m.database.customStatement(
-              'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
-            );
+              final columnsToCopy = table.$columns
+                  .map((final c) => c.name)
+                  .join(', ');
+              await m.database.customStatement(
+                'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
+              );
 
-            await m.database.customStatement('DROP TABLE `$tempName`');
+              await m.database.customStatement('DROP TABLE `$tempName`');
+            } finally {
+              await m.database.customStatement('PRAGMA legacy_alter_table = OFF;');
+              await m.database.customStatement('PRAGMA foreign_keys = ON;');
+            }
           });
-          await m.database.customStatement('PRAGMA legacy_alter_table = OFF;');
-          await m.database.customStatement('PRAGMA foreign_keys = ON;');
         }
         if (from < 14) {
           await _createIndexes(m.database);
@@ -390,68 +399,70 @@ class AppDatabase extends _$AppDatabase {
   static Future<void> _repairCorruptedForeignKeys(
     final GeneratedDatabase db,
   ) async {
-    try {
-      await db.customStatement('PRAGMA foreign_keys = OFF;');
-      await db.customStatement('PRAGMA legacy_alter_table = ON;');
+    await db.exclusively(() async {
+      try {
+        await db.customStatement('PRAGMA foreign_keys = OFF;');
+        await db.customStatement('PRAGMA legacy_alter_table = ON;');
 
-      final tablesWithTemp = await db
-          .customSelect(
-            "SELECT name, sql FROM sqlite_master WHERE type='table' AND sql LIKE '%_temp%'",
-          )
-          .get();
+        final tablesWithTemp = await db
+            .customSelect(
+              "SELECT name, sql FROM sqlite_master WHERE type='table' AND sql LIKE '%_temp%'",
+            )
+            .get();
 
-      if (tablesWithTemp.isNotEmpty) {
-        for (final row in tablesWithTemp) {
-          final tableName = row.read<String>('name');
-          final tableInfo = db.allTables
-              .cast<TableInfo<Table, dynamic>?>()
-              .firstWhere(
-                (final t) => t?.actualTableName == tableName,
-                orElse: () => null,
-              );
-
-          if (tableInfo != null) {
-            final tempBackupName = '${tableName}_repair_tmp';
-            await db.customStatement(
-              'ALTER TABLE `$tableName` RENAME TO `$tempBackupName`',
-            );
-            try {
-              await Migrator(db).createTable(tableInfo);
-
-              final pragmaResult = await db
-                  .customSelect('PRAGMA table_info(`$tempBackupName`)')
-                  .get();
-              final existingCols = pragmaResult
-                  .map((final r) => r.read<String>('name'))
-                  .toSet();
-              final columnsToCopy = tableInfo.$columns
-                  .map((final c) => c.name)
-                  .where((final name) => existingCols.contains(name))
-                  .join(', ');
-
-              if (columnsToCopy.isNotEmpty) {
-                await db.customStatement(
-                  'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempBackupName`',
+        if (tablesWithTemp.isNotEmpty) {
+          for (final row in tablesWithTemp) {
+            final tableName = row.read<String>('name');
+            final tableInfo = db.allTables
+                .cast<TableInfo<Table, dynamic>?>()
+                .firstWhere(
+                  (final t) => t?.actualTableName == tableName,
+                  orElse: () => null,
                 );
-              }
-              await db.customStatement('DROP TABLE `$tempBackupName`');
-            } catch (innerErr) {
-              // Rollback rename if creation/copy failed
-              await db.customStatement('DROP TABLE IF EXISTS `$tableName`');
+
+            if (tableInfo != null) {
+              final tempBackupName = '${tableName}_repair_tmp';
               await db.customStatement(
-                'ALTER TABLE `$tempBackupName` RENAME TO `$tableName`',
+                'ALTER TABLE `$tableName` RENAME TO `$tempBackupName`',
               );
-              rethrow;
+              try {
+                await Migrator(db).createTable(tableInfo);
+
+                final pragmaResult = await db
+                    .customSelect('PRAGMA table_info(`$tempBackupName`)')
+                    .get();
+                final existingCols = pragmaResult
+                    .map((final r) => r.read<String>('name'))
+                    .toSet();
+                final columnsToCopy = tableInfo.$columns
+                    .map((final c) => c.name)
+                    .where((final name) => existingCols.contains(name))
+                    .join(', ');
+
+                if (columnsToCopy.isNotEmpty) {
+                  await db.customStatement(
+                    'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempBackupName`',
+                  );
+                }
+                await db.customStatement('DROP TABLE `$tempBackupName`');
+              } catch (innerErr) {
+                // Rollback rename if creation/copy failed
+                await db.customStatement('DROP TABLE IF EXISTS `$tableName`');
+                await db.customStatement(
+                  'ALTER TABLE `$tempBackupName` RENAME TO `$tableName`',
+                );
+                rethrow;
+              }
             }
           }
         }
+      } catch (e, st) {
+        LoggerService.talker.handle(e, st, "Schema Foreign Key Repair Error");
+      } finally {
+        await db.customStatement('PRAGMA legacy_alter_table = OFF;');
+        await db.customStatement('PRAGMA foreign_keys = ON;');
       }
-    } catch (e, st) {
-      LoggerService.talker.handle(e, st, "Schema Foreign Key Repair Error");
-    } finally {
-      await db.customStatement('PRAGMA legacy_alter_table = OFF;');
-      await db.customStatement('PRAGMA foreign_keys = ON;');
-    }
+    });
   }
 
   static Future<void> _repairDuplicateGstins(final GeneratedDatabase db) async {

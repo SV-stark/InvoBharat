@@ -228,6 +228,18 @@ class ClassicTemplate extends BasePdfTemplate {
                   flex: 4,
                   child: pw.Column(
                     children: [
+                      if (invoice.discountAmount > 0) ...[
+                        buildSummaryRow(
+                          "Subtotal",
+                          invoice.grossTaxableValue,
+                          profile.currency,
+                        ),
+                        buildSummaryRow(
+                          "Discount",
+                          -invoice.discountAmount,
+                          profile.currency,
+                        ),
+                      ],
                       buildSummaryRow(
                         "Taxable Value",
                         invoice.totalTaxableValue,
@@ -248,12 +260,6 @@ class ClassicTemplate extends BasePdfTemplate {
                         buildSummaryRow(
                           "IGST",
                           invoice.totalIGST,
-                          profile.currency,
-                        ),
-                      if (invoice.discountAmount > 0)
-                        buildSummaryRow(
-                          "Discount",
-                          -invoice.discountAmount,
                           profile.currency,
                         ),
                       pw.Divider(),

@@ -383,5 +383,43 @@ void main() {
         if (await tempZipFile.exists()) await tempZipFile.delete();
       },
     );
+
+    test(
+      'restoreFullBackup should handle corrupt sqlite database without leaking file lock',
+      () async {
+        final archive = Archive();
+        final corruptBytes = utf8.encode('NOT A VALID SQLITE DATABASE FILE HEADER GARBAGE DATA');
+        archive.addFile(ArchiveFile('db.sqlite', corruptBytes.length, corruptBytes));
+
+        final zipBytes = ZipEncoder().encode(archive);
+        final tempZipPath = p.join(
+          Directory.systemTemp.path,
+          'test_corrupt_${DateTime.now().microsecondsSinceEpoch}.zip',
+        );
+        final tempZipFile = File(tempZipPath);
+        await tempZipFile.writeAsBytes(zipBytes!, flush: true);
+
+        when(
+          () => mockFilePicker.pickFile(
+            dialogTitle: any(named: 'dialogTitle'),
+            type: any(named: 'type'),
+            allowedExtensions: any(named: 'allowedExtensions'),
+          ),
+        ).thenAnswer((_) async => WindowsPlatformFile.fromPath(tempZipPath));
+
+        await expectLater(
+          backupService.restoreFullBackup(),
+          throwsA(
+            isA<Exception>().having(
+              (final e) => e.toString(),
+              'message',
+              contains('integrity check failed'),
+            ),
+          ),
+        );
+
+        if (await tempZipFile.exists()) await tempZipFile.delete();
+      },
+    );
   });
 }

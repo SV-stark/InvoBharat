@@ -111,7 +111,7 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
 
     final data = invoice.items.asMap().entries.map((final e) {
       final item = e.value;
-      final taxableValue = item.netAmount;
+      final taxableValue = invoice.itemTaxableValue(item);
 
       final row = <String>[];
       if (includeIndex) row.add((e.key + 1).toString());
@@ -124,19 +124,19 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
 
       if (isInterState) {
         row.add("${item.gstRate}%");
-        row.add(item.calculateIgst(true).toIndianFormat());
+        row.add(invoice.itemIgstAmount(item).toIndianFormat());
       } else {
         final halfRate = item.gstRate / 2;
         final halfRateStr = halfRate == halfRate.truncateToDouble()
             ? halfRate.toInt().toString()
             : halfRate.toStringAsFixed(1);
         row.add("$halfRateStr%");
-        row.add(item.calculateCgst(false).toIndianFormat());
+        row.add(invoice.itemCgstAmount(item).toIndianFormat());
         row.add("$halfRateStr%");
-        row.add(item.calculateSgst(false).toIndianFormat());
+        row.add(invoice.itemSgstAmount(item).toIndianFormat());
       }
 
-      row.add(item.totalAmount.toIndianFormat());
+      row.add(invoice.itemTotalAmount(item).toIndianFormat());
       return row;
     }).toList();
 
@@ -558,10 +558,10 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
       double igstAmt = 0;
 
       for (final item in items) {
-        taxableVal += item.netAmount;
-        cgstAmt += item.calculateCgst(isInterState);
-        sgstAmt += item.calculateSgst(isInterState);
-        igstAmt += item.calculateIgst(isInterState);
+        taxableVal += invoice.itemTaxableValue(item);
+        cgstAmt += invoice.itemCgstAmount(item);
+        sgstAmt += invoice.itemSgstAmount(item);
+        igstAmt += invoice.itemIgstAmount(item);
       }
 
       final totalTax = cgstAmt + sgstAmt + igstAmt;

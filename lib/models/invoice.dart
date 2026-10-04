@@ -80,19 +80,53 @@ abstract class Invoice with _$Invoice {
     return suppInput.trim().toLowerCase() != posInput.trim().toLowerCase();
   }
 
-  double get _grossTaxableValue =>
+  double get grossTaxableValue =>
       items.fold(0.0, (final sum, final item) => sum + item.netAmount);
 
   double get totalTaxableValue =>
-      math.max(0.0, _grossTaxableValue - discountAmount);
+      math.max(0.0, grossTaxableValue - discountAmount);
 
-  double _itemTaxableValue(final InvoiceItem item) {
-    if (_grossTaxableValue <= 0 || discountAmount <= 0) {
+  double itemTaxableValue(final InvoiceItem item) {
+    if (grossTaxableValue <= 0 || discountAmount <= 0) {
       return item.netAmount;
     }
     final discountRatio =
-        math.min(discountAmount, _grossTaxableValue) / _grossTaxableValue;
+        math.min(discountAmount, grossTaxableValue) / grossTaxableValue;
     return math.max(0.0, item.netAmount * (1 - discountRatio));
+  }
+
+  double itemCgstAmount(final InvoiceItem item) {
+    if (isInterState) return 0;
+    final taxableMoney =
+        Money.fromNumWithCurrency(itemTaxableValue(item), _currencyObj);
+    return (taxableMoney * (item.cgstRate / 100)).toDouble();
+  }
+
+  double itemSgstAmount(final InvoiceItem item) {
+    if (isInterState) return 0;
+    final taxableMoney =
+        Money.fromNumWithCurrency(itemTaxableValue(item), _currencyObj);
+    return (taxableMoney * (item.sgstRate / 100)).toDouble();
+  }
+
+  double itemIgstAmount(final InvoiceItem item) {
+    if (!isInterState) return 0;
+    final taxableMoney =
+        Money.fromNumWithCurrency(itemTaxableValue(item), _currencyObj);
+    return (taxableMoney * (item.gstRate / 100)).toDouble();
+  }
+
+  double itemTotalAmount(final InvoiceItem item) {
+    final taxableMoney =
+        Money.fromNumWithCurrency(itemTaxableValue(item), _currencyObj);
+    if (isInterState) {
+      final igstMoney = taxableMoney * (item.gstRate / 100);
+      return (taxableMoney + igstMoney).toDouble();
+    } else {
+      final cgstMoney = taxableMoney * (item.cgstRate / 100);
+      final sgstMoney = taxableMoney * (item.sgstRate / 100);
+      return (taxableMoney + cgstMoney + sgstMoney).toDouble();
+    }
   }
 
   double get totalCGST {
@@ -101,7 +135,7 @@ abstract class Invoice with _$Invoice {
       Money.fromNumWithCurrency(0, _currencyObj),
       (final sum, final item) {
         final taxableMoney =
-            Money.fromNumWithCurrency(_itemTaxableValue(item), _currencyObj);
+            Money.fromNumWithCurrency(itemTaxableValue(item), _currencyObj);
         return sum + (taxableMoney * (item.cgstRate / 100));
       },
     );
@@ -114,7 +148,7 @@ abstract class Invoice with _$Invoice {
       Money.fromNumWithCurrency(0, _currencyObj),
       (final sum, final item) {
         final taxableMoney =
-            Money.fromNumWithCurrency(_itemTaxableValue(item), _currencyObj);
+            Money.fromNumWithCurrency(itemTaxableValue(item), _currencyObj);
         return sum + (taxableMoney * (item.sgstRate / 100));
       },
     );
@@ -127,7 +161,7 @@ abstract class Invoice with _$Invoice {
       Money.fromNumWithCurrency(0, _currencyObj),
       (final sum, final item) {
         final taxableMoney =
-            Money.fromNumWithCurrency(_itemTaxableValue(item), _currencyObj);
+            Money.fromNumWithCurrency(itemTaxableValue(item), _currencyObj);
         return sum + (taxableMoney * (item.gstRate / 100));
       },
     );
@@ -217,16 +251,14 @@ abstract class InvoiceItem with _$InvoiceItem {
     @Default(1.0) double quantity,
     @Default('Nos') String unit,
     @Default(18.0) double gstRate,
+    @Default('INR') String currency,
   }) = _InvoiceItem;
 
   factory InvoiceItem.fromJson(final Map<String, dynamic> json) =>
       _$InvoiceItemFromJson(json);
 
-  // We assume default currency is INR for these internal calculations if not specified,
-  // but models don't have currency. Invoice has it.
-  // For precise rounding, we should use the currency from the invoice.
-  // Since InvoiceItem doesn't know its parent, we use INR as a safe default for precision (2 decimal).
-  Currency get _currency => CommonCurrencies().inr;
+  Currency get _currency =>
+      Currencies().find(currency) ?? CommonCurrencies().inr;
 
   double get netAmount => math.max(0.0, (amount * quantity) - discount);
 

@@ -15,7 +15,7 @@ class InvoiceActions {
     ref.invalidate(invoiceListProvider);
   }
 
-  static Future<void> duplicateInvoice(
+  static Future<Invoice> duplicateInvoice(
     final WidgetRef ref,
     final Invoice invoice,
   ) async {
@@ -61,6 +61,7 @@ class InvoiceActions {
         .read(invoiceSeriesProvider.notifier)
         .updateSequence(targetPrefix, seq);
     ref.invalidate(invoiceListProvider);
+    return newInvoice;
   }
 
   static Future<Invoice> buildCreditNote(

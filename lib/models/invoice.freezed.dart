@@ -1003,7 +1003,7 @@ as String,
 /// @nodoc
 mixin _$InvoiceItem {
 
- String? get id; String get description; String get sacCode; String get codeType; String get year; double get amount; double get discount; double get quantity; String get unit; double get gstRate;
+ String? get id; String get description; String get sacCode; String get codeType; String get year; double get amount; double get discount; double get quantity; String get unit; double get gstRate; String get currency;
 /// Create a copy of InvoiceItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1017,20 +1017,20 @@ $InvoiceItemCopyWith<InvoiceItem> get copyWith => _$InvoiceItemCopyWithImpl<Invo
 @override
 bool operator ==(Object other) {
   final _this = this as InvoiceItem;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is InvoiceItem&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.sacCode, _this.sacCode) || other.sacCode == _this.sacCode)&&(identical(other.codeType, _this.codeType) || other.codeType == _this.codeType)&&(identical(other.year, _this.year) || other.year == _this.year)&&(identical(other.amount, _this.amount) || other.amount == _this.amount)&&(identical(other.discount, _this.discount) || other.discount == _this.discount)&&(identical(other.quantity, _this.quantity) || other.quantity == _this.quantity)&&(identical(other.unit, _this.unit) || other.unit == _this.unit)&&(identical(other.gstRate, _this.gstRate) || other.gstRate == _this.gstRate));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is InvoiceItem&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.sacCode, _this.sacCode) || other.sacCode == _this.sacCode)&&(identical(other.codeType, _this.codeType) || other.codeType == _this.codeType)&&(identical(other.year, _this.year) || other.year == _this.year)&&(identical(other.amount, _this.amount) || other.amount == _this.amount)&&(identical(other.discount, _this.discount) || other.discount == _this.discount)&&(identical(other.quantity, _this.quantity) || other.quantity == _this.quantity)&&(identical(other.unit, _this.unit) || other.unit == _this.unit)&&(identical(other.gstRate, _this.gstRate) || other.gstRate == _this.gstRate)&&(identical(other.currency, _this.currency) || other.currency == _this.currency));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as InvoiceItem;
-  return Object.hash(runtimeType,_this.id,_this.description,_this.sacCode,_this.codeType,_this.year,_this.amount,_this.discount,_this.quantity,_this.unit,_this.gstRate);
+  return Object.hash(runtimeType,_this.id,_this.description,_this.sacCode,_this.codeType,_this.year,_this.amount,_this.discount,_this.quantity,_this.unit,_this.gstRate,_this.currency);
 }
 
 @override
 String toString() {
   final _this = this as InvoiceItem;
-  return 'InvoiceItem(id: ${_this.id}, description: ${_this.description}, sacCode: ${_this.sacCode}, codeType: ${_this.codeType}, year: ${_this.year}, amount: ${_this.amount}, discount: ${_this.discount}, quantity: ${_this.quantity}, unit: ${_this.unit}, gstRate: ${_this.gstRate})';
+  return 'InvoiceItem(id: ${_this.id}, description: ${_this.description}, sacCode: ${_this.sacCode}, codeType: ${_this.codeType}, year: ${_this.year}, amount: ${_this.amount}, discount: ${_this.discount}, quantity: ${_this.quantity}, unit: ${_this.unit}, gstRate: ${_this.gstRate}, currency: ${_this.currency})';
 }
 
 
@@ -1041,7 +1041,7 @@ abstract mixin class $InvoiceItemCopyWith<$Res>  {
   factory $InvoiceItemCopyWith(InvoiceItem value, $Res Function(InvoiceItem) _then) = _$InvoiceItemCopyWithImpl;
 @useResult
 $Res call({
- String? id, String description, String sacCode, String codeType, String year, double amount, double discount, double quantity, String unit, double gstRate
+ String? id, String description, String sacCode, String codeType, String year, double amount, double discount, double quantity, String unit, double gstRate, String currency
 });
 
 
@@ -1058,7 +1058,7 @@ class _$InvoiceItemCopyWithImpl<$Res>
 
 /// Create a copy of InvoiceItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? description = null,Object? sacCode = null,Object? codeType = null,Object? year = null,Object? amount = null,Object? discount = null,Object? quantity = null,Object? unit = null,Object? gstRate = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? description = null,Object? sacCode = null,Object? codeType = null,Object? year = null,Object? amount = null,Object? discount = null,Object? quantity = null,Object? unit = null,Object? gstRate = null,Object? currency = null,}) {
   return _then(InvoiceItem(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
@@ -1070,7 +1070,8 @@ as double,discount: null == discount ? _self.discount : discount // ignore: cast
 as double,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as double,unit: null == unit ? _self.unit : unit // ignore: cast_nullable_to_non_nullable
 as String,gstRate: null == gstRate ? _self.gstRate : gstRate // ignore: cast_nullable_to_non_nullable
-as double,
+as double,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 
@@ -1155,10 +1156,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String description,  String sacCode,  String codeType,  String year,  double amount,  double discount,  double quantity,  String unit,  double gstRate)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String description,  String sacCode,  String codeType,  String year,  double amount,  double discount,  double quantity,  String unit,  double gstRate,  String currency)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _InvoiceItem() when $default != null:
-return $default(_that.id,_that.description,_that.sacCode,_that.codeType,_that.year,_that.amount,_that.discount,_that.quantity,_that.unit,_that.gstRate);case _:
+return $default(_that.id,_that.description,_that.sacCode,_that.codeType,_that.year,_that.amount,_that.discount,_that.quantity,_that.unit,_that.gstRate,_that.currency);case _:
   return orElse();
 
 }
@@ -1176,10 +1177,10 @@ return $default(_that.id,_that.description,_that.sacCode,_that.codeType,_that.ye
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String description,  String sacCode,  String codeType,  String year,  double amount,  double discount,  double quantity,  String unit,  double gstRate)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String description,  String sacCode,  String codeType,  String year,  double amount,  double discount,  double quantity,  String unit,  double gstRate,  String currency)  $default,) {final _that = this;
 switch (_that) {
 case _InvoiceItem():
-return $default(_that.id,_that.description,_that.sacCode,_that.codeType,_that.year,_that.amount,_that.discount,_that.quantity,_that.unit,_that.gstRate);case _:
+return $default(_that.id,_that.description,_that.sacCode,_that.codeType,_that.year,_that.amount,_that.discount,_that.quantity,_that.unit,_that.gstRate,_that.currency);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1196,10 +1197,10 @@ return $default(_that.id,_that.description,_that.sacCode,_that.codeType,_that.ye
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String description,  String sacCode,  String codeType,  String year,  double amount,  double discount,  double quantity,  String unit,  double gstRate)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String description,  String sacCode,  String codeType,  String year,  double amount,  double discount,  double quantity,  String unit,  double gstRate,  String currency)?  $default,) {final _that = this;
 switch (_that) {
 case _InvoiceItem() when $default != null:
-return $default(_that.id,_that.description,_that.sacCode,_that.codeType,_that.year,_that.amount,_that.discount,_that.quantity,_that.unit,_that.gstRate);case _:
+return $default(_that.id,_that.description,_that.sacCode,_that.codeType,_that.year,_that.amount,_that.discount,_that.quantity,_that.unit,_that.gstRate,_that.currency);case _:
   return null;
 
 }
@@ -1211,7 +1212,7 @@ return $default(_that.id,_that.description,_that.sacCode,_that.codeType,_that.ye
 @JsonSerializable()
 
 class _InvoiceItem extends InvoiceItem {
-  const _InvoiceItem({this.id, this.description = '', this.sacCode = '', this.codeType = 'SAC', this.year = '', this.amount = 0, this.discount = 0, this.quantity = 1.0, this.unit = 'Nos', this.gstRate = 18.0}): super._();
+  const _InvoiceItem({this.id, this.description = '', this.sacCode = '', this.codeType = 'SAC', this.year = '', this.amount = 0, this.discount = 0, this.quantity = 1.0, this.unit = 'Nos', this.gstRate = 18.0, this.currency = 'INR'}): super._();
   factory _InvoiceItem.fromJson(Map<String, dynamic> json) => _$InvoiceItemFromJson(json);
 
 @override final  String? id;
@@ -1224,6 +1225,7 @@ class _InvoiceItem extends InvoiceItem {
 @override@JsonKey() final  double quantity;
 @override@JsonKey() final  String unit;
 @override@JsonKey() final  double gstRate;
+@override@JsonKey() final  String currency;
 
 /// Create a copy of InvoiceItem
 /// with the given fields replaced by the non-null parameter values.
@@ -1238,18 +1240,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _InvoiceItem&&(identical(other.id, id) || other.id == id)&&(identical(other.description, description) || other.description == description)&&(identical(other.sacCode, sacCode) || other.sacCode == sacCode)&&(identical(other.codeType, codeType) || other.codeType == codeType)&&(identical(other.year, year) || other.year == year)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.gstRate, gstRate) || other.gstRate == gstRate));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _InvoiceItem&&(identical(other.id, id) || other.id == id)&&(identical(other.description, description) || other.description == description)&&(identical(other.sacCode, sacCode) || other.sacCode == sacCode)&&(identical(other.codeType, codeType) || other.codeType == codeType)&&(identical(other.year, year) || other.year == year)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.gstRate, gstRate) || other.gstRate == gstRate)&&(identical(other.currency, currency) || other.currency == currency));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,description,sacCode,codeType,year,amount,discount,quantity,unit,gstRate);
+    return Object.hash(runtimeType,id,description,sacCode,codeType,year,amount,discount,quantity,unit,gstRate,currency);
 }
 
 @override
 String toString() {
-    return 'InvoiceItem(id: $id, description: $description, sacCode: $sacCode, codeType: $codeType, year: $year, amount: $amount, discount: $discount, quantity: $quantity, unit: $unit, gstRate: $gstRate)';
+    return 'InvoiceItem(id: $id, description: $description, sacCode: $sacCode, codeType: $codeType, year: $year, amount: $amount, discount: $discount, quantity: $quantity, unit: $unit, gstRate: $gstRate, currency: $currency)';
 }
 
 
@@ -1260,7 +1262,7 @@ abstract mixin class _$InvoiceItemCopyWith<$Res> implements $InvoiceItemCopyWith
   factory _$InvoiceItemCopyWith(_InvoiceItem value, $Res Function(_InvoiceItem) _then) = __$InvoiceItemCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String description, String sacCode, String codeType, String year, double amount, double discount, double quantity, String unit, double gstRate
+ String? id, String description, String sacCode, String codeType, String year, double amount, double discount, double quantity, String unit, double gstRate, String currency
 });
 
 
@@ -1277,7 +1279,7 @@ class __$InvoiceItemCopyWithImpl<$Res>
 
 /// Create a copy of InvoiceItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? description = null,Object? sacCode = null,Object? codeType = null,Object? year = null,Object? amount = null,Object? discount = null,Object? quantity = null,Object? unit = null,Object? gstRate = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? description = null,Object? sacCode = null,Object? codeType = null,Object? year = null,Object? amount = null,Object? discount = null,Object? quantity = null,Object? unit = null,Object? gstRate = null,Object? currency = null,}) {
   return _then(_InvoiceItem(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
@@ -1289,7 +1291,8 @@ as double,discount: null == discount ? _self.discount : discount // ignore: cast
 as double,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as double,unit: null == unit ? _self.unit : unit // ignore: cast_nullable_to_non_nullable
 as String,gstRate: null == gstRate ? _self.gstRate : gstRate // ignore: cast_nullable_to_non_nullable
-as double,
+as double,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

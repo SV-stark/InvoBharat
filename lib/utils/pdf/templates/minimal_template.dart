@@ -241,6 +241,18 @@ class MinimalTemplate extends BasePdfTemplate {
               pw.Expanded(
                 child: pw.Column(
                   children: [
+                    if (invoice.discountAmount > 0) ...[
+                      buildSummaryRow(
+                        "Subtotal",
+                        invoice.grossTaxableValue,
+                        profile.currency,
+                      ),
+                      buildSummaryRow(
+                        "Discount",
+                        -invoice.discountAmount,
+                        profile.currency,
+                      ),
+                    ],
                     buildSummaryRow(
                       "Taxable Value",
                       invoice.totalTaxableValue,
@@ -264,12 +276,6 @@ class MinimalTemplate extends BasePdfTemplate {
                         profile.currency,
                       ),
                     ],
-                    if (invoice.discountAmount > 0)
-                      buildSummaryRow(
-                        "Discount",
-                        -invoice.discountAmount,
-                        profile.currency,
-                      ),
                     pw.Divider(),
                     buildSummaryRow(
                       "Grand Total",

@@ -28,20 +28,35 @@ class Gstr1JsonImportService {
 
       for (final filePickerFile in result) {
         if (filePickerFile.path == null) continue;
-        final file = File(filePickerFile.path!);
-        final content = await file.readAsString();
-        final Map<String, dynamic> data = json.decode(content);
+        try {
+          final file = File(filePickerFile.path!);
+          final content = await file.readAsString();
+          final decoded = json.decode(content);
+          if (decoded is! Map<String, dynamic>) {
+            totalErrors++;
+            messages.add("${filePickerFile.name}: Invalid JSON format (expected object)");
+            continue;
+          }
 
-        final importRes = await _parseAndSaveJson(data, repository);
-        totalSuccess += importRes.successCount;
-        totalErrors += importRes.errorCount;
-        messages.add("${filePickerFile.name}: ${importRes.message}");
+          final importRes = await parseAndSaveJson(decoded, repository);
+          totalSuccess += importRes.successCount;
+          totalErrors += importRes.errorCount;
+          messages.add("${filePickerFile.name}: ${importRes.message}");
+        } catch (fileErr) {
+          totalErrors++;
+          messages.add("${filePickerFile.name}: Error: $fileErr");
+          debugPrint("Failed importing file ${filePickerFile.name}: $fileErr");
+        }
       }
+
+      final summaryMsg = messages.isNotEmpty
+          ? messages.join('\n')
+          : "Imported $totalSuccess invoices from ${result.length} files.";
 
       return GstrImportResult(
         totalSuccess,
         totalErrors,
-        "Imported $totalSuccess invoices from ${result.length} files.",
+        summaryMsg,
       );
     } catch (e) {
       debugPrint("GSTR-1 JSON Import Error: $e");
@@ -49,7 +64,8 @@ class Gstr1JsonImportService {
     }
   }
 
-  static Future<GstrImportResult> _parseAndSaveJson(
+  @visibleForTesting
+  static Future<GstrImportResult> parseAndSaveJson(
     final Map<String, dynamic> data,
     final InvoiceRepository repository,
   ) async {
@@ -57,13 +73,16 @@ class Gstr1JsonImportService {
     int errors = 0;
 
     // 1. Process B2B Invoices
-    if (data.containsKey('b2b')) {
+    if (data['b2b'] is List) {
       final List<dynamic> b2bList = data['b2b'];
       for (final b2b in b2bList) {
-        final String ctin = b2b['ctin'] ?? '';
-        final List<dynamic> invList = b2b['inv'] ?? [];
+        if (b2b is! Map<String, dynamic>) continue;
+        final String ctin = b2b['ctin']?.toString() ?? '';
+        final invList = b2b['inv'];
+        if (invList is! List) continue;
 
         for (final invJson in invList) {
+          if (invJson is! Map<String, dynamic>) continue;
           try {
             final invoice = _mapB2BToInvoice(invJson, ctin);
             await repository.saveInvoice(invoice);
@@ -77,13 +96,16 @@ class Gstr1JsonImportService {
     }
 
     // 2. Process Credit/Debit Notes (CDNR)
-    if (data.containsKey('cdnr')) {
+    if (data['cdnr'] is List) {
       final List<dynamic> cdnrList = data['cdnr'];
       for (final cdnr in cdnrList) {
-        final String ctin = cdnr['ctin'] ?? '';
-        final List<dynamic> ntList = cdnr['nt'] ?? [];
+        if (cdnr is! Map<String, dynamic>) continue;
+        final String ctin = cdnr['ctin']?.toString() ?? '';
+        final ntList = cdnr['nt'];
+        if (ntList is! List) continue;
 
         for (final ntJson in ntList) {
+          if (ntJson is! Map<String, dynamic>) continue;
           try {
             final invoice = _mapCDNRToInvoice(ntJson, ctin);
             await repository.saveInvoice(invoice);
@@ -97,11 +119,15 @@ class Gstr1JsonImportService {
     }
 
     // 3. Process B2CL (Business to Large Consumer)
-    if (data.containsKey('b2cl')) {
+    if (data['b2cl'] is List) {
       final List<dynamic> b2clList = data['b2cl'];
       for (final b2cl in b2clList) {
-        final List<dynamic> invList = b2cl['inv'] ?? [];
+        if (b2cl is! Map<String, dynamic>) continue;
+        final invList = b2cl['inv'];
+        if (invList is! List) continue;
+
         for (final invJson in invList) {
+          if (invJson is! Map<String, dynamic>) continue;
           try {
             final invoice = _mapB2BToInvoice(invJson, ''); // B2C has no ctin
             await repository.saveInvoice(invoice);
@@ -114,31 +140,60 @@ class Gstr1JsonImportService {
       }
     }
 
-    return GstrImportResult(success, errors, "Processed.");
+    return GstrImportResult(success, errors, "Processed ($success saved, $errors failed).");
   }
 
   static Invoice _mapB2BToInvoice(
     final Map<String, dynamic> invJson,
     final String ctin,
   ) {
-    final String inum = invJson['inum'] ?? '';
-    final String idt = invJson['idt'] ?? '';
-    final String pos = invJson['pos'] ?? '';
-    final String rchrg = invJson['rchrg'] ?? 'N';
-    final List<dynamic> itms = invJson['itms'] ?? [];
+    final String inum = invJson['inum']?.toString() ?? '';
+    final String idt = invJson['idt']?.toString() ?? '';
+    final String pos = invJson['pos']?.toString() ?? '';
+    final String rchrg = invJson['rchrg']?.toString() ?? 'N';
+    final itms = invJson['itms'];
+    final List<dynamic> itmsList = itms is List ? itms : [];
 
     final invoiceItems = <InvoiceItem>[];
-    for (final itm in itms) {
+    for (final itm in itmsList) {
+      if (itm is! Map<String, dynamic>) continue;
       final det = itm['itm_det'];
-      if (det != null) {
+      if (det is Map<String, dynamic>) {
+        final txval = (det['txval'] as num?)?.toDouble() ?? 0.0;
+        double rt = (det['rt'] as num?)?.toDouble() ?? 0.0;
+        final iamt = (det['iamt'] as num?)?.toDouble() ?? 0.0;
+        final camt = (det['camt'] as num?)?.toDouble() ?? 0.0;
+        final samt = (det['samt'] as num?)?.toDouble() ?? 0.0;
+        final csamt = (det['csamt'] as num?)?.toDouble() ?? 0.0;
+
+        // If rate was omitted or 0 but tax amounts are present, deduce the rate
+        if (rt == 0.0 && txval > 0.0) {
+          if (iamt > 0.0) {
+            rt = (iamt / txval) * 100.0;
+          } else if (camt > 0.0 || samt > 0.0) {
+            rt = ((camt + samt) / txval) * 100.0;
+          }
+        }
+
         invoiceItems.add(
           InvoiceItem(
             id: const Uuid().v4(),
             description: "Goods/Service",
-            gstRate: (det['rt'] as num?)?.toDouble() ?? 0,
-            amount: (det['txval'] as num?)?.toDouble() ?? 0,
+            gstRate: rt,
+            amount: txval,
           ),
         );
+
+        if (csamt > 0.0) {
+          invoiceItems.add(
+            InvoiceItem(
+              id: const Uuid().v4(),
+              description: "Cess",
+              gstRate: 0.0,
+              amount: csamt,
+            ),
+          );
+        }
       }
     }
 
@@ -149,7 +204,7 @@ class Gstr1JsonImportService {
       placeOfSupply: _mapStateCodeToName(pos),
       reverseCharge: rchrg,
       receiver: Receiver(
-        name: "Client $ctin",
+        name: ctin.isNotEmpty ? "Client $ctin" : "B2C Consumer",
         gstin: ctin,
         state: _mapStateCodeToName(pos),
       ),
@@ -163,26 +218,54 @@ class Gstr1JsonImportService {
     final Map<String, dynamic> ntJson,
     final String ctin,
   ) {
-    final String ntNum = ntJson['nt_num'] ?? '';
-    final String ntDt = ntJson['nt_dt'] ?? '';
-    final String inum = ntJson['inum'] ?? '';
-    final String idt = ntJson['idt'] ?? '';
-    final String nty = ntJson['nty'] ?? 'C'; // C for Credit, D for Debit
-    final String pos = ntJson['pos'] ?? '';
-    final List<dynamic> itms = ntJson['itms'] ?? [];
+    final String ntNum = ntJson['nt_num']?.toString() ?? '';
+    final String ntDt = ntJson['nt_dt']?.toString() ?? '';
+    final String inum = ntJson['inum']?.toString() ?? '';
+    final String idt = ntJson['idt']?.toString() ?? '';
+    final String nty = ntJson['nty']?.toString() ?? 'C'; // C for Credit, D for Debit
+    final String pos = ntJson['pos']?.toString() ?? '';
+    final itms = ntJson['itms'];
+    final List<dynamic> itmsList = itms is List ? itms : [];
 
     final invoiceItems = <InvoiceItem>[];
-    for (final itm in itms) {
+    for (final itm in itmsList) {
+      if (itm is! Map<String, dynamic>) continue;
       final det = itm['itm_det'];
-      if (det != null) {
+      if (det is Map<String, dynamic>) {
+        final txval = (det['txval'] as num?)?.toDouble() ?? 0.0;
+        double rt = (det['rt'] as num?)?.toDouble() ?? 0.0;
+        final iamt = (det['iamt'] as num?)?.toDouble() ?? 0.0;
+        final camt = (det['camt'] as num?)?.toDouble() ?? 0.0;
+        final samt = (det['samt'] as num?)?.toDouble() ?? 0.0;
+        final csamt = (det['csamt'] as num?)?.toDouble() ?? 0.0;
+
+        if (rt == 0.0 && txval > 0.0) {
+          if (iamt > 0.0) {
+            rt = (iamt / txval) * 100.0;
+          } else if (camt > 0.0 || samt > 0.0) {
+            rt = ((camt + samt) / txval) * 100.0;
+          }
+        }
+
         invoiceItems.add(
           InvoiceItem(
             id: const Uuid().v4(),
             description: "Adjustment",
-            gstRate: (det['rt'] as num?)?.toDouble() ?? 0,
-            amount: (det['txval'] as num?)?.toDouble() ?? 0,
+            gstRate: rt,
+            amount: txval,
           ),
         );
+
+        if (csamt > 0.0) {
+          invoiceItems.add(
+            InvoiceItem(
+              id: const Uuid().v4(),
+              description: "Cess",
+              gstRate: 0.0,
+              amount: csamt,
+            ),
+          );
+        }
       }
     }
 
@@ -194,7 +277,7 @@ class Gstr1JsonImportService {
       originalInvoiceNumber: inum,
       originalInvoiceDate: _parseGstDate(idt),
       receiver: Receiver(
-        name: "Client $ctin",
+        name: ctin.isNotEmpty ? "Client $ctin" : "B2C Consumer",
         gstin: ctin,
         state: _mapStateCodeToName(pos),
       ),

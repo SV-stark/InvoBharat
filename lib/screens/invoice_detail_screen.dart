@@ -418,22 +418,23 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
   }
 
   void _duplicateInvoice() async {
-    final duplicated = _invoice.copyWith(
-      id: null,
-      invoiceNo: '',
-      invoiceDate: DateTime.now(),
-      payments: [],
-      status: 'Draft',
-    );
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invoice duplicated for editing")),
-      );
+    try {
+      final newInv = await InvoiceActions.duplicateInvoice(ref, _invoice);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Invoice duplicated as ${newInv.invoiceNo}")),
+        );
+        await context.push('/invoice-form', extra: newInv);
+        _refreshInvoice();
+        ref.invalidate(invoiceListProvider);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to duplicate invoice: $e")),
+        );
+      }
     }
-    await context.push('/invoice-form', extra: duplicated);
-    _refreshInvoice();
-    ref.invalidate(invoiceListProvider);
   }
 
   void _setupRecurring() async {

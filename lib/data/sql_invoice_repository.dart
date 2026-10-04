@@ -262,6 +262,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
               quantity: row.quantity,
               unit: row.unit,
               gstRate: row.gstRate,
+              currency: invoiceRow.currency,
             ),
           )
           .toList(),
@@ -538,6 +539,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
               quantity: itemRow.quantity,
               unit: itemRow.unit,
               gstRate: itemRow.gstRate,
+              currency: row.currency,
             ),
           )
           .toList();

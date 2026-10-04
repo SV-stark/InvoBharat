@@ -234,24 +234,46 @@ class UpdateService {
 
     final shouldCloseClient = client == null;
     final httpClient = client ?? http.Client();
+    const maxDownloadBytes = 250 * 1024 * 1024; // 250 MB
     try {
       final request = http.Request('GET', Uri.parse(asset.browserDownloadUrl));
       final streamedResponse = await httpClient.send(request);
       if (streamedResponse.statusCode == 200) {
+        if (streamedResponse.contentLength != null &&
+            streamedResponse.contentLength! > maxDownloadBytes) {
+          throw Exception(
+            'Installer download aborted: size (${streamedResponse.contentLength} bytes) exceeds limit of 250 MB.',
+          );
+        }
+
         final file = File(savePath);
         final sink = file.openWrite();
-        await streamedResponse.stream.pipe(sink);
-        await sink.flush();
-        await sink.close();
+        int bytesReceived = 0;
+        try {
+          await streamedResponse.stream
+              .timeout(const Duration(minutes: 5))
+              .listen((final chunk) {
+            bytesReceived += chunk.length;
+            if (bytesReceived > maxDownloadBytes) {
+              throw Exception(
+                'Download aborted: installer exceeded maximum allowed size of 250 MB.',
+              );
+            }
+            sink.add(chunk);
+          }).asFuture();
+          await sink.flush();
+        } finally {
+          await sink.close();
+        }
 
         // Check for checksum in assets or release body
         String? expectedChecksum;
+        final assetBase = asset.name.toLowerCase();
         final checksumAsset = release.assets.cast<ReleaseAsset?>().firstWhere(
           (final a) =>
               a != null &&
-              (a.name == '${asset.name}.sha256' ||
-                  a.name == '${asset.name}.sha256sum' ||
-                  a.name.endsWith('.sha256')),
+              (a.name.toLowerCase() == '$assetBase.sha256' ||
+                  a.name.toLowerCase() == '$assetBase.sha256sum'),
           orElse: () => null,
         );
 
@@ -303,6 +325,14 @@ class UpdateService {
           'Failed to download update: ${streamedResponse.statusCode}',
         );
       }
+    } catch (e) {
+      final file = File(savePath);
+      if (await file.exists()) {
+        try {
+          await file.delete();
+        } catch (_) {}
+      }
+      rethrow;
     } finally {
       if (shouldCloseClient) {
         httpClient.close();
