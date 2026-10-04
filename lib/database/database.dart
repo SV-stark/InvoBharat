@@ -7,6 +7,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:invobharat/database/tables.dart';
 import 'package:invobharat/services/logger_service.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 part 'database.g.dart';
 
@@ -37,7 +39,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration {
@@ -315,6 +317,66 @@ class AppDatabase extends _$AppDatabase {
           }
           await _createIndexes(m.database);
         }
+        if (from < 18) {
+          final pragmaResult = await m.database
+              .customSelect('PRAGMA table_info(`invoices`)')
+              .get();
+          final existingCols = pragmaResult
+              .map((final r) => r.read<String>('name'))
+              .toSet();
+          if (!existingCols.contains('discount_amount')) {
+            await m.addColumn(invoices, invoices.discountAmount);
+          }
+          if (!existingCols.contains('currency')) {
+            await m.addColumn(invoices, invoices.currency);
+          }
+          if (!existingCols.contains('is_archived')) {
+            await m.addColumn(invoices, invoices.isArchived);
+          }
+          if (!existingCols.contains('delivery_address')) {
+            await m.addColumn(invoices, invoices.deliveryAddress);
+          }
+          if (!existingCols.contains('supplier_state')) {
+            await m.addColumn(invoices, invoices.supplierState);
+          }
+          if (!existingCols.contains('financial_year')) {
+            await m.addColumn(invoices, invoices.financialYear);
+          }
+
+          // Backfill financial_year for all existing invoices based on invoice_date
+          try {
+            final allInvoices = await m.database
+                .customSelect('SELECT id, invoice_date FROM invoices')
+                .get();
+            for (final row in allInvoices) {
+              final id = row.read<String>('id');
+              final rawDate = row.read<dynamic>('invoice_date');
+              DateTime? dt;
+              if (rawDate is int) {
+                dt = DateTime.fromMillisecondsSinceEpoch(rawDate * 1000);
+              } else if (rawDate is String) {
+                dt = DateTime.tryParse(rawDate);
+              }
+              if (dt != null) {
+                final fyStartYear = dt.month >= 4 ? dt.year : dt.year - 1;
+                final fy =
+                    '$fyStartYear-${((fyStartYear + 1) % 100).toString().padLeft(2, '0')}';
+                await m.database.customStatement(
+                  'UPDATE invoices SET financial_year = ? WHERE id = ?',
+                  [fy, id],
+                );
+              }
+            }
+          } catch (e, st) {
+            LoggerService.talker.handle(
+              e,
+              st,
+              "Error backfilling invoice financial_year",
+            );
+          }
+
+          await _createIndexes(m.database);
+        }
       },
       beforeOpen: (final details) async {
         await customStatement('PRAGMA foreign_keys = ON;');
@@ -353,25 +415,34 @@ class AppDatabase extends _$AppDatabase {
             await db.customStatement(
               'ALTER TABLE `$tableName` RENAME TO `$tempBackupName`',
             );
-            await Migrator(db).createTable(tableInfo);
+            try {
+              await Migrator(db).createTable(tableInfo);
 
-            final pragmaResult = await db
-                .customSelect('PRAGMA table_info(`$tempBackupName`)')
-                .get();
-            final existingCols = pragmaResult
-                .map((final r) => r.read<String>('name'))
-                .toSet();
-            final columnsToCopy = tableInfo.$columns
-                .map((final c) => c.name)
-                .where((final name) => existingCols.contains(name))
-                .join(', ');
+              final pragmaResult = await db
+                  .customSelect('PRAGMA table_info(`$tempBackupName`)')
+                  .get();
+              final existingCols = pragmaResult
+                  .map((final r) => r.read<String>('name'))
+                  .toSet();
+              final columnsToCopy = tableInfo.$columns
+                  .map((final c) => c.name)
+                  .where((final name) => existingCols.contains(name))
+                  .join(', ');
 
-            if (columnsToCopy.isNotEmpty) {
+              if (columnsToCopy.isNotEmpty) {
+                await db.customStatement(
+                  'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempBackupName`',
+                );
+              }
+              await db.customStatement('DROP TABLE `$tempBackupName`');
+            } catch (innerErr) {
+              // Rollback rename if creation/copy failed
+              await db.customStatement('DROP TABLE IF EXISTS `$tableName`');
               await db.customStatement(
-                'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempBackupName`',
+                'ALTER TABLE `$tempBackupName` RENAME TO `$tableName`',
               );
+              rethrow;
             }
-            await db.customStatement('DROP TABLE `$tempBackupName`');
           }
         }
       }
@@ -383,26 +454,112 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
+  static Future<void> _repairDuplicateGstins(final GeneratedDatabase db) async {
+    try {
+      // Deduplicate business_profiles by GSTIN
+      final bpDuplicates = await db.customSelect(
+        '''
+        SELECT gstin, COUNT(*) as cnt
+        FROM business_profiles
+        WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null'
+        GROUP BY gstin
+        HAVING cnt > 1
+        ''',
+      ).get();
+
+      for (final dup in bpDuplicates) {
+        final gstin = dup.read<String>('gstin');
+        final rows = await db.customSelect(
+          'SELECT id FROM business_profiles WHERE gstin = ? ORDER BY rowid ASC',
+          variables: [Variable.withString(gstin)],
+        ).get();
+        for (int i = 1; i < rows.length; i++) {
+          final id = rows[i].read<String>('id');
+          await db.customStatement(
+            'UPDATE business_profiles SET gstin = ? WHERE id = ?',
+            ['$gstin-dup$i', id],
+          );
+        }
+      }
+
+      // Deduplicate clients by profile_id and GSTIN
+      final clientDuplicates = await db.customSelect(
+        '''
+        SELECT profile_id, gstin, COUNT(*) as cnt
+        FROM clients
+        WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null'
+        GROUP BY profile_id, gstin
+        HAVING cnt > 1
+        ''',
+      ).get();
+
+      for (final dup in clientDuplicates) {
+        final profileId = dup.read<String>('profile_id');
+        final gstin = dup.read<String>('gstin');
+        final rows = await db.customSelect(
+          'SELECT id FROM clients WHERE profile_id = ? AND gstin = ? ORDER BY rowid ASC',
+          variables: [Variable.withString(profileId), Variable.withString(gstin)],
+        ).get();
+        for (int i = 1; i < rows.length; i++) {
+          final id = rows[i].read<String>('id');
+          await db.customStatement(
+            'UPDATE clients SET gstin = ? WHERE id = ?',
+            ['$gstin-dup$i', id],
+          );
+        }
+      }
+    } catch (e, st) {
+      LoggerService.talker.handle(e, st, "Error resolving duplicate GSTINs");
+    }
+  }
+
   static Future<void> _repairDuplicateInvoiceNumbers(
     final GeneratedDatabase db,
   ) async {
     try {
+      // Backfill missing financial_year before checking duplicates
+      final missingFyRows = await db.customSelect(
+        "SELECT id, invoice_date FROM invoices WHERE financial_year IS NULL OR financial_year = ''",
+      ).get();
+      for (final row in missingFyRows) {
+        final id = row.read<String>('id');
+        final rawDate = row.read<dynamic>('invoice_date');
+        DateTime? dt;
+        if (rawDate is int) {
+          dt = DateTime.fromMillisecondsSinceEpoch(rawDate * 1000);
+        } else if (rawDate is String) {
+          dt = DateTime.tryParse(rawDate);
+        }
+        if (dt != null) {
+          final fyStartYear = dt.month >= 4 ? dt.year : dt.year - 1;
+          final fy =
+              '$fyStartYear-${((fyStartYear + 1) % 100).toString().padLeft(2, '0')}';
+          await db.customStatement(
+            'UPDATE invoices SET financial_year = ? WHERE id = ?',
+            [fy, id],
+          );
+        }
+      }
+
       final duplicates = await db.customSelect(
         '''
-        SELECT profile_id, invoice_no, COUNT(*) as cnt
+        SELECT profile_id, financial_year, invoice_no, COUNT(*) as cnt
         FROM invoices
-        GROUP BY profile_id, invoice_no
+        GROUP BY profile_id, financial_year, invoice_no
         HAVING cnt > 1
         ''',
       ).get();
 
       for (final dup in duplicates) {
         final profileId = dup.read<String>('profile_id');
+        final fy = dup.readNullable<String>('financial_year') ?? '';
         final invoiceNo = dup.read<String>('invoice_no');
         final rows = await db.customSelect(
-          'SELECT id FROM invoices WHERE profile_id = ? AND invoice_no = ? ORDER BY invoice_date ASC, rowid ASC',
+          "SELECT id FROM invoices WHERE profile_id = ? AND (financial_year = ? OR (? = '' AND financial_year IS NULL)) AND invoice_no = ? ORDER BY invoice_date ASC, rowid ASC",
           variables: [
             Variable.withString(profileId),
+            Variable.withString(fy),
+            Variable.withString(fy),
             Variable.withString(invoiceNo),
           ],
         ).get();
@@ -426,18 +583,36 @@ class AppDatabase extends _$AppDatabase {
   }
 
   static Future<void> _createIndexes(final GeneratedDatabase db) async {
-    await db.customStatement(
-      "CREATE UNIQUE INDEX IF NOT EXISTS `idx_business_profiles_gstin` ON `business_profiles` (gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null';",
-    );
-    await db.customStatement(
-      "CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null';",
-    );
+    await _repairDuplicateGstins(db);
+    try {
+      await db.customStatement(
+        "CREATE UNIQUE INDEX IF NOT EXISTS `idx_business_profiles_gstin` ON `business_profiles` (gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null';",
+      );
+    } catch (_) {
+      await db.customStatement(
+        "CREATE INDEX IF NOT EXISTS `idx_business_profiles_gstin` ON `business_profiles` (gstin);",
+      );
+    }
+    try {
+      await db.customStatement(
+        "CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null';",
+      );
+    } catch (_) {
+      await db.customStatement(
+        "CREATE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin);",
+      );
+    }
     await db.customStatement(
       'CREATE INDEX IF NOT EXISTS idx_invoices_profile_date ON invoices (profile_id, invoice_date);',
     );
     await _repairDuplicateInvoiceNumbers(db);
+    // Drop old global unique index
     await db.customStatement(
-      'CREATE UNIQUE INDEX IF NOT EXISTS idx_invoices_profile_number ON invoices (profile_id, invoice_no);',
+      'DROP INDEX IF EXISTS idx_invoices_profile_number;',
+    );
+    // Create new FY-scoped unique index
+    await db.customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_invoices_profile_fy_number ON invoices (profile_id, financial_year, invoice_no);',
     );
     await db.customStatement(
       'CREATE INDEX IF NOT EXISTS idx_invoices_profile_type ON invoices (profile_id, type);',
@@ -471,6 +646,19 @@ class AppDatabase extends _$AppDatabase {
   Future<void> vacuumInto(final String path) async {
     await customStatement('VACUUM INTO ?', [path]);
   }
+}
+
+Future<File> getAppDatabaseFile() async {
+  final dir = await getApplicationDocumentsDirectory();
+  final canonicalFile = File(p.join(dir.path, 'db.sqlite'));
+  final legacyFile = File(p.join(dir.path, 'InvoBharat', 'db.sqlite'));
+
+  if (!await canonicalFile.exists() && await legacyFile.exists()) {
+    try {
+      await legacyFile.copy(canonicalFile.path);
+    } catch (_) {}
+  }
+  return canonicalFile;
 }
 
 QueryExecutor _openConnection() {

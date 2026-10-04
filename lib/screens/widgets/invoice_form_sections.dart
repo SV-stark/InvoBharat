@@ -546,7 +546,7 @@ class InvoiceSummarySection extends ConsumerWidget {
                   SizedBox(
                     width: 120,
                     child: TextFormField(
-                      key: ValueKey(invoice.discountAmount),
+                      key: ValueKey(invoice.id),
                       initialValue: invoice.discountAmount == 0.0
                           ? ''
                           : invoice.discountAmount.toStringAsFixed(2),

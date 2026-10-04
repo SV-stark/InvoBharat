@@ -6,14 +6,14 @@ part 'item_template.g.dart';
 @freezed
 abstract class ItemTemplate with _$ItemTemplate {
   const factory ItemTemplate({
-    required final String id,
-    required final String description,
-    required final String unit,
-    @Default(0.0) final double amount,
-    @Default(18.0) final double gstRate,
-    @Default('SAC') final String codeType,
-    @Default('') final String sacCode,
-    @Default(1.0) final double quantity,
+    required String id,
+    required String description,
+    required String unit,
+    @Default(0.0) double amount,
+    @Default(18.0) double gstRate,
+    @Default('SAC') String codeType,
+    @Default('') String sacCode,
+    @Default(1.0) double quantity,
   }) = _ItemTemplate;
 
   factory ItemTemplate.fromJson(final Map<String, dynamic> json) =>

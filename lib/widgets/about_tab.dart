@@ -46,11 +46,9 @@ class AboutTab extends ConsumerWidget {
 
     bool updateAvailable = false;
     if (config.updateChannel == UpdateChannel.stable) {
-      // Simple version comparison (e.g., 1.0.1 > 1.0.0)
-      updateAvailable = latest.tagName.compareTo(currentVersion) > 0;
+      updateAvailable =
+          UpdateService.isNewerVersion(latest.tagName, currentVersion);
     } else {
-      // For nightly, we'll just check if it's newer than some baseline or always show if date is recent
-      // As a simplification, we show it if it's a prerelease and tag is different from current
       updateAvailable = latest.tagName != currentVersion;
     }
 
@@ -124,6 +122,10 @@ class AboutTab extends ConsumerWidget {
                                   SnackBar(content: Text('Update failed: $e')),
                                 );
                                 Navigator.pop(context);
+                              }
+                            } finally {
+                              if (context.mounted) {
+                                setDialogState(() => isDownloading = false);
                               }
                             }
                           },

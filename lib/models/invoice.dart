@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:invobharat/models/payment_transaction.dart';
 import 'package:invobharat/utils/gst_utils.dart';
@@ -13,37 +14,37 @@ abstract class Invoice with _$Invoice {
   const Invoice._();
 
   const factory Invoice({
-    final String? id,
-    final String? profileId,
-    @Default('Modern') final String style,
-    required final Supplier supplier,
-    required final Receiver receiver,
-    @Default('') final String invoiceNo,
-    required final DateTime invoiceDate,
-    final DateTime? dueDate,
-    @Default('') final String placeOfSupply,
-    @Default('N') final String reverseCharge,
-    @Default('') final String paymentTerms,
-    @Default([]) final List<InvoiceItem> items,
-    @Default([]) final List<PaymentTransaction> payments,
-    @Default('') final String comments,
-    @Default('') final String bankName,
-    @Default('') final String accountNo,
-    @Default('') final String ifscCode,
-    @Default('') final String branch,
-    final String? deliveryAddress,
-    @Default(false) final bool isArchived,
-    @Default('INR') final String currency,
-    @Default(0.0) final double discountAmount,
-    @Default(InvoiceType.invoice) final InvoiceType type,
-    final String? originalInvoiceNumber,
-    final DateTime? originalInvoiceDate,
-    final String? poNumber,
-    @Default('Draft') final String status,
-    final DateTime? sentAt,
-    final String? ewayBillNo,
-    final String? vehicleNo,
-    final String? irnNo,
+    String? id,
+    String? profileId,
+    @Default('Modern') String style,
+    required Supplier supplier,
+    required Receiver receiver,
+    @Default('') String invoiceNo,
+    required DateTime invoiceDate,
+    DateTime? dueDate,
+    @Default('') String placeOfSupply,
+    @Default('N') String reverseCharge,
+    @Default('') String paymentTerms,
+    @Default([]) List<InvoiceItem> items,
+    @Default([]) List<PaymentTransaction> payments,
+    @Default('') String comments,
+    @Default('') String bankName,
+    @Default('') String accountNo,
+    @Default('') String ifscCode,
+    @Default('') String branch,
+    String? deliveryAddress,
+    @Default(false) bool isArchived,
+    @Default('INR') String currency,
+    @Default(0.0) double discountAmount,
+    @Default(InvoiceType.invoice) InvoiceType type,
+    String? originalInvoiceNumber,
+    DateTime? originalInvoiceDate,
+    String? poNumber,
+    @Default('Draft') String status,
+    DateTime? sentAt,
+    String? ewayBillNo,
+    String? vehicleNo,
+    String? irnNo,
   }) = _Invoice;
 
   factory Invoice.fromJson(final Map<String, dynamic> json) =>
@@ -79,14 +80,30 @@ abstract class Invoice with _$Invoice {
     return suppInput.trim().toLowerCase() != posInput.trim().toLowerCase();
   }
 
+  double get _grossTaxableValue =>
+      items.fold(0.0, (final sum, final item) => sum + item.netAmount);
+
   double get totalTaxableValue =>
-      items.fold(0, (final sum, final item) => sum + item.netAmount);
+      math.max(0.0, _grossTaxableValue - discountAmount);
+
+  double _itemTaxableValue(final InvoiceItem item) {
+    if (_grossTaxableValue <= 0 || discountAmount <= 0) {
+      return item.netAmount;
+    }
+    final discountRatio =
+        math.min(discountAmount, _grossTaxableValue) / _grossTaxableValue;
+    return math.max(0.0, item.netAmount * (1 - discountRatio));
+  }
 
   double get totalCGST {
     if (isInterState) return 0;
     final total = items.fold(
       Money.fromNumWithCurrency(0, _currencyObj),
-      (final sum, final item) => sum + item.cgstMoney,
+      (final sum, final item) {
+        final taxableMoney =
+            Money.fromNumWithCurrency(_itemTaxableValue(item), _currencyObj);
+        return sum + (taxableMoney * (item.cgstRate / 100));
+      },
     );
     return total.toDouble();
   }
@@ -95,7 +112,11 @@ abstract class Invoice with _$Invoice {
     if (isInterState) return 0;
     final total = items.fold(
       Money.fromNumWithCurrency(0, _currencyObj),
-      (final sum, final item) => sum + item.sgstMoney,
+      (final sum, final item) {
+        final taxableMoney =
+            Money.fromNumWithCurrency(_itemTaxableValue(item), _currencyObj);
+        return sum + (taxableMoney * (item.sgstRate / 100));
+      },
     );
     return total.toDouble();
   }
@@ -104,21 +125,22 @@ abstract class Invoice with _$Invoice {
     if (!isInterState) return 0;
     final total = items.fold(
       Money.fromNumWithCurrency(0, _currencyObj),
-      (final sum, final item) => sum + item.igstMoney,
+      (final sum, final item) {
+        final taxableMoney =
+            Money.fromNumWithCurrency(_itemTaxableValue(item), _currencyObj);
+        return sum + (taxableMoney * (item.gstRate / 100));
+      },
     );
     return total.toDouble();
   }
 
   double get grandTotal {
     final taxable = Money.fromNumWithCurrency(totalTaxableValue, _currencyObj);
-    final discount = Money.fromNumWithCurrency(discountAmount, _currencyObj);
+    final cgst = Money.fromNumWithCurrency(totalCGST, _currencyObj);
+    final sgst = Money.fromNumWithCurrency(totalSGST, _currencyObj);
+    final igst = Money.fromNumWithCurrency(totalIGST, _currencyObj);
 
-    return (taxable +
-            Money.fromNumWithCurrency(totalCGST, _currencyObj) +
-            Money.fromNumWithCurrency(totalSGST, _currencyObj) +
-            Money.fromNumWithCurrency(totalIGST, _currencyObj) -
-            discount)
-        .toDouble();
+    return (taxable + cgst + sgst + igst).toDouble();
   }
 
   double get totalPaid {
@@ -139,10 +161,10 @@ abstract class Invoice with _$Invoice {
 
   String get paymentStatus {
     if (totalPaid >= grandTotal - 0.001) return 'Paid';
-    if (totalPaid > 0) return 'Partial';
     if (dueDate != null && DateTime.now().isAfter(dueDate!)) {
       return 'Overdue';
     }
+    if (totalPaid > 0) return 'Partial';
     return 'Unpaid';
   }
 }
@@ -150,13 +172,13 @@ abstract class Invoice with _$Invoice {
 @freezed
 abstract class Supplier with _$Supplier {
   const factory Supplier({
-    @Default('') final String name,
-    @Default('') final String address,
-    @Default('') final String gstin,
-    @Default('') final String pan,
-    @Default('') final String email,
-    @Default('') final String phone,
-    @Default('') final String state,
+    @Default('') String name,
+    @Default('') String address,
+    @Default('') String gstin,
+    @Default('') String pan,
+    @Default('') String email,
+    @Default('') String phone,
+    @Default('') String state,
   }) = _Supplier;
 
   factory Supplier.fromJson(final Map<String, dynamic> json) =>
@@ -166,14 +188,14 @@ abstract class Supplier with _$Supplier {
 @freezed
 abstract class Receiver with _$Receiver {
   const factory Receiver({
-    @Default('') final String name,
-    @Default('') final String address,
-    @Default('') final String gstin,
-    @Default('') final String pan,
-    @Default('') final String state,
-    @Default('') final String stateCode,
-    @Default('') final String email,
-    @Default('') final String phone,
+    @Default('') String name,
+    @Default('') String address,
+    @Default('') String gstin,
+    @Default('') String pan,
+    @Default('') String state,
+    @Default('') String stateCode,
+    @Default('') String email,
+    @Default('') String phone,
   }) = _Receiver;
 
   factory Receiver.fromJson(final Map<String, dynamic> json) =>
@@ -185,16 +207,16 @@ abstract class InvoiceItem with _$InvoiceItem {
   const InvoiceItem._();
 
   const factory InvoiceItem({
-    final String? id,
-    @Default('') final String description,
-    @Default('') final String sacCode,
-    @Default('SAC') final String codeType,
-    @Default('') final String year,
-    @Default(0) final double amount,
-    @Default(0) final double discount,
-    @Default(1.0) final double quantity,
-    @Default('Nos') final String unit,
-    @Default(18.0) final double gstRate,
+    String? id,
+    @Default('') String description,
+    @Default('') String sacCode,
+    @Default('SAC') String codeType,
+    @Default('') String year,
+    @Default(0) double amount,
+    @Default(0) double discount,
+    @Default(1.0) double quantity,
+    @Default('Nos') String unit,
+    @Default(18.0) double gstRate,
   }) = _InvoiceItem;
 
   factory InvoiceItem.fromJson(final Map<String, dynamic> json) =>
@@ -206,7 +228,7 @@ abstract class InvoiceItem with _$InvoiceItem {
   // Since InvoiceItem doesn't know its parent, we use INR as a safe default for precision (2 decimal).
   Currency get _currency => CommonCurrencies().inr;
 
-  double get netAmount => (amount * quantity) - discount;
+  double get netAmount => math.max(0.0, (amount * quantity) - discount);
 
   String get cleanSacCode => sacCode.split(' - ').first.trim();
 

@@ -12,18 +12,18 @@ abstract class Estimate with _$Estimate {
   const Estimate._();
 
   const factory Estimate({
-    required final String id,
-    @Default('') final String estimateNo,
-    required final DateTime date,
-    final DateTime? expiryDate,
-    required final Supplier supplier,
-    required final Receiver receiver,
-    @Default([]) final List<InvoiceItem> items,
-    @Default('') final String notes,
-    @Default('') final String terms,
+    required String id,
+    @Default('') String estimateNo,
+    required DateTime date,
+    DateTime? expiryDate,
+    required Supplier supplier,
+    required Receiver receiver,
+    @Default([]) List<InvoiceItem> items,
+    @Default('') String notes,
+    @Default('') String terms,
     @Default('Draft')
-    final String? status, // Draft, Sent, Accepted, Rejected, Converted
-    final String? poNumber,
+    String? status, // Draft, Sent, Accepted, Rejected, Converted
+    String? poNumber,
   }) = _Estimate;
 
   factory Estimate.create({

@@ -148,7 +148,8 @@ class InvoiceNotifier extends Notifier<Invoice> {
   }
 
   void updateDiscountAmount(final String val) {
-    state = state.copyWith(discountAmount: double.tryParse(val) ?? 0.0);
+    final parsed = double.tryParse(val) ?? 0.0;
+    state = state.copyWith(discountAmount: parsed < 0.0 ? 0.0 : parsed);
   }
 
   void updateSupplierName(final String val) {
@@ -220,12 +221,14 @@ class InvoiceNotifier extends Notifier<Invoice> {
   }
 
   void updateItemDescription(final int index, final String val) {
+    if (index < 0 || index >= state.items.length) return;
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = newItems[index].copyWith(description: val);
     state = state.copyWith(items: newItems);
   }
 
   void updateItemAmount(final int index, final String val) {
+    if (index < 0 || index >= state.items.length) return;
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = newItems[index].copyWith(
       amount: double.tryParse(val) ?? 0.0,
@@ -234,6 +237,7 @@ class InvoiceNotifier extends Notifier<Invoice> {
   }
 
   void updateItemGstRate(final int index, final String val) {
+    if (index < 0 || index >= state.items.length) return;
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = newItems[index].copyWith(
       gstRate: double.tryParse(val) ?? 0.0,
@@ -242,24 +246,28 @@ class InvoiceNotifier extends Notifier<Invoice> {
   }
 
   void updateItemCodeType(final int index, final String val) {
+    if (index < 0 || index >= state.items.length) return;
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = newItems[index].copyWith(codeType: val);
     state = state.copyWith(items: newItems);
   }
 
   void updateItemSac(final int index, final String val) {
+    if (index < 0 || index >= state.items.length) return;
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = newItems[index].copyWith(sacCode: val);
     state = state.copyWith(items: newItems);
   }
 
   void updateItemYear(final int index, final String val) {
+    if (index < 0 || index >= state.items.length) return;
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = newItems[index].copyWith(year: val);
     state = state.copyWith(items: newItems);
   }
 
   void updateItemDiscount(final int index, final String val) {
+    if (index < 0 || index >= state.items.length) return;
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = newItems[index].copyWith(
       discount: double.tryParse(val) ?? 0.0,
@@ -268,6 +276,7 @@ class InvoiceNotifier extends Notifier<Invoice> {
   }
 
   void updateItemQuantity(final int index, final String val) {
+    if (index < 0 || index >= state.items.length) return;
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = newItems[index].copyWith(
       quantity: double.tryParse(val) ?? 1.0,
@@ -276,6 +285,7 @@ class InvoiceNotifier extends Notifier<Invoice> {
   }
 
   void updateItemUnit(final int index, final String val) {
+    if (index < 0 || index >= state.items.length) return;
     final newItems = List<InvoiceItem>.from(state.items);
     newItems[index] = newItems[index].copyWith(unit: val);
     state = state.copyWith(items: newItems);
@@ -314,7 +324,7 @@ class InvoiceNotifier extends Notifier<Invoice> {
   }
 
   void removeItem(final int index) {
-    if (state.items.length > 1) {
+    if (state.items.length > 1 && index >= 0 && index < state.items.length) {
       final newItems = List<InvoiceItem>.from(state.items);
       newItems.removeAt(index);
       state = state.copyWith(items: newItems);

@@ -30,11 +30,12 @@ final clientLedgerProvider = FutureProvider.family<List<LedgerEntry>, String>((
 ) async {
   final repository = ref.watch(invoiceRepositoryProvider);
 
-  // 1. Fetch client-specific invoices via indexed query matching ID, GSTIN, or Name
+  // 1. Fetch client-specific invoices via indexed query matching ID, GSTIN, or Name exactly
   final clientInvoices = await repository.getInvoicesForClient(
     clientId: clientIdentifier,
     gstin: clientIdentifier,
     query: clientIdentifier,
+    exactMatch: true,
   );
 
   final List<LedgerEntry> entries = [];
@@ -84,8 +85,14 @@ final clientLedgerProvider = FutureProvider.family<List<LedgerEntry>, String>((
     }
   }
 
-  // 5. Sort by Date
-  entries.sort((final a, final b) => a.date.compareTo(b.date));
+  // 5. Sort by Date with deterministic tie-breaker (invoices/debits before payments/credits on same date)
+  entries.sort((final a, final b) {
+    final dateComp = a.date.compareTo(b.date);
+    if (dateComp != 0) return dateComp;
+    if (a.debit > 0 && b.debit == 0) return -1;
+    if (a.debit == 0 && b.debit > 0) return 1;
+    return a.particulars.compareTo(b.particulars);
+  });
 
   // 6. Calculate Running Balance using Money precision math
   final inr = CommonCurrencies().inr;

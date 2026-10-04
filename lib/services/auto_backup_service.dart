@@ -73,13 +73,13 @@ class AutoBackupService {
 
       switch (config.backupFrequency) {
         case BackupFrequency.daily:
-          // Backup if we haven't backed up today and it's past the scheduled time
-          if (lastBackup.isBefore(scheduledTimeToday) &&
-              now.isAfter(scheduledTimeToday)) {
+          final isDifferentDay = lastBackup.year != now.year ||
+              lastBackup.month != now.month ||
+              lastBackup.day != now.day;
+          if (isDifferentDay && now.isAfter(scheduledTimeToday)) {
             shouldBackup = true;
           }
-          // Or if we've missed more than 24 hours entirely
-          if (diff.inHours >= 24) {
+          if (diff.inHours >= 20 || diff.inDays >= 1) {
             shouldBackup = true;
           }
           break;

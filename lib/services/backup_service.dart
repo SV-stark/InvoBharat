@@ -20,7 +20,10 @@ import 'package:sqlite3/sqlite3.dart' as sqlite3;
 import 'package:uuid/uuid.dart';
 
 final backupServiceProvider = Provider<BackupService>((final ref) {
-  return BackupService(db: ref.watch(databaseProvider));
+  return BackupService(
+    db: ref.watch(databaseProvider),
+    ref: ref,
+  );
 });
 
 const kDbFileName = 'db.sqlite';
@@ -86,11 +89,13 @@ class BackupService {
   final FilePickerWrapper _filePicker;
   final CsvExportService _csvService;
   final AppDatabase? db;
+  final Ref? ref;
 
   BackupService({
     FilePickerWrapper? filePicker,
     CsvExportService? csvService,
     this.db,
+    this.ref,
   }) : _filePicker = filePicker ?? DefaultFilePickerWrapper(),
        _csvService = csvService ?? CsvExportService();
 
@@ -126,8 +131,8 @@ class BackupService {
   }
 
   Future<String> _getDbPath() async {
-    final dbFolder = await getApplicationDocumentsDirectory();
-    return p.join(dbFolder.path, 'InvoBharat', kDbFileName);
+    final file = await getAppDatabaseFile();
+    return file.path;
   }
 
   Future<void> _pruneDbBackups(
@@ -261,19 +266,31 @@ class BackupService {
         }),
       );
 
+      final tempZipPath = p.join(tempDir.path, 'staging.zip');
       final zipEncoder = ZipFileEncoder();
-      zipEncoder.create(outputFilePath);
-      await zipEncoder.addFile(dbFile, kDbFileName);
-      await zipEncoder.addFile(manifestFile, 'manifest.json');
+      try {
+        zipEncoder.create(tempZipPath);
+        await zipEncoder.addFile(dbFile, kDbFileName);
+        await zipEncoder.addFile(manifestFile, 'manifest.json');
 
-      for (final m in mediaEntries) {
-        final mediaFile = File(m['originalPath']!);
-        if (await mediaFile.exists()) {
-          await zipEncoder.addFile(mediaFile, m['zipPath']!);
+        for (final m in mediaEntries) {
+          final mediaFile = File(m['originalPath']!);
+          if (await mediaFile.exists()) {
+            await zipEncoder.addFile(mediaFile, m['zipPath']!);
+          }
         }
+      } finally {
+        try {
+          await zipEncoder.close();
+        } catch (_) {}
       }
 
-      await zipEncoder.close();
+      final stagingFile = File(tempZipPath);
+      final destFile = File(outputFilePath);
+      if (await destFile.exists()) {
+        await destFile.delete();
+      }
+      await stagingFile.copy(outputFilePath);
     } finally {
       if (await tempDir.exists()) {
         try {
@@ -308,33 +325,41 @@ class BackupService {
 
       final zipFile = File(file.path!);
       final bytes = await zipFile.readAsBytes();
-      final archive = await decodeZipInIsolate(bytes);
 
-      // Zip-bomb & malformed entry protection
+      // Pre-decompression Zip-bomb & malformed entry protection
       const int maxTotalUncompressedBytes = 500 * 1024 * 1024; // 500 MB max
       const int maxFileCount = 10000;
-      if (archive.length > maxFileCount) {
-        throw Exception(
-          "Invalid backup: File count (${archive.length}) exceeds safe limit ($maxFileCount).",
-        );
+
+      try {
+        final zipDir = ZipDirectory.read(InputStream(bytes));
+        if (zipDir.fileHeaders.length > maxFileCount) {
+          throw Exception(
+            "Invalid backup: File count (${zipDir.fileHeaders.length}) exceeds safe limit ($maxFileCount).",
+          );
+        }
+
+        int totalExpectedBytes = 0;
+        for (final h in zipDir.fileHeaders) {
+          totalExpectedBytes += (h.uncompressedSize ?? 0);
+          if (totalExpectedBytes > maxTotalUncompressedBytes) {
+            throw Exception(
+              "Invalid backup: Total uncompressed size exceeds 500 MB limit (potential zip-bomb).",
+            );
+          }
+          if (h.filename.contains('..') ||
+              h.filename.startsWith('/') ||
+              h.filename.startsWith('\\')) {
+            throw Exception(
+              "Invalid backup: Malicious entry name detected '${h.filename}'.",
+            );
+          }
+        }
+      } catch (e) {
+        if (e is Exception) rethrow;
+        throw Exception("Invalid backup archive structure: $e");
       }
 
-      int totalUncompressedBytes = 0;
-      for (final entry in archive) {
-        totalUncompressedBytes += entry.size;
-        if (totalUncompressedBytes > maxTotalUncompressedBytes) {
-          throw Exception(
-            "Invalid backup: Total uncompressed size exceeds 500 MB limit (potential zip-bomb).",
-          );
-        }
-        if (entry.name.contains('..') ||
-            entry.name.startsWith('/') ||
-            entry.name.startsWith('\\')) {
-          throw Exception(
-            "Invalid backup: Malicious entry name detected '${entry.name}'.",
-          );
-        }
-      }
+      final archive = await decodeZipInIsolate(bytes);
 
       final dbEntry = archive.findFile(kDbFileName);
       if (dbEntry == null || !dbEntry.isFile) {
@@ -344,14 +369,15 @@ class BackupService {
       String? activeProfileIdToRestore;
       List<dynamic> mediaEntries = [];
       final manifestEntry = archive.findFile('manifest.json');
-      final currentSchemaVersion = db?.schemaVersion ?? 17;
+      final currentSchemaVersion = db?.schemaVersion ?? 18;
+      int? backedUpSchemaVersion;
 
       if (manifestEntry != null && manifestEntry.isFile) {
         final manifestContent = utf8.decode(
           manifestEntry.content as List<int>,
         );
         final manifest = jsonDecode(manifestContent) as Map<String, dynamic>;
-        final backedUpSchemaVersion = manifest['schemaVersion'] as int?;
+        backedUpSchemaVersion = manifest['schemaVersion'] as int?;
         if (backedUpSchemaVersion != null) {
           if (backedUpSchemaVersion < kMinCompatibleSchemaVersion) {
             throw Exception(
@@ -385,12 +411,32 @@ class BackupService {
         try {
           final testDb = sqlite3.sqlite3.open(tempRestoredDbPath);
           final check = testDb.select('PRAGMA integrity_check(1);');
-          testDb.close();
           if (check.isEmpty || check.first.columnAt(0) != 'ok') {
+            testDb.close();
             throw Exception("Database integrity check failed on backup file.");
           }
+          if (backedUpSchemaVersion == null) {
+            final uvRes = testDb.select('PRAGMA user_version;');
+            if (uvRes.isNotEmpty && uvRes.first.isNotEmpty) {
+              backedUpSchemaVersion = uvRes.first.columnAt(0) as int?;
+            }
+          }
+          testDb.close();
         } catch (e) {
           throw Exception("Restored database integrity check failed: $e");
+        }
+
+        if (backedUpSchemaVersion != null) {
+          if (backedUpSchemaVersion < kMinCompatibleSchemaVersion) {
+            throw Exception(
+              "Incompatible backup: schema version $backedUpSchemaVersion (minimum supported: $kMinCompatibleSchemaVersion)",
+            );
+          }
+          if (backedUpSchemaVersion > currentSchemaVersion) {
+            throw Exception(
+              "Incompatible backup: backup was created with a newer app schema ($backedUpSchemaVersion vs current $currentSchemaVersion). Please update InvoBharat.",
+            );
+          }
         }
 
         // 2. Close active Drift database connection
@@ -508,7 +554,14 @@ class BackupService {
           );
         }
 
-        return "Restore Successful. Database has been safely restored. Please restart the app to refresh all views.";
+        if (ref != null) {
+          ref!.invalidate(databaseProvider);
+          try {
+            ref!.read(databaseProvider);
+          } catch (_) {}
+        }
+
+        return "Restore Successful. Database has been safely restored.";
       } catch (e, st) {
         if (await tempRestoredFile.exists()) {
           try {

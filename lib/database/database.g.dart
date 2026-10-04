@@ -2562,6 +2562,78 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _discountAmountMeta = const VerificationMeta(
+    'discountAmount',
+  );
+  @override
+  late final GeneratedColumn<double> discountAmount = GeneratedColumn<double>(
+    'discount_amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _currencyMeta = const VerificationMeta(
+    'currency',
+  );
+  @override
+  late final GeneratedColumn<String> currency = GeneratedColumn<String>(
+    'currency',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('INR'),
+  );
+  static const VerificationMeta _isArchivedMeta = const VerificationMeta(
+    'isArchived',
+  );
+  @override
+  late final GeneratedColumn<bool> isArchived = GeneratedColumn<bool>(
+    'is_archived',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_archived" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _deliveryAddressMeta = const VerificationMeta(
+    'deliveryAddress',
+  );
+  @override
+  late final GeneratedColumn<String> deliveryAddress = GeneratedColumn<String>(
+    'delivery_address',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _supplierStateMeta = const VerificationMeta(
+    'supplierState',
+  );
+  @override
+  late final GeneratedColumn<String> supplierState = GeneratedColumn<String>(
+    'supplier_state',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _financialYearMeta = const VerificationMeta(
+    'financialYear',
+  );
+  @override
+  late final GeneratedColumn<String> financialYear = GeneratedColumn<String>(
+    'financial_year',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2601,6 +2673,12 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
     ewayBillNo,
     vehicleNo,
     irnNo,
+    discountAmount,
+    currency,
+    isArchived,
+    deliveryAddress,
+    supplierState,
+    financialYear,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2915,6 +2993,54 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
         irnNo.isAcceptableOrUnknown(data['irn_no']!, _irnNoMeta),
       );
     }
+    if (data.containsKey('discount_amount')) {
+      context.handle(
+        _discountAmountMeta,
+        discountAmount.isAcceptableOrUnknown(
+          data['discount_amount']!,
+          _discountAmountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('currency')) {
+      context.handle(
+        _currencyMeta,
+        currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta),
+      );
+    }
+    if (data.containsKey('is_archived')) {
+      context.handle(
+        _isArchivedMeta,
+        isArchived.isAcceptableOrUnknown(data['is_archived']!, _isArchivedMeta),
+      );
+    }
+    if (data.containsKey('delivery_address')) {
+      context.handle(
+        _deliveryAddressMeta,
+        deliveryAddress.isAcceptableOrUnknown(
+          data['delivery_address']!,
+          _deliveryAddressMeta,
+        ),
+      );
+    }
+    if (data.containsKey('supplier_state')) {
+      context.handle(
+        _supplierStateMeta,
+        supplierState.isAcceptableOrUnknown(
+          data['supplier_state']!,
+          _supplierStateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('financial_year')) {
+      context.handle(
+        _financialYearMeta,
+        financialYear.isAcceptableOrUnknown(
+          data['financial_year']!,
+          _financialYearMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -3072,6 +3198,30 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
         DriftSqlType.string,
         data['${effectivePrefix}irn_no'],
       ),
+      discountAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}discount_amount'],
+      )!,
+      currency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency'],
+      )!,
+      isArchived: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_archived'],
+      )!,
+      deliveryAddress: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}delivery_address'],
+      ),
+      supplierState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}supplier_state'],
+      ),
+      financialYear: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}financial_year'],
+      ),
     );
   }
 
@@ -3119,6 +3269,12 @@ class Invoice extends DataClass implements Insertable<Invoice> {
   final String? ewayBillNo;
   final String? vehicleNo;
   final String? irnNo;
+  final double discountAmount;
+  final String currency;
+  final bool isArchived;
+  final String? deliveryAddress;
+  final String? supplierState;
+  final String? financialYear;
   const Invoice({
     required this.id,
     required this.profileId,
@@ -3157,6 +3313,12 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     this.ewayBillNo,
     this.vehicleNo,
     this.irnNo,
+    required this.discountAmount,
+    required this.currency,
+    required this.isArchived,
+    this.deliveryAddress,
+    this.supplierState,
+    this.financialYear,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3241,6 +3403,18 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     }
     if (!nullToAbsent || irnNo != null) {
       map['irn_no'] = Variable<String>(irnNo);
+    }
+    map['discount_amount'] = Variable<double>(discountAmount);
+    map['currency'] = Variable<String>(currency);
+    map['is_archived'] = Variable<bool>(isArchived);
+    if (!nullToAbsent || deliveryAddress != null) {
+      map['delivery_address'] = Variable<String>(deliveryAddress);
+    }
+    if (!nullToAbsent || supplierState != null) {
+      map['supplier_state'] = Variable<String>(supplierState);
+    }
+    if (!nullToAbsent || financialYear != null) {
+      map['financial_year'] = Variable<String>(financialYear);
     }
     return map;
   }
@@ -3328,6 +3502,18 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       irnNo: irnNo == null && nullToAbsent
           ? const Value.absent()
           : Value(irnNo),
+      discountAmount: Value(discountAmount),
+      currency: Value(currency),
+      isArchived: Value(isArchived),
+      deliveryAddress: deliveryAddress == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deliveryAddress),
+      supplierState: supplierState == null && nullToAbsent
+          ? const Value.absent()
+          : Value(supplierState),
+      financialYear: financialYear == null && nullToAbsent
+          ? const Value.absent()
+          : Value(financialYear),
     );
   }
 
@@ -3380,6 +3566,12 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       ewayBillNo: serializer.fromJson<String?>(json['ewayBillNo']),
       vehicleNo: serializer.fromJson<String?>(json['vehicleNo']),
       irnNo: serializer.fromJson<String?>(json['irnNo']),
+      discountAmount: serializer.fromJson<double>(json['discountAmount']),
+      currency: serializer.fromJson<String>(json['currency']),
+      isArchived: serializer.fromJson<bool>(json['isArchived']),
+      deliveryAddress: serializer.fromJson<String?>(json['deliveryAddress']),
+      supplierState: serializer.fromJson<String?>(json['supplierState']),
+      financialYear: serializer.fromJson<String?>(json['financialYear']),
     );
   }
   @override
@@ -3425,6 +3617,12 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       'ewayBillNo': serializer.toJson<String?>(ewayBillNo),
       'vehicleNo': serializer.toJson<String?>(vehicleNo),
       'irnNo': serializer.toJson<String?>(irnNo),
+      'discountAmount': serializer.toJson<double>(discountAmount),
+      'currency': serializer.toJson<String>(currency),
+      'isArchived': serializer.toJson<bool>(isArchived),
+      'deliveryAddress': serializer.toJson<String?>(deliveryAddress),
+      'supplierState': serializer.toJson<String?>(supplierState),
+      'financialYear': serializer.toJson<String?>(financialYear),
     };
   }
 
@@ -3466,6 +3664,12 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     Value<String?> ewayBillNo = const Value.absent(),
     Value<String?> vehicleNo = const Value.absent(),
     Value<String?> irnNo = const Value.absent(),
+    double? discountAmount,
+    String? currency,
+    bool? isArchived,
+    Value<String?> deliveryAddress = const Value.absent(),
+    Value<String?> supplierState = const Value.absent(),
+    Value<String?> financialYear = const Value.absent(),
   }) => Invoice(
     id: id ?? this.id,
     profileId: profileId ?? this.profileId,
@@ -3528,6 +3732,18 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     ewayBillNo: ewayBillNo.present ? ewayBillNo.value : this.ewayBillNo,
     vehicleNo: vehicleNo.present ? vehicleNo.value : this.vehicleNo,
     irnNo: irnNo.present ? irnNo.value : this.irnNo,
+    discountAmount: discountAmount ?? this.discountAmount,
+    currency: currency ?? this.currency,
+    isArchived: isArchived ?? this.isArchived,
+    deliveryAddress: deliveryAddress.present
+        ? deliveryAddress.value
+        : this.deliveryAddress,
+    supplierState: supplierState.present
+        ? supplierState.value
+        : this.supplierState,
+    financialYear: financialYear.present
+        ? financialYear.value
+        : this.financialYear,
   );
   Invoice copyWithCompanion(InvoicesCompanion data) {
     return Invoice(
@@ -3608,6 +3824,22 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           : this.ewayBillNo,
       vehicleNo: data.vehicleNo.present ? data.vehicleNo.value : this.vehicleNo,
       irnNo: data.irnNo.present ? data.irnNo.value : this.irnNo,
+      discountAmount: data.discountAmount.present
+          ? data.discountAmount.value
+          : this.discountAmount,
+      currency: data.currency.present ? data.currency.value : this.currency,
+      isArchived: data.isArchived.present
+          ? data.isArchived.value
+          : this.isArchived,
+      deliveryAddress: data.deliveryAddress.present
+          ? data.deliveryAddress.value
+          : this.deliveryAddress,
+      supplierState: data.supplierState.present
+          ? data.supplierState.value
+          : this.supplierState,
+      financialYear: data.financialYear.present
+          ? data.financialYear.value
+          : this.financialYear,
     );
   }
 
@@ -3650,7 +3882,13 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           ..write('sentAt: $sentAt, ')
           ..write('ewayBillNo: $ewayBillNo, ')
           ..write('vehicleNo: $vehicleNo, ')
-          ..write('irnNo: $irnNo')
+          ..write('irnNo: $irnNo, ')
+          ..write('discountAmount: $discountAmount, ')
+          ..write('currency: $currency, ')
+          ..write('isArchived: $isArchived, ')
+          ..write('deliveryAddress: $deliveryAddress, ')
+          ..write('supplierState: $supplierState, ')
+          ..write('financialYear: $financialYear')
           ..write(')'))
         .toString();
   }
@@ -3694,6 +3932,12 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     ewayBillNo,
     vehicleNo,
     irnNo,
+    discountAmount,
+    currency,
+    isArchived,
+    deliveryAddress,
+    supplierState,
+    financialYear,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -3735,7 +3979,13 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           other.sentAt == this.sentAt &&
           other.ewayBillNo == this.ewayBillNo &&
           other.vehicleNo == this.vehicleNo &&
-          other.irnNo == this.irnNo);
+          other.irnNo == this.irnNo &&
+          other.discountAmount == this.discountAmount &&
+          other.currency == this.currency &&
+          other.isArchived == this.isArchived &&
+          other.deliveryAddress == this.deliveryAddress &&
+          other.supplierState == this.supplierState &&
+          other.financialYear == this.financialYear);
 }
 
 class InvoicesCompanion extends UpdateCompanion<Invoice> {
@@ -3776,6 +4026,12 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
   final Value<String?> ewayBillNo;
   final Value<String?> vehicleNo;
   final Value<String?> irnNo;
+  final Value<double> discountAmount;
+  final Value<String> currency;
+  final Value<bool> isArchived;
+  final Value<String?> deliveryAddress;
+  final Value<String?> supplierState;
+  final Value<String?> financialYear;
   final Value<int> rowid;
   const InvoicesCompanion({
     this.id = const Value.absent(),
@@ -3815,6 +4071,12 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     this.ewayBillNo = const Value.absent(),
     this.vehicleNo = const Value.absent(),
     this.irnNo = const Value.absent(),
+    this.discountAmount = const Value.absent(),
+    this.currency = const Value.absent(),
+    this.isArchived = const Value.absent(),
+    this.deliveryAddress = const Value.absent(),
+    this.supplierState = const Value.absent(),
+    this.financialYear = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   InvoicesCompanion.insert({
@@ -3855,6 +4117,12 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     this.ewayBillNo = const Value.absent(),
     this.vehicleNo = const Value.absent(),
     this.irnNo = const Value.absent(),
+    this.discountAmount = const Value.absent(),
+    this.currency = const Value.absent(),
+    this.isArchived = const Value.absent(),
+    this.deliveryAddress = const Value.absent(),
+    this.supplierState = const Value.absent(),
+    this.financialYear = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        profileId = Value(profileId),
@@ -3905,6 +4173,12 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     Expression<String>? ewayBillNo,
     Expression<String>? vehicleNo,
     Expression<String>? irnNo,
+    Expression<double>? discountAmount,
+    Expression<String>? currency,
+    Expression<bool>? isArchived,
+    Expression<String>? deliveryAddress,
+    Expression<String>? supplierState,
+    Expression<String>? financialYear,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3947,6 +4221,12 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
       if (ewayBillNo != null) 'eway_bill_no': ewayBillNo,
       if (vehicleNo != null) 'vehicle_no': vehicleNo,
       if (irnNo != null) 'irn_no': irnNo,
+      if (discountAmount != null) 'discount_amount': discountAmount,
+      if (currency != null) 'currency': currency,
+      if (isArchived != null) 'is_archived': isArchived,
+      if (deliveryAddress != null) 'delivery_address': deliveryAddress,
+      if (supplierState != null) 'supplier_state': supplierState,
+      if (financialYear != null) 'financial_year': financialYear,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3989,6 +4269,12 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     Value<String?>? ewayBillNo,
     Value<String?>? vehicleNo,
     Value<String?>? irnNo,
+    Value<double>? discountAmount,
+    Value<String>? currency,
+    Value<bool>? isArchived,
+    Value<String?>? deliveryAddress,
+    Value<String?>? supplierState,
+    Value<String?>? financialYear,
     Value<int>? rowid,
   }) {
     return InvoicesCompanion(
@@ -4030,6 +4316,12 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
       ewayBillNo: ewayBillNo ?? this.ewayBillNo,
       vehicleNo: vehicleNo ?? this.vehicleNo,
       irnNo: irnNo ?? this.irnNo,
+      discountAmount: discountAmount ?? this.discountAmount,
+      currency: currency ?? this.currency,
+      isArchived: isArchived ?? this.isArchived,
+      deliveryAddress: deliveryAddress ?? this.deliveryAddress,
+      supplierState: supplierState ?? this.supplierState,
+      financialYear: financialYear ?? this.financialYear,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4152,6 +4444,24 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     if (irnNo.present) {
       map['irn_no'] = Variable<String>(irnNo.value);
     }
+    if (discountAmount.present) {
+      map['discount_amount'] = Variable<double>(discountAmount.value);
+    }
+    if (currency.present) {
+      map['currency'] = Variable<String>(currency.value);
+    }
+    if (isArchived.present) {
+      map['is_archived'] = Variable<bool>(isArchived.value);
+    }
+    if (deliveryAddress.present) {
+      map['delivery_address'] = Variable<String>(deliveryAddress.value);
+    }
+    if (supplierState.present) {
+      map['supplier_state'] = Variable<String>(supplierState.value);
+    }
+    if (financialYear.present) {
+      map['financial_year'] = Variable<String>(financialYear.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4198,6 +4508,12 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
           ..write('ewayBillNo: $ewayBillNo, ')
           ..write('vehicleNo: $vehicleNo, ')
           ..write('irnNo: $irnNo, ')
+          ..write('discountAmount: $discountAmount, ')
+          ..write('currency: $currency, ')
+          ..write('isArchived: $isArchived, ')
+          ..write('deliveryAddress: $deliveryAddress, ')
+          ..write('supplierState: $supplierState, ')
+          ..write('financialYear: $financialYear, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -9565,7 +9881,7 @@ class $$BusinessProfilesTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$BusinessProfilesTable, BusinessProfile>(table),
                   $$BusinessProfilesTableReferences(db, table, e),
                 ),
               )
@@ -10181,7 +10497,7 @@ class $$ClientsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$ClientsTable, Client>(table),
                   $$ClientsTableReferences(db, table, e),
                 ),
               )
@@ -10296,6 +10612,12 @@ typedef $$InvoicesTableCreateCompanionBuilder =
       Value<String?> ewayBillNo,
       Value<String?> vehicleNo,
       Value<String?> irnNo,
+      Value<double> discountAmount,
+      Value<String> currency,
+      Value<bool> isArchived,
+      Value<String?> deliveryAddress,
+      Value<String?> supplierState,
+      Value<String?> financialYear,
       Value<int> rowid,
     });
 typedef $$InvoicesTableUpdateCompanionBuilder =
@@ -10337,6 +10659,12 @@ typedef $$InvoicesTableUpdateCompanionBuilder =
       Value<String?> ewayBillNo,
       Value<String?> vehicleNo,
       Value<String?> irnNo,
+      Value<double> discountAmount,
+      Value<String> currency,
+      Value<bool> isArchived,
+      Value<String?> deliveryAddress,
+      Value<String?> supplierState,
+      Value<String?> financialYear,
       Value<int> rowid,
     });
 
@@ -10598,6 +10926,36 @@ class $$InvoicesTableFilterComposer
 
   ColumnFilters<String> get irnNo => $composableBuilder(
     column: $table.irnNo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get discountAmount => $composableBuilder(
+    column: $table.discountAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deliveryAddress => $composableBuilder(
+    column: $table.deliveryAddress,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get supplierState => $composableBuilder(
+    column: $table.supplierState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get financialYear => $composableBuilder(
+    column: $table.financialYear,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10882,6 +11240,36 @@ class $$InvoicesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get discountAmount => $composableBuilder(
+    column: $table.discountAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deliveryAddress => $composableBuilder(
+    column: $table.deliveryAddress,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get supplierState => $composableBuilder(
+    column: $table.supplierState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get financialYear => $composableBuilder(
+    column: $table.financialYear,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$BusinessProfilesTableOrderingComposer get profileId {
     final $$BusinessProfilesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -11083,6 +11471,34 @@ class $$InvoicesTableAnnotationComposer
   GeneratedColumn<String> get irnNo =>
       $composableBuilder(column: $table.irnNo, builder: (column) => column);
 
+  GeneratedColumn<double> get discountAmount => $composableBuilder(
+    column: $table.discountAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
+
+  GeneratedColumn<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get deliveryAddress => $composableBuilder(
+    column: $table.deliveryAddress,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get supplierState => $composableBuilder(
+    column: $table.supplierState,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get financialYear => $composableBuilder(
+    column: $table.financialYear,
+    builder: (column) => column,
+  );
+
   $$BusinessProfilesTableAnnotationComposer get profileId {
     final $$BusinessProfilesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -11250,6 +11666,12 @@ class $$InvoicesTableTableManager
                 Value<String?> ewayBillNo = const Value.absent(),
                 Value<String?> vehicleNo = const Value.absent(),
                 Value<String?> irnNo = const Value.absent(),
+                Value<double> discountAmount = const Value.absent(),
+                Value<String> currency = const Value.absent(),
+                Value<bool> isArchived = const Value.absent(),
+                Value<String?> deliveryAddress = const Value.absent(),
+                Value<String?> supplierState = const Value.absent(),
+                Value<String?> financialYear = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => InvoicesCompanion(
                 id: id,
@@ -11289,6 +11711,12 @@ class $$InvoicesTableTableManager
                 ewayBillNo: ewayBillNo,
                 vehicleNo: vehicleNo,
                 irnNo: irnNo,
+                discountAmount: discountAmount,
+                currency: currency,
+                isArchived: isArchived,
+                deliveryAddress: deliveryAddress,
+                supplierState: supplierState,
+                financialYear: financialYear,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -11330,6 +11758,12 @@ class $$InvoicesTableTableManager
                 Value<String?> ewayBillNo = const Value.absent(),
                 Value<String?> vehicleNo = const Value.absent(),
                 Value<String?> irnNo = const Value.absent(),
+                Value<double> discountAmount = const Value.absent(),
+                Value<String> currency = const Value.absent(),
+                Value<bool> isArchived = const Value.absent(),
+                Value<String?> deliveryAddress = const Value.absent(),
+                Value<String?> supplierState = const Value.absent(),
+                Value<String?> financialYear = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => InvoicesCompanion.insert(
                 id: id,
@@ -11369,12 +11803,18 @@ class $$InvoicesTableTableManager
                 ewayBillNo: ewayBillNo,
                 vehicleNo: vehicleNo,
                 irnNo: irnNo,
+                discountAmount: discountAmount,
+                currency: currency,
+                isArchived: isArchived,
+                deliveryAddress: deliveryAddress,
+                supplierState: supplierState,
+                financialYear: financialYear,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$InvoicesTable, Invoice>(table),
                   $$InvoicesTableReferences(db, table, e),
                 ),
               )
@@ -11877,7 +12317,7 @@ class $$InvoiceItemsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$InvoiceItemsTable, InvoiceItem>(table),
                   $$InvoiceItemsTableReferences(db, table, e),
                 ),
               )
@@ -12213,7 +12653,7 @@ class $$PaymentsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$PaymentsTable, Payment>(table),
                   $$PaymentsTableReferences(db, table, e),
                 ),
               )
@@ -12569,7 +13009,7 @@ class $$BankAccountsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$BankAccountsTable, BankAccountData>(table),
                   $$BankAccountsTableReferences(db, table, e),
                 ),
               )
@@ -12748,7 +13188,16 @@ class $$AppSettingsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$AppSettingsTable, AppSetting>(table),
+                  BaseReferences<_$AppDatabase, $AppSettingsTable, AppSetting>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -13468,7 +13917,7 @@ class $$EstimatesTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$EstimatesTable, Estimate>(table),
                   $$EstimatesTableReferences(db, table, e),
                 ),
               )
@@ -13930,7 +14379,7 @@ class $$EstimateItemsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$EstimateItemsTable, EstimateItem>(table),
                   $$EstimateItemsTableReferences(db, table, e),
                 ),
               )
@@ -14332,7 +14781,10 @@ class $$RecurringProfilesTableTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<
+                    $RecurringProfilesTableTable,
+                    RecurringProfilesTableData
+                  >(table),
                   $$RecurringProfilesTableTableReferences(db, table, e),
                 ),
               )

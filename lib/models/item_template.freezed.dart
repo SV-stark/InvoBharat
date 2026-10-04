@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'item_template.dart';
@@ -9,6 +9,7 @@ part of 'item_template.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $ItemTemplateCopyWith<ItemTemplate> get copyWith => _$ItemTemplateCopyWithImpl<I
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ItemTemplate&&(identical(other.id, id) || other.id == id)&&(identical(other.description, description) || other.description == description)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.gstRate, gstRate) || other.gstRate == gstRate)&&(identical(other.codeType, codeType) || other.codeType == codeType)&&(identical(other.sacCode, sacCode) || other.sacCode == sacCode)&&(identical(other.quantity, quantity) || other.quantity == quantity));
+  final _this = this as ItemTemplate;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ItemTemplate&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.unit, _this.unit) || other.unit == _this.unit)&&(identical(other.amount, _this.amount) || other.amount == _this.amount)&&(identical(other.gstRate, _this.gstRate) || other.gstRate == _this.gstRate)&&(identical(other.codeType, _this.codeType) || other.codeType == _this.codeType)&&(identical(other.sacCode, _this.sacCode) || other.sacCode == _this.sacCode)&&(identical(other.quantity, _this.quantity) || other.quantity == _this.quantity));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,description,unit,amount,gstRate,codeType,sacCode,quantity);
+int get hashCode {
+  final _this = this as ItemTemplate;
+  return Object.hash(runtimeType,_this.id,_this.description,_this.unit,_this.amount,_this.gstRate,_this.codeType,_this.sacCode,_this.quantity);
+}
 
 @override
 String toString() {
-  return 'ItemTemplate(id: $id, description: $description, unit: $unit, amount: $amount, gstRate: $gstRate, codeType: $codeType, sacCode: $sacCode, quantity: $quantity)';
+  final _this = this as ItemTemplate;
+  return 'ItemTemplate(id: ${_this.id}, description: ${_this.description}, unit: ${_this.unit}, amount: ${_this.amount}, gstRate: ${_this.gstRate}, codeType: ${_this.codeType}, sacCode: ${_this.sacCode}, quantity: ${_this.quantity})';
 }
 
 
@@ -66,7 +72,7 @@ class _$ItemTemplateCopyWithImpl<$Res>
 /// Create a copy of ItemTemplate
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? description = null,Object? unit = null,Object? amount = null,Object? gstRate = null,Object? codeType = null,Object? sacCode = null,Object? quantity = null,}) {
-  return _then(_self.copyWith(
+  return _then(ItemTemplate(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,unit: null == unit ? _self.unit : unit // ignore: cast_nullable_to_non_nullable
@@ -241,16 +247,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ItemTemplate&&(identical(other.id, id) || other.id == id)&&(identical(other.description, description) || other.description == description)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.gstRate, gstRate) || other.gstRate == gstRate)&&(identical(other.codeType, codeType) || other.codeType == codeType)&&(identical(other.sacCode, sacCode) || other.sacCode == sacCode)&&(identical(other.quantity, quantity) || other.quantity == quantity));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ItemTemplate&&(identical(other.id, id) || other.id == id)&&(identical(other.description, description) || other.description == description)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.gstRate, gstRate) || other.gstRate == gstRate)&&(identical(other.codeType, codeType) || other.codeType == codeType)&&(identical(other.sacCode, sacCode) || other.sacCode == sacCode)&&(identical(other.quantity, quantity) || other.quantity == quantity));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,description,unit,amount,gstRate,codeType,sacCode,quantity);
+int get hashCode {
+    return Object.hash(runtimeType,id,description,unit,amount,gstRate,codeType,sacCode,quantity);
+}
 
 @override
 String toString() {
-  return 'ItemTemplate(id: $id, description: $description, unit: $unit, amount: $amount, gstRate: $gstRate, codeType: $codeType, sacCode: $sacCode, quantity: $quantity)';
+    return 'ItemTemplate(id: $id, description: $description, unit: $unit, amount: $amount, gstRate: $gstRate, codeType: $codeType, sacCode: $sacCode, quantity: $quantity)';
 }
 
 

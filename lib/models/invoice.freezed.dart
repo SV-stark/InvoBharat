@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'invoice.dart';
@@ -9,6 +9,7 @@ part of 'invoice.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $InvoiceCopyWith<Invoice> get copyWith => _$InvoiceCopyWithImpl<Invoice>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Invoice&&(identical(other.id, id) || other.id == id)&&(identical(other.profileId, profileId) || other.profileId == profileId)&&(identical(other.style, style) || other.style == style)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.receiver, receiver) || other.receiver == receiver)&&(identical(other.invoiceNo, invoiceNo) || other.invoiceNo == invoiceNo)&&(identical(other.invoiceDate, invoiceDate) || other.invoiceDate == invoiceDate)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.placeOfSupply, placeOfSupply) || other.placeOfSupply == placeOfSupply)&&(identical(other.reverseCharge, reverseCharge) || other.reverseCharge == reverseCharge)&&(identical(other.paymentTerms, paymentTerms) || other.paymentTerms == paymentTerms)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.payments, payments)&&(identical(other.comments, comments) || other.comments == comments)&&(identical(other.bankName, bankName) || other.bankName == bankName)&&(identical(other.accountNo, accountNo) || other.accountNo == accountNo)&&(identical(other.ifscCode, ifscCode) || other.ifscCode == ifscCode)&&(identical(other.branch, branch) || other.branch == branch)&&(identical(other.deliveryAddress, deliveryAddress) || other.deliveryAddress == deliveryAddress)&&(identical(other.isArchived, isArchived) || other.isArchived == isArchived)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.discountAmount, discountAmount) || other.discountAmount == discountAmount)&&(identical(other.type, type) || other.type == type)&&(identical(other.originalInvoiceNumber, originalInvoiceNumber) || other.originalInvoiceNumber == originalInvoiceNumber)&&(identical(other.originalInvoiceDate, originalInvoiceDate) || other.originalInvoiceDate == originalInvoiceDate)&&(identical(other.poNumber, poNumber) || other.poNumber == poNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt)&&(identical(other.ewayBillNo, ewayBillNo) || other.ewayBillNo == ewayBillNo)&&(identical(other.vehicleNo, vehicleNo) || other.vehicleNo == vehicleNo)&&(identical(other.irnNo, irnNo) || other.irnNo == irnNo));
+  final _this = this as Invoice;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Invoice&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.profileId, _this.profileId) || other.profileId == _this.profileId)&&(identical(other.style, _this.style) || other.style == _this.style)&&(identical(other.supplier, _this.supplier) || other.supplier == _this.supplier)&&(identical(other.receiver, _this.receiver) || other.receiver == _this.receiver)&&(identical(other.invoiceNo, _this.invoiceNo) || other.invoiceNo == _this.invoiceNo)&&(identical(other.invoiceDate, _this.invoiceDate) || other.invoiceDate == _this.invoiceDate)&&(identical(other.dueDate, _this.dueDate) || other.dueDate == _this.dueDate)&&(identical(other.placeOfSupply, _this.placeOfSupply) || other.placeOfSupply == _this.placeOfSupply)&&(identical(other.reverseCharge, _this.reverseCharge) || other.reverseCharge == _this.reverseCharge)&&(identical(other.paymentTerms, _this.paymentTerms) || other.paymentTerms == _this.paymentTerms)&&const DeepCollectionEquality().equals(other.items, _this.items)&&const DeepCollectionEquality().equals(other.payments, _this.payments)&&(identical(other.comments, _this.comments) || other.comments == _this.comments)&&(identical(other.bankName, _this.bankName) || other.bankName == _this.bankName)&&(identical(other.accountNo, _this.accountNo) || other.accountNo == _this.accountNo)&&(identical(other.ifscCode, _this.ifscCode) || other.ifscCode == _this.ifscCode)&&(identical(other.branch, _this.branch) || other.branch == _this.branch)&&(identical(other.deliveryAddress, _this.deliveryAddress) || other.deliveryAddress == _this.deliveryAddress)&&(identical(other.isArchived, _this.isArchived) || other.isArchived == _this.isArchived)&&(identical(other.currency, _this.currency) || other.currency == _this.currency)&&(identical(other.discountAmount, _this.discountAmount) || other.discountAmount == _this.discountAmount)&&(identical(other.type, _this.type) || other.type == _this.type)&&(identical(other.originalInvoiceNumber, _this.originalInvoiceNumber) || other.originalInvoiceNumber == _this.originalInvoiceNumber)&&(identical(other.originalInvoiceDate, _this.originalInvoiceDate) || other.originalInvoiceDate == _this.originalInvoiceDate)&&(identical(other.poNumber, _this.poNumber) || other.poNumber == _this.poNumber)&&(identical(other.status, _this.status) || other.status == _this.status)&&(identical(other.sentAt, _this.sentAt) || other.sentAt == _this.sentAt)&&(identical(other.ewayBillNo, _this.ewayBillNo) || other.ewayBillNo == _this.ewayBillNo)&&(identical(other.vehicleNo, _this.vehicleNo) || other.vehicleNo == _this.vehicleNo)&&(identical(other.irnNo, _this.irnNo) || other.irnNo == _this.irnNo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,profileId,style,supplier,receiver,invoiceNo,invoiceDate,dueDate,placeOfSupply,reverseCharge,paymentTerms,const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(payments),comments,bankName,accountNo,ifscCode,branch,deliveryAddress,isArchived,currency,discountAmount,type,originalInvoiceNumber,originalInvoiceDate,poNumber,status,sentAt,ewayBillNo,vehicleNo,irnNo]);
+int get hashCode {
+  final _this = this as Invoice;
+  return Object.hashAll([runtimeType,_this.id,_this.profileId,_this.style,_this.supplier,_this.receiver,_this.invoiceNo,_this.invoiceDate,_this.dueDate,_this.placeOfSupply,_this.reverseCharge,_this.paymentTerms,const DeepCollectionEquality().hash(_this.items),const DeepCollectionEquality().hash(_this.payments),_this.comments,_this.bankName,_this.accountNo,_this.ifscCode,_this.branch,_this.deliveryAddress,_this.isArchived,_this.currency,_this.discountAmount,_this.type,_this.originalInvoiceNumber,_this.originalInvoiceDate,_this.poNumber,_this.status,_this.sentAt,_this.ewayBillNo,_this.vehicleNo,_this.irnNo]);
+}
 
 @override
 String toString() {
-  return 'Invoice(id: $id, profileId: $profileId, style: $style, supplier: $supplier, receiver: $receiver, invoiceNo: $invoiceNo, invoiceDate: $invoiceDate, dueDate: $dueDate, placeOfSupply: $placeOfSupply, reverseCharge: $reverseCharge, paymentTerms: $paymentTerms, items: $items, payments: $payments, comments: $comments, bankName: $bankName, accountNo: $accountNo, ifscCode: $ifscCode, branch: $branch, deliveryAddress: $deliveryAddress, isArchived: $isArchived, currency: $currency, discountAmount: $discountAmount, type: $type, originalInvoiceNumber: $originalInvoiceNumber, originalInvoiceDate: $originalInvoiceDate, poNumber: $poNumber, status: $status, sentAt: $sentAt, ewayBillNo: $ewayBillNo, vehicleNo: $vehicleNo, irnNo: $irnNo)';
+  final _this = this as Invoice;
+  return 'Invoice(id: ${_this.id}, profileId: ${_this.profileId}, style: ${_this.style}, supplier: ${_this.supplier}, receiver: ${_this.receiver}, invoiceNo: ${_this.invoiceNo}, invoiceDate: ${_this.invoiceDate}, dueDate: ${_this.dueDate}, placeOfSupply: ${_this.placeOfSupply}, reverseCharge: ${_this.reverseCharge}, paymentTerms: ${_this.paymentTerms}, items: ${_this.items}, payments: ${_this.payments}, comments: ${_this.comments}, bankName: ${_this.bankName}, accountNo: ${_this.accountNo}, ifscCode: ${_this.ifscCode}, branch: ${_this.branch}, deliveryAddress: ${_this.deliveryAddress}, isArchived: ${_this.isArchived}, currency: ${_this.currency}, discountAmount: ${_this.discountAmount}, type: ${_this.type}, originalInvoiceNumber: ${_this.originalInvoiceNumber}, originalInvoiceDate: ${_this.originalInvoiceDate}, poNumber: ${_this.poNumber}, status: ${_this.status}, sentAt: ${_this.sentAt}, ewayBillNo: ${_this.ewayBillNo}, vehicleNo: ${_this.vehicleNo}, irnNo: ${_this.irnNo})';
 }
 
 
@@ -66,7 +72,7 @@ class _$InvoiceCopyWithImpl<$Res>
 /// Create a copy of Invoice
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? profileId = freezed,Object? style = null,Object? supplier = null,Object? receiver = null,Object? invoiceNo = null,Object? invoiceDate = null,Object? dueDate = freezed,Object? placeOfSupply = null,Object? reverseCharge = null,Object? paymentTerms = null,Object? items = null,Object? payments = null,Object? comments = null,Object? bankName = null,Object? accountNo = null,Object? ifscCode = null,Object? branch = null,Object? deliveryAddress = freezed,Object? isArchived = null,Object? currency = null,Object? discountAmount = null,Object? type = null,Object? originalInvoiceNumber = freezed,Object? originalInvoiceDate = freezed,Object? poNumber = freezed,Object? status = null,Object? sentAt = freezed,Object? ewayBillNo = freezed,Object? vehicleNo = freezed,Object? irnNo = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(Invoice(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,profileId: freezed == profileId ? _self.profileId : profileId // ignore: cast_nullable_to_non_nullable
 as String?,style: null == style ? _self.style : style // ignore: cast_nullable_to_non_nullable
@@ -257,7 +263,7 @@ return $default(_that.id,_that.profileId,_that.style,_that.supplier,_that.receiv
 @JsonSerializable()
 
 class _Invoice extends Invoice {
-  const _Invoice({this.id, this.profileId, this.style = 'Modern', required this.supplier, required this.receiver, this.invoiceNo = '', required this.invoiceDate, this.dueDate, this.placeOfSupply = '', this.reverseCharge = 'N', this.paymentTerms = '', final  List<InvoiceItem> items = const [], final  List<PaymentTransaction> payments = const [], this.comments = '', this.bankName = '', this.accountNo = '', this.ifscCode = '', this.branch = '', this.deliveryAddress, this.isArchived = false, this.currency = 'INR', this.discountAmount = 0.0, this.type = InvoiceType.invoice, this.originalInvoiceNumber, this.originalInvoiceDate, this.poNumber, this.status = 'Draft', this.sentAt, this.ewayBillNo, this.vehicleNo, this.irnNo}): _items = items,_payments = payments,super._();
+  const _Invoice({this.id, this.profileId, this.style = 'Modern', required this.supplier, required this.receiver, this.invoiceNo = '', required this.invoiceDate, this.dueDate, this.placeOfSupply = '', this.reverseCharge = 'N', this.paymentTerms = '',  List<InvoiceItem> items = const [],  List<PaymentTransaction> payments = const [], this.comments = '', this.bankName = '', this.accountNo = '', this.ifscCode = '', this.branch = '', this.deliveryAddress, this.isArchived = false, this.currency = 'INR', this.discountAmount = 0.0, this.type = InvoiceType.invoice, this.originalInvoiceNumber, this.originalInvoiceDate, this.poNumber, this.status = 'Draft', this.sentAt, this.ewayBillNo, this.vehicleNo, this.irnNo}): _items = items,_payments = payments,super._();
   factory _Invoice.fromJson(Map<String, dynamic> json) => _$InvoiceFromJson(json);
 
 @override final  String? id;
@@ -317,16 +323,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Invoice&&(identical(other.id, id) || other.id == id)&&(identical(other.profileId, profileId) || other.profileId == profileId)&&(identical(other.style, style) || other.style == style)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.receiver, receiver) || other.receiver == receiver)&&(identical(other.invoiceNo, invoiceNo) || other.invoiceNo == invoiceNo)&&(identical(other.invoiceDate, invoiceDate) || other.invoiceDate == invoiceDate)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.placeOfSupply, placeOfSupply) || other.placeOfSupply == placeOfSupply)&&(identical(other.reverseCharge, reverseCharge) || other.reverseCharge == reverseCharge)&&(identical(other.paymentTerms, paymentTerms) || other.paymentTerms == paymentTerms)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other._payments, _payments)&&(identical(other.comments, comments) || other.comments == comments)&&(identical(other.bankName, bankName) || other.bankName == bankName)&&(identical(other.accountNo, accountNo) || other.accountNo == accountNo)&&(identical(other.ifscCode, ifscCode) || other.ifscCode == ifscCode)&&(identical(other.branch, branch) || other.branch == branch)&&(identical(other.deliveryAddress, deliveryAddress) || other.deliveryAddress == deliveryAddress)&&(identical(other.isArchived, isArchived) || other.isArchived == isArchived)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.discountAmount, discountAmount) || other.discountAmount == discountAmount)&&(identical(other.type, type) || other.type == type)&&(identical(other.originalInvoiceNumber, originalInvoiceNumber) || other.originalInvoiceNumber == originalInvoiceNumber)&&(identical(other.originalInvoiceDate, originalInvoiceDate) || other.originalInvoiceDate == originalInvoiceDate)&&(identical(other.poNumber, poNumber) || other.poNumber == poNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt)&&(identical(other.ewayBillNo, ewayBillNo) || other.ewayBillNo == ewayBillNo)&&(identical(other.vehicleNo, vehicleNo) || other.vehicleNo == vehicleNo)&&(identical(other.irnNo, irnNo) || other.irnNo == irnNo));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Invoice&&(identical(other.id, id) || other.id == id)&&(identical(other.profileId, profileId) || other.profileId == profileId)&&(identical(other.style, style) || other.style == style)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.receiver, receiver) || other.receiver == receiver)&&(identical(other.invoiceNo, invoiceNo) || other.invoiceNo == invoiceNo)&&(identical(other.invoiceDate, invoiceDate) || other.invoiceDate == invoiceDate)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.placeOfSupply, placeOfSupply) || other.placeOfSupply == placeOfSupply)&&(identical(other.reverseCharge, reverseCharge) || other.reverseCharge == reverseCharge)&&(identical(other.paymentTerms, paymentTerms) || other.paymentTerms == paymentTerms)&&const DeepCollectionEquality().equals(other.items, _items)&&const DeepCollectionEquality().equals(other.payments, _payments)&&(identical(other.comments, comments) || other.comments == comments)&&(identical(other.bankName, bankName) || other.bankName == bankName)&&(identical(other.accountNo, accountNo) || other.accountNo == accountNo)&&(identical(other.ifscCode, ifscCode) || other.ifscCode == ifscCode)&&(identical(other.branch, branch) || other.branch == branch)&&(identical(other.deliveryAddress, deliveryAddress) || other.deliveryAddress == deliveryAddress)&&(identical(other.isArchived, isArchived) || other.isArchived == isArchived)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.discountAmount, discountAmount) || other.discountAmount == discountAmount)&&(identical(other.type, type) || other.type == type)&&(identical(other.originalInvoiceNumber, originalInvoiceNumber) || other.originalInvoiceNumber == originalInvoiceNumber)&&(identical(other.originalInvoiceDate, originalInvoiceDate) || other.originalInvoiceDate == originalInvoiceDate)&&(identical(other.poNumber, poNumber) || other.poNumber == poNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt)&&(identical(other.ewayBillNo, ewayBillNo) || other.ewayBillNo == ewayBillNo)&&(identical(other.vehicleNo, vehicleNo) || other.vehicleNo == vehicleNo)&&(identical(other.irnNo, irnNo) || other.irnNo == irnNo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,profileId,style,supplier,receiver,invoiceNo,invoiceDate,dueDate,placeOfSupply,reverseCharge,paymentTerms,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_payments),comments,bankName,accountNo,ifscCode,branch,deliveryAddress,isArchived,currency,discountAmount,type,originalInvoiceNumber,originalInvoiceDate,poNumber,status,sentAt,ewayBillNo,vehicleNo,irnNo]);
+int get hashCode {
+    return Object.hashAll([runtimeType,id,profileId,style,supplier,receiver,invoiceNo,invoiceDate,dueDate,placeOfSupply,reverseCharge,paymentTerms,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(_payments),comments,bankName,accountNo,ifscCode,branch,deliveryAddress,isArchived,currency,discountAmount,type,originalInvoiceNumber,originalInvoiceDate,poNumber,status,sentAt,ewayBillNo,vehicleNo,irnNo]);
+}
 
 @override
 String toString() {
-  return 'Invoice(id: $id, profileId: $profileId, style: $style, supplier: $supplier, receiver: $receiver, invoiceNo: $invoiceNo, invoiceDate: $invoiceDate, dueDate: $dueDate, placeOfSupply: $placeOfSupply, reverseCharge: $reverseCharge, paymentTerms: $paymentTerms, items: $items, payments: $payments, comments: $comments, bankName: $bankName, accountNo: $accountNo, ifscCode: $ifscCode, branch: $branch, deliveryAddress: $deliveryAddress, isArchived: $isArchived, currency: $currency, discountAmount: $discountAmount, type: $type, originalInvoiceNumber: $originalInvoiceNumber, originalInvoiceDate: $originalInvoiceDate, poNumber: $poNumber, status: $status, sentAt: $sentAt, ewayBillNo: $ewayBillNo, vehicleNo: $vehicleNo, irnNo: $irnNo)';
+    return 'Invoice(id: $id, profileId: $profileId, style: $style, supplier: $supplier, receiver: $receiver, invoiceNo: $invoiceNo, invoiceDate: $invoiceDate, dueDate: $dueDate, placeOfSupply: $placeOfSupply, reverseCharge: $reverseCharge, paymentTerms: $paymentTerms, items: $items, payments: $payments, comments: $comments, bankName: $bankName, accountNo: $accountNo, ifscCode: $ifscCode, branch: $branch, deliveryAddress: $deliveryAddress, isArchived: $isArchived, currency: $currency, discountAmount: $discountAmount, type: $type, originalInvoiceNumber: $originalInvoiceNumber, originalInvoiceDate: $originalInvoiceDate, poNumber: $poNumber, status: $status, sentAt: $sentAt, ewayBillNo: $ewayBillNo, vehicleNo: $vehicleNo, irnNo: $irnNo)';
 }
 
 
@@ -429,16 +437,21 @@ $SupplierCopyWith<Supplier> get copyWith => _$SupplierCopyWithImpl<Supplier>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Supplier&&(identical(other.name, name) || other.name == name)&&(identical(other.address, address) || other.address == address)&&(identical(other.gstin, gstin) || other.gstin == gstin)&&(identical(other.pan, pan) || other.pan == pan)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.state, state) || other.state == state));
+  final _this = this as Supplier;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Supplier&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.address, _this.address) || other.address == _this.address)&&(identical(other.gstin, _this.gstin) || other.gstin == _this.gstin)&&(identical(other.pan, _this.pan) || other.pan == _this.pan)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.phone, _this.phone) || other.phone == _this.phone)&&(identical(other.state, _this.state) || other.state == _this.state));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,address,gstin,pan,email,phone,state);
+int get hashCode {
+  final _this = this as Supplier;
+  return Object.hash(runtimeType,_this.name,_this.address,_this.gstin,_this.pan,_this.email,_this.phone,_this.state);
+}
 
 @override
 String toString() {
-  return 'Supplier(name: $name, address: $address, gstin: $gstin, pan: $pan, email: $email, phone: $phone, state: $state)';
+  final _this = this as Supplier;
+  return 'Supplier(name: ${_this.name}, address: ${_this.address}, gstin: ${_this.gstin}, pan: ${_this.pan}, email: ${_this.email}, phone: ${_this.phone}, state: ${_this.state})';
 }
 
 
@@ -467,7 +480,7 @@ class _$SupplierCopyWithImpl<$Res>
 /// Create a copy of Supplier
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? address = null,Object? gstin = null,Object? pan = null,Object? email = null,Object? phone = null,Object? state = null,}) {
-  return _then(_self.copyWith(
+  return _then(Supplier(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String,gstin: null == gstin ? _self.gstin : gstin // ignore: cast_nullable_to_non_nullable
@@ -640,16 +653,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Supplier&&(identical(other.name, name) || other.name == name)&&(identical(other.address, address) || other.address == address)&&(identical(other.gstin, gstin) || other.gstin == gstin)&&(identical(other.pan, pan) || other.pan == pan)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.state, state) || other.state == state));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Supplier&&(identical(other.name, name) || other.name == name)&&(identical(other.address, address) || other.address == address)&&(identical(other.gstin, gstin) || other.gstin == gstin)&&(identical(other.pan, pan) || other.pan == pan)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.state, state) || other.state == state));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,address,gstin,pan,email,phone,state);
+int get hashCode {
+    return Object.hash(runtimeType,name,address,gstin,pan,email,phone,state);
+}
 
 @override
 String toString() {
-  return 'Supplier(name: $name, address: $address, gstin: $gstin, pan: $pan, email: $email, phone: $phone, state: $state)';
+    return 'Supplier(name: $name, address: $address, gstin: $gstin, pan: $pan, email: $email, phone: $phone, state: $state)';
 }
 
 
@@ -710,16 +725,21 @@ $ReceiverCopyWith<Receiver> get copyWith => _$ReceiverCopyWithImpl<Receiver>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Receiver&&(identical(other.name, name) || other.name == name)&&(identical(other.address, address) || other.address == address)&&(identical(other.gstin, gstin) || other.gstin == gstin)&&(identical(other.pan, pan) || other.pan == pan)&&(identical(other.state, state) || other.state == state)&&(identical(other.stateCode, stateCode) || other.stateCode == stateCode)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone));
+  final _this = this as Receiver;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Receiver&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.address, _this.address) || other.address == _this.address)&&(identical(other.gstin, _this.gstin) || other.gstin == _this.gstin)&&(identical(other.pan, _this.pan) || other.pan == _this.pan)&&(identical(other.state, _this.state) || other.state == _this.state)&&(identical(other.stateCode, _this.stateCode) || other.stateCode == _this.stateCode)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.phone, _this.phone) || other.phone == _this.phone));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,address,gstin,pan,state,stateCode,email,phone);
+int get hashCode {
+  final _this = this as Receiver;
+  return Object.hash(runtimeType,_this.name,_this.address,_this.gstin,_this.pan,_this.state,_this.stateCode,_this.email,_this.phone);
+}
 
 @override
 String toString() {
-  return 'Receiver(name: $name, address: $address, gstin: $gstin, pan: $pan, state: $state, stateCode: $stateCode, email: $email, phone: $phone)';
+  final _this = this as Receiver;
+  return 'Receiver(name: ${_this.name}, address: ${_this.address}, gstin: ${_this.gstin}, pan: ${_this.pan}, state: ${_this.state}, stateCode: ${_this.stateCode}, email: ${_this.email}, phone: ${_this.phone})';
 }
 
 
@@ -748,7 +768,7 @@ class _$ReceiverCopyWithImpl<$Res>
 /// Create a copy of Receiver
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? address = null,Object? gstin = null,Object? pan = null,Object? state = null,Object? stateCode = null,Object? email = null,Object? phone = null,}) {
-  return _then(_self.copyWith(
+  return _then(Receiver(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String,gstin: null == gstin ? _self.gstin : gstin // ignore: cast_nullable_to_non_nullable
@@ -923,16 +943,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Receiver&&(identical(other.name, name) || other.name == name)&&(identical(other.address, address) || other.address == address)&&(identical(other.gstin, gstin) || other.gstin == gstin)&&(identical(other.pan, pan) || other.pan == pan)&&(identical(other.state, state) || other.state == state)&&(identical(other.stateCode, stateCode) || other.stateCode == stateCode)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Receiver&&(identical(other.name, name) || other.name == name)&&(identical(other.address, address) || other.address == address)&&(identical(other.gstin, gstin) || other.gstin == gstin)&&(identical(other.pan, pan) || other.pan == pan)&&(identical(other.state, state) || other.state == state)&&(identical(other.stateCode, stateCode) || other.stateCode == stateCode)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,address,gstin,pan,state,stateCode,email,phone);
+int get hashCode {
+    return Object.hash(runtimeType,name,address,gstin,pan,state,stateCode,email,phone);
+}
 
 @override
 String toString() {
-  return 'Receiver(name: $name, address: $address, gstin: $gstin, pan: $pan, state: $state, stateCode: $stateCode, email: $email, phone: $phone)';
+    return 'Receiver(name: $name, address: $address, gstin: $gstin, pan: $pan, state: $state, stateCode: $stateCode, email: $email, phone: $phone)';
 }
 
 
@@ -994,16 +1016,21 @@ $InvoiceItemCopyWith<InvoiceItem> get copyWith => _$InvoiceItemCopyWithImpl<Invo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is InvoiceItem&&(identical(other.id, id) || other.id == id)&&(identical(other.description, description) || other.description == description)&&(identical(other.sacCode, sacCode) || other.sacCode == sacCode)&&(identical(other.codeType, codeType) || other.codeType == codeType)&&(identical(other.year, year) || other.year == year)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.gstRate, gstRate) || other.gstRate == gstRate));
+  final _this = this as InvoiceItem;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is InvoiceItem&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.sacCode, _this.sacCode) || other.sacCode == _this.sacCode)&&(identical(other.codeType, _this.codeType) || other.codeType == _this.codeType)&&(identical(other.year, _this.year) || other.year == _this.year)&&(identical(other.amount, _this.amount) || other.amount == _this.amount)&&(identical(other.discount, _this.discount) || other.discount == _this.discount)&&(identical(other.quantity, _this.quantity) || other.quantity == _this.quantity)&&(identical(other.unit, _this.unit) || other.unit == _this.unit)&&(identical(other.gstRate, _this.gstRate) || other.gstRate == _this.gstRate));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,description,sacCode,codeType,year,amount,discount,quantity,unit,gstRate);
+int get hashCode {
+  final _this = this as InvoiceItem;
+  return Object.hash(runtimeType,_this.id,_this.description,_this.sacCode,_this.codeType,_this.year,_this.amount,_this.discount,_this.quantity,_this.unit,_this.gstRate);
+}
 
 @override
 String toString() {
-  return 'InvoiceItem(id: $id, description: $description, sacCode: $sacCode, codeType: $codeType, year: $year, amount: $amount, discount: $discount, quantity: $quantity, unit: $unit, gstRate: $gstRate)';
+  final _this = this as InvoiceItem;
+  return 'InvoiceItem(id: ${_this.id}, description: ${_this.description}, sacCode: ${_this.sacCode}, codeType: ${_this.codeType}, year: ${_this.year}, amount: ${_this.amount}, discount: ${_this.discount}, quantity: ${_this.quantity}, unit: ${_this.unit}, gstRate: ${_this.gstRate})';
 }
 
 
@@ -1032,7 +1059,7 @@ class _$InvoiceItemCopyWithImpl<$Res>
 /// Create a copy of InvoiceItem
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? description = null,Object? sacCode = null,Object? codeType = null,Object? year = null,Object? amount = null,Object? discount = null,Object? quantity = null,Object? unit = null,Object? gstRate = null,}) {
-  return _then(_self.copyWith(
+  return _then(InvoiceItem(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,sacCode: null == sacCode ? _self.sacCode : sacCode // ignore: cast_nullable_to_non_nullable
@@ -1211,16 +1238,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InvoiceItem&&(identical(other.id, id) || other.id == id)&&(identical(other.description, description) || other.description == description)&&(identical(other.sacCode, sacCode) || other.sacCode == sacCode)&&(identical(other.codeType, codeType) || other.codeType == codeType)&&(identical(other.year, year) || other.year == year)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.gstRate, gstRate) || other.gstRate == gstRate));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _InvoiceItem&&(identical(other.id, id) || other.id == id)&&(identical(other.description, description) || other.description == description)&&(identical(other.sacCode, sacCode) || other.sacCode == sacCode)&&(identical(other.codeType, codeType) || other.codeType == codeType)&&(identical(other.year, year) || other.year == year)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.discount, discount) || other.discount == discount)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unit, unit) || other.unit == unit)&&(identical(other.gstRate, gstRate) || other.gstRate == gstRate));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,description,sacCode,codeType,year,amount,discount,quantity,unit,gstRate);
+int get hashCode {
+    return Object.hash(runtimeType,id,description,sacCode,codeType,year,amount,discount,quantity,unit,gstRate);
+}
 
 @override
 String toString() {
-  return 'InvoiceItem(id: $id, description: $description, sacCode: $sacCode, codeType: $codeType, year: $year, amount: $amount, discount: $discount, quantity: $quantity, unit: $unit, gstRate: $gstRate)';
+    return 'InvoiceItem(id: $id, description: $description, sacCode: $sacCode, codeType: $codeType, year: $year, amount: $amount, discount: $discount, quantity: $quantity, unit: $unit, gstRate: $gstRate)';
 }
 
 

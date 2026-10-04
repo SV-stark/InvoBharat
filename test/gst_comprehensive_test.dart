@@ -89,11 +89,14 @@ void main() {
         receiver: defaultReceiver,
         discountAmount: 100.0,
         items: [
-          const InvoiceItem(amount: 1000), // Taxable 1000, GST 180, Total 1180
+          const InvoiceItem(amount: 1000), // Taxable 900 after discount, GST 18% = 162, Total = 1062
         ],
       );
 
-      expect(invoice.grandTotal, 1080.0); // 1180 - 100
+      expect(invoice.totalTaxableValue, 900.0);
+      expect(invoice.totalCGST, 81.0);
+      expect(invoice.totalSGST, 81.0);
+      expect(invoice.grandTotal, 1062.0);
     });
 
     test('Precision and Rounding (Money2 integration check)', () {

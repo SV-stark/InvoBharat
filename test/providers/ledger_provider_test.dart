@@ -60,6 +60,7 @@ void main() {
           clientId: any(named: 'clientId'),
           gstin: any(named: 'gstin'),
           query: any(named: 'query'),
+          exactMatch: any(named: 'exactMatch'),
         ),
       ).thenAnswer((_) async => invoices);
 

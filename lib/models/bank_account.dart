@@ -6,13 +6,13 @@ part 'bank_account.g.dart';
 @freezed
 abstract class BankAccount with _$BankAccount {
   const factory BankAccount({
-    required final String id,
-    required final String profileId,
-    required final String bankName,
-    required final String accountNo,
-    required final String ifscCode,
-    required final String branch,
-    @Default(false) final bool isDefault,
+    required String id,
+    required String profileId,
+    required String bankName,
+    required String accountNo,
+    required String ifscCode,
+    required String branch,
+    @Default(false) bool isDefault,
   }) = _BankAccount;
 
   factory BankAccount.fromJson(final Map<String, dynamic> json) =>

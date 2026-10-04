@@ -10,6 +10,7 @@ abstract class InvoiceRepository {
     final String? clientId,
     final String? gstin,
     final String? query,
+    final bool exactMatch = false,
   });
   Future<List<Invoice>> getInvoicesPaginated({
     required final int limit,
