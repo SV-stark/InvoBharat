@@ -122,12 +122,8 @@ void main() {
           return 'Unpaid';
         }
       */
-      // So logic prioritizes "Partial" over "Overdue".
-      // This means a partially paid invoice is NEVER "Overdue" in UI badge?
-      // That might be a bug or design choice.
-      // Usually it should say "Overdue" if balance > 0 and date passed.
-      // I will assert 'Partial' for now based on current code.
-      expect(overdueInvoice.paymentStatus, 'Partial');
+      // Under P1 #10 fix, overdue status takes precedence when balance > 0 and due date has passed.
+      expect(overdueInvoice.paymentStatus, 'Overdue');
     });
   });
 }

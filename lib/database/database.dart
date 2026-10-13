@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:drift_flutter/drift_flutter.dart';
@@ -8,6 +7,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:invobharat/database/tables.dart';
 import 'package:invobharat/services/logger_service.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 part 'database.g.dart';
 
@@ -38,7 +39,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration {
@@ -133,53 +134,58 @@ class AppDatabase extends _$AppDatabase {
         if (from < 7) {
           // Migration for foreign key constraints and unique indices.
           // Recreating tables safely with data preservation.
-          await m.database.customStatement('PRAGMA foreign_keys = OFF;');
-          await m.database.customStatement('PRAGMA legacy_alter_table = ON;');
-          await m.database.transaction(() async {
-            final List<TableInfo<Table, dynamic>> tables = [
-              businessProfiles as TableInfo<Table, dynamic>,
-              clients as TableInfo<Table, dynamic>,
-              invoices as TableInfo<Table, dynamic>,
-              invoiceItems as TableInfo<Table, dynamic>,
-              payments as TableInfo<Table, dynamic>,
-            ];
+          await m.database.exclusively(() async {
+            await m.database.customStatement('PRAGMA foreign_keys = OFF;');
+            await m.database.customStatement('PRAGMA legacy_alter_table = ON;');
+            try {
+              final List<TableInfo<Table, dynamic>> tables = [
+                businessProfiles as TableInfo<Table, dynamic>,
+                clients as TableInfo<Table, dynamic>,
+                invoices as TableInfo<Table, dynamic>,
+                invoiceItems as TableInfo<Table, dynamic>,
+                payments as TableInfo<Table, dynamic>,
+              ];
 
-            for (final table in tables) {
-              final tableName = table.actualTableName;
-              final tempName = '${tableName}_temp';
+              for (final table in tables) {
+                final tableName = table.actualTableName;
+                final tempName = '${tableName}_temp';
 
-              // 1. Rename existing table to temp
-              await m.database.customStatement(
-                'ALTER TABLE `$tableName` RENAME TO `$tempName`',
-              );
-
-              // 2. Create new table with updated constraints
-              await m.createTable(table);
-
-              // 3. Copy data from temp to new table (only columns that existed in temp table)
-              final pragmaResult = await m.database
-                  .customSelect('PRAGMA table_info(`$tempName`)')
-                  .get();
-              final existingCols = pragmaResult
-                  .map((final r) => r.read<String>('name'))
-                  .toSet();
-              final columnsToCopy = table.$columns
-                  .map((final c) => c.name)
-                  .where((final name) => existingCols.contains(name))
-                  .join(', ');
-
-              if (columnsToCopy.isNotEmpty) {
+                // 1. Rename existing table to temp
                 await m.database.customStatement(
-                  'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
+                  'ALTER TABLE `$tableName` RENAME TO `$tempName`',
                 );
-              }
 
-              // 4. Drop temp table
-              await m.database.customStatement('DROP TABLE `$tempName`');
+                // 2. Create new table with updated constraints
+                await m.createTable(table);
+
+                // 3. Copy data from temp to new table (only columns that existed in temp table)
+                final pragmaResult = await m.database
+                    .customSelect('PRAGMA table_info(`$tempName`)')
+                    .get();
+                final existingCols = pragmaResult
+                    .map((final r) => r.read<String>('name'))
+                    .toSet();
+                final columnsToCopy = table.$columns
+                    .map((final c) => c.name)
+                    .where((final name) => existingCols.contains(name))
+                    .join(', ');
+
+                if (columnsToCopy.isNotEmpty) {
+                  await m.database.customStatement(
+                    'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
+                  );
+                }
+
+                // 4. Drop temp table
+                await m.database.customStatement('DROP TABLE `$tempName`');
+              }
+            } finally {
+              await m.database.customStatement(
+                'PRAGMA legacy_alter_table = OFF;',
+              );
+              await m.database.customStatement('PRAGMA foreign_keys = ON;');
             }
           });
-          await m.database.customStatement('PRAGMA legacy_alter_table = OFF;');
-          await m.database.customStatement('PRAGMA foreign_keys = ON;');
         }
         if (from < 8) {
           await m.addColumn(invoices, invoices.poNumber);
@@ -209,69 +215,79 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(invoices, invoices.irnNo);
         }
         if (from < 12) {
-          await m.database.customStatement('PRAGMA foreign_keys = OFF;');
-          await m.database.customStatement('PRAGMA legacy_alter_table = ON;');
-          await m.database.transaction(() async {
-            final table = clients;
-            final tableName = table.actualTableName;
-            final tempName = '${tableName}_temp';
+          await m.database.exclusively(() async {
+            await m.database.customStatement('PRAGMA foreign_keys = OFF;');
+            await m.database.customStatement('PRAGMA legacy_alter_table = ON;');
+            try {
+              final table = clients;
+              final tableName = table.actualTableName;
+              final tempName = '${tableName}_temp';
 
-            // 1. Rename existing table to temp
-            await m.database.customStatement(
-              'ALTER TABLE `$tableName` RENAME TO `$tempName`',
-            );
+              // 1. Rename existing table to temp
+              await m.database.customStatement(
+                'ALTER TABLE `$tableName` RENAME TO `$tempName`',
+              );
 
-            // 2. Create new table with updated constraints (no UNIQUE constraint)
-            await m.createTable(table);
+              // 2. Create new table with updated constraints (no UNIQUE constraint)
+              await m.createTable(table);
 
-            // 3. Copy all columns
-            final columnsToCopy = table.$columns
-                .map((final c) => c.name)
-                .join(', ');
-            await m.database.customStatement(
-              'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
-            );
+              // 3. Copy all columns
+              final columnsToCopy = table.$columns
+                  .map((final c) => c.name)
+                  .join(', ');
+              await m.database.customStatement(
+                'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
+              );
 
-            // 4. Drop temp table
-            await m.database.customStatement('DROP TABLE `$tempName`');
+              // 4. Drop temp table
+              await m.database.customStatement('DROP TABLE `$tempName`');
 
-            // 5. Create partial unique index where gstin is not empty/null
-            await m.database.customStatement(
-              "CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null'",
-            );
+              // 5. Create partial unique index where gstin is not empty/null
+              await m.database.customStatement(
+                "CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null'",
+              );
+            } finally {
+              await m.database.customStatement(
+                'PRAGMA legacy_alter_table = OFF;',
+              );
+              await m.database.customStatement('PRAGMA foreign_keys = ON;');
+            }
           });
-          await m.database.customStatement('PRAGMA legacy_alter_table = OFF;');
-          await m.database.customStatement('PRAGMA foreign_keys = ON;');
         }
         if (from < 13) {
           await m.createTable(estimates);
           await m.createTable(estimateItems);
           await m.createTable(recurringProfilesTable);
 
-          await m.database.customStatement('PRAGMA foreign_keys = OFF;');
-          await m.database.customStatement('PRAGMA legacy_alter_table = ON;');
-          await m.database.transaction(() async {
-            final table = invoices;
-            final tableName = table.actualTableName;
-            final tempName = '${tableName}_temp';
+          await m.database.exclusively(() async {
+            await m.database.customStatement('PRAGMA foreign_keys = OFF;');
+            await m.database.customStatement('PRAGMA legacy_alter_table = ON;');
+            try {
+              final table = invoices;
+              final tableName = table.actualTableName;
+              final tempName = '${tableName}_temp';
 
-            await m.database.customStatement(
-              'ALTER TABLE `$tableName` RENAME TO `$tempName`',
-            );
+              await m.database.customStatement(
+                'ALTER TABLE `$tableName` RENAME TO `$tempName`',
+              );
 
-            await m.createTable(table);
+              await m.createTable(table);
 
-            final columnsToCopy = table.$columns
-                .map((final c) => c.name)
-                .join(', ');
-            await m.database.customStatement(
-              'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
-            );
+              final columnsToCopy = table.$columns
+                  .map((final c) => c.name)
+                  .join(', ');
+              await m.database.customStatement(
+                'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempName`',
+              );
 
-            await m.database.customStatement('DROP TABLE `$tempName`');
+              await m.database.customStatement('DROP TABLE `$tempName`');
+            } finally {
+              await m.database.customStatement(
+                'PRAGMA legacy_alter_table = OFF;',
+              );
+              await m.database.customStatement('PRAGMA foreign_keys = ON;');
+            }
           });
-          await m.database.customStatement('PRAGMA legacy_alter_table = OFF;');
-          await m.database.customStatement('PRAGMA foreign_keys = ON;');
         }
         if (from < 14) {
           await _createIndexes(m.database);
@@ -316,9 +332,68 @@ class AppDatabase extends _$AppDatabase {
           }
           await _createIndexes(m.database);
         }
+        if (from < 18) {
+          final pragmaResult = await m.database
+              .customSelect('PRAGMA table_info(`invoices`)')
+              .get();
+          final existingCols = pragmaResult
+              .map((final r) => r.read<String>('name'))
+              .toSet();
+          if (!existingCols.contains('discount_amount')) {
+            await m.addColumn(invoices, invoices.discountAmount);
+          }
+          if (!existingCols.contains('currency')) {
+            await m.addColumn(invoices, invoices.currency);
+          }
+          if (!existingCols.contains('is_archived')) {
+            await m.addColumn(invoices, invoices.isArchived);
+          }
+          if (!existingCols.contains('delivery_address')) {
+            await m.addColumn(invoices, invoices.deliveryAddress);
+          }
+          if (!existingCols.contains('supplier_state')) {
+            await m.addColumn(invoices, invoices.supplierState);
+          }
+          if (!existingCols.contains('financial_year')) {
+            await m.addColumn(invoices, invoices.financialYear);
+          }
+
+          // Backfill financial_year for all existing invoices based on invoice_date
+          try {
+            final allInvoices = await m.database
+                .customSelect('SELECT id, invoice_date FROM invoices')
+                .get();
+            for (final row in allInvoices) {
+              final id = row.read<String>('id');
+              final rawDate = row.read<dynamic>('invoice_date');
+              DateTime? dt;
+              if (rawDate is int) {
+                dt = DateTime.fromMillisecondsSinceEpoch(rawDate * 1000);
+              } else if (rawDate is String) {
+                dt = DateTime.tryParse(rawDate);
+              }
+              if (dt != null) {
+                final fyStartYear = dt.month >= 4 ? dt.year : dt.year - 1;
+                final fy =
+                    '$fyStartYear-${((fyStartYear + 1) % 100).toString().padLeft(2, '0')}';
+                await m.database.customStatement(
+                  'UPDATE invoices SET financial_year = ? WHERE id = ?',
+                  [fy, id],
+                );
+              }
+            }
+          } catch (e, st) {
+            LoggerService.talker.handle(
+              e,
+              st,
+              "Error backfilling invoice financial_year",
+            );
+          }
+
+          await _createIndexes(m.database);
+        }
       },
       beforeOpen: (final details) async {
-        await _repairCorruptedForeignKeys(this);
         await customStatement('PRAGMA foreign_keys = ON;');
         if (details.wasCreated) {
           // ...
@@ -330,73 +405,236 @@ class AppDatabase extends _$AppDatabase {
   static Future<void> _repairCorruptedForeignKeys(
     final GeneratedDatabase db,
   ) async {
-    try {
-      await db.customStatement('PRAGMA foreign_keys = OFF;');
-      await db.customStatement('PRAGMA legacy_alter_table = ON;');
+    await db.exclusively(() async {
+      try {
+        await db.customStatement('PRAGMA foreign_keys = OFF;');
+        await db.customStatement('PRAGMA legacy_alter_table = ON;');
 
-      final tablesWithTemp = await db
-          .customSelect(
-            "SELECT name, sql FROM sqlite_master WHERE type='table' AND sql LIKE '%_temp%'",
-          )
-          .get();
+        final tablesWithTemp = await db
+            .customSelect(
+              "SELECT name, sql FROM sqlite_master WHERE type='table' AND sql LIKE '%_temp%'",
+            )
+            .get();
 
-      if (tablesWithTemp.isNotEmpty) {
-        for (final row in tablesWithTemp) {
-          final tableName = row.read<String>('name');
-          final tableInfo = db.allTables
-              .cast<TableInfo<Table, dynamic>?>()
-              .firstWhere(
-                (final t) => t?.actualTableName == tableName,
-                orElse: () => null,
-              );
+        if (tablesWithTemp.isNotEmpty) {
+          for (final row in tablesWithTemp) {
+            final tableName = row.read<String>('name');
+            final tableInfo = db.allTables
+                .cast<TableInfo<Table, dynamic>?>()
+                .firstWhere(
+                  (final t) => t?.actualTableName == tableName,
+                  orElse: () => null,
+                );
 
-          if (tableInfo != null) {
-            final tempBackupName = '${tableName}_repair_tmp';
-            await db.customStatement(
-              'ALTER TABLE `$tableName` RENAME TO `$tempBackupName`',
-            );
-            await Migrator(db).createTable(tableInfo);
-
-            final pragmaResult = await db
-                .customSelect('PRAGMA table_info(`$tempBackupName`)')
-                .get();
-            final existingCols = pragmaResult
-                .map((final r) => r.read<String>('name'))
-                .toSet();
-            final columnsToCopy = tableInfo.$columns
-                .map((final c) => c.name)
-                .where((final name) => existingCols.contains(name))
-                .join(', ');
-
-            if (columnsToCopy.isNotEmpty) {
+            if (tableInfo != null) {
+              final tempBackupName = '${tableName}_repair_tmp';
               await db.customStatement(
-                'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempBackupName`',
+                'ALTER TABLE `$tableName` RENAME TO `$tempBackupName`',
               );
+              try {
+                await Migrator(db).createTable(tableInfo);
+
+                final pragmaResult = await db
+                    .customSelect('PRAGMA table_info(`$tempBackupName`)')
+                    .get();
+                final existingCols = pragmaResult
+                    .map((final r) => r.read<String>('name'))
+                    .toSet();
+                final columnsToCopy = tableInfo.$columns
+                    .map((final c) => c.name)
+                    .where((final name) => existingCols.contains(name))
+                    .join(', ');
+
+                if (columnsToCopy.isNotEmpty) {
+                  await db.customStatement(
+                    'INSERT INTO `$tableName` ($columnsToCopy) SELECT $columnsToCopy FROM `$tempBackupName`',
+                  );
+                }
+                await db.customStatement('DROP TABLE `$tempBackupName`');
+              } catch (innerErr) {
+                // Rollback rename if creation/copy failed
+                await db.customStatement('DROP TABLE IF EXISTS `$tableName`');
+                await db.customStatement(
+                  'ALTER TABLE `$tempBackupName` RENAME TO `$tableName`',
+                );
+                rethrow;
+              }
             }
-            await db.customStatement('DROP TABLE `$tempBackupName`');
           }
+        }
+      } catch (e, st) {
+        LoggerService.talker.handle(e, st, "Schema Foreign Key Repair Error");
+      } finally {
+        await db.customStatement('PRAGMA legacy_alter_table = OFF;');
+        await db.customStatement('PRAGMA foreign_keys = ON;');
+      }
+    });
+  }
+
+  static Future<void> _repairDuplicateGstins(final GeneratedDatabase db) async {
+    try {
+      // Deduplicate business_profiles by GSTIN
+      final bpDuplicates = await db.customSelect('''
+        SELECT gstin, COUNT(*) as cnt
+        FROM business_profiles
+        WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null'
+        GROUP BY gstin
+        HAVING cnt > 1
+        ''').get();
+
+      for (final dup in bpDuplicates) {
+        final gstin = dup.read<String>('gstin');
+        final rows = await db
+            .customSelect(
+              'SELECT id FROM business_profiles WHERE gstin = ? ORDER BY rowid ASC',
+              variables: [Variable.withString(gstin)],
+            )
+            .get();
+        for (int i = 1; i < rows.length; i++) {
+          final id = rows[i].read<String>('id');
+          await db.customStatement(
+            'UPDATE business_profiles SET gstin = ? WHERE id = ?',
+            ['$gstin-dup$i', id],
+          );
+        }
+      }
+
+      // Deduplicate clients by profile_id and GSTIN
+      final clientDuplicates = await db.customSelect('''
+        SELECT profile_id, gstin, COUNT(*) as cnt
+        FROM clients
+        WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null'
+        GROUP BY profile_id, gstin
+        HAVING cnt > 1
+        ''').get();
+
+      for (final dup in clientDuplicates) {
+        final profileId = dup.read<String>('profile_id');
+        final gstin = dup.read<String>('gstin');
+        final rows = await db
+            .customSelect(
+              'SELECT id FROM clients WHERE profile_id = ? AND gstin = ? ORDER BY rowid ASC',
+              variables: [
+                Variable.withString(profileId),
+                Variable.withString(gstin),
+              ],
+            )
+            .get();
+        for (int i = 1; i < rows.length; i++) {
+          final id = rows[i].read<String>('id');
+          await db.customStatement(
+            'UPDATE clients SET gstin = ? WHERE id = ?',
+            ['$gstin-dup$i', id],
+          );
         }
       }
     } catch (e, st) {
-      debugPrint("Schema Foreign Key Repair Error: $e\n$st");
-    } finally {
-      await db.customStatement('PRAGMA legacy_alter_table = OFF;');
-      await db.customStatement('PRAGMA foreign_keys = ON;');
+      LoggerService.talker.handle(e, st, "Error resolving duplicate GSTINs");
+    }
+  }
+
+  static Future<void> _repairDuplicateInvoiceNumbers(
+    final GeneratedDatabase db,
+  ) async {
+    try {
+      // Backfill missing financial_year before checking duplicates
+      final missingFyRows = await db
+          .customSelect(
+            "SELECT id, invoice_date FROM invoices WHERE financial_year IS NULL OR financial_year = ''",
+          )
+          .get();
+      for (final row in missingFyRows) {
+        final id = row.read<String>('id');
+        final rawDate = row.read<dynamic>('invoice_date');
+        DateTime? dt;
+        if (rawDate is int) {
+          dt = DateTime.fromMillisecondsSinceEpoch(rawDate * 1000);
+        } else if (rawDate is String) {
+          dt = DateTime.tryParse(rawDate);
+        }
+        if (dt != null) {
+          final fyStartYear = dt.month >= 4 ? dt.year : dt.year - 1;
+          final fy =
+              '$fyStartYear-${((fyStartYear + 1) % 100).toString().padLeft(2, '0')}';
+          await db.customStatement(
+            'UPDATE invoices SET financial_year = ? WHERE id = ?',
+            [fy, id],
+          );
+        }
+      }
+
+      final duplicates = await db.customSelect('''
+        SELECT profile_id, financial_year, invoice_no, COUNT(*) as cnt
+        FROM invoices
+        GROUP BY profile_id, financial_year, invoice_no
+        HAVING cnt > 1
+        ''').get();
+
+      for (final dup in duplicates) {
+        final profileId = dup.read<String>('profile_id');
+        final fy = dup.readNullable<String>('financial_year') ?? '';
+        final invoiceNo = dup.read<String>('invoice_no');
+        final rows = await db
+            .customSelect(
+              "SELECT id FROM invoices WHERE profile_id = ? AND (financial_year = ? OR (? = '' AND financial_year IS NULL)) AND invoice_no = ? ORDER BY invoice_date ASC, rowid ASC",
+              variables: [
+                Variable.withString(profileId),
+                Variable.withString(fy),
+                Variable.withString(fy),
+                Variable.withString(invoiceNo),
+              ],
+            )
+            .get();
+
+        for (int i = 1; i < rows.length; i++) {
+          final id = rows[i].read<String>('id');
+          final newNo = '$invoiceNo-dup$i';
+          await db.customStatement(
+            'UPDATE invoices SET invoice_no = ? WHERE id = ?',
+            [newNo, id],
+          );
+        }
+      }
+    } catch (e, st) {
+      LoggerService.talker.handle(
+        e,
+        st,
+        "Error resolving duplicate invoice numbers",
+      );
     }
   }
 
   static Future<void> _createIndexes(final GeneratedDatabase db) async {
-    await db.customStatement(
-      "CREATE UNIQUE INDEX IF NOT EXISTS `idx_business_profiles_gstin` ON `business_profiles` (gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null';",
-    );
-    await db.customStatement(
-      "CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null';",
-    );
+    await _repairDuplicateGstins(db);
+    try {
+      await db.customStatement(
+        "CREATE UNIQUE INDEX IF NOT EXISTS `idx_business_profiles_gstin` ON `business_profiles` (gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null';",
+      );
+    } catch (_) {
+      await db.customStatement(
+        "CREATE INDEX IF NOT EXISTS `idx_business_profiles_gstin` ON `business_profiles` (gstin);",
+      );
+    }
+    try {
+      await db.customStatement(
+        "CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null';",
+      );
+    } catch (_) {
+      await db.customStatement(
+        "CREATE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin);",
+      );
+    }
     await db.customStatement(
       'CREATE INDEX IF NOT EXISTS idx_invoices_profile_date ON invoices (profile_id, invoice_date);',
     );
+    await _repairDuplicateInvoiceNumbers(db);
+    // Drop old global unique index
     await db.customStatement(
-      'CREATE INDEX IF NOT EXISTS idx_invoices_profile_no ON invoices (profile_id, invoice_no);',
+      'DROP INDEX IF EXISTS idx_invoices_profile_number;',
+    );
+    // Create new FY-scoped unique index
+    await db.customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_invoices_profile_fy_number ON invoices (profile_id, financial_year, invoice_no);',
     );
     await db.customStatement(
       'CREATE INDEX IF NOT EXISTS idx_invoices_profile_type ON invoices (profile_id, type);',
@@ -413,11 +651,36 @@ class AppDatabase extends _$AppDatabase {
     await db.customStatement(
       'CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON payments (invoice_id);',
     );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_bank_accounts_profile_id ON bank_accounts (profile_id);',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_estimates_profile_id ON estimates (profile_id);',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_estimate_items_estimate_id ON estimate_items (estimate_id);',
+    );
+    await db.customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_recurring_profiles_profile_id ON recurring_profiles_table (profile_id);',
+    );
   }
 
   Future<void> vacuumInto(final String path) async {
     await customStatement('VACUUM INTO ?', [path]);
   }
+}
+
+Future<File> getAppDatabaseFile() async {
+  final dir = await getApplicationDocumentsDirectory();
+  final canonicalFile = File(p.join(dir.path, 'db.sqlite'));
+  final legacyFile = File(p.join(dir.path, 'InvoBharat', 'db.sqlite'));
+
+  if (!await canonicalFile.exists() && await legacyFile.exists()) {
+    try {
+      await legacyFile.copy(canonicalFile.path);
+    } catch (_) {}
+  }
+  return canonicalFile;
 }
 
 QueryExecutor _openConnection() {

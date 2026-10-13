@@ -6,6 +6,7 @@ import 'package:invobharat/models/client.dart';
 import 'package:invobharat/providers/database_provider.dart';
 
 import 'package:invobharat/providers/business_profile_provider.dart';
+import 'package:invobharat/services/logger_service.dart';
 
 final clientRepositoryProvider = Provider<ClientRepository>((final ref) {
   final db = ref.watch(databaseProvider);
@@ -17,6 +18,10 @@ final clientListProvider = NotifierProvider<ClientListNotifier, List<Client>>(
   ClientListNotifier.new,
 );
 
+final clientListAsyncProvider = FutureProvider<List<Client>>((final ref) async {
+  return ref.watch(clientRepositoryProvider).getAllClients();
+});
+
 class ClientListNotifier extends Notifier<List<Client>> {
   @override
   List<Client> build() {
@@ -27,33 +32,48 @@ class ClientListNotifier extends Notifier<List<Client>> {
   }
 
   Future<void> _loadClients() async {
-    // Access repository using ref.read inside methods or ref.watch in build.
-    // Since we watched it in build, we can read it here or state might be reset if repo changes.
-    final repository = ref.read(clientRepositoryProvider);
-    state = await repository.getAllClients();
+    try {
+      final repository = ref.read(clientRepositoryProvider);
+      state = await repository.getAllClients();
+      ref.invalidate(clientListAsyncProvider);
+    } catch (e, st) {
+      LoggerService.talker.handle(e, st, "Error loading clients");
+    }
   }
 
   Future<void> addClient(final Client client) async {
-    final repository = ref.read(clientRepositoryProvider);
+    try {
+      final repository = ref.read(clientRepositoryProvider);
 
-    Client newClient = client;
-    if (newClient.id.isEmpty) {
-      newClient = newClient.copyWith(id: const Uuid().v4());
+      Client newClient = client;
+      if (newClient.id.isEmpty) {
+        newClient = newClient.copyWith(id: const Uuid().v4());
+      }
+
+      await repository.saveClient(newClient);
+      await _loadClients();
+    } catch (e, st) {
+      LoggerService.talker.handle(e, st, "Error adding client");
     }
-
-    await repository.saveClient(newClient);
-    await _loadClients();
   }
 
   Future<void> updateClient(final Client client) async {
-    final repository = ref.read(clientRepositoryProvider);
-    await repository.saveClient(client);
-    await _loadClients();
+    try {
+      final repository = ref.read(clientRepositoryProvider);
+      await repository.saveClient(client);
+      await _loadClients();
+    } catch (e, st) {
+      LoggerService.talker.handle(e, st, "Error updating client");
+    }
   }
 
   Future<void> deleteClient(final String clientId) async {
-    final repository = ref.read(clientRepositoryProvider);
-    await repository.deleteClient(clientId);
-    await _loadClients();
+    try {
+      final repository = ref.read(clientRepositoryProvider);
+      await repository.deleteClient(clientId);
+      await _loadClients();
+    } catch (e, st) {
+      LoggerService.talker.handle(e, st, "Error deleting client");
+    }
   }
 }

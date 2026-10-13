@@ -150,6 +150,7 @@ _InvoiceItem _$InvoiceItemFromJson(Map<String, dynamic> json) => _InvoiceItem(
   quantity: (json['quantity'] as num?)?.toDouble() ?? 1.0,
   unit: json['unit'] as String? ?? 'Nos',
   gstRate: (json['gstRate'] as num?)?.toDouble() ?? 18.0,
+  currency: json['currency'] as String? ?? 'INR',
 );
 
 Map<String, dynamic> _$InvoiceItemToJson(_InvoiceItem instance) =>
@@ -164,4 +165,5 @@ Map<String, dynamic> _$InvoiceItemToJson(_InvoiceItem instance) =>
       'quantity': instance.quantity,
       'unit': instance.unit,
       'gstRate': instance.gstRate,
+      'currency': instance.currency,
     };

@@ -26,6 +26,19 @@ class InvoiceImportService {
 
       final fileToRead = File(file.path!);
       final content = await fileToRead.readAsString();
+      return await importCsvContent(content, repository);
+    } catch (e) {
+      debugPrint("Import Error: $e");
+      return ImportResult(0, 0, "Error: $e");
+    }
+  }
+
+  /// Parses CSV string content and imports invoices into the repository.
+  static Future<ImportResult> importCsvContent(
+    final String content,
+    final InvoiceRepository repository,
+  ) async {
+    try {
       final rows = Csv().decode(content);
 
       if (rows.length < 2) {
@@ -51,6 +64,13 @@ class InvoiceImportService {
         );
       }
 
+      const maxCsvRows = 10000;
+      if (rows.length > maxCsvRows) {
+        throw Exception(
+          "CSV file exceeds safe row limit (${rows.length} rows > $maxCsvRows).",
+        );
+      }
+
       final Map<String, Invoice> invoiceMap = {};
 
       if (isInvoBharat) {
@@ -59,15 +79,25 @@ class InvoiceImportService {
         _parseGstr1(rows, headers, invoiceMap);
       }
 
+      int successCount = 0;
+      int errorCount = 0;
+      final List<String> errors = [];
+
       for (final inv in invoiceMap.values) {
-        await repository.saveInvoice(inv);
+        try {
+          await repository.saveInvoice(inv);
+          successCount++;
+        } catch (e) {
+          errorCount++;
+          errors.add("Invoice #${inv.invoiceNo}: $e");
+        }
       }
 
-      return ImportResult(
-        invoiceMap.length,
-        0,
-        "Successfully imported ${invoiceMap.length} invoices.",
-      );
+      final msg = errorCount == 0
+          ? "Successfully imported $successCount invoices."
+          : "Imported $successCount invoices ($errorCount failed): ${errors.take(3).join('; ')}";
+
+      return ImportResult(successCount, errorCount, msg);
     } catch (e) {
       debugPrint("Import Error: $e");
       return ImportResult(0, 0, "Error: $e");
@@ -189,7 +219,9 @@ class InvoiceImportService {
           id: const Uuid().v4(),
           invoiceNo: invNo,
           invoiceDate: _parseDate(_val(row, idxDate)),
-          dueDate: _parseDate(_val(row, idxDueDate)),
+          dueDate: _val(row, idxDueDate).isNotEmpty
+              ? _parseDate(_val(row, idxDueDate))
+              : null,
           placeOfSupply: _val(row, idxPos),
           reverseCharge: _val(row, idxRcm),
           paymentTerms: _val(row, idxTerms),
@@ -269,20 +301,44 @@ class InvoiceImportService {
 
   static String _val(final List<dynamic> row, final int idx) {
     if (idx == -1 || idx >= row.length) return '';
-    return row[idx].toString().trim();
+    var str = row[idx].toString().trim();
+    if (str.startsWith("'") && str.length > 1) {
+      final nextChar = str[1];
+      if (nextChar == '=' ||
+          nextChar == '+' ||
+          nextChar == '-' ||
+          nextChar == '@' ||
+          nextChar == '\t' ||
+          nextChar == '\r') {
+        str = str.substring(1);
+      }
+    }
+    return str;
   }
 
   static DateTime _parseDate(final String str, [final DateTime? fallback]) {
-    if (str.isEmpty) return fallback ?? DateTime.now();
-    try {
-      return DateFormat('dd-MM-yyyy').parse(str);
-    } catch (_) {
-      try {
-        return DateFormat('yyyy-MM-dd').parse(str);
-      } catch (_) {
-        return fallback ?? DateTime.now();
-      }
+    final clean = str.trim();
+    if (clean.isEmpty) {
+      if (fallback != null) return fallback;
+      throw const FormatException("Date field is empty in CSV row.");
     }
+    final formats = [
+      'dd-MM-yyyy',
+      'yyyy-MM-dd',
+      'dd/MM/yyyy',
+      'yyyy/MM/dd',
+      'MM/dd/yyyy',
+      'dd.MM.yyyy',
+    ];
+    for (final fmt in formats) {
+      try {
+        return DateFormat(fmt).parseStrict(clean);
+      } catch (_) {}
+    }
+    if (fallback != null) return fallback;
+    throw FormatException(
+      "Unrecognized date format '$str'. Expected DD-MM-YYYY or YYYY-MM-DD.",
+    );
   }
 }
 

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'estimate.dart';
@@ -9,14 +9,14 @@ part of 'estimate.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$Estimate {
 
- String get id; String get estimateNo; DateTime get date; DateTime? get expiryDate; Supplier get supplier; Receiver get receiver; List<InvoiceItem> get items; String get notes; String get terms; String? get status;// Draft, Sent, Accepted, Rejected, Converted
- String? get poNumber;
+ String get id; String get estimateNo; DateTime get date; DateTime? get expiryDate; Supplier get supplier; Receiver get receiver; List<InvoiceItem> get items; String get notes; String get terms; String? get status; String? get poNumber;
 /// Create a copy of Estimate
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,21 @@ $EstimateCopyWith<Estimate> get copyWith => _$EstimateCopyWithImpl<Estimate>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Estimate&&(identical(other.id, id) || other.id == id)&&(identical(other.estimateNo, estimateNo) || other.estimateNo == estimateNo)&&(identical(other.date, date) || other.date == date)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.receiver, receiver) || other.receiver == receiver)&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.terms, terms) || other.terms == terms)&&(identical(other.status, status) || other.status == status)&&(identical(other.poNumber, poNumber) || other.poNumber == poNumber));
+  final _this = this as Estimate;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Estimate&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.estimateNo, _this.estimateNo) || other.estimateNo == _this.estimateNo)&&(identical(other.date, _this.date) || other.date == _this.date)&&(identical(other.expiryDate, _this.expiryDate) || other.expiryDate == _this.expiryDate)&&(identical(other.supplier, _this.supplier) || other.supplier == _this.supplier)&&(identical(other.receiver, _this.receiver) || other.receiver == _this.receiver)&&const DeepCollectionEquality().equals(other.items, _this.items)&&(identical(other.notes, _this.notes) || other.notes == _this.notes)&&(identical(other.terms, _this.terms) || other.terms == _this.terms)&&(identical(other.status, _this.status) || other.status == _this.status)&&(identical(other.poNumber, _this.poNumber) || other.poNumber == _this.poNumber));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,estimateNo,date,expiryDate,supplier,receiver,const DeepCollectionEquality().hash(items),notes,terms,status,poNumber);
+int get hashCode {
+  final _this = this as Estimate;
+  return Object.hash(runtimeType,_this.id,_this.estimateNo,_this.date,_this.expiryDate,_this.supplier,_this.receiver,const DeepCollectionEquality().hash(_this.items),_this.notes,_this.terms,_this.status,_this.poNumber);
+}
 
 @override
 String toString() {
-  return 'Estimate(id: $id, estimateNo: $estimateNo, date: $date, expiryDate: $expiryDate, supplier: $supplier, receiver: $receiver, items: $items, notes: $notes, terms: $terms, status: $status, poNumber: $poNumber)';
+  final _this = this as Estimate;
+  return 'Estimate(id: ${_this.id}, estimateNo: ${_this.estimateNo}, date: ${_this.date}, expiryDate: ${_this.expiryDate}, supplier: ${_this.supplier}, receiver: ${_this.receiver}, items: ${_this.items}, notes: ${_this.notes}, terms: ${_this.terms}, status: ${_this.status}, poNumber: ${_this.poNumber})';
 }
 
 
@@ -67,7 +72,7 @@ class _$EstimateCopyWithImpl<$Res>
 /// Create a copy of Estimate
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? estimateNo = null,Object? date = null,Object? expiryDate = freezed,Object? supplier = null,Object? receiver = null,Object? items = null,Object? notes = null,Object? terms = null,Object? status = freezed,Object? poNumber = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(Estimate(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,estimateNo: null == estimateNo ? _self.estimateNo : estimateNo // ignore: cast_nullable_to_non_nullable
 as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
@@ -238,7 +243,7 @@ return $default(_that.id,_that.estimateNo,_that.date,_that.expiryDate,_that.supp
 @JsonSerializable()
 
 class _Estimate extends Estimate {
-  const _Estimate({required this.id, this.estimateNo = '', required this.date, this.expiryDate, required this.supplier, required this.receiver, final  List<InvoiceItem> items = const [], this.notes = '', this.terms = '', this.status = 'Draft', this.poNumber}): _items = items,super._();
+  const _Estimate({required this.id, this.estimateNo = '', required this.date, this.expiryDate, required this.supplier, required this.receiver,  List<InvoiceItem> items = const [], this.notes = '', this.terms = '', this.status = 'Draft', this.poNumber}): _items = items,super._();
   factory _Estimate.fromJson(Map<String, dynamic> json) => _$EstimateFromJson(json);
 
 @override final  String id;
@@ -257,7 +262,6 @@ class _Estimate extends Estimate {
 @override@JsonKey() final  String notes;
 @override@JsonKey() final  String terms;
 @override@JsonKey() final  String? status;
-// Draft, Sent, Accepted, Rejected, Converted
 @override final  String? poNumber;
 
 /// Create a copy of Estimate
@@ -273,16 +277,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Estimate&&(identical(other.id, id) || other.id == id)&&(identical(other.estimateNo, estimateNo) || other.estimateNo == estimateNo)&&(identical(other.date, date) || other.date == date)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.receiver, receiver) || other.receiver == receiver)&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.terms, terms) || other.terms == terms)&&(identical(other.status, status) || other.status == status)&&(identical(other.poNumber, poNumber) || other.poNumber == poNumber));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Estimate&&(identical(other.id, id) || other.id == id)&&(identical(other.estimateNo, estimateNo) || other.estimateNo == estimateNo)&&(identical(other.date, date) || other.date == date)&&(identical(other.expiryDate, expiryDate) || other.expiryDate == expiryDate)&&(identical(other.supplier, supplier) || other.supplier == supplier)&&(identical(other.receiver, receiver) || other.receiver == receiver)&&const DeepCollectionEquality().equals(other.items, _items)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.terms, terms) || other.terms == terms)&&(identical(other.status, status) || other.status == status)&&(identical(other.poNumber, poNumber) || other.poNumber == poNumber));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,estimateNo,date,expiryDate,supplier,receiver,const DeepCollectionEquality().hash(_items),notes,terms,status,poNumber);
+int get hashCode {
+    return Object.hash(runtimeType,id,estimateNo,date,expiryDate,supplier,receiver,const DeepCollectionEquality().hash(_items),notes,terms,status,poNumber);
+}
 
 @override
 String toString() {
-  return 'Estimate(id: $id, estimateNo: $estimateNo, date: $date, expiryDate: $expiryDate, supplier: $supplier, receiver: $receiver, items: $items, notes: $notes, terms: $terms, status: $status, poNumber: $poNumber)';
+    return 'Estimate(id: $id, estimateNo: $estimateNo, date: $date, expiryDate: $expiryDate, supplier: $supplier, receiver: $receiver, items: $items, notes: $notes, terms: $terms, status: $status, poNumber: $poNumber)';
 }
 
 

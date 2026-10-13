@@ -30,8 +30,9 @@ class GstrService {
     final validInvoices = invoices
         .where(
           (inv) =>
-              inv.status.toLowerCase() != 'draft' &&
-              inv.type != InvoiceType.deliveryChallan,
+              inv.type != InvoiceType.deliveryChallan &&
+              inv.status.toLowerCase() != 'cancelled' &&
+              inv.status.toLowerCase() != 'void',
         )
         .toList();
 
@@ -108,7 +109,9 @@ class GstrService {
           type,
         ]);
       } else {
-        for (final item in inv.items) {
+        for (int i = 0; i < inv.items.length; i++) {
+          final item = inv.items[i];
+          final isFirstItem = i == 0;
           final gstRate = item.gstRate;
           final taxableValue = item.netAmount * multiplier;
           final cgst = item.calculateCgst(inv.isInterState) * multiplier;
@@ -122,7 +125,7 @@ class GstrService {
             _sanitize(receiverName),
             _sanitize(inv.invoiceNo),
             date,
-            invoiceValue.toStringAsFixed(2),
+            isFirstItem ? invoiceValue.toStringAsFixed(2) : '0.00',
             gstRate.toStringAsFixed(2),
             taxableValue.toStringAsFixed(2),
             cgst.toStringAsFixed(2),

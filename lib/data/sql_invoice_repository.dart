@@ -14,6 +14,10 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
   SqlInvoiceRepository(this.database, this.profileId);
 
+  static String _escapeSqlLike(final String input) {
+    return input.replaceAll(RegExp(r'[%_\\]'), '');
+  }
+
   @override
   Future<void> saveInvoice(final model.Invoice invoice) async {
     final targetProfileId =
@@ -123,6 +127,11 @@ class SqlInvoiceRepository implements InvoiceRepository {
         }
       }
 
+      final dt = invoice.invoiceDate;
+      final fyStartYear = dt.month >= 4 ? dt.year : dt.year - 1;
+      final fy =
+          '$fyStartYear-${((fyStartYear + 1) % 100).toString().padLeft(2, '0')}';
+
       await database
           .into(database.invoices)
           .insertOnConflictUpdate(
@@ -149,6 +158,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
               supplierGstin: Value(invoice.supplier.gstin),
               supplierEmail: Value(invoice.supplier.email),
               supplierPhone: Value(invoice.supplier.phone),
+              supplierState: Value(invoice.supplier.state),
 
               receiverName: Value(invoice.receiver.name),
               receiverAddress: Value(invoice.receiver.address),
@@ -167,6 +177,12 @@ class SqlInvoiceRepository implements InvoiceRepository {
               ewayBillNo: Value(invoice.ewayBillNo),
               vehicleNo: Value(invoice.vehicleNo),
               irnNo: Value(invoice.irnNo),
+
+              discountAmount: Value(invoice.discountAmount),
+              currency: Value(invoice.currency),
+              isArchived: Value(invoice.isArchived),
+              deliveryAddress: Value(invoice.deliveryAddress),
+              financialYear: Value(fy),
             ),
           );
 
@@ -178,12 +194,14 @@ class SqlInvoiceRepository implements InvoiceRepository {
         await database.into(database.invoiceItems).insert(item);
       }
 
-      // Replace Payments
-      await (database.delete(
-        database.payments,
-      )..where((final t) => t.invoiceId.equals(invoiceId))).go();
-      for (var p in payments) {
-        await database.into(database.payments).insert(p);
+      // Replace Payments: if caller provided payments, replace; if payments is empty, preserve existing payments
+      if (payments.isNotEmpty) {
+        await (database.delete(
+          database.payments,
+        )..where((final t) => t.invoiceId.equals(invoiceId))).go();
+        for (var p in payments) {
+          await database.into(database.payments).insert(p);
+        }
       }
     });
   }
@@ -244,6 +262,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
               quantity: row.quantity,
               unit: row.unit,
               gstRate: row.gstRate,
+              currency: invoiceRow.currency,
             ),
           )
           .toList(),
@@ -291,6 +310,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
               name: invoiceRow.supplierName!,
               address: invoiceRow.supplierAddress ?? "",
               gstin: invoiceRow.supplierGstin ?? "",
+              state: invoiceRow.supplierState ?? "",
               email: invoiceRow.supplierEmail ?? "",
               phone: invoiceRow.supplierPhone ?? "",
             )
@@ -303,6 +323,10 @@ class SqlInvoiceRepository implements InvoiceRepository {
       ewayBillNo: invoiceRow.ewayBillNo,
       vehicleNo: invoiceRow.vehicleNo,
       irnNo: invoiceRow.irnNo,
+      discountAmount: invoiceRow.discountAmount,
+      currency: invoiceRow.currency,
+      isArchived: invoiceRow.isArchived,
+      deliveryAddress: invoiceRow.deliveryAddress ?? "",
     );
   }
 
@@ -351,6 +375,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
     final String? clientId,
     final String? gstin,
     final String? query,
+    final bool exactMatch = false,
   }) async {
     final cleanGstin = gstin?.trim();
     final cleanQuery = query?.trim();
@@ -364,28 +389,35 @@ class SqlInvoiceRepository implements InvoiceRepository {
                 predicate &
                 (t.clientId.equals(clientId) |
                     t.receiverGstin.equals(cleanGstin));
+          } else if (cleanQuery != null && cleanQuery.isNotEmpty) {
+            final nameMatch = exactMatch
+                ? t.receiverName.equals(cleanQuery)
+                : t.receiverName.like('%${_escapeSqlLike(cleanQuery)}%');
+            predicate = predicate & (t.clientId.equals(clientId) | nameMatch);
           } else {
-            predicate =
-                predicate &
-                (t.clientId.equals(clientId) |
-                    (cleanQuery != null && cleanQuery.isNotEmpty
-                        ? t.receiverName.like('%$cleanQuery%')
-                        : const Constant(false)));
+            predicate = predicate & t.clientId.equals(clientId);
           }
         } else if (cleanGstin != null && cleanGstin.isNotEmpty) {
           predicate = predicate & t.receiverGstin.equals(cleanGstin);
         } else if (cleanQuery != null && cleanQuery.isNotEmpty) {
-          predicate =
-              predicate &
-              (t.receiverName.like('%$cleanQuery%') |
-                  t.receiverPhone.equals(cleanQuery) |
-                  t.receiverEmail.equals(cleanQuery));
+          if (exactMatch) {
+            predicate =
+                predicate &
+                (t.receiverName.equals(cleanQuery) |
+                    t.receiverPhone.equals(cleanQuery) |
+                    t.receiverEmail.equals(cleanQuery));
+          } else {
+            final escaped = _escapeSqlLike(cleanQuery);
+            predicate =
+                predicate &
+                (t.receiverName.like('%$escaped%') |
+                    t.receiverPhone.equals(cleanQuery) |
+                    t.receiverEmail.equals(cleanQuery));
+          }
         }
         return predicate;
       })
-      ..orderBy([
-        (final t) => OrderingTerm(expression: t.invoiceDate),
-      ]);
+      ..orderBy([(final t) => OrderingTerm(expression: t.invoiceDate)]);
 
     final invoiceRows = await stmt.get();
     if (invoiceRows.isEmpty) return [];
@@ -503,6 +535,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
               quantity: itemRow.quantity,
               unit: itemRow.unit,
               gstRate: itemRow.gstRate,
+              currency: row.currency,
             ),
           )
           .toList();
@@ -670,16 +703,21 @@ class SqlInvoiceRepository implements InvoiceRepository {
     final fyStart = DateTime(fyStartYear, 4);
     final fyEnd = DateTime(fyStartYear + 1, 3, 31, 23, 59, 59);
 
+    final cleanPrefix = prefix.trim();
+    final escapedPrefix = _escapeSqlLike(cleanPrefix);
+
     final query = database.select(database.invoices)
       ..where(
         (final tbl) =>
             tbl.profileId.equals(profileId) &
-            tbl.invoiceDate.isBetweenValues(fyStart, fyEnd),
+            tbl.invoiceDate.isBetweenValues(fyStart, fyEnd) &
+            (cleanPrefix.isEmpty
+                ? const Constant(true)
+                : tbl.invoiceNo.like('$escapedPrefix%')),
       );
 
     final rows = await query.get();
     int maxSeq = 0;
-    final cleanPrefix = prefix.trim();
 
     for (final row in rows) {
       final no = row.invoiceNo.trim();

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:crypto/crypto.dart' as crypto;
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
@@ -188,14 +189,44 @@ class UpdateService {
     return {'stable': stableRelease, 'nightly': nightlyRelease};
   }
 
+  static bool isNewerVersion(
+    final String latestTag,
+    final String currentVersion,
+  ) {
+    final cleanLatest = latestTag.trim().replaceFirst(RegExp(r'^[vV]'), '');
+    final cleanCurrent = currentVersion.trim().replaceFirst(
+      RegExp(r'^[vV]'),
+      '',
+    );
+
+    List<int> parseParts(final String v) {
+      final core = v.split('+').first.split('-').first;
+      return core.split('.').map((final p) => int.tryParse(p) ?? 0).toList();
+    }
+
+    final latestParts = parseParts(cleanLatest);
+    final currentParts = parseParts(cleanCurrent);
+
+    final maxLen = math.max(latestParts.length, currentParts.length);
+    for (int i = 0; i < maxLen; i++) {
+      final l = i < latestParts.length ? latestParts[i] : 0;
+      final c = i < currentParts.length ? currentParts[i] : 0;
+      if (l > c) return true;
+      if (l < c) return false;
+    }
+    return false;
+  }
+
   static Future<void> downloadAndInstallUpdate(
     final Release release, {
     final http.Client? client,
     @visibleForTesting final Future<void> Function(String path)? startProcess,
   }) async {
-    if (!Platform.isWindows &&
+    if ((kIsWeb || !Platform.isWindows) &&
         !Platform.environment.containsKey('FLUTTER_TEST')) {
-      return;
+      throw UnsupportedError(
+        'Auto-update is currently supported on Windows only. Please download updates directly from GitHub.',
+      );
     }
 
     final asset = release.assets.firstWhere(
@@ -208,24 +239,46 @@ class UpdateService {
 
     final shouldCloseClient = client == null;
     final httpClient = client ?? http.Client();
+    const maxDownloadBytes = 250 * 1024 * 1024; // 250 MB
     try {
       final request = http.Request('GET', Uri.parse(asset.browserDownloadUrl));
       final streamedResponse = await httpClient.send(request);
       if (streamedResponse.statusCode == 200) {
+        if (streamedResponse.contentLength != null &&
+            streamedResponse.contentLength! > maxDownloadBytes) {
+          throw Exception(
+            'Installer download aborted: size (${streamedResponse.contentLength} bytes) exceeds limit of 250 MB.',
+          );
+        }
+
         final file = File(savePath);
         final sink = file.openWrite();
-        await streamedResponse.stream.pipe(sink);
-        await sink.flush();
-        await sink.close();
+        int bytesReceived = 0;
+        try {
+          await streamedResponse.stream.timeout(const Duration(minutes: 5)).listen((
+            final chunk,
+          ) {
+            bytesReceived += chunk.length;
+            if (bytesReceived > maxDownloadBytes) {
+              throw Exception(
+                'Download aborted: installer exceeded maximum allowed size of 250 MB.',
+              );
+            }
+            sink.add(chunk);
+          }).asFuture();
+          await sink.flush();
+        } finally {
+          await sink.close();
+        }
 
         // Check for checksum in assets or release body
         String? expectedChecksum;
+        final assetBase = asset.name.toLowerCase();
         final checksumAsset = release.assets.cast<ReleaseAsset?>().firstWhere(
           (final a) =>
               a != null &&
-              (a.name == '${asset.name}.sha256' ||
-                  a.name == '${asset.name}.sha256sum' ||
-                  a.name.endsWith('.sha256')),
+              (a.name.toLowerCase() == '$assetBase.sha256' ||
+                  a.name.toLowerCase() == '$assetBase.sha256sum'),
           orElse: () => null,
         );
 
@@ -250,8 +303,8 @@ class UpdateService {
         }
 
         if (expectedChecksum != null && expectedChecksum.isNotEmpty) {
-          final fileBytes = await file.readAsBytes();
-          final computedHash = crypto.sha256.convert(fileBytes).toString();
+          final digest = await crypto.sha256.bind(file.openRead()).first;
+          final computedHash = digest.toString();
           if (computedHash.toLowerCase() != expectedChecksum.toLowerCase()) {
             if (await file.exists()) await file.delete();
             throw Exception(
@@ -277,6 +330,14 @@ class UpdateService {
           'Failed to download update: ${streamedResponse.statusCode}',
         );
       }
+    } catch (e) {
+      final file = File(savePath);
+      if (await file.exists()) {
+        try {
+          await file.delete();
+        } catch (_) {}
+      }
+      rethrow;
     } finally {
       if (shouldCloseClient) {
         httpClient.close();

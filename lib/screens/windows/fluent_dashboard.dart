@@ -1127,21 +1127,31 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     final BuildContext context,
     final Invoice invoice,
   ) async {
-    final days = invoice.dueDate != null
-        ? invoice.dueDate!.difference(invoice.invoiceDate).inDays
-        : 0;
-
-    final newInvoice = invoice.copyWith(
-      id: null,
-      invoiceNo: '',
-      invoiceDate: DateTime.now(),
-      dueDate: days > 0 ? DateTime.now().add(Duration(days: days)) : null,
-      payments: [],
-      originalInvoiceNumber: null,
-      items: invoice.items.map((final e) => e.copyWith(id: null)).toList(),
-    );
-    await context.push('/invoice-form', extra: newInvoice);
-    ref.invalidate(invoiceListProvider);
+    try {
+      final newInvoice = await InvoiceActions.duplicateInvoice(ref, invoice);
+      if (!context.mounted) return;
+      await displayInfoBar(
+        context,
+        builder: (context, close) => InfoBar(
+          title: const Text("Success"),
+          content: Text("Invoice duplicated as ${newInvoice.invoiceNo}"),
+          severity: InfoBarSeverity.success,
+        ),
+      );
+      if (!context.mounted) return;
+      await context.push('/invoice-form', extra: newInvoice);
+      ref.invalidate(invoiceListProvider);
+    } catch (e) {
+      if (!context.mounted) return;
+      await displayInfoBar(
+        context,
+        builder: (context, close) => InfoBar(
+          title: const Text("Error"),
+          content: Text("Failed to duplicate invoice: $e"),
+          severity: InfoBarSeverity.error,
+        ),
+      );
+    }
   }
 
   void _createCreditNote(

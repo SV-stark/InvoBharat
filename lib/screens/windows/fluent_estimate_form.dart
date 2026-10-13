@@ -356,7 +356,7 @@ class _FluentEstimateFormState extends ConsumerState<FluentEstimateForm>
                           (final sum, final i) => sum + i.netAmount,
                         ),
                       ),
-                      if (existingEstimate?.isInterState ?? false)
+                      if (isInterState)
                         _buildSummaryRow(
                           "IGST",
                           items.fold(

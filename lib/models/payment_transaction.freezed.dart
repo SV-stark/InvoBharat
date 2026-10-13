@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'payment_transaction.dart';
@@ -9,14 +9,14 @@ part of 'payment_transaction.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$PaymentTransaction {
 
- String get id; String get invoiceId; DateTime get date; double get amount; String get paymentMode;// 'Cash', 'UPI', 'Bank Transfer', 'Cheque', 'Other'
- String? get notes;
+ String get id; String get invoiceId; DateTime get date; double get amount; String get paymentMode; String? get notes;
 /// Create a copy of PaymentTransaction
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,21 @@ $PaymentTransactionCopyWith<PaymentTransaction> get copyWith => _$PaymentTransac
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PaymentTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.invoiceId, invoiceId) || other.invoiceId == invoiceId)&&(identical(other.date, date) || other.date == date)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.paymentMode, paymentMode) || other.paymentMode == paymentMode)&&(identical(other.notes, notes) || other.notes == notes));
+  final _this = this as PaymentTransaction;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PaymentTransaction&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.invoiceId, _this.invoiceId) || other.invoiceId == _this.invoiceId)&&(identical(other.date, _this.date) || other.date == _this.date)&&(identical(other.amount, _this.amount) || other.amount == _this.amount)&&(identical(other.paymentMode, _this.paymentMode) || other.paymentMode == _this.paymentMode)&&(identical(other.notes, _this.notes) || other.notes == _this.notes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,invoiceId,date,amount,paymentMode,notes);
+int get hashCode {
+  final _this = this as PaymentTransaction;
+  return Object.hash(runtimeType,_this.id,_this.invoiceId,_this.date,_this.amount,_this.paymentMode,_this.notes);
+}
 
 @override
 String toString() {
-  return 'PaymentTransaction(id: $id, invoiceId: $invoiceId, date: $date, amount: $amount, paymentMode: $paymentMode, notes: $notes)';
+  final _this = this as PaymentTransaction;
+  return 'PaymentTransaction(id: ${_this.id}, invoiceId: ${_this.invoiceId}, date: ${_this.date}, amount: ${_this.amount}, paymentMode: ${_this.paymentMode}, notes: ${_this.notes})';
 }
 
 
@@ -67,7 +72,7 @@ class _$PaymentTransactionCopyWithImpl<$Res>
 /// Create a copy of PaymentTransaction
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? invoiceId = null,Object? date = null,Object? amount = null,Object? paymentMode = null,Object? notes = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(PaymentTransaction(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,invoiceId: null == invoiceId ? _self.invoiceId : invoiceId // ignore: cast_nullable_to_non_nullable
 as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
@@ -223,7 +228,6 @@ class _PaymentTransaction implements PaymentTransaction {
 @override final  DateTime date;
 @override final  double amount;
 @override final  String paymentMode;
-// 'Cash', 'UPI', 'Bank Transfer', 'Cheque', 'Other'
 @override final  String? notes;
 
 /// Create a copy of PaymentTransaction
@@ -239,16 +243,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PaymentTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.invoiceId, invoiceId) || other.invoiceId == invoiceId)&&(identical(other.date, date) || other.date == date)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.paymentMode, paymentMode) || other.paymentMode == paymentMode)&&(identical(other.notes, notes) || other.notes == notes));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PaymentTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.invoiceId, invoiceId) || other.invoiceId == invoiceId)&&(identical(other.date, date) || other.date == date)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.paymentMode, paymentMode) || other.paymentMode == paymentMode)&&(identical(other.notes, notes) || other.notes == notes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,invoiceId,date,amount,paymentMode,notes);
+int get hashCode {
+    return Object.hash(runtimeType,id,invoiceId,date,amount,paymentMode,notes);
+}
 
 @override
 String toString() {
-  return 'PaymentTransaction(id: $id, invoiceId: $invoiceId, date: $date, amount: $amount, paymentMode: $paymentMode, notes: $notes)';
+    return 'PaymentTransaction(id: $id, invoiceId: $invoiceId, date: $date, amount: $amount, paymentMode: $paymentMode, notes: $notes)';
 }
 
 

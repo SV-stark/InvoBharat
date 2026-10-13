@@ -6,13 +6,13 @@ part 'payment_transaction.g.dart';
 @freezed
 abstract class PaymentTransaction with _$PaymentTransaction {
   const factory PaymentTransaction({
-    required final String id,
-    required final String invoiceId,
-    required final DateTime date,
-    required final double amount,
-    required final String
+    required String id,
+    required String invoiceId,
+    required DateTime date,
+    required double amount,
+    required String
     paymentMode, // 'Cash', 'UPI', 'Bank Transfer', 'Cheque', 'Other'
-    final String? notes,
+    String? notes,
   }) = _PaymentTransaction;
 
   factory PaymentTransaction.fromJson(final Map<String, dynamic> json) =>

@@ -65,14 +65,26 @@ class GstUtils {
 
     // Match by state name (case-insensitive, ignore punctuation)
     final normalized = clean.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+    if (normalized.isEmpty) return null;
+
+    // 1. Exact normalized match
     for (final entry in stateCodeMap.entries) {
       final entryNorm = entry.value.toLowerCase().replaceAll(
         RegExp(r'[^a-z0-9]'),
         '',
       );
-      if (normalized == entryNorm ||
-          normalized.contains(entryNorm) ||
-          entryNorm.contains(normalized)) {
+      if (normalized == entryNorm) {
+        return entry.key;
+      }
+    }
+
+    // 2. Input contains the full state name (e.g. "Delhi (UT)" contains "delhi")
+    for (final entry in stateCodeMap.entries) {
+      final entryNorm = entry.value.toLowerCase().replaceAll(
+        RegExp(r'[^a-z0-9]'),
+        '',
+      );
+      if (entryNorm.length >= 4 && normalized.contains(entryNorm)) {
         return entry.key;
       }
     }

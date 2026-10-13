@@ -256,6 +256,18 @@ class ProfessionalTemplate extends BasePdfTemplate {
                       ),
                     ),
                     pw.SizedBox(height: 8),
+                    if (invoice.discountAmount > 0) ...[
+                      buildSummaryRow(
+                        "Subtotal",
+                        invoice.grossTaxableValue,
+                        profile.currency,
+                      ),
+                      buildSummaryRow(
+                        "Discount",
+                        -invoice.discountAmount,
+                        profile.currency,
+                      ),
+                    ],
                     buildSummaryRow(
                       "Taxable Value",
                       invoice.totalTaxableValue,
@@ -279,12 +291,6 @@ class ProfessionalTemplate extends BasePdfTemplate {
                         profile.currency,
                       ),
                     ],
-                    if (invoice.discountAmount > 0)
-                      buildSummaryRow(
-                        "Discount",
-                        -invoice.discountAmount,
-                        profile.currency,
-                      ),
                     pw.Divider(thickness: 1, color: PdfColors.grey400),
                     buildSummaryRow(
                       "GRAND TOTAL",

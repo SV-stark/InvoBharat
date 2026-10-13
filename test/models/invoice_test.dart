@@ -109,18 +109,19 @@ void main() {
         discountAmount: 10,
       );
 
-      // item1: 100 net, 9 CGST, 9 SGST
-      // item2: 200 net, 12 CGST, 12 SGST
-      // Total taxable: 300
-      // Total CGST: 9 + 12 = 21
-      // Total SGST: 9 + 12 = 21
-      // Total IGST: 0
-      // Grand Total: 300 + 21 + 21 - 10 = 332
-      expect(invoice.totalTaxableValue, 300.0);
-      expect(invoice.totalCGST, 21.0);
-      expect(invoice.totalSGST, 21.0);
+      // item1: 100 net, item2: 200 net -> total undiscounted 300
+      // With flat discount 10 (CGST Sec 15(3) pre-tax proportional deduction):
+      // item1 taxable: 100 - (10 * 100/300) = 96.67
+      // item2 taxable: 200 - (10 * 200/300) = 193.33
+      // Total taxable: 290.0
+      // Total CGST: 96.6667 * 0.09 + 193.3333 * 0.06 = 8.70 + 11.60 = 20.30
+      // Total SGST: 20.30
+      // Grand Total: 290 + 20.30 + 20.30 = 330.60
+      expect(invoice.totalTaxableValue, 290.0);
+      expect(invoice.totalCGST, closeTo(20.3, 0.01));
+      expect(invoice.totalSGST, closeTo(20.3, 0.01));
       expect(invoice.totalIGST, 0.0);
-      expect(invoice.grandTotal, 332.0);
+      expect(invoice.grandTotal, closeTo(330.6, 0.01));
     });
 
     test('grandTotal calculation for inter-state', () {
@@ -166,8 +167,15 @@ void main() {
           ),
         ],
       );
-      expect(partialInvoice.paymentStatus, 'Partial');
+      // Under P1 #10 fix, overdue status takes precedence when dueDate is past
+      expect(partialInvoice.paymentStatus, 'Overdue');
       expect(partialInvoice.balanceDue, 60.0);
+
+      // When dueDate is in future, partial payment is 'Partial'
+      final futurePartialInvoice = partialInvoice.copyWith(
+        dueDate: DateTime.now().add(const Duration(days: 7)),
+      );
+      expect(futurePartialInvoice.paymentStatus, 'Partial');
 
       final paidInvoice = partialInvoice.copyWith(
         payments: [

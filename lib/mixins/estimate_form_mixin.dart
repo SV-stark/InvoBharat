@@ -9,6 +9,7 @@ import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/estimate_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
+import 'package:invobharat/utils/gst_utils.dart';
 import 'package:invobharat/utils/pdf_generator.dart';
 import 'package:invobharat/providers/app_config_provider.dart';
 
@@ -32,6 +33,30 @@ mixin EstimateFormMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   DateTime? expiryDate;
   Estimate? existingEstimate;
   bool isInit = true;
+
+  bool get isInterState {
+    final profile = ref.read(businessProfileProvider);
+    final posInput = receiverStateCtrl.text;
+    final posGstin = receiverGstinCtrl.text;
+    final posCode =
+        GstUtils.getStateCodeFromInput(posInput) ??
+        (posGstin.length >= 2
+            ? GstUtils.getStateCodeFromInput(posGstin.substring(0, 2))
+            : null);
+
+    final suppInput = profile.state;
+    final suppGstin = profile.gstin;
+    final suppCode =
+        GstUtils.getStateCodeFromInput(suppInput) ??
+        (suppGstin.length >= 2
+            ? GstUtils.getStateCodeFromInput(suppGstin.substring(0, 2))
+            : null);
+
+    if (suppCode != null && posCode != null) {
+      return suppCode != posCode;
+    }
+    return existingEstimate?.isInterState ?? false;
+  }
 
   void initEstimateControllers() {
     estimateNoCtrl = TextEditingController();

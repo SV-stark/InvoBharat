@@ -297,8 +297,20 @@ class CreativeTemplate extends BasePdfTemplate {
                               pw.Expanded(
                                 child: pw.Column(
                                   children: [
+                                    if (invoice.discountAmount > 0) ...[
+                                      buildSummaryRow(
+                                        "Sub Total",
+                                        invoice.grossTaxableValue,
+                                        profile.currency,
+                                      ),
+                                      buildSummaryRow(
+                                        "Discount",
+                                        -invoice.discountAmount,
+                                        profile.currency,
+                                      ),
+                                    ],
                                     buildSummaryRow(
-                                      "Sub Total",
+                                      "Taxable Value",
                                       invoice.totalTaxableValue,
                                       profile.currency,
                                     ),
@@ -317,12 +329,6 @@ class CreativeTemplate extends BasePdfTemplate {
                                       buildSummaryRow(
                                         "IGST",
                                         invoice.totalIGST,
-                                        profile.currency,
-                                      ),
-                                    if (invoice.discountAmount > 0)
-                                      buildSummaryRow(
-                                        "Discount",
-                                        -invoice.discountAmount,
                                         profile.currency,
                                       ),
                                     pw.Divider(),

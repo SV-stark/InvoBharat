@@ -393,7 +393,6 @@ class _EstimateFormState extends ConsumerState<EstimateForm>
       0,
       (final sum, final item) => sum + item.netAmount,
     );
-    final isInterState = existingEstimate?.isInterState ?? false;
     final double cgst = isInterState
         ? 0
         : items.fold(0, (final sum, final item) => sum + item.cgstAmount);

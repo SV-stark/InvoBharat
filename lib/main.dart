@@ -11,10 +11,13 @@ import 'package:invobharat/providers/theme_provider.dart';
 import 'package:invobharat/utils/app_router.dart';
 import 'package:invobharat/services/logger_service.dart';
 
+import 'package:flutter/foundation.dart';
+
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   final talker = TalkerFlutter.init();
 
-  // Ensure errors are shown even in release mode
+  // Ensure errors are logged without leaking sensitive stack traces in release mode
   ErrorWidget.builder = (final FlutterErrorDetails details) {
     talker.handle(details.exception, details.stack, 'Flutter Error');
     return Directionality(
@@ -39,7 +42,9 @@ void main() {
               ),
               const Gap(10),
               Text(
-                details.exceptionAsString(),
+                kReleaseMode
+                    ? "An unexpected error occurred. Please restart the application."
+                    : details.exceptionAsString(),
                 style: const TextStyle(
                   color: Colors.white70,
                   fontSize: 14,
@@ -48,17 +53,19 @@ void main() {
                 textAlign: TextAlign.center,
                 textDirection: TextDirection.ltr,
               ),
-              const Gap(20),
-              Text(
-                details.stack.toString(),
-                style: const TextStyle(
-                  color: Colors.white38,
-                  fontSize: 10,
-                  fontFamily: 'Consolas',
-                  decoration: TextDecoration.none,
+              if (!kReleaseMode) ...[
+                const Gap(20),
+                Text(
+                  details.stack.toString(),
+                  style: const TextStyle(
+                    color: Colors.white38,
+                    fontSize: 10,
+                    fontFamily: 'Consolas',
+                    decoration: TextDecoration.none,
+                  ),
+                  textDirection: TextDirection.ltr,
                 ),
-                textDirection: TextDirection.ltr,
-              ),
+              ],
             ],
           ),
         ),
@@ -68,7 +75,7 @@ void main() {
 
   runApp(
     ProviderScope(
-      observers: [RiverpodTalkerObserver(talker: talker)],
+      observers: kReleaseMode ? [] : [RiverpodTalkerObserver(talker: talker)],
       overrides: [talkerProvider.overrideWithValue(talker)],
       child: const InvoBharatApp(),
     ),
@@ -83,10 +90,12 @@ class InvoBharatApp extends ConsumerWidget {
     final profile = ref.watch(businessProfileProvider);
     final appInit = ref.watch(appInitializationProvider);
 
+    final isDesktop = !kIsWeb && (Platform.isWindows || Platform.isLinux);
+
     return appInit.when(
       data: (_) {
         final profileColor = Color(profile.colorValue);
-        if (Platform.isWindows || Platform.isLinux) {
+        if (isDesktop) {
           final accentColor = _getAccentColor(profileColor);
           return fluent.FluentApp.router(
             title: 'InvoBharat',
@@ -135,7 +144,7 @@ class InvoBharatApp extends ConsumerWidget {
         );
       },
       loading: () {
-        if (Platform.isWindows || Platform.isLinux) {
+        if (isDesktop) {
           return fluent.FluentApp(
             home: fluent.ScaffoldPage(
               content: Center(
@@ -183,9 +192,16 @@ class InvoBharatApp extends ConsumerWidget {
         );
       },
       error: (final err, final stack) {
-        return fluent.FluentApp(
-          home: fluent.ScaffoldPage(
-            content: Center(child: Text("Error initializing app: $err")),
+        if (isDesktop) {
+          return fluent.FluentApp(
+            home: fluent.ScaffoldPage(
+              content: Center(child: Text("Error initializing app: $err")),
+            ),
+          );
+        }
+        return MaterialApp(
+          home: Scaffold(
+            body: Center(child: Text("Error initializing app: $err")),
           ),
         );
       },

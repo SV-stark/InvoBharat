@@ -5,6 +5,7 @@ import 'package:invobharat/utils/formatters.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/models/invoice.dart';
+import 'package:invobharat/services/invoice_actions.dart';
 import 'package:invobharat/widgets/skeleton_widgets.dart';
 import 'package:go_router/go_router.dart';
 
@@ -106,20 +107,22 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
   }
 
   Future<void> _duplicateInvoice(final Invoice invoice) async {
-    final duplicated = invoice.copyWith(
-      id: null,
-      invoiceNo: '',
-      invoiceDate: DateTime.now(),
-      payments: [],
-      status: 'Draft',
-    );
-
-    await context.push('/invoice-form', extra: duplicated);
-    ref.invalidate(invoiceListProvider);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Invoice duplicated for editing")),
-    );
+    try {
+      final newInv = await InvoiceActions.duplicateInvoice(ref, invoice);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Invoice duplicated as ${newInv.invoiceNo}")),
+        );
+        await context.push('/invoice-form', extra: newInv);
+        ref.invalidate(invoiceListProvider);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to duplicate invoice: $e")),
+        );
+      }
+    }
   }
 
   @override
@@ -357,88 +360,7 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
       ),
       body: invoiceListAsync.when(
         data: (final invoices) {
-          final filtered = invoices.where((final inv) {
-            final query = _searchCtrl.text.toLowerCase().trim();
-            final matchesSearch =
-                query.isEmpty ||
-                inv.receiver.name.toLowerCase().contains(query) ||
-                inv.invoiceNo.toLowerCase().contains(query) ||
-                inv.grandTotal.toStringAsFixed(2).contains(query);
-
-            if (!matchesSearch) return false;
-
-            if (_dateRange != null) {
-              if (inv.invoiceDate.isBefore(_dateRange!.start) ||
-                  inv.invoiceDate.isAfter(
-                    _dateRange!.end.add(const Duration(days: 1)),
-                  )) {
-                return false;
-              }
-            }
-
-            if (_filter == 'Archived') {
-              if (!inv.isArchived) return false;
-            } else {
-              if (inv.isArchived) return false;
-
-              if (_filter == 'Paid') {
-                if (inv.paymentStatus != 'Paid') return false;
-              } else if (_filter == 'Unpaid') {
-                if (inv.paymentStatus == 'Paid') {
-                  return false;
-                }
-              } else if (_filter == 'Overdue') {
-                if (inv.paymentStatus != 'Overdue') return false;
-              }
-            }
-
-            return true;
-          }).toList();
-
-          switch (_sortBy) {
-            case 'date_desc':
-              filtered.sort(
-                (final a, final b) => b.invoiceDate.compareTo(a.invoiceDate),
-              );
-              break;
-            case 'date_asc':
-              filtered.sort(
-                (final a, final b) => a.invoiceDate.compareTo(b.invoiceDate),
-              );
-              break;
-            case 'amount_desc':
-              filtered.sort(
-                (final a, final b) => b.grandTotal.compareTo(a.grandTotal),
-              );
-              break;
-            case 'amount_asc':
-              filtered.sort(
-                (final a, final b) => a.grandTotal.compareTo(b.grandTotal),
-              );
-              break;
-            case 'no_desc':
-              filtered.sort(
-                (final a, final b) => b.invoiceNo.compareTo(a.invoiceNo),
-              );
-              break;
-            case 'no_asc':
-              filtered.sort(
-                (final a, final b) => a.invoiceNo.compareTo(b.invoiceNo),
-              );
-              break;
-            case 'client_asc':
-              filtered.sort(
-                (final a, final b) =>
-                    a.receiver.name.compareTo(b.receiver.name),
-              );
-              break;
-            case 'client_desc':
-              filtered.sort(
-                (final a, final b) =>
-                    b.receiver.name.compareTo(a.receiver.name),
-              );
-              break;
-          }
+          final filtered = _filterAndSortInvoices(invoices);
 
           if (filtered.isEmpty) {
             return Center(
@@ -748,5 +670,85 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
       default:
         return "Newest First";
     }
+  }
+
+  List<Invoice> _filterAndSortInvoices(final List<Invoice> invoices) {
+    final query = _searchCtrl.text.toLowerCase().trim();
+    final filtered = invoices.where((final inv) {
+      final matchesSearch =
+          query.isEmpty ||
+          inv.receiver.name.toLowerCase().contains(query) ||
+          inv.invoiceNo.toLowerCase().contains(query) ||
+          inv.grandTotal.toStringAsFixed(2).contains(query);
+
+      if (!matchesSearch) return false;
+
+      if (_dateRange != null) {
+        if (inv.invoiceDate.isBefore(_dateRange!.start) ||
+            inv.invoiceDate.isAfter(
+              _dateRange!.end.add(const Duration(days: 1)),
+            )) {
+          return false;
+        }
+      }
+
+      if (_filter == 'Archived') {
+        if (!inv.isArchived) return false;
+      } else {
+        if (inv.isArchived) return false;
+
+        if (_filter == 'Paid') {
+          if (inv.paymentStatus != 'Paid') return false;
+        } else if (_filter == 'Unpaid') {
+          if (inv.paymentStatus == 'Paid') {
+            return false;
+          }
+        } else if (_filter == 'Overdue') {
+          if (inv.paymentStatus != 'Overdue') return false;
+        }
+      }
+
+      return true;
+    }).toList();
+
+    switch (_sortBy) {
+      case 'date_desc':
+        filtered.sort(
+          (final a, final b) => b.invoiceDate.compareTo(a.invoiceDate),
+        );
+        break;
+      case 'date_asc':
+        filtered.sort(
+          (final a, final b) => a.invoiceDate.compareTo(b.invoiceDate),
+        );
+        break;
+      case 'amount_desc':
+        filtered.sort(
+          (final a, final b) => b.grandTotal.compareTo(a.grandTotal),
+        );
+        break;
+      case 'amount_asc':
+        filtered.sort(
+          (final a, final b) => a.grandTotal.compareTo(b.grandTotal),
+        );
+        break;
+      case 'no_desc':
+        filtered.sort((final a, final b) => b.invoiceNo.compareTo(a.invoiceNo));
+        break;
+      case 'no_asc':
+        filtered.sort((final a, final b) => a.invoiceNo.compareTo(b.invoiceNo));
+        break;
+      case 'client_asc':
+        filtered.sort(
+          (final a, final b) => a.receiver.name.compareTo(b.receiver.name),
+        );
+        break;
+      case 'client_desc':
+        filtered.sort(
+          (final a, final b) => b.receiver.name.compareTo(a.receiver.name),
+        );
+        break;
+    }
+    return filtered;
   }
 }

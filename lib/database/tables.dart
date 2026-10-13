@@ -106,6 +106,14 @@ class Invoices extends Table {
   TextColumn get vehicleNo => text().nullable()();
   TextColumn get irnNo => text().nullable()();
 
+  // Additional Persisted Fields (V18)
+  RealColumn get discountAmount => real().withDefault(const Constant(0.0))();
+  TextColumn get currency => text().withDefault(const Constant('INR'))();
+  BoolColumn get isArchived => boolean().withDefault(const Constant(false))();
+  TextColumn get deliveryAddress => text().nullable()();
+  TextColumn get supplierState => text().nullable()();
+  TextColumn get financialYear => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }

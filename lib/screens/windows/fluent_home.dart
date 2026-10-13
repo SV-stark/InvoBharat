@@ -325,8 +325,10 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
 
                           bool updateAvailable = false;
                           if (config.updateChannel == UpdateChannel.stable) {
-                            updateAvailable =
-                                latest.tagName.compareTo(currentVersion) > 0;
+                            updateAvailable = UpdateService.isNewerVersion(
+                              latest.tagName,
+                              currentVersion,
+                            );
                           } else {
                             updateAvailable = latest.tagName != currentVersion;
                           }
@@ -445,6 +447,13 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                                                           ),
                                                         );
                                                         Navigator.pop(context);
+                                                      }
+                                                    } finally {
+                                                      if (context.mounted) {
+                                                        setDialogState(
+                                                          () => isDownloading =
+                                                              false,
+                                                        );
                                                       }
                                                     }
                                                   },

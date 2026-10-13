@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'client.dart';
@@ -9,6 +9,7 @@ part of 'client.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $ClientCopyWith<Client> get copyWith => _$ClientCopyWithImpl<Client>(this as Cli
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Client&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.profileId, profileId) || other.profileId == profileId)&&(identical(other.gstin, gstin) || other.gstin == gstin)&&(identical(other.address, address) || other.address == address)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.primaryContact, primaryContact) || other.primaryContact == primaryContact)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.state, state) || other.state == state)&&(identical(other.pan, pan) || other.pan == pan)&&(identical(other.stateCode, stateCode) || other.stateCode == stateCode));
+  final _this = this as Client;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Client&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.profileId, _this.profileId) || other.profileId == _this.profileId)&&(identical(other.gstin, _this.gstin) || other.gstin == _this.gstin)&&(identical(other.address, _this.address) || other.address == _this.address)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.phone, _this.phone) || other.phone == _this.phone)&&(identical(other.primaryContact, _this.primaryContact) || other.primaryContact == _this.primaryContact)&&(identical(other.notes, _this.notes) || other.notes == _this.notes)&&(identical(other.state, _this.state) || other.state == _this.state)&&(identical(other.pan, _this.pan) || other.pan == _this.pan)&&(identical(other.stateCode, _this.stateCode) || other.stateCode == _this.stateCode));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,profileId,gstin,address,email,phone,primaryContact,notes,state,pan,stateCode);
+int get hashCode {
+  final _this = this as Client;
+  return Object.hash(runtimeType,_this.id,_this.name,_this.profileId,_this.gstin,_this.address,_this.email,_this.phone,_this.primaryContact,_this.notes,_this.state,_this.pan,_this.stateCode);
+}
 
 @override
 String toString() {
-  return 'Client(id: $id, name: $name, profileId: $profileId, gstin: $gstin, address: $address, email: $email, phone: $phone, primaryContact: $primaryContact, notes: $notes, state: $state, pan: $pan, stateCode: $stateCode)';
+  final _this = this as Client;
+  return 'Client(id: ${_this.id}, name: ${_this.name}, profileId: ${_this.profileId}, gstin: ${_this.gstin}, address: ${_this.address}, email: ${_this.email}, phone: ${_this.phone}, primaryContact: ${_this.primaryContact}, notes: ${_this.notes}, state: ${_this.state}, pan: ${_this.pan}, stateCode: ${_this.stateCode})';
 }
 
 
@@ -66,7 +72,7 @@ class _$ClientCopyWithImpl<$Res>
 /// Create a copy of Client
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? profileId = null,Object? gstin = null,Object? address = null,Object? email = null,Object? phone = null,Object? primaryContact = null,Object? notes = null,Object? state = null,Object? pan = null,Object? stateCode = null,}) {
-  return _then(_self.copyWith(
+  return _then(Client(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,profileId: null == profileId ? _self.profileId : profileId // ignore: cast_nullable_to_non_nullable
@@ -249,16 +255,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Client&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.profileId, profileId) || other.profileId == profileId)&&(identical(other.gstin, gstin) || other.gstin == gstin)&&(identical(other.address, address) || other.address == address)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.primaryContact, primaryContact) || other.primaryContact == primaryContact)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.state, state) || other.state == state)&&(identical(other.pan, pan) || other.pan == pan)&&(identical(other.stateCode, stateCode) || other.stateCode == stateCode));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Client&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.profileId, profileId) || other.profileId == profileId)&&(identical(other.gstin, gstin) || other.gstin == gstin)&&(identical(other.address, address) || other.address == address)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.primaryContact, primaryContact) || other.primaryContact == primaryContact)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.state, state) || other.state == state)&&(identical(other.pan, pan) || other.pan == pan)&&(identical(other.stateCode, stateCode) || other.stateCode == stateCode));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,profileId,gstin,address,email,phone,primaryContact,notes,state,pan,stateCode);
+int get hashCode {
+    return Object.hash(runtimeType,id,name,profileId,gstin,address,email,phone,primaryContact,notes,state,pan,stateCode);
+}
 
 @override
 String toString() {
-  return 'Client(id: $id, name: $name, profileId: $profileId, gstin: $gstin, address: $address, email: $email, phone: $phone, primaryContact: $primaryContact, notes: $notes, state: $state, pan: $pan, stateCode: $stateCode)';
+    return 'Client(id: $id, name: $name, profileId: $profileId, gstin: $gstin, address: $address, email: $email, phone: $phone, primaryContact: $primaryContact, notes: $notes, state: $state, pan: $pan, stateCode: $stateCode)';
 }
 
 
