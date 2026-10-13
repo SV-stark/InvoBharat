@@ -7,19 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_No changes yet._
+
+## [1.1.0] - 2026-10-13
+
+> **Beta release.** Feature-complete for offline GST invoicing. Test coverage is
+> still growing, so feedback on edge cases is welcome.
+
 ### Added
+- **Recurring Invoices**: Define recurring invoice profiles and auto-generate invoices from them, with a dedicated Fluent and Material UI.
+- **Payment History**: Payment tracking per invoice with a payment dialog capturing amount, transaction ID and remarks.
+- **Audit Report Screen**: Action-level audit trail of changes made to invoices and clients.
+- **Receivables Aging Report**: Aging analysis with chart visualisation.
+- **Client Ledger**: Statement-style running-balance ledger per client, with printable/PDF export.
+- **Excel Export**: Workbook export alongside the existing CSV export.
+- **GSTR-3B Service**: GSTR-3B summary generation in addition to GSTR-1.
+- **E-Invoice JSON Export**: GST-compliant e-invoice JSON export, plus E-Way Bill number capture on invoices.
+- **GSTR-1 Import**: Bulk JSON import for historic GSTR-1 data.
+- **Item Templates**: Reusable item/service catalogue with HSN codes.
+- **Multi-Profile Switching**: In-session business profile switching via the profile switcher sheet.
 - **Data Safety**: Automated Backup Scheduling system with user-configurable frequency and preferred time.
 - **Financial Transparency**: Detailed GST breakdown (Taxable Value, CGST, SGST, IGST) in Estimate forms for both Fluent and Material UIs.
+- **UX**: Skeleton loading states, empty states, and a global error view.
 
 ### Changed
 - Refined sidebar behavior and accent color selection UI.
 - Relocated "Update Channels" configuration to the About section for better discoverability.
+- Dependency refresh: `file_picker` 13.1.0, `data_table_2` 3.0.0 (with the Material → `material_ui` migration), `sqlite3` 3.7.0, `drift` 2.35.2 and other transitive updates.
 
 ### Fixed
 - **Estimate Conversion**: Resolved critical application crash during the "Convert Estimate to Invoice" workflow.
 - **Data Integrity**: Correctly marking Estimates as "Converted" in the database upon successful invoice creation.
 - **Tax Logic**: Fixed GST calculation in Estimates to correctly distinguish between Inter-state and Intra-state transactions.
 - Resolved various linting issues and BuildContext async gap warnings across the codebase.
+
+### Known Limitations
+- Auto-update is Windows-only; Linux users should update manually from GitHub Releases.
+- Test coverage is currently partial, concentrated on financial calculations, GST utilities and core screens.
+
+### Security
+- Release builds suppress stack traces; the diagnostics screen is disabled in production builds.
+
 
 ## [1.0.0] - 2026-05-06
 
