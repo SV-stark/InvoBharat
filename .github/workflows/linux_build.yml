@@ -96,12 +96,18 @@ jobs:
           # Rename for upload
           mv InvoBharat-*.AppImage InvoBharat-Linux.AppImage
 
+          # The in-app updater reads the first whitespace-separated token of this
+          # file, which is the bare hash in sha256sum's default output.
+          sha256sum InvoBharat-Linux.AppImage > InvoBharat-Linux.AppImage.sha256
+
       - name: Update Nightly Release
         uses: softprops/action-gh-release@v2
         if: github.event_name == 'push'
         with:
           name: "Nightly Build"
           tag_name: nightly
-          files: InvoBharat-Linux.AppImage
+          files: |
+            InvoBharat-Linux.AppImage
+            InvoBharat-Linux.AppImage.sha256
           prerelease: true
           body: "Auto-generated nightly build from commit ${{ github.sha }}."

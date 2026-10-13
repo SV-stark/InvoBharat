@@ -56,13 +56,25 @@ jobs:
       - name: Compile Installer
         run: |
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers/inno_script.iss
-          
+
+      - name: Generate Installer Checksum
+        shell: pwsh
+        run: |
+          # The in-app updater reads the first whitespace-separated token of this
+          # file, so it must start with the bare hash. Do not use `certutil`,
+          # whose output begins with the words "SHA256 hash of ...".
+          $hash = (Get-FileHash -Algorithm SHA256 installers\InvoBharat_Setup.exe).Hash.ToLower()
+          "$hash  InvoBharat_Setup.exe" |
+            Out-File -FilePath installers\InvoBharat_Setup.exe.sha256 -Encoding ascii -NoNewline
+
       - name: Update Nightly Release
         uses: softprops/action-gh-release@v2
         if: github.event_name == 'push'
         with:
             name: "Nightly Build"
             tag_name: nightly
-            files: installers/InvoBharat_Setup.exe
+            files: |
+              installers/InvoBharat_Setup.exe
+              installers/InvoBharat_Setup.exe.sha256
             prerelease: true
             body: "Auto-generated nightly build from commit ${{ github.sha }}."
