@@ -107,6 +107,7 @@ jobs:
       #                    carries an -alpha/-beta/-rc/-pre suffix
       # A plain workflow_dispatch builds only and publishes nothing.
       - name: Resolve Release Target
+        id: target
         if: github.event_name == 'push'
         shell: bash
         run: |
@@ -158,6 +159,27 @@ jobs:
             echo "${BODY}"
             echo "NOTES_EOF"
           } >> "${GITHUB_OUTPUT}"
+
+      # Guards against a silent mis-publish: if 'Resolve Release Target' ever
+      # loses its id, every output is an empty string and the release would be
+      # created with the tag as its name, prerelease=false and no notes. An
+      # empty output here means nothing downstream can be trusted.
+      - name: Verify Release Metadata
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          for key in tag name prerelease make_latest body; do
+            val="${{ steps.target.outputs[key] }}"
+            if [ -z "${val}" ]; then
+              echo "::error::steps.target.outputs.${key} is empty - the resolve step lost its 'id: target'?"
+              exit 1
+            fi
+          done
+          case "${{ steps.target.outputs.prerelease }}" in
+            true|false) ;;
+            *) echo "::error::prerelease must be 'true' or 'false', got '${{ steps.target.outputs.prerelease }}'"; exit 1 ;;
+          esac
+          echo "Publishing ${{ steps.target.outputs.name }} (prerelease=${{ steps.target.outputs.prerelease }})"
 
       - name: Publish Release
         if: github.event_name == 'push'
