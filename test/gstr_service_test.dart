@@ -112,7 +112,6 @@ void main() {
       final draftInvoice = Invoice(
         id: 'draft-1',
         invoiceNo: 'INV-DRAFT',
-        status: 'Draft',
         invoiceDate: DateTime(2025, 4),
         supplier: const Supplier(state: 'Karnataka'),
         receiver: const Receiver(name: 'Draft Client', state: 'Karnataka'),
