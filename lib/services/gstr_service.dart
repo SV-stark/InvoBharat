@@ -30,8 +30,9 @@ class GstrService {
     final validInvoices = invoices
         .where(
           (inv) =>
-              inv.status.toLowerCase() != 'draft' &&
-              inv.type != InvoiceType.deliveryChallan,
+              inv.type != InvoiceType.deliveryChallan &&
+              inv.status.toLowerCase() != 'cancelled' &&
+              inv.status.toLowerCase() != 'void',
         )
         .toList();
 

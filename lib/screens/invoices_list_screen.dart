@@ -675,7 +675,8 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
   List<Invoice> _filterAndSortInvoices(final List<Invoice> invoices) {
     final query = _searchCtrl.text.toLowerCase().trim();
     final filtered = invoices.where((final inv) {
-      final matchesSearch = query.isEmpty ||
+      final matchesSearch =
+          query.isEmpty ||
           inv.receiver.name.toLowerCase().contains(query) ||
           inv.invoiceNo.toLowerCase().contains(query) ||
           inv.grandTotal.toStringAsFixed(2).contains(query);
@@ -712,16 +713,24 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
 
     switch (_sortBy) {
       case 'date_desc':
-        filtered.sort((final a, final b) => b.invoiceDate.compareTo(a.invoiceDate));
+        filtered.sort(
+          (final a, final b) => b.invoiceDate.compareTo(a.invoiceDate),
+        );
         break;
       case 'date_asc':
-        filtered.sort((final a, final b) => a.invoiceDate.compareTo(b.invoiceDate));
+        filtered.sort(
+          (final a, final b) => a.invoiceDate.compareTo(b.invoiceDate),
+        );
         break;
       case 'amount_desc':
-        filtered.sort((final a, final b) => b.grandTotal.compareTo(a.grandTotal));
+        filtered.sort(
+          (final a, final b) => b.grandTotal.compareTo(a.grandTotal),
+        );
         break;
       case 'amount_asc':
-        filtered.sort((final a, final b) => a.grandTotal.compareTo(b.grandTotal));
+        filtered.sort(
+          (final a, final b) => a.grandTotal.compareTo(b.grandTotal),
+        );
         break;
       case 'no_desc':
         filtered.sort((final a, final b) => b.invoiceNo.compareTo(a.invoiceNo));
@@ -730,10 +739,14 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
         filtered.sort((final a, final b) => a.invoiceNo.compareTo(b.invoiceNo));
         break;
       case 'client_asc':
-        filtered.sort((final a, final b) => a.receiver.name.compareTo(b.receiver.name));
+        filtered.sort(
+          (final a, final b) => a.receiver.name.compareTo(b.receiver.name),
+        );
         break;
       case 'client_desc':
-        filtered.sort((final a, final b) => b.receiver.name.compareTo(a.receiver.name));
+        filtered.sort(
+          (final a, final b) => b.receiver.name.compareTo(a.receiver.name),
+        );
         break;
     }
     return filtered;

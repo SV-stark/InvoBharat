@@ -35,11 +35,7 @@ void main() {
           invoiceNo: 'INV-001',
           invoiceDate: now,
           items: const [
-            InvoiceItem(
-              id: '1',
-              description: 'Item A',
-              amount: 1000,
-            ),
+            InvoiceItem(id: '1', description: 'Item A', amount: 1000),
           ],
           payments: [
             PaymentTransaction(

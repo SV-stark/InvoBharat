@@ -46,8 +46,10 @@ class AboutTab extends ConsumerWidget {
 
     bool updateAvailable = false;
     if (config.updateChannel == UpdateChannel.stable) {
-      updateAvailable =
-          UpdateService.isNewerVersion(latest.tagName, currentVersion);
+      updateAvailable = UpdateService.isNewerVersion(
+        latest.tagName,
+        currentVersion,
+      );
     } else {
       updateAvailable = latest.tagName != currentVersion;
     }

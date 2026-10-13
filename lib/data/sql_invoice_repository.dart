@@ -393,9 +393,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
             final nameMatch = exactMatch
                 ? t.receiverName.equals(cleanQuery)
                 : t.receiverName.like('%${_escapeSqlLike(cleanQuery)}%');
-            predicate =
-                predicate &
-                (t.clientId.equals(clientId) | nameMatch);
+            predicate = predicate & (t.clientId.equals(clientId) | nameMatch);
           } else {
             predicate = predicate & t.clientId.equals(clientId);
           }
@@ -419,9 +417,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
         }
         return predicate;
       })
-      ..orderBy([
-        (final t) => OrderingTerm(expression: t.invoiceDate),
-      ]);
+      ..orderBy([(final t) => OrderingTerm(expression: t.invoiceDate)]);
 
     final invoiceRows = await stmt.get();
     if (invoiceRows.isEmpty) return [];

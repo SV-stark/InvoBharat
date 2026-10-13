@@ -76,4 +76,3 @@ class SecurityUtils {
     return null;
   }
 }
-

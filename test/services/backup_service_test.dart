@@ -306,9 +306,7 @@ void main() {
         final dbBytes = utf8.encode('sqlite data contents');
         archive.addFile(ArchiveFile('db.sqlite', dbBytes.length, dbBytes));
 
-        final manifestBytes = utf8.encode(
-          jsonEncode({'schemaVersion': 99}),
-        );
+        final manifestBytes = utf8.encode(jsonEncode({'schemaVersion': 99}));
         archive.addFile(
           ArchiveFile('manifest.json', manifestBytes.length, manifestBytes),
         );
@@ -388,8 +386,12 @@ void main() {
       'restoreFullBackup should handle corrupt sqlite database without leaking file lock',
       () async {
         final archive = Archive();
-        final corruptBytes = utf8.encode('NOT A VALID SQLITE DATABASE FILE HEADER GARBAGE DATA');
-        archive.addFile(ArchiveFile('db.sqlite', corruptBytes.length, corruptBytes));
+        final corruptBytes = utf8.encode(
+          'NOT A VALID SQLITE DATABASE FILE HEADER GARBAGE DATA',
+        );
+        archive.addFile(
+          ArchiveFile('db.sqlite', corruptBytes.length, corruptBytes),
+        );
 
         final zipBytes = ZipEncoder().encode(archive);
         final tempZipPath = p.join(

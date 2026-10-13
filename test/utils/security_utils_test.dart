@@ -5,19 +5,28 @@ import 'dart:io';
 
 void main() {
   group('SecurityUtils', () {
-    test('sanitizeFilename should remove illegal characters and guard traversal/reserved names', () {
-      expect(SecurityUtils.sanitizeFilename('test/file.txt'), 'test_file.txt');
-      expect(
-        SecurityUtils.sanitizeFilename('a<b>c:d"e/f\\g|h?i*j'),
-        'a_b_c_d_e_f_g_h_i_j',
-      );
-      expect(SecurityUtils.sanitizeFilename('  spaces  '), 'spaces');
-      expect(SecurityUtils.sanitizeFilename('../../etc/passwd'), '____etc_passwd');
-      expect(SecurityUtils.sanitizeFilename('report...   '), 'report');
-      expect(SecurityUtils.sanitizeFilename('CON.txt'), 'safe_CON.txt');
-      expect(SecurityUtils.sanitizeFilename('nul'), 'safe_nul');
-      expect(SecurityUtils.sanitizeFilename('aux.json'), 'safe_aux.json');
-    });
+    test(
+      'sanitizeFilename should remove illegal characters and guard traversal/reserved names',
+      () {
+        expect(
+          SecurityUtils.sanitizeFilename('test/file.txt'),
+          'test_file.txt',
+        );
+        expect(
+          SecurityUtils.sanitizeFilename('a<b>c:d"e/f\\g|h?i*j'),
+          'a_b_c_d_e_f_g_h_i_j',
+        );
+        expect(SecurityUtils.sanitizeFilename('  spaces  '), 'spaces');
+        expect(
+          SecurityUtils.sanitizeFilename('../../etc/passwd'),
+          '____etc_passwd',
+        );
+        expect(SecurityUtils.sanitizeFilename('report...   '), 'report');
+        expect(SecurityUtils.sanitizeFilename('CON.txt'), 'safe_CON.txt');
+        expect(SecurityUtils.sanitizeFilename('nul'), 'safe_nul');
+        expect(SecurityUtils.sanitizeFilename('aux.json'), 'safe_aux.json');
+      },
+    );
 
     test('isValidPath should detect path traversal and prefix bypass', () {
       final baseDir = p.join(Directory.systemTemp.path, 'invo_test');
@@ -41,7 +50,10 @@ void main() {
       final baseDir = Directory.systemTemp.path;
       final safePath = p.join(baseDir, 'data.json');
 
-      expect(SecurityUtils.safeResolve(safePath, baseDir), p.canonicalize(safePath));
+      expect(
+        SecurityUtils.safeResolve(safePath, baseDir),
+        p.canonicalize(safePath),
+      );
       expect(SecurityUtils.safeResolve(null, baseDir), null);
 
       final outsidePath = '/outside/path';

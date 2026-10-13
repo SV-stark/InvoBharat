@@ -325,8 +325,10 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
 
                           bool updateAvailable = false;
                           if (config.updateChannel == UpdateChannel.stable) {
-                            updateAvailable =
-                                UpdateService.isNewerVersion(latest.tagName, currentVersion);
+                            updateAvailable = UpdateService.isNewerVersion(
+                              latest.tagName,
+                              currentVersion,
+                            );
                           } else {
                             updateAvailable = latest.tagName != currentVersion;
                           }
@@ -449,9 +451,8 @@ class _FluentHomeState extends ConsumerState<FluentHome> {
                                                     } finally {
                                                       if (context.mounted) {
                                                         setDialogState(
-                                                          () =>
-                                                              isDownloading =
-                                                                  false,
+                                                          () => isDownloading =
+                                                              false,
                                                         );
                                                       }
                                                     }

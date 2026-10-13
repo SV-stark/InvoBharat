@@ -189,10 +189,15 @@ class UpdateService {
     return {'stable': stableRelease, 'nightly': nightlyRelease};
   }
 
-  static bool isNewerVersion(final String latestTag, final String currentVersion) {
+  static bool isNewerVersion(
+    final String latestTag,
+    final String currentVersion,
+  ) {
     final cleanLatest = latestTag.trim().replaceFirst(RegExp(r'^[vV]'), '');
-    final cleanCurrent =
-        currentVersion.trim().replaceFirst(RegExp(r'^[vV]'), '');
+    final cleanCurrent = currentVersion.trim().replaceFirst(
+      RegExp(r'^[vV]'),
+      '',
+    );
 
     List<int> parseParts(final String v) {
       final core = v.split('+').first.split('-').first;
@@ -250,9 +255,9 @@ class UpdateService {
         final sink = file.openWrite();
         int bytesReceived = 0;
         try {
-          await streamedResponse.stream
-              .timeout(const Duration(minutes: 5))
-              .listen((final chunk) {
+          await streamedResponse.stream.timeout(const Duration(minutes: 5)).listen((
+            final chunk,
+          ) {
             bytesReceived += chunk.length;
             if (bytesReceived > maxDownloadBytes) {
               throw Exception(

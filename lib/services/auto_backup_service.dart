@@ -73,7 +73,8 @@ class AutoBackupService {
 
       switch (config.backupFrequency) {
         case BackupFrequency.daily:
-          final isDifferentDay = lastBackup.year != now.year ||
+          final isDifferentDay =
+              lastBackup.year != now.year ||
               lastBackup.month != now.month ||
               lastBackup.day != now.day;
           if (isDifferentDay && now.isAfter(scheduledTimeToday)) {

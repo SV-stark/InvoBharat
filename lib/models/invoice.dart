@@ -97,28 +97,36 @@ abstract class Invoice with _$Invoice {
 
   double itemCgstAmount(final InvoiceItem item) {
     if (isInterState) return 0;
-    final taxableMoney =
-        Money.fromNumWithCurrency(itemTaxableValue(item), _currencyObj);
+    final taxableMoney = Money.fromNumWithCurrency(
+      itemTaxableValue(item),
+      _currencyObj,
+    );
     return (taxableMoney * (item.cgstRate / 100)).toDouble();
   }
 
   double itemSgstAmount(final InvoiceItem item) {
     if (isInterState) return 0;
-    final taxableMoney =
-        Money.fromNumWithCurrency(itemTaxableValue(item), _currencyObj);
+    final taxableMoney = Money.fromNumWithCurrency(
+      itemTaxableValue(item),
+      _currencyObj,
+    );
     return (taxableMoney * (item.sgstRate / 100)).toDouble();
   }
 
   double itemIgstAmount(final InvoiceItem item) {
     if (!isInterState) return 0;
-    final taxableMoney =
-        Money.fromNumWithCurrency(itemTaxableValue(item), _currencyObj);
+    final taxableMoney = Money.fromNumWithCurrency(
+      itemTaxableValue(item),
+      _currencyObj,
+    );
     return (taxableMoney * (item.gstRate / 100)).toDouble();
   }
 
   double itemTotalAmount(final InvoiceItem item) {
-    final taxableMoney =
-        Money.fromNumWithCurrency(itemTaxableValue(item), _currencyObj);
+    final taxableMoney = Money.fromNumWithCurrency(
+      itemTaxableValue(item),
+      _currencyObj,
+    );
     if (isInterState) {
       final igstMoney = taxableMoney * (item.gstRate / 100);
       return (taxableMoney + igstMoney).toDouble();
@@ -131,40 +139,46 @@ abstract class Invoice with _$Invoice {
 
   double get totalCGST {
     if (isInterState) return 0;
-    final total = items.fold(
-      Money.fromNumWithCurrency(0, _currencyObj),
-      (final sum, final item) {
-        final taxableMoney =
-            Money.fromNumWithCurrency(itemTaxableValue(item), _currencyObj);
-        return sum + (taxableMoney * (item.cgstRate / 100));
-      },
-    );
+    final total = items.fold(Money.fromNumWithCurrency(0, _currencyObj), (
+      final sum,
+      final item,
+    ) {
+      final taxableMoney = Money.fromNumWithCurrency(
+        itemTaxableValue(item),
+        _currencyObj,
+      );
+      return sum + (taxableMoney * (item.cgstRate / 100));
+    });
     return total.toDouble();
   }
 
   double get totalSGST {
     if (isInterState) return 0;
-    final total = items.fold(
-      Money.fromNumWithCurrency(0, _currencyObj),
-      (final sum, final item) {
-        final taxableMoney =
-            Money.fromNumWithCurrency(itemTaxableValue(item), _currencyObj);
-        return sum + (taxableMoney * (item.sgstRate / 100));
-      },
-    );
+    final total = items.fold(Money.fromNumWithCurrency(0, _currencyObj), (
+      final sum,
+      final item,
+    ) {
+      final taxableMoney = Money.fromNumWithCurrency(
+        itemTaxableValue(item),
+        _currencyObj,
+      );
+      return sum + (taxableMoney * (item.sgstRate / 100));
+    });
     return total.toDouble();
   }
 
   double get totalIGST {
     if (!isInterState) return 0;
-    final total = items.fold(
-      Money.fromNumWithCurrency(0, _currencyObj),
-      (final sum, final item) {
-        final taxableMoney =
-            Money.fromNumWithCurrency(itemTaxableValue(item), _currencyObj);
-        return sum + (taxableMoney * (item.gstRate / 100));
-      },
-    );
+    final total = items.fold(Money.fromNumWithCurrency(0, _currencyObj), (
+      final sum,
+      final item,
+    ) {
+      final taxableMoney = Money.fromNumWithCurrency(
+        itemTaxableValue(item),
+        _currencyObj,
+      );
+      return sum + (taxableMoney * (item.gstRate / 100));
+    });
     return total.toDouble();
   }
 

@@ -649,8 +649,8 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                             width: 100,
                             child: NumberBox<double>(
                               value: invoice.discountAmount,
-                              onChanged: (final v) =>
-                                  notifier.updateDiscountAmount((v ?? 0.0).toString()),
+                              onChanged: (final v) => notifier
+                                  .updateDiscountAmount((v ?? 0.0).toString()),
                               mode: SpinButtonPlacementMode.none,
                             ),
                           ),

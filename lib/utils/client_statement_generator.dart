@@ -56,9 +56,9 @@ Future<Uint8List> _generateStatementInIsolate(
         final filteredInvoices = params.invoices.where((final inv) {
           final matchesClient =
               (params.client.gstin.isNotEmpty &&
-                      inv.receiver.gstin.isNotEmpty &&
-                      inv.receiver.gstin == params.client.gstin) ||
-                  inv.receiver.name == params.client.name;
+                  inv.receiver.gstin.isNotEmpty &&
+                  inv.receiver.gstin == params.client.gstin) ||
+              inv.receiver.name == params.client.name;
           return matchesClient &&
               inv.invoiceDate.isAfter(
                 params.dateRange.start.subtract(const Duration(days: 1)),

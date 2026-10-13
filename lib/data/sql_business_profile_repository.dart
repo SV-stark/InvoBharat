@@ -94,16 +94,18 @@ class SqlBusinessProfileRepository implements BusinessProfileRepository {
 
       if (profile.bankName.trim().isNotEmpty ||
           profile.accountNo.trim().isNotEmpty) {
-        final existingDefault = await (database.select(database.bankAccounts)
-              ..where((final tbl) =>
-                  tbl.profileId.equals(profile.id) &
-                  tbl.isDefault.equals(true)))
-            .getSingleOrNull();
+        final existingDefault =
+            await (database.select(database.bankAccounts)..where(
+                  (final tbl) =>
+                      tbl.profileId.equals(profile.id) &
+                      tbl.isDefault.equals(true),
+                ))
+                .getSingleOrNull();
 
         if (existingDefault != null) {
-          await (database.update(database.bankAccounts)
-                ..where((final tbl) => tbl.id.equals(existingDefault.id)))
-              .write(
+          await (database.update(
+            database.bankAccounts,
+          )..where((final tbl) => tbl.id.equals(existingDefault.id))).write(
             BankAccountsCompanion(
               bankName: Value(profile.bankName),
               accountNo: Value(profile.accountNo),
@@ -113,11 +115,13 @@ class SqlBusinessProfileRepository implements BusinessProfileRepository {
           );
         } else {
           // Check if any bank account exists
-          final anyBank = await (database.select(database.bankAccounts)
-                ..where((final tbl) => tbl.profileId.equals(profile.id)))
-              .get();
+          final anyBank = await (database.select(
+            database.bankAccounts,
+          )..where((final tbl) => tbl.profileId.equals(profile.id))).get();
           if (anyBank.isEmpty) {
-            await database.into(database.bankAccounts).insert(
+            await database
+                .into(database.bankAccounts)
+                .insert(
                   BankAccountsCompanion(
                     id: Value(const Uuid().v4()),
                     profileId: Value(profile.id),
@@ -132,18 +136,18 @@ class SqlBusinessProfileRepository implements BusinessProfileRepository {
         }
 
         // Also update draft invoices with the profile's bank details
-        await (database.update(database.invoices)
-              ..where((final tbl) =>
-                  tbl.profileId.equals(profile.id) &
-                  tbl.status.equals('Draft')))
+        await (database.update(database.invoices)..where(
+              (final tbl) =>
+                  tbl.profileId.equals(profile.id) & tbl.status.equals('Draft'),
+            ))
             .write(
-          InvoicesCompanion(
-            bankName: Value(profile.bankName),
-            accountNo: Value(profile.accountNo),
-            ifscCode: Value(profile.ifscCode),
-            branch: Value(profile.branch),
-          ),
-        );
+              InvoicesCompanion(
+                bankName: Value(profile.bankName),
+                accountNo: Value(profile.accountNo),
+                ifscCode: Value(profile.ifscCode),
+                branch: Value(profile.branch),
+              ),
+            );
       }
 
       return rowId;

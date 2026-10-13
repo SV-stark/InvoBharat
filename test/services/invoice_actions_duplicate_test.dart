@@ -35,7 +35,8 @@ class FakeInvoiceRepository implements InvoiceRepository {
   }
 
   @override
-  dynamic noSuchMethod(final Invocation invocation) => super.noSuchMethod(invocation);
+  dynamic noSuchMethod(final Invocation invocation) =>
+      super.noSuchMethod(invocation);
 }
 
 class FakeSeriesNotifier extends InvoiceSeriesNotifier {
@@ -45,68 +46,81 @@ class FakeSeriesNotifier extends InvoiceSeriesNotifier {
   }
 
   @override
-  Future<void> updateSequence(final String prefix, final int newSequence) async {}
+  Future<void> updateSequence(
+    final String prefix,
+    final int newSequence,
+  ) async {}
 }
 
 void main() {
-  testWidgets('InvoiceActions.duplicateInvoice creates next sequence draft invoice', (final tester) async {
-    final fakeRepo = FakeInvoiceRepository();
+  testWidgets(
+    'InvoiceActions.duplicateInvoice creates next sequence draft invoice',
+    (final tester) async {
+      final fakeRepo = FakeInvoiceRepository();
 
-    Invoice? duplicatedResult;
+      Invoice? duplicatedResult;
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          invoiceRepositoryProvider.overrideWithValue(fakeRepo),
-          businessProfileProvider.overrideWithValue(
-            BusinessProfile(
-              id: 'prof-1',
-              companyName: 'My Business',
-              address: 'Address',
-              gstin: '07AAAAA0000A1Z5',
-              email: 'test@example.com',
-              phone: '9999999999',
-            ),
-          ),
-          invoiceSeriesProvider.overrideWith(FakeSeriesNotifier.new),
-        ],
-        child: Consumer(
-          builder: (final context, final ref, final _) {
-            return MaterialApp(
-              home: ElevatedButton(
-                onPressed: () async {
-                  final orig = Invoice(
-                    id: 'orig-1',
-                    invoiceNo: 'INV-005',
-                    invoiceDate: DateTime(2025, 4),
-                    status: 'Sent',
-                    supplier: const Supplier(),
-                    receiver: const Receiver(),
-                    items: const [
-                      InvoiceItem(id: 'item-1', amount: 500, description: 'Test Item'),
-                    ],
-                  );
-                  duplicatedResult = await InvoiceActions.duplicateInvoice(ref, orig);
-                },
-                child: const Text('Duplicate'),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            invoiceRepositoryProvider.overrideWithValue(fakeRepo),
+            businessProfileProvider.overrideWithValue(
+              BusinessProfile(
+                id: 'prof-1',
+                companyName: 'My Business',
+                address: 'Address',
+                gstin: '07AAAAA0000A1Z5',
+                email: 'test@example.com',
+                phone: '9999999999',
               ),
-            );
-          },
+            ),
+            invoiceSeriesProvider.overrideWith(FakeSeriesNotifier.new),
+          ],
+          child: Consumer(
+            builder: (final context, final ref, final _) {
+              return MaterialApp(
+                home: ElevatedButton(
+                  onPressed: () async {
+                    final orig = Invoice(
+                      id: 'orig-1',
+                      invoiceNo: 'INV-005',
+                      invoiceDate: DateTime(2025, 4),
+                      status: 'Sent',
+                      supplier: const Supplier(),
+                      receiver: const Receiver(),
+                      items: const [
+                        InvoiceItem(
+                          id: 'item-1',
+                          amount: 500,
+                          description: 'Test Item',
+                        ),
+                      ],
+                    );
+                    duplicatedResult = await InvoiceActions.duplicateInvoice(
+                      ref,
+                      orig,
+                    );
+                  },
+                  child: const Text('Duplicate'),
+                ),
+              );
+            },
+          ),
         ),
-      ),
-    );
+      );
 
-    await tester.tap(find.text('Duplicate'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Duplicate'));
+      await tester.pumpAndSettle();
 
-    expect(duplicatedResult, isNotNull);
-    expect(duplicatedResult!.invoiceNo, equals('INV-006'));
-    expect(duplicatedResult!.status, equals('Draft'));
-    expect(duplicatedResult!.id, isNot(equals('orig-1')));
-    expect(duplicatedResult!.items.length, equals(1));
-    expect(duplicatedResult!.items.first.id, isNot(equals('item-1')));
+      expect(duplicatedResult, isNotNull);
+      expect(duplicatedResult!.invoiceNo, equals('INV-006'));
+      expect(duplicatedResult!.status, equals('Draft'));
+      expect(duplicatedResult!.id, isNot(equals('orig-1')));
+      expect(duplicatedResult!.items.length, equals(1));
+      expect(duplicatedResult!.items.first.id, isNot(equals('item-1')));
 
-    expect(fakeRepo.storedInvoices.length, equals(1));
-    expect(fakeRepo.storedInvoices.first.invoiceNo, equals('INV-006'));
-  });
+      expect(fakeRepo.storedInvoices.length, equals(1));
+      expect(fakeRepo.storedInvoices.first.invoiceNo, equals('INV-006'));
+    },
+  );
 }

@@ -10,7 +10,8 @@ class FakePathProviderPlatform extends PathProviderPlatform {
   Future<String?> getTemporaryPath() async => Directory.systemTemp.path;
 
   @override
-  Future<String?> getApplicationSupportPath() async => Directory.systemTemp.path;
+  Future<String?> getApplicationSupportPath() async =>
+      Directory.systemTemp.path;
 
   @override
   Future<String?> getLibraryPath() async => Directory.systemTemp.path;
@@ -44,7 +45,8 @@ void main() {
 
   group('UpdateService security and checksum checks', () {
     const validPayload = 'test payload';
-    const validHash = '813ca5285c28ccee5cab8b10ebda9c908fd6d78ed9dc94cc65ea6cb67a7f13ae';
+    const validHash =
+        '813ca5285c28ccee5cab8b10ebda9c908fd6d78ed9dc94cc65ea6cb67a7f13ae';
 
     test('ignores unrelated *.sha256 file and uses matching checksum', () async {
       // Release has unrelated linux.tar.gz.sha256 with bad hash, but body has the valid installer hash

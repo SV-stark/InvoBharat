@@ -180,7 +180,9 @@ class AppDatabase extends _$AppDatabase {
                 await m.database.customStatement('DROP TABLE `$tempName`');
               }
             } finally {
-              await m.database.customStatement('PRAGMA legacy_alter_table = OFF;');
+              await m.database.customStatement(
+                'PRAGMA legacy_alter_table = OFF;',
+              );
               await m.database.customStatement('PRAGMA foreign_keys = ON;');
             }
           });
@@ -245,7 +247,9 @@ class AppDatabase extends _$AppDatabase {
                 "CREATE UNIQUE INDEX IF NOT EXISTS `idx_clients_profile_gstin` ON `clients` (profile_id, gstin) WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null'",
               );
             } finally {
-              await m.database.customStatement('PRAGMA legacy_alter_table = OFF;');
+              await m.database.customStatement(
+                'PRAGMA legacy_alter_table = OFF;',
+              );
               await m.database.customStatement('PRAGMA foreign_keys = ON;');
             }
           });
@@ -278,7 +282,9 @@ class AppDatabase extends _$AppDatabase {
 
               await m.database.customStatement('DROP TABLE `$tempName`');
             } finally {
-              await m.database.customStatement('PRAGMA legacy_alter_table = OFF;');
+              await m.database.customStatement(
+                'PRAGMA legacy_alter_table = OFF;',
+              );
               await m.database.customStatement('PRAGMA foreign_keys = ON;');
             }
           });
@@ -468,22 +474,22 @@ class AppDatabase extends _$AppDatabase {
   static Future<void> _repairDuplicateGstins(final GeneratedDatabase db) async {
     try {
       // Deduplicate business_profiles by GSTIN
-      final bpDuplicates = await db.customSelect(
-        '''
+      final bpDuplicates = await db.customSelect('''
         SELECT gstin, COUNT(*) as cnt
         FROM business_profiles
         WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null'
         GROUP BY gstin
         HAVING cnt > 1
-        ''',
-      ).get();
+        ''').get();
 
       for (final dup in bpDuplicates) {
         final gstin = dup.read<String>('gstin');
-        final rows = await db.customSelect(
-          'SELECT id FROM business_profiles WHERE gstin = ? ORDER BY rowid ASC',
-          variables: [Variable.withString(gstin)],
-        ).get();
+        final rows = await db
+            .customSelect(
+              'SELECT id FROM business_profiles WHERE gstin = ? ORDER BY rowid ASC',
+              variables: [Variable.withString(gstin)],
+            )
+            .get();
         for (int i = 1; i < rows.length; i++) {
           final id = rows[i].read<String>('id');
           await db.customStatement(
@@ -494,23 +500,26 @@ class AppDatabase extends _$AppDatabase {
       }
 
       // Deduplicate clients by profile_id and GSTIN
-      final clientDuplicates = await db.customSelect(
-        '''
+      final clientDuplicates = await db.customSelect('''
         SELECT profile_id, gstin, COUNT(*) as cnt
         FROM clients
         WHERE gstin IS NOT NULL AND gstin != '' AND gstin != 'null'
         GROUP BY profile_id, gstin
         HAVING cnt > 1
-        ''',
-      ).get();
+        ''').get();
 
       for (final dup in clientDuplicates) {
         final profileId = dup.read<String>('profile_id');
         final gstin = dup.read<String>('gstin');
-        final rows = await db.customSelect(
-          'SELECT id FROM clients WHERE profile_id = ? AND gstin = ? ORDER BY rowid ASC',
-          variables: [Variable.withString(profileId), Variable.withString(gstin)],
-        ).get();
+        final rows = await db
+            .customSelect(
+              'SELECT id FROM clients WHERE profile_id = ? AND gstin = ? ORDER BY rowid ASC',
+              variables: [
+                Variable.withString(profileId),
+                Variable.withString(gstin),
+              ],
+            )
+            .get();
         for (int i = 1; i < rows.length; i++) {
           final id = rows[i].read<String>('id');
           await db.customStatement(
@@ -529,9 +538,11 @@ class AppDatabase extends _$AppDatabase {
   ) async {
     try {
       // Backfill missing financial_year before checking duplicates
-      final missingFyRows = await db.customSelect(
-        "SELECT id, invoice_date FROM invoices WHERE financial_year IS NULL OR financial_year = ''",
-      ).get();
+      final missingFyRows = await db
+          .customSelect(
+            "SELECT id, invoice_date FROM invoices WHERE financial_year IS NULL OR financial_year = ''",
+          )
+          .get();
       for (final row in missingFyRows) {
         final id = row.read<String>('id');
         final rawDate = row.read<dynamic>('invoice_date');
@@ -552,28 +563,28 @@ class AppDatabase extends _$AppDatabase {
         }
       }
 
-      final duplicates = await db.customSelect(
-        '''
+      final duplicates = await db.customSelect('''
         SELECT profile_id, financial_year, invoice_no, COUNT(*) as cnt
         FROM invoices
         GROUP BY profile_id, financial_year, invoice_no
         HAVING cnt > 1
-        ''',
-      ).get();
+        ''').get();
 
       for (final dup in duplicates) {
         final profileId = dup.read<String>('profile_id');
         final fy = dup.readNullable<String>('financial_year') ?? '';
         final invoiceNo = dup.read<String>('invoice_no');
-        final rows = await db.customSelect(
-          "SELECT id FROM invoices WHERE profile_id = ? AND (financial_year = ? OR (? = '' AND financial_year IS NULL)) AND invoice_no = ? ORDER BY invoice_date ASC, rowid ASC",
-          variables: [
-            Variable.withString(profileId),
-            Variable.withString(fy),
-            Variable.withString(fy),
-            Variable.withString(invoiceNo),
-          ],
-        ).get();
+        final rows = await db
+            .customSelect(
+              "SELECT id FROM invoices WHERE profile_id = ? AND (financial_year = ? OR (? = '' AND financial_year IS NULL)) AND invoice_no = ? ORDER BY invoice_date ASC, rowid ASC",
+              variables: [
+                Variable.withString(profileId),
+                Variable.withString(fy),
+                Variable.withString(fy),
+                Variable.withString(invoiceNo),
+              ],
+            )
+            .get();
 
         for (int i = 1; i < rows.length; i++) {
           final id = rows[i].read<String>('id');

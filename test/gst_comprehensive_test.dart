@@ -89,7 +89,9 @@ void main() {
         receiver: defaultReceiver,
         discountAmount: 100.0,
         items: [
-          const InvoiceItem(amount: 1000), // Taxable 900 after discount, GST 18% = 162, Total = 1062
+          const InvoiceItem(
+            amount: 1000,
+          ), // Taxable 900 after discount, GST 18% = 162, Total = 1062
         ],
       );
 

@@ -20,10 +20,7 @@ import 'package:sqlite3/sqlite3.dart' as sqlite3;
 import 'package:uuid/uuid.dart';
 
 final backupServiceProvider = Provider<BackupService>((final ref) {
-  return BackupService(
-    db: ref.watch(databaseProvider),
-    ref: ref,
-  );
+  return BackupService(db: ref.watch(databaseProvider), ref: ref);
 });
 
 const kDbFileName = 'db.sqlite';
@@ -373,9 +370,7 @@ class BackupService {
       int? backedUpSchemaVersion;
 
       if (manifestEntry != null && manifestEntry.isFile) {
-        final manifestContent = utf8.decode(
-          manifestEntry.content as List<int>,
-        );
+        final manifestContent = utf8.decode(manifestEntry.content as List<int>);
         final manifest = jsonDecode(manifestContent) as Map<String, dynamic>;
         backedUpSchemaVersion = manifest['schemaVersion'] as int?;
         if (backedUpSchemaVersion != null) {
@@ -551,10 +546,7 @@ class BackupService {
         if (activeProfileIdToRestore != null &&
             activeProfileIdToRestore.isNotEmpty) {
           final prefs = await SharedPreferences.getInstance();
-          await prefs.setString(
-            'active_profile_id',
-            activeProfileIdToRestore,
-          );
+          await prefs.setString('active_profile_id', activeProfileIdToRestore);
         }
 
         if (ref != null) {

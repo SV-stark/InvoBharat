@@ -105,4 +105,62 @@ void main() {
       );
     },
   );
+
+  test(
+    'generateGstr1Csv includes Draft invoices but excludes deliveryChallan and cancelled/void',
+    () {
+      final draftInvoice = Invoice(
+        id: 'draft-1',
+        invoiceNo: 'INV-DRAFT',
+        status: 'Draft',
+        invoiceDate: DateTime(2025, 4),
+        supplier: const Supplier(state: 'Karnataka'),
+        receiver: const Receiver(name: 'Draft Client', state: 'Karnataka'),
+        items: [const InvoiceItem(description: 'Service', amount: 1000)],
+      );
+
+      final cancelledInvoice = Invoice(
+        id: 'cancelled-1',
+        invoiceNo: 'INV-CANCELLED',
+        status: 'Cancelled',
+        invoiceDate: DateTime(2025, 4),
+        supplier: const Supplier(state: 'Karnataka'),
+        receiver: const Receiver(name: 'Cancelled Client', state: 'Karnataka'),
+        items: [const InvoiceItem(description: 'Service', amount: 1000)],
+      );
+
+      final voidInvoice = Invoice(
+        id: 'void-1',
+        invoiceNo: 'INV-VOID',
+        status: 'Void',
+        invoiceDate: DateTime(2025, 4),
+        supplier: const Supplier(state: 'Karnataka'),
+        receiver: const Receiver(name: 'Void Client', state: 'Karnataka'),
+        items: [const InvoiceItem(description: 'Service', amount: 1000)],
+      );
+
+      final challanInvoice = Invoice(
+        id: 'challan-1',
+        invoiceNo: 'DC-001',
+        type: InvoiceType.deliveryChallan,
+        status: 'Sent',
+        invoiceDate: DateTime(2025, 4),
+        supplier: const Supplier(state: 'Karnataka'),
+        receiver: const Receiver(name: 'Challan Client', state: 'Karnataka'),
+        items: [const InvoiceItem(description: 'Service', amount: 1000)],
+      );
+
+      final csv = GstrService().generateGstr1Csv([
+        draftInvoice,
+        cancelledInvoice,
+        voidInvoice,
+        challanInvoice,
+      ]);
+
+      expect(csv, contains('INV-DRAFT'));
+      expect(csv, isNot(contains('INV-CANCELLED')));
+      expect(csv, isNot(contains('INV-VOID')));
+      expect(csv, isNot(contains('DC-001')));
+    },
+  );
 }

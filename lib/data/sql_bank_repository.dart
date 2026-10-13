@@ -39,9 +39,9 @@ class SqlBankRepository implements BankRepository {
 
       if (shouldBeDefault) {
         // Synchronize to business_profiles so future invoices immediately inherit updated bank
-        await (database.update(database.businessProfiles)
-              ..where((final tbl) => tbl.id.equals(bank.profileId)))
-            .write(
+        await (database.update(
+          database.businessProfiles,
+        )..where((final tbl) => tbl.id.equals(bank.profileId))).write(
           BusinessProfilesCompanion(
             bankName: Value(bank.bankName),
             accountNo: Value(bank.accountNo),
@@ -51,18 +51,19 @@ class SqlBankRepository implements BankRepository {
         );
 
         // Propagate bank updates to draft invoices
-        await (database.update(database.invoices)
-              ..where((final tbl) =>
+        await (database.update(database.invoices)..where(
+              (final tbl) =>
                   tbl.profileId.equals(bank.profileId) &
-                  tbl.status.equals('Draft')))
+                  tbl.status.equals('Draft'),
+            ))
             .write(
-          InvoicesCompanion(
-            bankName: Value(bank.bankName),
-            accountNo: Value(bank.accountNo),
-            ifscCode: Value(bank.ifscCode),
-            branch: Value(bank.branch),
-          ),
-        );
+              InvoicesCompanion(
+                bankName: Value(bank.bankName),
+                accountNo: Value(bank.accountNo),
+                ifscCode: Value(bank.ifscCode),
+                branch: Value(bank.branch),
+              ),
+            );
       }
     });
   }
@@ -110,13 +111,13 @@ class SqlBankRepository implements BankRepository {
           .write(const BankAccountsCompanion(isDefault: Value(true)));
 
       // 3. Sync to business_profiles and draft invoices
-      final bank = await (database.select(database.bankAccounts)
-            ..where((final tbl) => tbl.id.equals(bankId)))
-          .getSingleOrNull();
+      final bank = await (database.select(
+        database.bankAccounts,
+      )..where((final tbl) => tbl.id.equals(bankId))).getSingleOrNull();
       if (bank != null) {
-        await (database.update(database.businessProfiles)
-              ..where((final tbl) => tbl.id.equals(profileId)))
-            .write(
+        await (database.update(
+          database.businessProfiles,
+        )..where((final tbl) => tbl.id.equals(profileId))).write(
           BusinessProfilesCompanion(
             bankName: Value(bank.bankName),
             accountNo: Value(bank.accountNo),
@@ -125,18 +126,18 @@ class SqlBankRepository implements BankRepository {
           ),
         );
 
-        await (database.update(database.invoices)
-              ..where((final tbl) =>
-                  tbl.profileId.equals(profileId) &
-                  tbl.status.equals('Draft')))
+        await (database.update(database.invoices)..where(
+              (final tbl) =>
+                  tbl.profileId.equals(profileId) & tbl.status.equals('Draft'),
+            ))
             .write(
-          InvoicesCompanion(
-            bankName: Value(bank.bankName),
-            accountNo: Value(bank.accountNo),
-            ifscCode: Value(bank.ifscCode),
-            branch: Value(bank.branch),
-          ),
-        );
+              InvoicesCompanion(
+                bankName: Value(bank.bankName),
+                accountNo: Value(bank.accountNo),
+                ifscCode: Value(bank.ifscCode),
+                branch: Value(bank.branch),
+              ),
+            );
       }
     });
   }

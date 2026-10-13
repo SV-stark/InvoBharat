@@ -299,7 +299,9 @@ class DatabaseMigrationService {
           }
         }
       }
-      LoggerService.talker.info("Migrated $count estimates for $safeProfileId.");
+      LoggerService.talker.info(
+        "Migrated $count estimates for $safeProfileId.",
+      );
     } catch (e, st) {
       LoggerService.talker.handle(e, st, "Error accessing estimates directory");
     }
@@ -340,7 +342,9 @@ class DatabaseMigrationService {
           }
         }
       }
-      LoggerService.talker.info("Migrated $count recurring profiles for $profileId.");
+      LoggerService.talker.info(
+        "Migrated $count recurring profiles for $profileId.",
+      );
     } catch (e, st) {
       LoggerService.talker.handle(e, st, "Error accessing recurring directory");
     }

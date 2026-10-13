@@ -37,25 +37,26 @@ class SqlClientRepository implements ClientRepository {
 
       if (isExisting) {
         // Propagate edited client details to draft invoices linked to this client
-        await (database.update(database.invoices)
-              ..where((final tbl) =>
+        await (database.update(database.invoices)..where(
+              (final tbl) =>
                   tbl.profileId.equals(profileId) &
                   (tbl.clientId.equals(clientId) |
                       (tbl.clientId.isNull() &
                           tbl.receiverName.equals(client.name))) &
-                  tbl.status.equals('Draft')))
+                  tbl.status.equals('Draft'),
+            ))
             .write(
-          InvoicesCompanion(
-            receiverName: Value(client.name),
-            receiverAddress: Value(client.address),
-            receiverGstin: Value(client.gstin),
-            receiverPan: Value(client.pan),
-            receiverState: Value(client.state),
-            receiverStateCode: Value(client.stateCode),
-            receiverEmail: Value(client.email),
-            receiverPhone: Value(client.phone),
-          ),
-        );
+              InvoicesCompanion(
+                receiverName: Value(client.name),
+                receiverAddress: Value(client.address),
+                receiverGstin: Value(client.gstin),
+                receiverPan: Value(client.pan),
+                receiverState: Value(client.state),
+                receiverStateCode: Value(client.stateCode),
+                receiverEmail: Value(client.email),
+                receiverPhone: Value(client.phone),
+              ),
+            );
       }
     });
   }

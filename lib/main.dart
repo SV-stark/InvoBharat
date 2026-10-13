@@ -75,9 +75,7 @@ void main() {
 
   runApp(
     ProviderScope(
-      observers: kReleaseMode
-          ? []
-          : [RiverpodTalkerObserver(talker: talker)],
+      observers: kReleaseMode ? [] : [RiverpodTalkerObserver(talker: talker)],
       overrides: [talkerProvider.overrideWithValue(talker)],
       child: const InvoBharatApp(),
     ),

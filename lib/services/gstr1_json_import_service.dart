@@ -34,7 +34,9 @@ class Gstr1JsonImportService {
           final decoded = json.decode(content);
           if (decoded is! Map<String, dynamic>) {
             totalErrors++;
-            messages.add("${filePickerFile.name}: Invalid JSON format (expected object)");
+            messages.add(
+              "${filePickerFile.name}: Invalid JSON format (expected object)",
+            );
             continue;
           }
 
@@ -53,11 +55,7 @@ class Gstr1JsonImportService {
           ? messages.join('\n')
           : "Imported $totalSuccess invoices from ${result.length} files.";
 
-      return GstrImportResult(
-        totalSuccess,
-        totalErrors,
-        summaryMsg,
-      );
+      return GstrImportResult(totalSuccess, totalErrors, summaryMsg);
     } catch (e) {
       debugPrint("GSTR-1 JSON Import Error: $e");
       return GstrImportResult(0, 0, "Error: $e");
@@ -140,7 +138,11 @@ class Gstr1JsonImportService {
       }
     }
 
-    return GstrImportResult(success, errors, "Processed ($success saved, $errors failed).");
+    return GstrImportResult(
+      success,
+      errors,
+      "Processed ($success saved, $errors failed).",
+    );
   }
 
   static Invoice _mapB2BToInvoice(
@@ -222,7 +224,8 @@ class Gstr1JsonImportService {
     final String ntDt = ntJson['nt_dt']?.toString() ?? '';
     final String inum = ntJson['inum']?.toString() ?? '';
     final String idt = ntJson['idt']?.toString() ?? '';
-    final String nty = ntJson['nty']?.toString() ?? 'C'; // C for Credit, D for Debit
+    final String nty =
+        ntJson['nty']?.toString() ?? 'C'; // C for Credit, D for Debit
     final String pos = ntJson['pos']?.toString() ?? '';
     final itms = ntJson['itms'];
     final List<dynamic> itmsList = itms is List ? itms : [];

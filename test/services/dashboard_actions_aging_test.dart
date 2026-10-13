@@ -12,9 +12,7 @@ void main() {
         invoiceDate: now.subtract(const Duration(days: 120)),
         supplier: const Supplier(),
         receiver: const Receiver(),
-        items: [
-          const InvoiceItem(amount: 1000, gstRate: 0),
-        ],
+        items: [const InvoiceItem(amount: 1000, gstRate: 0)],
       );
 
       final aging = DashboardActions.calculateAging([oldInvoice]);
@@ -33,9 +31,7 @@ void main() {
         dueDate: now.add(const Duration(days: 10)),
         supplier: const Supplier(),
         receiver: const Receiver(),
-        items: [
-          const InvoiceItem(amount: 500, gstRate: 0),
-        ],
+        items: [const InvoiceItem(amount: 500, gstRate: 0)],
       );
 
       final aging = DashboardActions.calculateAging([freshInvoice]);
