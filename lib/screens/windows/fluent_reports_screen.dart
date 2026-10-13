@@ -20,6 +20,7 @@ import 'package:invobharat/models/invoice.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:invobharat/utils/einvoice_exporter.dart';
 import 'package:data_table_2/data_table_2.dart';
+import 'package:material_ui/material_ui.dart' as mu;
 
 class FluentReportsScreen extends ConsumerStatefulWidget {
   const FluentReportsScreen({super.key});
@@ -415,13 +416,13 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
           DataColumn2(label: Text('Type'), size: ColumnSize.S),
         ],
         rows: items.map((final item) {
-          return material.DataRow(
+          return mu.DataRow(
             cells: [
-              material.DataCell(Text(item['invoiceNo'])),
-              material.DataCell(Text(item['date'])),
-              material.DataCell(Text(item['gstin'])),
-              material.DataCell(Text(item['name'])),
-              material.DataCell(
+              mu.DataCell(Text(item['invoiceNo'])),
+              mu.DataCell(Text(item['date'])),
+              mu.DataCell(Text(item['gstin'])),
+              mu.DataCell(Text(item['name'])),
+              mu.DataCell(
                 Text(
                   (item['taxable'] as double).toIndianFormat(
                     includeSymbol: true,
@@ -429,7 +430,7 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
                   ),
                 ),
               ),
-              material.DataCell(
+              mu.DataCell(
                 Text(
                   (item['cgst'] as double).toIndianFormat(
                     includeSymbol: true,
@@ -437,7 +438,7 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
                   ),
                 ),
               ),
-              material.DataCell(
+              mu.DataCell(
                 Text(
                   (item['sgst'] as double).toIndianFormat(
                     includeSymbol: true,
@@ -445,7 +446,7 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
                   ),
                 ),
               ),
-              material.DataCell(
+              mu.DataCell(
                 Text(
                   (item['igst'] as double).toIndianFormat(
                     includeSymbol: true,
@@ -453,7 +454,7 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
                   ),
                 ),
               ),
-              material.DataCell(Text(item['type'])),
+              mu.DataCell(Text(item['type'])),
             ],
           );
         }).toList(),
@@ -529,14 +530,14 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
           DataColumn2(label: Text('SGST'), size: ColumnSize.S, numeric: true),
         ],
         rows: grouped.values.map((final entry) {
-          return material.DataRow(
+          return mu.DataRow(
             cells: [
-              material.DataCell(Text(entry['section'])),
-              material.DataCell(Text(entry['nature'])),
-              material.DataCell(
+              mu.DataCell(Text(entry['section'])),
+              mu.DataCell(Text(entry['nature'])),
+              mu.DataCell(
                 Text('${(entry['rate'] as double).toStringAsFixed(1)}%'),
               ),
-              material.DataCell(
+              mu.DataCell(
                 Text(
                   (entry['taxable'] as double).toIndianFormat(
                     includeSymbol: true,
@@ -544,7 +545,7 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
                   ),
                 ),
               ),
-              material.DataCell(
+              mu.DataCell(
                 Text(
                   (entry['igst'] as double).toIndianFormat(
                     includeSymbol: true,
@@ -552,7 +553,7 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
                   ),
                 ),
               ),
-              material.DataCell(
+              mu.DataCell(
                 Text(
                   (entry['cgst'] as double).toIndianFormat(
                     includeSymbol: true,
@@ -560,7 +561,7 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
                   ),
                 ),
               ),
-              material.DataCell(
+              mu.DataCell(
                 Text(
                   (entry['sgst'] as double).toIndianFormat(
                     includeSymbol: true,

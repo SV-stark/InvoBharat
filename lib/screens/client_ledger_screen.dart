@@ -9,6 +9,7 @@ import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/utils/client_statement_generator.dart';
 import 'package:printing/printing.dart';
 import 'package:data_table_2/data_table_2.dart';
+import 'package:material_ui/material_ui.dart' as mu;
 import 'package:invobharat/utils/formatters.dart';
 
 class ClientLedgerScreen extends ConsumerStatefulWidget {
@@ -201,14 +202,14 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
                         DataColumn2(label: Text('Balance'), numeric: true),
                       ],
                       rows: entries.map((final e) {
-                        return material.DataRow(
+                        return mu.DataRow(
                           cells: [
-                            material.DataCell(
+                            mu.DataCell(
                               Text(DateFormat('dd-MM-yyyy').format(e.date)),
                             ),
-                            material.DataCell(Text(e.particulars)),
-                            material.DataCell(Text(e.type)),
-                            material.DataCell(
+                            mu.DataCell(Text(e.particulars)),
+                            mu.DataCell(Text(e.type)),
+                            mu.DataCell(
                               Text(
                                 e.debit > 0
                                     ? e.debit.toIndianFormat(
@@ -220,7 +221,7 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
                                     : "-",
                               ),
                             ),
-                            material.DataCell(
+                            mu.DataCell(
                               Text(
                                 e.credit > 0
                                     ? e.credit.toIndianFormat(
@@ -232,7 +233,7 @@ class _ClientLedgerScreenState extends ConsumerState<ClientLedgerScreen> {
                                     : "-",
                               ),
                             ),
-                            material.DataCell(
+                            mu.DataCell(
                               Text(
                                 e.balance.toIndianFormat(
                                   includeSymbol: true,
