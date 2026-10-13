@@ -3,6 +3,7 @@ name: Windows Build
 on:
   push:
     branches: [ "main" ]
+    tags: [ "v*" ]
   workflow_dispatch:
 
 jobs:
@@ -20,10 +21,10 @@ jobs:
         with:
           channel: 'stable'
           cache: true
-          
+
       - name: Enable Windows Support
         run: flutter config --enable-windows-desktop
-          
+
       - name: Cache Inno Setup
         id: cache-innosetup
         uses: actions/cache@v6
@@ -37,7 +38,7 @@ jobs:
 
       - name: Install Dependencies
         run: flutter pub get
-        
+
       - name: Generate Icons
         run: dart run flutter_launcher_icons
 
@@ -52,7 +53,7 @@ jobs:
 
       - name: Build Windows
         run: flutter build windows --release
-          
+
       - name: Compile Installer
         run: |
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installers/inno_script.iss
@@ -67,14 +68,73 @@ jobs:
           "$hash  InvoBharat_Setup.exe" |
             Out-File -FilePath installers\InvoBharat_Setup.exe.sha256 -Encoding ascii -NoNewline
 
-      - name: Update Nightly Release
-        uses: softprops/action-gh-release@v2
+      # Resolves where the artifacts go:
+      #   push to main   -> rolling "nightly" prerelease (unchanged behaviour)
+      #   push of v* tag -> release on that tag, prerelease when the tag name
+      #                    carries an -alpha/-beta/-rc/-pre suffix
+      # A plain workflow_dispatch builds only and publishes nothing.
+      - name: Resolve Release Target
         if: github.event_name == 'push'
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+            NAME="InvoBharat ${TAG}"
+            if [[ "${TAG}" =~ -(alpha|beta|rc|pre) ]]; then
+              PRE="true"
+              LATEST="false"
+            else
+              PRE="false"
+              LATEST="true"
+            fi
+
+            # Drop the leading "v" and any pre-release suffix to find the
+            # matching CHANGELOG section, e.g. v1.2.0-rc.1 -> "1.2.0".
+            VER="${TAG#v}"
+            VER="${VER%%-*}"
+
+            # Print from the matching "## [x.y.z]" header up to the next "## ",
+            # dropping leading blank lines.
+            SECTION=$(awk -v ver="[${VER}]" \
+              'index($0, "## " ver)==1 {flag=1; next} /^## /{flag=0} flag' CHANGELOG.md \
+              | sed -e '/./,$!d')
+
+            if [ -z "${SECTION}" ]; then
+              BODY="Official release ${TAG}. See CHANGELOG.md for details."
+            else
+              BODY="${SECTION}
+
+          ---
+
+          SHA256 checksums are attached as .sha256 files alongside each installer."
+            fi
+          else
+            TAG="nightly"
+            NAME="Nightly Build"
+            PRE="true"
+            LATEST="false"
+            BODY="Auto-generated nightly build from commit ${GITHUB_SHA}."
+          fi
+
+          {
+            echo "tag=${TAG}"
+            echo "name=${NAME}"
+            echo "prerelease=${PRE}"
+            echo "make_latest=${LATEST}"
+            echo "body<<NOTES_EOF"
+            echo "${BODY}"
+            echo "NOTES_EOF"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Publish Release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
         with:
-            name: "Nightly Build"
-            tag_name: nightly
+            name: ${{ steps.target.outputs.name }}
+            tag_name: ${{ steps.target.outputs.tag }}
+            prerelease: ${{ steps.target.outputs.prerelease == 'true' }}
+            make_latest: ${{ steps.target.outputs.make_latest == 'true' }}
+            body: ${{ steps.target.outputs.body }}
             files: |
               installers/InvoBharat_Setup.exe
               installers/InvoBharat_Setup.exe.sha256
-            prerelease: true
-            body: "Auto-generated nightly build from commit ${{ github.sha }}."

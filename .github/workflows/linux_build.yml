@@ -3,6 +3,7 @@ name: Linux Build
 on:
   push:
     branches: [ "main" ]
+    tags: [ "v*" ]
   workflow_dispatch:
 
 jobs:
@@ -74,11 +75,11 @@ jobs:
 
           # Copy binaries and resources
           cp -r build/linux/x64/release/bundle/* AppDir/usr/bin/
-          
+
           # Setup icon and desktop file
           # Use pre-sized icon
           cp linux/packaging/invobharat.png AppDir/usr/share/icons/hicolor/256x256/apps/invobharat.png
-          
+
           # Create .desktop file
           cat > AppDir/usr/share/applications/invobharat.desktop <<EOF
           [Desktop Entry]
@@ -100,14 +101,73 @@ jobs:
           # file, which is the bare hash in sha256sum's default output.
           sha256sum InvoBharat-Linux.AppImage > InvoBharat-Linux.AppImage.sha256
 
-      - name: Update Nightly Release
-        uses: softprops/action-gh-release@v2
+      # Resolves where the artifacts go:
+      #   push to main   -> rolling "nightly" prerelease (unchanged behaviour)
+      #   push of v* tag -> release on that tag, prerelease when the tag name
+      #                    carries an -alpha/-beta/-rc/-pre suffix
+      # A plain workflow_dispatch builds only and publishes nothing.
+      - name: Resolve Release Target
         if: github.event_name == 'push'
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+            NAME="InvoBharat ${TAG}"
+            if [[ "${TAG}" =~ -(alpha|beta|rc|pre) ]]; then
+              PRE="true"
+              LATEST="false"
+            else
+              PRE="false"
+              LATEST="true"
+            fi
+
+            # Drop the leading "v" and any pre-release suffix to find the
+            # matching CHANGELOG section, e.g. v1.2.0-rc.1 -> "1.2.0".
+            VER="${TAG#v}"
+            VER="${VER%%-*}"
+
+            # Print from the matching "## [x.y.z]" header up to the next "## ",
+            # dropping leading blank lines.
+            SECTION=$(awk -v ver="[${VER}]" \
+              'index($0, "## " ver)==1 {flag=1; next} /^## /{flag=0} flag' CHANGELOG.md \
+              | sed -e '/./,$!d')
+
+            if [ -z "${SECTION}" ]; then
+              BODY="Official release ${TAG}. See CHANGELOG.md for details."
+            else
+              BODY="${SECTION}
+
+          ---
+
+          SHA256 checksums are attached as .sha256 files alongside each installer."
+            fi
+          else
+            TAG="nightly"
+            NAME="Nightly Build"
+            PRE="true"
+            LATEST="false"
+            BODY="Auto-generated nightly build from commit ${GITHUB_SHA}."
+          fi
+
+          {
+            echo "tag=${TAG}"
+            echo "name=${NAME}"
+            echo "prerelease=${PRE}"
+            echo "make_latest=${LATEST}"
+            echo "body<<NOTES_EOF"
+            echo "${BODY}"
+            echo "NOTES_EOF"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Publish Release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
         with:
-          name: "Nightly Build"
-          tag_name: nightly
+          name: ${{ steps.target.outputs.name }}
+          tag_name: ${{ steps.target.outputs.tag }}
+          prerelease: ${{ steps.target.outputs.prerelease == 'true' }}
+          make_latest: ${{ steps.target.outputs.make_latest == 'true' }}
+          body: ${{ steps.target.outputs.body }}
           files: |
             InvoBharat-Linux.AppImage
             InvoBharat-Linux.AppImage.sha256
-          prerelease: true
-          body: "Auto-generated nightly build from commit ${{ github.sha }}."
