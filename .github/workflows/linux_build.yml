@@ -163,23 +163,33 @@ jobs:
       # Guards against a silent mis-publish: if 'Resolve Release Target' ever
       # loses its id, every output is an empty string and the release would be
       # created with the tag as its name, prerelease=false and no notes. An
-      # empty output here means nothing downstream can be trusted.
+      # empty output here means nothing downstream can be trusted. Outputs are
+      # passed via env because GHA expressions cannot index by a variable key.
       - name: Verify Release Metadata
         if: github.event_name == 'push'
         shell: bash
+        env:
+          REL_TAG: ${{ steps.target.outputs.tag }}
+          REL_NAME: ${{ steps.target.outputs.name }}
+          REL_PRE: ${{ steps.target.outputs.prerelease }}
+          REL_LATEST: ${{ steps.target.outputs.make_latest }}
+          REL_BODY: ${{ steps.target.outputs.body }}
         run: |
-          for key in tag name prerelease make_latest body; do
-            val="${{ steps.target.outputs[key] }}"
-            if [ -z "${val}" ]; then
-              echo "::error::steps.target.outputs.${key} is empty - the resolve step lost its 'id: target'?"
-              exit 1
-            fi
-          done
-          case "${{ steps.target.outputs.prerelease }}" in
+          fail=0
+          [ -n "${REL_TAG}" ]    || { echo "::error::tag is empty"; fail=1; }
+          [ -n "${REL_NAME}" ]   || { echo "::error::name is empty"; fail=1; }
+          [ -n "${REL_LATEST}" ] || { echo "::error::make_latest is empty"; fail=1; }
+          [ -n "${REL_BODY}" ]   || { echo "::error::body is empty"; fail=1; }
+          case "${REL_PRE}" in
             true|false) ;;
-            *) echo "::error::prerelease must be 'true' or 'false', got '${{ steps.target.outputs.prerelease }}'"; exit 1 ;;
+            "") echo "::error::prerelease is empty"; fail=1 ;;
+            *)  echo "::error::prerelease must be 'true' or 'false', got '${REL_PRE}'"; fail=1 ;;
           esac
-          echo "Publishing ${{ steps.target.outputs.name }} (prerelease=${{ steps.target.outputs.prerelease }})"
+          if [ "${fail}" -ne 0 ]; then
+            echo "::error::resolve step lost its 'id: target'?"
+            exit 1
+          fi
+          echo "Publishing ${REL_NAME} (prerelease=${REL_PRE}, make_latest=${REL_LATEST})"
 
       - name: Publish Release
         if: github.event_name == 'push'
