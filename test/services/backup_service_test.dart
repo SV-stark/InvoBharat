@@ -231,7 +231,7 @@ void main() {
           'test_valid_backup_${DateTime.now().microsecondsSinceEpoch}.zip',
         );
         final tempZipFile = File(tempZipPath);
-        await tempZipFile.writeAsBytes(zipBytes!, flush: true);
+        await tempZipFile.writeAsBytes(zipBytes, flush: true);
 
         // Mock picking this zip file
         when(
@@ -272,7 +272,7 @@ void main() {
           'test_incompatible_${DateTime.now().microsecondsSinceEpoch}.zip',
         );
         final tempZipFile = File(tempZipPath);
-        await tempZipFile.writeAsBytes(zipBytes!, flush: true);
+        await tempZipFile.writeAsBytes(zipBytes, flush: true);
 
         // Mock picking this zip file
         when(
@@ -317,7 +317,7 @@ void main() {
           'test_newer_schema_${DateTime.now().microsecondsSinceEpoch}.zip',
         );
         final tempZipFile = File(tempZipPath);
-        await tempZipFile.writeAsBytes(zipBytes!, flush: true);
+        await tempZipFile.writeAsBytes(zipBytes, flush: true);
 
         when(
           () => mockFilePicker.pickFile(
@@ -357,7 +357,7 @@ void main() {
           'test_traversal_${DateTime.now().microsecondsSinceEpoch}.zip',
         );
         final tempZipFile = File(tempZipPath);
-        await tempZipFile.writeAsBytes(zipBytes!, flush: true);
+        await tempZipFile.writeAsBytes(zipBytes, flush: true);
 
         when(
           () => mockFilePicker.pickFile(
@@ -399,7 +399,7 @@ void main() {
           'test_corrupt_${DateTime.now().microsecondsSinceEpoch}.zip',
         );
         final tempZipFile = File(tempZipPath);
-        await tempZipFile.writeAsBytes(zipBytes!, flush: true);
+        await tempZipFile.writeAsBytes(zipBytes, flush: true);
 
         when(
           () => mockFilePicker.pickFile(
