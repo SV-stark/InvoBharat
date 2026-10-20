@@ -3,7 +3,7 @@ import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/utils/gst_utils.dart';
 import 'package:invobharat/utils/einvoice_exporter.dart';
 import 'package:intl/intl.dart';
-import 'package:csv/csv.dart';
+import 'package:csv_plus/csv_plus.dart';
 
 class GstrService {
   Future<String> generateGstr1CsvAsync(final List<Invoice> invoices) async {
@@ -142,6 +142,6 @@ class GstrService {
       }
     }
 
-    return Csv().encode(rows);
+    return const CsvCodec().encode(rows);
   }
 }

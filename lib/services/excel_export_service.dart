@@ -1,6 +1,6 @@
 import 'dart:isolate';
 import 'dart:typed_data';
-import 'package:excel/excel.dart';
+import 'package:excel_plus/excel_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:path/path.dart' as p;

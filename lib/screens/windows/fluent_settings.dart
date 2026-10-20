@@ -1,5 +1,6 @@
 // ignore_for_file: unawaited_futures
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart' as fm;
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
@@ -166,12 +167,12 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
         const Text("Theme Mode", style: TextStyle(fontWeight: FontWeight.bold)),
         const Gap(10),
         ToggleSwitch(
-          checked: themeMode == ThemeMode.dark,
-          content: Text(themeMode == ThemeMode.dark ? "Dark" : "Light"),
+          checked: themeMode == fm.ThemeMode.dark,
+          content: Text(themeMode == fm.ThemeMode.dark ? "Dark" : "Light"),
           onChanged: (final v) {
             ref
                 .read(themeProvider.notifier)
-                .setTheme(v ? ThemeMode.dark : ThemeMode.light);
+                .setTheme(v ? fm.ThemeMode.dark : fm.ThemeMode.light);
           },
         ),
         const Gap(24),
@@ -1415,11 +1416,16 @@ class _FluentSettingsState extends ConsumerState<FluentSettings> {
                   ? FluentTheme.of(context).accentColor
                   : null,
               child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: isActive
-                      ? FluentTheme.of(context).accentColor
-                      : Colors.grey,
-                  radius: 16,
+                leading: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? FluentTheme.of(context).accentColor
+                        : Colors.grey,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
                   child: Text(
                     p.companyName.isNotEmpty
                         ? p.companyName[0].toUpperCase()

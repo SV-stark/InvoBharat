@@ -91,7 +91,7 @@ class _FluentRecurringFormState extends ConsumerState<FluentRecurringForm>
                 )
               : null,
         ),
-        bottomBar: Container(
+        footer: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: FluentTheme.of(context).cardColor,

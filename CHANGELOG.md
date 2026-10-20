@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 _No changes yet._
 
+## [1.2.0] - 2026-10-20
+
+### Changed
+- Dependency refresh: upgraded `fluent_ui` 4.16.1 → 4.17.0, `go_router` 18.0.2 → 18.1.0, `material_ui` 1.6.0 → 1.7.0, `sqlite3` 3.7.0 → 3.7.1, `file_saver` 0.6.0 → 0.7.0, `freezed` 4.0.2 → 4.0.3, `json_serializable` 6.14.1 → 6.15.1, `shared_preferences_android`/`shared_preferences_foundation`, and other transitive updates.
+- Migrated Excel export from `excel` to `excel_plus` (drop-in, performance-focused fork), enabling `archive` 3.6.1 → 4.5.2 and `image` 4.3.0 → 4.12.0.
+- Migrated CSV handling from `csv` to `csv_plus` (the CSV engine used by `excel_plus`); removed the `csv` dependency.
+- `backup_service.dart`: updated zip-directory parsing for `archive` 4.x (`ZipDirectory` instance + `InputMemoryStream`).
+
+### Fixed
+- Fixed compile errors introduced by `fluent_ui` 4.17.0: `ThemeMode` now resolves to `material_ui`'s in Fluent screens (aliased Flutter `ThemeMode`), renamed `ScaffoldPage.scrollable`'s `bottomBar` parameter to `footer`, and replaced the removed `CircleAvatar` with Flutter's `CircleAvatar`.
+- Resolved `file_saver` 0.7.0 API usage (returns `String` instead of `Uri?`).
+
 ## [1.1.0] - 2026-10-13
 
 > **Beta release.** Feature-complete for offline GST invoicing. Test coverage is

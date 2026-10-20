@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:excel/excel.dart';
+import 'package:excel_plus/excel_plus.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/services/excel_export_service.dart';
 

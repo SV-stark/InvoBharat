@@ -1,7 +1,7 @@
 import 'dart:isolate';
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:csv/csv.dart';
+import 'package:csv_plus/csv_plus.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/payment_transaction.dart';
 import 'package:file_saver/file_saver.dart';
@@ -128,7 +128,7 @@ class CsvExportService {
       }
     }
 
-    return Csv().encode(rows);
+    return const CsvCodec().encode(rows);
   }
 
   /// Parses CSV string back into List of Invoice objects
@@ -137,7 +137,7 @@ class CsvExportService {
   }
 
   static List<Invoice> _parseInvoiceCsvSync(final String csvContent) {
-    final rows = Csv().decode(csvContent);
+    final rows = const CsvCodec().decode(csvContent);
     if (rows.isEmpty) return [];
 
     final headerRow = rows.first

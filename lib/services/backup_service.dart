@@ -328,7 +328,8 @@ class BackupService {
       const int maxFileCount = 10000;
 
       try {
-        final zipDir = ZipDirectory.read(InputStream(bytes));
+        final zipDir = ZipDirectory();
+        zipDir.read(InputMemoryStream(bytes));
         if (zipDir.fileHeaders.length > maxFileCount) {
           throw Exception(
             "Invalid backup: File count (${zipDir.fileHeaders.length}) exceeds safe limit ($maxFileCount).",
@@ -337,7 +338,7 @@ class BackupService {
 
         int totalExpectedBytes = 0;
         for (final h in zipDir.fileHeaders) {
-          totalExpectedBytes += (h.uncompressedSize ?? 0);
+          totalExpectedBytes += h.uncompressedSize;
           if (totalExpectedBytes > maxTotalUncompressedBytes) {
             throw Exception(
               "Invalid backup: Total uncompressed size exceeds 500 MB limit (potential zip-bomb).",

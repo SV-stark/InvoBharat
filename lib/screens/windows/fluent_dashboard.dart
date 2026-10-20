@@ -1,5 +1,6 @@
 // ignore_for_file: unawaited_futures
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart' as fm;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
@@ -78,9 +79,9 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 ),
                 onPressed: () {
                   final current = ref.read(themeProvider);
-                  final next = current == ThemeMode.dark
-                      ? ThemeMode.light
-                      : ThemeMode.dark;
+                  final next = current == fm.ThemeMode.dark
+                      ? fm.ThemeMode.light
+                      : fm.ThemeMode.dark;
                   ref.read(themeProvider.notifier).setTheme(next);
                 },
               ),

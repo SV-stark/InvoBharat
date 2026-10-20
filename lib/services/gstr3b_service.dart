@@ -1,7 +1,7 @@
 import 'dart:isolate';
 import 'package:invobharat/models/invoice.dart';
 import 'package:intl/intl.dart';
-import 'package:csv/csv.dart';
+import 'package:csv_plus/csv_plus.dart';
 import 'package:indian_formatters/indian_formatters.dart';
 
 class Gstr3bService {
@@ -122,6 +122,6 @@ class Gstr3bService {
       ]);
     }
 
-    return Csv().encode(rows);
+    return const CsvCodec().encode(rows);
   }
 }

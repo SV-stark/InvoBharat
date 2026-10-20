@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/data/invoice_repository.dart';
-import 'package:csv/csv.dart';
+import 'package:csv_plus/csv_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart';
@@ -39,7 +39,7 @@ class InvoiceImportService {
     final InvoiceRepository repository,
   ) async {
     try {
-      final rows = Csv().decode(content);
+      final rows = const CsvCodec().decode(content);
 
       if (rows.length < 2) {
         return ImportResult(0, 0, "CSV file is empty or missing headers");
@@ -149,7 +149,7 @@ class InvoiceImportService {
         ],
       ];
 
-      final csvString = Csv().encode([headers, ...sampleData]);
+      final csvString = const CsvCodec().encode([headers, ...sampleData]);
 
       final result = await FilePicker.saveFile(
         dialogTitle: 'Save Import Template',
