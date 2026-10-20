@@ -93,9 +93,8 @@ void main() {
           return db;
         }),
       ],
-      child: fluent.FluentApp(
-        theme: fluent.FluentThemeData(),
-        home: const Material(child: DashboardScreen()),
+      child: MaterialApp(
+        home: const DashboardScreen(),
       ),
     );
   }
