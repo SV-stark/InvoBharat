@@ -61,8 +61,6 @@ class DefaultFilePickerWrapper implements FilePickerWrapper {
     final uri = await FilePicker.saveFile(
       dialogTitle: dialogTitle,
       fileName: fileName ?? '',
-      allowedExtensions: allowedExtensions,
-      type: type,
       bytes: bytes,
     );
     return uri?.toFilePath();

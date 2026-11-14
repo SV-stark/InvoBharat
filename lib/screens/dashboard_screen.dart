@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:invobharat/widgets/profile_switcher_sheet.dart';
 import 'package:invobharat/widgets/error_view.dart';
 import 'package:invobharat/widgets/empty_state.dart';
@@ -568,8 +568,6 @@ class _DashboardQuickActions extends ConsumerWidget {
       final saveUri = await FilePicker.saveFile(
         dialogTitle: 'Save GSTR-1 CSV',
         fileName: 'GSTR1_${selectedFilter.replaceAll(" ", "_")}.csv',
-        allowedExtensions: ['csv'],
-        type: FileType.custom,
         bytes: Uint8List.fromList(utf8.encode(csvData)),
       );
       String? outputFile = saveUri?.toFilePath();
@@ -691,8 +689,6 @@ class _DashboardQuickActions extends ConsumerWidget {
       final saveUri = await FilePicker.saveFile(
         dialogTitle: 'Save GSTR-3B CSV',
         fileName: 'GSTR3B_${selectedFilter.replaceAll(" ", "_")}.csv',
-        allowedExtensions: ['csv'],
-        type: FileType.custom,
         bytes: Uint8List.fromList(utf8.encode(csvData)),
       );
       String? outputFile = saveUri?.toFilePath();

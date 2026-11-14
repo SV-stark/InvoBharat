@@ -23,7 +23,7 @@ import 'package:invobharat/screens/windows/fluent_recurring_form.dart';
 import 'package:invobharat/screens/windows/fluent_estimate_form.dart';
 import 'package:invobharat/screens/client_ledger_screen.dart';
 import 'package:invobharat/screens/windows/fluent_settings.dart';
-import 'package:flutter/material.dart' hide Colors, Builder;
+import 'package:material_ui/material_ui.dart' hide Colors, Builder;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:invobharat/services/logger_service.dart';

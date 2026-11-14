@@ -1,6 +1,6 @@
 // ignore_for_file: unawaited_futures
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/material.dart' as fm;
+import 'package:material_ui/material_ui.dart' as fm;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
@@ -796,8 +796,6 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
       final saveUri = await FilePicker.saveFile(
         dialogTitle: 'Save GSTR-1 CSV',
         fileName: 'GSTR1_${_selectedPeriod.replaceAll(" ", "_")}.csv',
-        allowedExtensions: ['csv'],
-        type: FileType.custom,
         bytes: Uint8List.fromList(utf8.encode(csvData)),
       );
       String? outputFile = saveUri?.toFilePath();

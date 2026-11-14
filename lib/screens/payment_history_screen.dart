@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
@@ -76,8 +76,6 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
         dialogTitle: 'Save Payment History CSV',
         fileName:
             'Payment_History_${DateFormat('yyyyMMdd').format(DateTime.now())}.csv',
-        allowedExtensions: ['csv'],
-        type: FileType.custom,
         bytes: Uint8List.fromList(utf8.encode(csvData)),
       );
       String? outputFile = saveUri?.toFilePath();

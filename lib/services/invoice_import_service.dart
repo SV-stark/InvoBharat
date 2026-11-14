@@ -154,8 +154,6 @@ class InvoiceImportService {
       final result = await FilePicker.saveFile(
         dialogTitle: 'Save Import Template',
         fileName: 'invobharat_gst_import_template.csv',
-        allowedExtensions: ['csv'],
-        type: FileType.custom,
         bytes: Uint8List.fromList(utf8.encode(csvString)),
       );
 
