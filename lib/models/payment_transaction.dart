@@ -5,6 +5,8 @@ part 'payment_transaction.g.dart';
 
 @freezed
 abstract class PaymentTransaction with _$PaymentTransaction {
+  const PaymentTransaction._();
+
   const factory PaymentTransaction({
     required String id,
     required String invoiceId,
@@ -13,8 +15,11 @@ abstract class PaymentTransaction with _$PaymentTransaction {
     required String
     paymentMode, // 'Cash', 'UPI', 'Bank Transfer', 'Cheque', 'Other'
     String? notes,
+    @Default(0.0) double tdsDeducted,
   }) = _PaymentTransaction;
 
   factory PaymentTransaction.fromJson(final Map<String, dynamic> json) =>
       _$PaymentTransactionFromJson(json);
+
+  double get totalSettled => amount + tdsDeducted;
 }

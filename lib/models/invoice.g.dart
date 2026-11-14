@@ -95,6 +95,7 @@ const _$InvoiceTypeEnumMap = {
   InvoiceType.deliveryChallan: 'deliveryChallan',
   InvoiceType.creditNote: 'creditNote',
   InvoiceType.debitNote: 'debitNote',
+  InvoiceType.billOfSupply: 'billOfSupply',
 };
 
 _Supplier _$SupplierFromJson(Map<String, dynamic> json) => _Supplier(

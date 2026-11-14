@@ -356,4 +356,10 @@ class InvoiceNotifier extends Notifier<Invoice> {
     newItems[index] = updater(newItems[index]);
     state = state.copyWith(items: newItems);
   }
+
+  void removePayment(final String paymentId) {
+    state = state.copyWith(
+      payments: state.payments.where((final p) => p.id != paymentId).toList(),
+    );
+  }
 }

@@ -39,7 +39,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
 
   @override
   MigrationStrategy get migration {
@@ -391,6 +391,17 @@ class AppDatabase extends _$AppDatabase {
           }
 
           await _createIndexes(m.database);
+        }
+        if (from < 19) {
+          final pragmaResult = await m.database
+              .customSelect('PRAGMA table_info(`payments`)')
+              .get();
+          final existingCols = pragmaResult
+              .map((final r) => r.read<String>('name'))
+              .toSet();
+          if (!existingCols.contains('tds_deducted')) {
+            await m.addColumn(payments, payments.tdsDeducted);
+          }
         }
       },
       beforeOpen: (final details) async {

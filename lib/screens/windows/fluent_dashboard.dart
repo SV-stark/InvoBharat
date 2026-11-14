@@ -37,6 +37,7 @@ import 'package:invobharat/providers/recurring_provider.dart';
 import 'package:invobharat/widgets/dialogs/payment_dialog.dart';
 import 'package:invobharat/widgets/revenue_chart.dart';
 import 'package:invobharat/widgets/aging_chart.dart';
+import 'package:invobharat/screens/windows/dashboard/dashboard_stat_cards.dart';
 
 class FluentDashboard extends ConsumerStatefulWidget {
   const FluentDashboard({super.key});
@@ -362,22 +363,19 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 Row(
                   children: [
                     Expanded(
-                      child: GestureDetector(
+                      child: DashboardHeroStatCard(
+                        title: "Total Revenue",
+                        value: totalRevenue.toIndianFormat(
+                          includeSymbol: true,
+                          symbol: profile.currency,
+                        ),
+                        icon: FluentIcons.money,
+                        color: theme.accentColor,
                         onTap: () {
                           setState(() {
                             _selectedType = "All";
                           });
                         },
-                        child: _buildHeroStatCard(
-                          context,
-                          "Total Revenue",
-                          totalRevenue.toIndianFormat(
-                            includeSymbol: true,
-                            symbol: profile.currency,
-                          ),
-                          FluentIcons.money,
-                          theme.accentColor,
-                        ),
                       ),
                     ),
                   ],
@@ -387,35 +385,31 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 Row(
                   children: [
                     Expanded(
-                      child: GestureDetector(
+                      child: DashboardStatCard(
+                        title: "Received",
+                        value: paymentsReceived.toIndianFormat(
+                          includeSymbol: true,
+                          symbol: profile.currency,
+                        ),
+                        icon: FluentIcons.check_mark,
+                        color: Colors.green,
                         onTap: () {
                           setState(() {
                             _selectedType = "Fully Paid";
                           });
                         },
-                        child: _buildStatCard(
-                          context,
-                          "Received",
-                          paymentsReceived.toIndianFormat(
-                            includeSymbol: true,
-                            symbol: profile.currency,
-                          ),
-                          FluentIcons.check_mark,
-                          Colors.green,
-                        ),
                       ),
                     ),
                     const Gap(16),
                     Expanded(
-                      child: _buildStatCard(
-                        context,
-                        "Due",
-                        paymentsDue.toIndianFormat(
+                      child: DashboardStatCard(
+                        title: "Due",
+                        value: paymentsDue.toIndianFormat(
                           includeSymbol: true,
                           symbol: profile.currency,
                         ),
-                        FluentIcons.warning,
-                        Colors.orange,
+                        icon: FluentIcons.warning,
+                        color: Colors.orange,
                       ),
                     ),
                   ],
@@ -425,34 +419,31 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 Row(
                   children: [
                     Expanded(
-                      child: GestureDetector(
-                        onTap: () => _showGstBreakdown(
+                      child: DashboardStatCard(
+                        title: "GST Liability",
+                        value: (totalCGST + totalSGST + totalIGST)
+                            .toIndianFormat(
+                              includeSymbol: true,
+                              symbol: profile.currency,
+                            ),
+                        icon: FluentIcons.bank,
+                        color: Colors.purple,
+                        onTap: () => showGstBreakdownDialog(
                           context,
-                          totalCGST,
-                          totalSGST,
-                          totalIGST,
-                          profile.currency,
-                        ),
-                        child: _buildStatCard(
-                          context,
-                          "GST Liability",
-                          (totalCGST + totalSGST + totalIGST).toIndianFormat(
-                            includeSymbol: true,
-                            symbol: profile.currency,
-                          ),
-                          FluentIcons.bank,
-                          Colors.purple,
+                          cgst: totalCGST,
+                          sgst: totalSGST,
+                          igst: totalIGST,
+                          currencySymbol: profile.currency,
                         ),
                       ),
                     ),
                     const Gap(16),
                     Expanded(
-                      child: _buildStatCard(
-                        context,
-                        "Total Invoices",
-                        "${filteredInvoices.length}",
-                        FluentIcons.page_list,
-                        Colors.teal,
+                      child: DashboardStatCard(
+                        title: "Total Invoices",
+                        value: "${filteredInvoices.length}",
+                        icon: FluentIcons.page_list,
+                        color: Colors.teal,
                       ),
                     ),
                   ],
@@ -622,7 +613,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                                           fontSize: 14,
                                         ),
                                       ),
-                                      _buildStatusBadge(inv),
+                                      InvoiceStatusBadge(invoice: inv),
                                     ],
                                   ),
                                   const Gap(12),
@@ -657,114 +648,6 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
           },
         ),
       ],
-    );
-  }
-
-  Widget _buildStatusBadge(final dynamic invoice) {
-    final lifecycleStatus = invoice.status; // Draft, Sent, Viewed, Paid
-    final paymentStatus =
-        invoice.paymentStatus; // Unpaid, Partial, Overdue, Paid
-
-    String text = lifecycleStatus;
-    Color color = Colors.grey;
-
-    if (lifecycleStatus == 'Draft') {
-      text = "Draft";
-      color = Colors.grey;
-    } else if (lifecycleStatus == 'Sent' || lifecycleStatus == 'Viewed') {
-      text = lifecycleStatus;
-      color = Colors.blue;
-      if (paymentStatus == 'Overdue') {
-        text = "$lifecycleStatus (Overdue)";
-        color = Colors.orange;
-      }
-    }
-
-    // Payment status overrides lifecycle for Paid/Partial
-    if (paymentStatus == 'Paid') {
-      text = "Paid";
-      color = Colors.green;
-    } else if (paymentStatus == 'Partial') {
-      text = "Partial Paid";
-      color = Colors.teal;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
-      ),
-      child: Text(text, style: TextStyle(fontSize: 10, color: color)),
-    );
-  }
-
-  Widget _buildHeroStatCard(
-    final BuildContext context,
-    final String title,
-    final String value,
-    final IconData icon,
-    final Color color,
-  ) {
-    return Card(
-      padding: const EdgeInsets.all(16),
-      backgroundColor: color,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(icon, size: 24, color: Colors.white),
-              const Icon(FluentIcons.chart, color: Colors.white),
-            ],
-          ),
-          const Gap(16),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Gap(4),
-          Text(
-            title,
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.8)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-    final BuildContext context,
-    final String title,
-    final String value,
-    final IconData icon,
-    final Color color,
-  ) {
-    return Card(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 24, color: color),
-          const Gap(12),
-          Text(
-            value,
-            style: TextStyle(
-              color: FluentTheme.of(context).typography.bodyLarge?.color,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Gap(4),
-          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-        ],
-      ),
     );
   }
 
@@ -828,68 +711,6 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
         ),
       );
     }
-  }
-
-  void _showGstBreakdown(
-    final BuildContext context,
-    final double cgst,
-    final double sgst,
-    final double igst,
-    final String currencySymbol,
-  ) {
-    showDialog(
-      context: context,
-      builder: (final context) => ContentDialog(
-        title: const Text("GST Breakdown"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildGstRow("CGST", cgst, currencySymbol),
-            const Gap(8),
-            _buildGstRow("SGST", sgst, currencySymbol),
-            const Gap(8),
-            _buildGstRow("IGST", igst, currencySymbol),
-            const Gap(16),
-            const Divider(),
-            const Gap(16),
-            _buildGstRow(
-              "Total",
-              cgst + sgst + igst,
-              currencySymbol,
-              isBold: true,
-            ),
-          ],
-        ),
-        actions: [
-          Button(
-            child: const Text("Close"),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGstRow(
-    final String label,
-    final double amount,
-    final String symbol, {
-    final bool isBold = false,
-  }) {
-    final style = isBold
-        ? const TextStyle(fontWeight: FontWeight.bold)
-        : const TextStyle();
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: style),
-        Text(
-          amount.toIndianFormat(includeSymbol: true, symbol: symbol),
-          style: style,
-        ),
-      ],
-    );
   }
 
   void _deleteInvoice(BuildContext _, final Invoice invoice) async {
@@ -995,36 +816,46 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
       builder: (final dialogCtx) => PaymentDialog(
         balanceDue: invoice.balanceDue,
         currencySymbol: ref.read(businessProfileProvider).currency,
-        onConfirm: (final amount, final date, final mode, final notes) async {
-          final payment = PaymentTransaction(
-            id: const Uuid().v4(),
-            invoiceId: invoice.id!,
-            date: date,
-            amount: amount,
-            paymentMode: mode,
-            notes: notes,
-          );
+        onConfirm:
+            (
+              final amount,
+              final date,
+              final mode,
+              final notes,
+              final tdsDeducted,
+            ) async {
+              final payment = PaymentTransaction(
+                id: const Uuid().v4(),
+                invoiceId: invoice.id!,
+                date: date,
+                amount: amount,
+                tdsDeducted: tdsDeducted,
+                paymentMode: mode,
+                notes: notes,
+              );
 
-          final updated = invoice.copyWith(
-            payments: [...invoice.payments, payment],
-          );
-          await ref.read(invoiceRepositoryProvider).saveInvoice(updated);
-          ref.invalidate(invoiceListProvider);
-          if (!ctx.mounted) return;
-          displayInfoBar(
-            ctx,
-            builder: (final context, final close) {
-              return InfoBar(
-                title: const Text("Success"),
-                content: Text(
-                  "Recorded payment of $amount for ${invoice.invoiceNo}",
-                ),
-                severity: InfoBarSeverity.success,
-                onClose: close,
+              final updated = invoice.copyWith(
+                payments: [...invoice.payments, payment],
+              );
+              await ref.read(invoiceRepositoryProvider).saveInvoice(updated);
+              ref.invalidate(invoiceListProvider);
+              if (!ctx.mounted) return;
+              displayInfoBar(
+                ctx,
+                builder: (final context, final close) {
+                  return InfoBar(
+                    title: const Text("Success"),
+                    content: Text(
+                      tdsDeducted > 0
+                          ? "Recorded payment of $amount (+ TDS $tdsDeducted) for ${invoice.invoiceNo}"
+                          : "Recorded payment of $amount for ${invoice.invoiceNo}",
+                    ),
+                    severity: InfoBarSeverity.success,
+                    onClose: close,
+                  );
+                },
               );
             },
-          );
-        },
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/data/invoice_repository.dart';
+import 'package:invobharat/utils/gst_utils.dart';
 import 'package:uuid/uuid.dart';
 
 class Gstr1JsonImportService {
@@ -306,47 +307,10 @@ class Gstr1JsonImportService {
   }
 
   static String _mapStateCodeToName(final String code) {
-    final Map<String, String> states = {
-      '01': 'Jammu & Kashmir',
-      '02': 'Himachal Pradesh',
-      '03': 'Punjab',
-      '04': 'Chandigarh',
-      '05': 'Uttarakhand',
-      '06': 'Haryana',
-      '07': 'Delhi',
-      '08': 'Rajasthan',
-      '09': 'Uttar Pradesh',
-      '10': 'Bihar',
-      '11': 'Sikkim',
-      '12': 'Arunachal Pradesh',
-      '13': 'Nagaland',
-      '14': 'Manipur',
-      '15': 'Mizoram',
-      '16': 'Tripura',
-      '17': 'Meghalaya',
-      '18': 'Assam',
-      '19': 'West Bengal',
-      '20': 'Jharkhand',
-      '21': 'Odisha',
-      '22': 'Chhattisgarh',
-      '23': 'Madhya Pradesh',
-      '24': 'Gujarat',
-      '25': 'Daman & Diu',
-      '26': 'Dadra & Nagar Haveli',
-      '27': 'Maharashtra',
-      '29': 'Karnataka',
-      '30': 'Goa',
-      '31': 'Lakshadweep',
-      '32': 'Kerala',
-      '33': 'Tamil Nadu',
-      '34': 'Puducherry',
-      '35': 'Andaman & Nicobar Islands',
-      '36': 'Telangana',
-      '37': 'Andhra Pradesh',
-      '38': 'Ladakh',
-      '97': 'Other Territory',
-    };
-    return states[code] ?? code;
+    final normalized = code.trim().padLeft(2, '0');
+    return GstUtils.stateCodeMap[normalized] ??
+        GstUtils.getStateName(normalized) ??
+        code;
   }
 }
 

@@ -343,6 +343,12 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
                   leading: const Icon(FluentIcons.cloud_download, size: 14),
                   items: [
                     MenuFlyoutItem(
+                      text: const Text('Export GSTR-1 Portal JSON'),
+                      leading: const Icon(FluentIcons.financial),
+                      onPressed: () =>
+                          _exportGstr1PortalJson(context, filteredInvoices),
+                    ),
+                    MenuFlyoutItem(
                       text: const Text('Export E-Invoice JSON (Batch)'),
                       leading: const Icon(FluentIcons.download),
                       onPressed: () =>
@@ -384,10 +390,10 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
           'date': dateStr,
           'gstin': inv.receiver.gstin.isEmpty ? 'B2C' : inv.receiver.gstin,
           'name': inv.receiver.name,
-          'taxable': item.netAmount,
-          'cgst': item.calculateCgst(inv.isInterState),
-          'sgst': item.calculateSgst(inv.isInterState),
-          'igst': item.calculateIgst(inv.isInterState),
+          'taxable': inv.itemTaxableValue(item),
+          'cgst': inv.itemCgstAmount(item),
+          'sgst': inv.itemSgstAmount(item),
+          'igst': inv.itemIgstAmount(item),
           'type': isB2B ? 'B2B' : 'B2C',
         });
       }
@@ -495,12 +501,13 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
         }
 
         final entry = grouped[compositeKey]!;
-        entry['taxable'] = (entry['taxable'] as double) + item.netAmount;
+        entry['taxable'] =
+            (entry['taxable'] as double) + inv.itemTaxableValue(item);
         if (isInter) {
-          entry['igst'] = (entry['igst'] as double) + item.igstAmount;
+          entry['igst'] = (entry['igst'] as double) + inv.itemIgstAmount(item);
         } else {
-          entry['cgst'] = (entry['cgst'] as double) + item.cgstAmount;
-          entry['sgst'] = (entry['sgst'] as double) + item.sgstAmount;
+          entry['cgst'] = (entry['cgst'] as double) + inv.itemCgstAmount(item);
+          entry['sgst'] = (entry['sgst'] as double) + inv.itemSgstAmount(item);
         }
       }
     }
@@ -685,6 +692,66 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
             context,
             builder: (final context, final close) => InfoBar(
               title: const Text('Excel Export Failed'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportGstr1PortalJson(
+    final BuildContext context,
+    final List<Invoice> invoices,
+  ) async {
+    try {
+      if (invoices.isEmpty) {
+        if (context.mounted) {
+          unawaited(
+            displayInfoBar(
+              context,
+              builder: (final context, final close) => InfoBar(
+                title: const Text('Export Notice'),
+                content: const Text(
+                  'No invoices available in selected period to export.',
+                ),
+                severity: InfoBarSeverity.warning,
+                onClose: close,
+              ),
+            ),
+          );
+        }
+        return;
+      }
+      final profile = ref.read(businessProfileProvider);
+      final savedPath = await GstrService.exportGstr1PortalJson(
+        invoices,
+        gstin: profile.gstin,
+      );
+      if (savedPath != null && context.mounted) {
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (final context, final close) => InfoBar(
+              title: const Text('GSTR-1 Portal JSON Exported'),
+              content: Text(
+                'GSTN Offline Tool JSON saved successfully to $savedPath',
+              ),
+              severity: InfoBarSeverity.success,
+              onClose: close,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (final context, final close) => InfoBar(
+              title: const Text('GSTR-1 JSON Export Failed'),
               content: Text(e.toString()),
               severity: InfoBarSeverity.error,
               onClose: close,

@@ -298,24 +298,25 @@ class ModernTemplate extends BasePdfTemplate {
                       invoice.totalTaxableValue,
                       profile.currency,
                     ),
-                    if (invoice.isInterState)
-                      buildSummaryRow(
-                        "IGST",
-                        invoice.totalIGST,
-                        profile.currency,
-                      )
-                    else ...[
-                      buildSummaryRow(
-                        "CGST",
-                        invoice.totalCGST,
-                        profile.currency,
-                      ),
-                      buildSummaryRow(
-                        "SGST",
-                        invoice.totalSGST,
-                        profile.currency,
-                      ),
-                    ],
+                    if (invoice.type != InvoiceType.billOfSupply)
+                      if (invoice.isInterState)
+                        buildSummaryRow(
+                          "IGST",
+                          invoice.totalIGST,
+                          profile.currency,
+                        )
+                      else ...[
+                        buildSummaryRow(
+                          "CGST",
+                          invoice.totalCGST,
+                          profile.currency,
+                        ),
+                        buildSummaryRow(
+                          "SGST",
+                          invoice.totalSGST,
+                          profile.currency,
+                        ),
+                      ],
                     pw.Divider(color: themeColor),
                     buildSummaryRow(
                       "Total",
@@ -323,6 +324,7 @@ class ModernTemplate extends BasePdfTemplate {
                       profile.currency,
                       isBold: true,
                     ),
+                    ...buildPaymentSettlementRows(invoice, profile.currency),
                   ],
                 ),
               ),

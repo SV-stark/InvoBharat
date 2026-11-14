@@ -59,6 +59,9 @@ BUGS_AND_FEATURES.md
 # User Data (Sensitive)
 profiles/
 scratch/
+recurring/
+tmp/
+wiki_repo/
 db.sqlite
 
 # Generated code

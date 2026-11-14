@@ -47,6 +47,7 @@ class InvoiceHeaderSection extends ConsumerWidget {
   final TextEditingController ewayBillCtrl;
   final TextEditingController vehicleNoCtrl;
   final TextEditingController irnNoCtrl;
+  final TextEditingController? originalInvoiceNoCtrl;
 
   const InvoiceHeaderSection({
     super.key,
@@ -57,7 +58,23 @@ class InvoiceHeaderSection extends ConsumerWidget {
     required this.ewayBillCtrl,
     required this.vehicleNoCtrl,
     required this.irnNoCtrl,
+    this.originalInvoiceNoCtrl,
   });
+
+  static String _labelForType(final InvoiceType type) {
+    switch (type) {
+      case InvoiceType.deliveryChallan:
+        return 'Delivery Challan';
+      case InvoiceType.creditNote:
+        return 'Credit Note';
+      case InvoiceType.debitNote:
+        return 'Debit Note';
+      case InvoiceType.billOfSupply:
+        return 'Bill of Supply';
+      case InvoiceType.invoice:
+        return 'Invoice';
+    }
+  }
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -74,20 +91,86 @@ class InvoiceHeaderSection extends ConsumerWidget {
       title: "Invoice Details",
       icon: Icons.description_outlined,
       children: [
-        _buildDropdownField(
-          label: "Invoice Style",
-          value: invoice.style,
-          items: [
-            'Modern',
-            'Professional',
-            'Minimal',
-            'Classic',
-            'Corporate',
-            'Creative',
+        Row(
+          children: [
+            Expanded(
+              child: DropdownButtonFormField<InvoiceType>(
+                key: ValueKey(invoice.type),
+                initialValue: invoice.type,
+                items: InvoiceType.values
+                    .map(
+                      (final e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(_labelForType(e)),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (final val) {
+                  if (val != null) {
+                    ref.read(invoiceProvider.notifier).updateInvoiceType(val);
+                  }
+                },
+                decoration: const InputDecoration(
+                  labelText: "Document Type",
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+            ),
+            const Gap(16),
+            Expanded(
+              child: _buildDropdownField(
+                label: "Invoice Style",
+                value: invoice.style,
+                items: [
+                  'Modern',
+                  'Professional',
+                  'Minimal',
+                  'Classic',
+                  'Corporate',
+                  'Creative',
+                ],
+                onChanged: (final val) =>
+                    ref.read(invoiceProvider.notifier).updateStyle(val!),
+              ),
+            ),
           ],
-          onChanged: (final val) =>
-              ref.read(invoiceProvider.notifier).updateStyle(val!),
         ),
+        if (invoice.type == InvoiceType.creditNote ||
+            invoice.type == InvoiceType.debitNote) ...[
+          const Gap(16),
+          Row(
+            children: [
+              Expanded(
+                child: AppTextInput(
+                  controller:
+                      originalInvoiceNoCtrl ??
+                      TextEditingController(
+                        text: invoice.originalInvoiceNumber ?? '',
+                      ),
+                  label: "Original Invoice No.",
+                  onChanged: (final val) => ref
+                      .read(invoiceProvider.notifier)
+                      .updateOriginalInvoiceNumber(val),
+                ),
+              ),
+              const Gap(16),
+              Expanded(
+                child: _buildDateField(
+                  context: context,
+                  label: "Original Invoice Date",
+                  selectedDate: invoice.originalInvoiceDate,
+                  onDateSelected: (final val) => ref
+                      .read(invoiceProvider.notifier)
+                      .updateOriginalInvoiceDate(val),
+                ),
+              ),
+            ],
+          ),
+        ],
         const Gap(16),
         Row(
           children: [

@@ -4,11 +4,12 @@ import 'package:intl/intl.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
+import 'package:invobharat/utils/gst_utils.dart';
 
 class EInvoiceExporter {
   /// Resolves the 2-digit Indian GST state code from state name or GSTIN
   static String getStateCode(final String stateName, final String gstin) {
-    // If GSTIN starts with 2 digits, those represent the state code
+    // 1. Try GSTIN prefix first
     if (gstin.trim().length >= 2) {
       final prefix = gstin.trim().substring(0, 2);
       if (RegExp(r'^\d{2}$').hasMatch(prefix)) {
@@ -16,69 +17,10 @@ class EInvoiceExporter {
       }
     }
 
-    final normalized = stateName.toLowerCase().replaceAll(
-      RegExp(r'[^a-z0-9]'),
-      '',
-    );
-    const stateCodes = {
-      'jammu': '01',
-      'kashmir': '01',
-      'jammuandkashmir': '01',
-      'himachal': '02',
-      'himachalpradesh': '02',
-      'punjab': '03',
-      'chandigarh': '04',
-      'uttarakhand': '05',
-      'haryana': '06',
-      'delhi': '07',
-      'nctofdelhi': '07',
-      'rajasthan': '08',
-      'uttarpradesh': '09',
-      'up': '09',
-      'bihar': '10',
-      'sikkim': '11',
-      'arunachal': '12',
-      'arunachalpradesh': '12',
-      'nagaland': '13',
-      'manipur': '14',
-      'mizoram': '15',
-      'tripura': '16',
-      'meghalaya': '17',
-      'assam': '18',
-      'westbengal': '19',
-      'bengal': '19',
-      'jharkhand': '20',
-      'odisha': '21',
-      'orissa': '21',
-      'chhattisgarh': '22',
-      'madhyapradesh': '23',
-      'mp': '23',
-      'gujarat': '24',
-      'daman': '26',
-      'diu': '26',
-      'dadra': '26',
-      'nagarhaveli': '26',
-      'dadraandnagarhaveli': '26',
-      'maharashtra': '27',
-      'karnataka': '29',
-      'goa': '30',
-      'lakshadweep': '31',
-      'kerala': '32',
-      'tamilnadu': '33',
-      'tamil': '33',
-      'puducherry': '34',
-      'pondicherry': '34',
-      'andaman': '35',
-      'nicobar': '35',
-      'andamanandnicobar': '35',
-      'telangana': '36',
-      'andhrapradesh': '37',
-      'andhra': '37',
-      'ladakh': '38',
-    };
+    // 2. Delegate to unified GstUtils resolver
+    final resolved = GstUtils.getStateCodeFromInput(stateName);
+    if (resolved != null) return resolved;
 
-    final code = stateCodes[normalized];
-    if (code != null) return code;
     throw FormatException(
       'Unable to determine valid GST State Code for state "$stateName" and GSTIN "$gstin".',
     );
@@ -214,14 +156,14 @@ class EInvoiceExporter {
       final item = invoice.items[i];
       final qty = item.quantity;
       final price = item.amount;
-      final discount = item.discount;
       final totAmt = price * qty;
-      final assAmt = totAmt - discount;
+      final assAmt = invoice.itemTaxableValue(item);
+      final effectiveDiscount = (totAmt - assAmt).clamp(0.0, totAmt);
       final rate = item.gstRate;
 
-      final cgst = item.calculateCgst(invoice.isInterState);
-      final sgst = item.calculateSgst(invoice.isInterState);
-      final igst = item.calculateIgst(invoice.isInterState);
+      final cgst = invoice.itemCgstAmount(item);
+      final sgst = invoice.itemSgstAmount(item);
+      final igst = invoice.itemIgstAmount(item);
 
       itemsList.add({
         "SlNo": (i + 1).toString(),
@@ -232,14 +174,16 @@ class EInvoiceExporter {
         "Unit": getGstUnitCode(item.unit),
         "UnitPrice": double.parse(price.toStringAsFixed(2)),
         "TotAmt": double.parse(totAmt.toStringAsFixed(2)),
-        "Discount": double.parse(discount.toStringAsFixed(2)),
+        "Discount": double.parse(effectiveDiscount.toStringAsFixed(2)),
         "PreTaxVal": double.parse(assAmt.toStringAsFixed(2)),
         "AssAmt": double.parse(assAmt.toStringAsFixed(2)),
         "GstRt": double.parse(rate.toStringAsFixed(2)),
         "CgstAmt": double.parse(cgst.toStringAsFixed(2)),
         "SgstAmt": double.parse(sgst.toStringAsFixed(2)),
         "IgstAmt": double.parse(igst.toStringAsFixed(2)),
-        "TotItemVal": double.parse(item.totalAmount.toStringAsFixed(2)),
+        "TotItemVal": double.parse(
+          invoice.itemTotalAmount(item).toStringAsFixed(2),
+        ),
       });
     }
 
@@ -248,9 +192,10 @@ class EInvoiceExporter {
     final sgstVal = double.parse(invoice.totalSGST.toStringAsFixed(2));
     final igstVal = double.parse(invoice.totalIGST.toStringAsFixed(2));
     final discountVal = double.parse(invoice.discountAmount.toStringAsFixed(2));
-    // Strict NIC formula: TotInvVal = AssVal + CgstVal + SgstVal + IgstVal - Discount
+    // AssVal and tax amounts already have invoice.discountAmount proportionally deducted
+    // per CGST Act Sec 15(3), so TotInvVal is AssVal + CgstVal + SgstVal + IgstVal.
     final totInvVal = double.parse(
-      (assVal + cgstVal + sgstVal + igstVal - discountVal).toStringAsFixed(2),
+      (assVal + cgstVal + sgstVal + igstVal).toStringAsFixed(2),
     );
 
     final payload = {
@@ -387,10 +332,7 @@ class EInvoiceExporter {
     for (int i = 0; i < invoice.items.length; i++) {
       final item = invoice.items[i];
       final qty = item.quantity;
-      final price = item.amount;
-      final discount = item.discount;
-      final totAmt = price * qty;
-      final assAmt = totAmt - discount;
+      final assAmt = invoice.itemTaxableValue(item);
       final rate = item.gstRate;
 
       itemsList.add({

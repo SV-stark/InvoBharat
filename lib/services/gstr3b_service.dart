@@ -91,17 +91,20 @@ class Gstr3bService {
         }
 
         final entry = grouped[compositeKey]!;
-        final taxable = item.netAmount * multiplier;
+        final taxable = inv.itemTaxableValue(item) * multiplier;
         entry['taxableValue'] = (entry['taxableValue'] as double) + taxable;
 
         if (isInter) {
           entry['igst'] =
-              (entry['igst'] as double) + (item.igstAmount * multiplier);
+              (entry['igst'] as double) +
+              (inv.itemIgstAmount(item) * multiplier);
         } else {
           entry['cgst'] =
-              (entry['cgst'] as double) + (item.cgstAmount * multiplier);
+              (entry['cgst'] as double) +
+              (inv.itemCgstAmount(item) * multiplier);
           entry['sgst'] =
-              (entry['sgst'] as double) + (item.sgstAmount * multiplier);
+              (entry['sgst'] as double) +
+              (inv.itemSgstAmount(item) * multiplier);
         }
       }
     }

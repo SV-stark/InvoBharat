@@ -3,8 +3,8 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{22814835-D6A8-4107-B6DF-90518D4D6B9C}
 AppName=InvoBharat
-AppVersion=1.0
-;AppVerName=InvoBharat 1.0
+AppVersion=1.2.0
+;AppVerName=InvoBharat 1.2.0
 AppPublisher=InvoBharat Team
 DefaultDirName={autopf}\InvoBharat
 DisableProgramGroupPage=yes

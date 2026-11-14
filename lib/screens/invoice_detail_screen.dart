@@ -324,19 +324,38 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                           const Divider(height: 1),
                       itemBuilder: (final context, final index) {
                         final p = _invoice.payments[index];
+                        final tdsText = p.tdsDeducted > 0
+                            ? " (TDS: ${p.tdsDeducted.toIndianFormat(includeSymbol: true, symbol: currency)})"
+                            : "";
                         return ListTile(
                           leading: const Icon(
                             Icons.payment,
                             color: Colors.green,
                           ),
                           title: Text(
-                            p.amount.toIndianFormat(
-                              includeSymbol: true,
-                              symbol: currency,
-                            ),
+                            "${p.amount.toIndianFormat(includeSymbol: true, symbol: currency)}$tdsText",
                           ),
                           subtitle: Text(
                             "${DateFormat('dd MMM yyyy').format(p.date)} • ${p.paymentMode}",
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.red,
+                            ),
+                            tooltip: "Delete Payment",
+                            onPressed: () async {
+                              final updated = _invoice.copyWith(
+                                payments: _invoice.payments
+                                    .where((final item) => item.id != p.id)
+                                    .toList(),
+                              );
+                              await ref
+                                  .read(invoiceRepositoryProvider)
+                                  .saveInvoice(updated);
+                              _refreshInvoice();
+                              ref.invalidate(invoiceListProvider);
+                            },
                           ),
                         );
                       },
@@ -733,6 +752,7 @@ class _PaymentDialog extends ConsumerStatefulWidget {
 
 class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
   final _amountCtrl = TextEditingController();
+  final _tdsCtrl = TextEditingController(text: '0.00');
   final _notesCtrl = TextEditingController();
   String _mode = 'Cash';
   DateTime _date = DateTime.now();
@@ -746,6 +766,7 @@ class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
   @override
   void dispose() {
     _amountCtrl.dispose();
+    _tdsCtrl.dispose();
     _notesCtrl.dispose();
     super.dispose();
   }
@@ -762,9 +783,18 @@ class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
             TextField(
               controller: _amountCtrl,
               decoration: InputDecoration(
-                labelText: "Amount",
+                labelText: "Amount Received",
                 prefixText: currency,
-              ), // Fixed
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _tdsCtrl,
+              decoration: InputDecoration(
+                labelText: "TDS Deducted (Optional)",
+                prefixText: currency,
+              ),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 16),
@@ -808,14 +838,16 @@ class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
         ),
         ElevatedButton(
           onPressed: () {
-            final amt = double.tryParse(_amountCtrl.text);
-            if (amt == null || amt <= 0) return;
+            final amt = double.tryParse(_amountCtrl.text) ?? 0.0;
+            final tds = double.tryParse(_tdsCtrl.text) ?? 0.0;
+            if (amt <= 0 && tds <= 0) return;
 
             final payment = PaymentTransaction(
               id: const Uuid().v4(),
               invoiceId: widget.invoiceId,
               date: _date,
-              amount: amt,
+              amount: amt < 0 ? 0.0 : amt,
+              tdsDeducted: tds < 0 ? 0.0 : tds,
               paymentMode: _mode,
               notes: _notesCtrl.text,
             );

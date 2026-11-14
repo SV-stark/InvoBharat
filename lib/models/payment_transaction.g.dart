@@ -14,6 +14,7 @@ _PaymentTransaction _$PaymentTransactionFromJson(Map<String, dynamic> json) =>
       amount: (json['amount'] as num).toDouble(),
       paymentMode: json['paymentMode'] as String,
       notes: json['notes'] as String?,
+      tdsDeducted: (json['tdsDeducted'] as num?)?.toDouble() ?? 0.0,
     );
 
 Map<String, dynamic> _$PaymentTransactionToJson(_PaymentTransaction instance) =>
@@ -24,4 +25,5 @@ Map<String, dynamic> _$PaymentTransactionToJson(_PaymentTransaction instance) =>
       'amount': instance.amount,
       'paymentMode': instance.paymentMode,
       'notes': instance.notes,
+      'tdsDeducted': instance.tdsDeducted,
     };

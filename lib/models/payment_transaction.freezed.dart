@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PaymentTransaction {
 
- String get id; String get invoiceId; DateTime get date; double get amount; String get paymentMode; String? get notes;
+ String get id; String get invoiceId; DateTime get date; double get amount; String get paymentMode; String? get notes; double get tdsDeducted;
 /// Create a copy of PaymentTransaction
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $PaymentTransactionCopyWith<PaymentTransaction> get copyWith => _$PaymentTransac
 @override
 bool operator ==(Object other) {
   final _this = this as PaymentTransaction;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PaymentTransaction&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.invoiceId, _this.invoiceId) || other.invoiceId == _this.invoiceId)&&(identical(other.date, _this.date) || other.date == _this.date)&&(identical(other.amount, _this.amount) || other.amount == _this.amount)&&(identical(other.paymentMode, _this.paymentMode) || other.paymentMode == _this.paymentMode)&&(identical(other.notes, _this.notes) || other.notes == _this.notes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PaymentTransaction&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.invoiceId, _this.invoiceId) || other.invoiceId == _this.invoiceId)&&(identical(other.date, _this.date) || other.date == _this.date)&&(identical(other.amount, _this.amount) || other.amount == _this.amount)&&(identical(other.paymentMode, _this.paymentMode) || other.paymentMode == _this.paymentMode)&&(identical(other.notes, _this.notes) || other.notes == _this.notes)&&(identical(other.tdsDeducted, _this.tdsDeducted) || other.tdsDeducted == _this.tdsDeducted));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as PaymentTransaction;
-  return Object.hash(runtimeType,_this.id,_this.invoiceId,_this.date,_this.amount,_this.paymentMode,_this.notes);
+  return Object.hash(runtimeType,_this.id,_this.invoiceId,_this.date,_this.amount,_this.paymentMode,_this.notes,_this.tdsDeducted);
 }
 
 @override
 String toString() {
   final _this = this as PaymentTransaction;
-  return 'PaymentTransaction(id: ${_this.id}, invoiceId: ${_this.invoiceId}, date: ${_this.date}, amount: ${_this.amount}, paymentMode: ${_this.paymentMode}, notes: ${_this.notes})';
+  return 'PaymentTransaction(id: ${_this.id}, invoiceId: ${_this.invoiceId}, date: ${_this.date}, amount: ${_this.amount}, paymentMode: ${_this.paymentMode}, notes: ${_this.notes}, tdsDeducted: ${_this.tdsDeducted})';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $PaymentTransactionCopyWith<$Res>  {
   factory $PaymentTransactionCopyWith(PaymentTransaction value, $Res Function(PaymentTransaction) _then) = _$PaymentTransactionCopyWithImpl;
 @useResult
 $Res call({
- String id, String invoiceId, DateTime date, double amount, String paymentMode, String? notes
+ String id, String invoiceId, DateTime date, double amount, String paymentMode, String? notes, double tdsDeducted
 });
 
 
@@ -71,7 +71,7 @@ class _$PaymentTransactionCopyWithImpl<$Res>
 
 /// Create a copy of PaymentTransaction
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? invoiceId = null,Object? date = null,Object? amount = null,Object? paymentMode = null,Object? notes = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? invoiceId = null,Object? date = null,Object? amount = null,Object? paymentMode = null,Object? notes = freezed,Object? tdsDeducted = null,}) {
   return _then(PaymentTransaction(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,invoiceId: null == invoiceId ? _self.invoiceId : invoiceId // ignore: cast_nullable_to_non_nullable
@@ -79,7 +79,8 @@ as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non
 as DateTime,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as double,paymentMode: null == paymentMode ? _self.paymentMode : paymentMode // ignore: cast_nullable_to_non_nullable
 as String,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,tdsDeducted: null == tdsDeducted ? _self.tdsDeducted : tdsDeducted // ignore: cast_nullable_to_non_nullable
+as double,
   ));
 }
 
@@ -164,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String invoiceId,  DateTime date,  double amount,  String paymentMode,  String? notes)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String invoiceId,  DateTime date,  double amount,  String paymentMode,  String? notes,  double tdsDeducted)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PaymentTransaction() when $default != null:
-return $default(_that.id,_that.invoiceId,_that.date,_that.amount,_that.paymentMode,_that.notes);case _:
+return $default(_that.id,_that.invoiceId,_that.date,_that.amount,_that.paymentMode,_that.notes,_that.tdsDeducted);case _:
   return orElse();
 
 }
@@ -185,10 +186,10 @@ return $default(_that.id,_that.invoiceId,_that.date,_that.amount,_that.paymentMo
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String invoiceId,  DateTime date,  double amount,  String paymentMode,  String? notes)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String invoiceId,  DateTime date,  double amount,  String paymentMode,  String? notes,  double tdsDeducted)  $default,) {final _that = this;
 switch (_that) {
 case _PaymentTransaction():
-return $default(_that.id,_that.invoiceId,_that.date,_that.amount,_that.paymentMode,_that.notes);case _:
+return $default(_that.id,_that.invoiceId,_that.date,_that.amount,_that.paymentMode,_that.notes,_that.tdsDeducted);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -205,10 +206,10 @@ return $default(_that.id,_that.invoiceId,_that.date,_that.amount,_that.paymentMo
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String invoiceId,  DateTime date,  double amount,  String paymentMode,  String? notes)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String invoiceId,  DateTime date,  double amount,  String paymentMode,  String? notes,  double tdsDeducted)?  $default,) {final _that = this;
 switch (_that) {
 case _PaymentTransaction() when $default != null:
-return $default(_that.id,_that.invoiceId,_that.date,_that.amount,_that.paymentMode,_that.notes);case _:
+return $default(_that.id,_that.invoiceId,_that.date,_that.amount,_that.paymentMode,_that.notes,_that.tdsDeducted);case _:
   return null;
 
 }
@@ -219,8 +220,8 @@ return $default(_that.id,_that.invoiceId,_that.date,_that.amount,_that.paymentMo
 /// @nodoc
 @JsonSerializable()
 
-class _PaymentTransaction implements PaymentTransaction {
-  const _PaymentTransaction({required this.id, required this.invoiceId, required this.date, required this.amount, required this.paymentMode, this.notes});
+class _PaymentTransaction extends PaymentTransaction {
+  const _PaymentTransaction({required this.id, required this.invoiceId, required this.date, required this.amount, required this.paymentMode, this.notes, this.tdsDeducted = 0.0}): super._();
   factory _PaymentTransaction.fromJson(Map<String, dynamic> json) => _$PaymentTransactionFromJson(json);
 
 @override final  String id;
@@ -229,6 +230,7 @@ class _PaymentTransaction implements PaymentTransaction {
 @override final  double amount;
 @override final  String paymentMode;
 @override final  String? notes;
+@override@JsonKey() final  double tdsDeducted;
 
 /// Create a copy of PaymentTransaction
 /// with the given fields replaced by the non-null parameter values.
@@ -243,18 +245,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PaymentTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.invoiceId, invoiceId) || other.invoiceId == invoiceId)&&(identical(other.date, date) || other.date == date)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.paymentMode, paymentMode) || other.paymentMode == paymentMode)&&(identical(other.notes, notes) || other.notes == notes));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PaymentTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.invoiceId, invoiceId) || other.invoiceId == invoiceId)&&(identical(other.date, date) || other.date == date)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.paymentMode, paymentMode) || other.paymentMode == paymentMode)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.tdsDeducted, tdsDeducted) || other.tdsDeducted == tdsDeducted));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,invoiceId,date,amount,paymentMode,notes);
+    return Object.hash(runtimeType,id,invoiceId,date,amount,paymentMode,notes,tdsDeducted);
 }
 
 @override
 String toString() {
-    return 'PaymentTransaction(id: $id, invoiceId: $invoiceId, date: $date, amount: $amount, paymentMode: $paymentMode, notes: $notes)';
+    return 'PaymentTransaction(id: $id, invoiceId: $invoiceId, date: $date, amount: $amount, paymentMode: $paymentMode, notes: $notes, tdsDeducted: $tdsDeducted)';
 }
 
 
@@ -265,7 +267,7 @@ abstract mixin class _$PaymentTransactionCopyWith<$Res> implements $PaymentTrans
   factory _$PaymentTransactionCopyWith(_PaymentTransaction value, $Res Function(_PaymentTransaction) _then) = __$PaymentTransactionCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String invoiceId, DateTime date, double amount, String paymentMode, String? notes
+ String id, String invoiceId, DateTime date, double amount, String paymentMode, String? notes, double tdsDeducted
 });
 
 
@@ -282,7 +284,7 @@ class __$PaymentTransactionCopyWithImpl<$Res>
 
 /// Create a copy of PaymentTransaction
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? invoiceId = null,Object? date = null,Object? amount = null,Object? paymentMode = null,Object? notes = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? invoiceId = null,Object? date = null,Object? amount = null,Object? paymentMode = null,Object? notes = freezed,Object? tdsDeducted = null,}) {
   return _then(_PaymentTransaction(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,invoiceId: null == invoiceId ? _self.invoiceId : invoiceId // ignore: cast_nullable_to_non_nullable
@@ -290,7 +292,8 @@ as String,date: null == date ? _self.date : date // ignore: cast_nullable_to_non
 as DateTime,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as double,paymentMode: null == paymentMode ? _self.paymentMode : paymentMode // ignore: cast_nullable_to_non_nullable
 as String,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,tdsDeducted: null == tdsDeducted ? _self.tdsDeducted : tdsDeducted // ignore: cast_nullable_to_non_nullable
+as double,
   ));
 }
 

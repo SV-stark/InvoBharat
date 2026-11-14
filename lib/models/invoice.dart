@@ -7,7 +7,13 @@ import 'package:money2/money2.dart';
 part 'invoice.freezed.dart';
 part 'invoice.g.dart';
 
-enum InvoiceType { invoice, deliveryChallan, creditNote, debitNote }
+enum InvoiceType {
+  invoice,
+  deliveryChallan,
+  creditNote,
+  debitNote,
+  billOfSupply,
+}
 
 @freezed
 abstract class Invoice with _$Invoice {
@@ -96,7 +102,7 @@ abstract class Invoice with _$Invoice {
   }
 
   double itemCgstAmount(final InvoiceItem item) {
-    if (isInterState) return 0;
+    if (type == InvoiceType.billOfSupply || isInterState) return 0;
     final taxableMoney = Money.fromNumWithCurrency(
       itemTaxableValue(item),
       _currencyObj,
@@ -105,7 +111,7 @@ abstract class Invoice with _$Invoice {
   }
 
   double itemSgstAmount(final InvoiceItem item) {
-    if (isInterState) return 0;
+    if (type == InvoiceType.billOfSupply || isInterState) return 0;
     final taxableMoney = Money.fromNumWithCurrency(
       itemTaxableValue(item),
       _currencyObj,
@@ -114,7 +120,7 @@ abstract class Invoice with _$Invoice {
   }
 
   double itemIgstAmount(final InvoiceItem item) {
-    if (!isInterState) return 0;
+    if (type == InvoiceType.billOfSupply || !isInterState) return 0;
     final taxableMoney = Money.fromNumWithCurrency(
       itemTaxableValue(item),
       _currencyObj,
@@ -127,6 +133,9 @@ abstract class Invoice with _$Invoice {
       itemTaxableValue(item),
       _currencyObj,
     );
+    if (type == InvoiceType.billOfSupply) {
+      return taxableMoney.toDouble();
+    }
     if (isInterState) {
       final igstMoney = taxableMoney * (item.gstRate / 100);
       return (taxableMoney + igstMoney).toDouble();
@@ -138,7 +147,7 @@ abstract class Invoice with _$Invoice {
   }
 
   double get totalCGST {
-    if (isInterState) return 0;
+    if (type == InvoiceType.billOfSupply || isInterState) return 0;
     final total = items.fold(Money.fromNumWithCurrency(0, _currencyObj), (
       final sum,
       final item,
@@ -153,7 +162,7 @@ abstract class Invoice with _$Invoice {
   }
 
   double get totalSGST {
-    if (isInterState) return 0;
+    if (type == InvoiceType.billOfSupply || isInterState) return 0;
     final total = items.fold(Money.fromNumWithCurrency(0, _currencyObj), (
       final sum,
       final item,
@@ -168,7 +177,7 @@ abstract class Invoice with _$Invoice {
   }
 
   double get totalIGST {
-    if (!isInterState) return 0;
+    if (type == InvoiceType.billOfSupply || !isInterState) return 0;
     final total = items.fold(Money.fromNumWithCurrency(0, _currencyObj), (
       final sum,
       final item,
@@ -191,11 +200,29 @@ abstract class Invoice with _$Invoice {
     return (taxable + cgst + sgst + igst).toDouble();
   }
 
-  double get totalPaid {
+  double get totalCashPaid {
     final paid = payments.fold(
       Money.fromNumWithCurrency(0, _currencyObj),
       (final sum, final p) =>
           sum + Money.fromNumWithCurrency(p.amount, _currencyObj),
+    );
+    return paid.toDouble();
+  }
+
+  double get totalTdsDeducted {
+    final tds = payments.fold(
+      Money.fromNumWithCurrency(0, _currencyObj),
+      (final sum, final p) =>
+          sum + Money.fromNumWithCurrency(p.tdsDeducted, _currencyObj),
+    );
+    return tds.toDouble();
+  }
+
+  double get totalPaid {
+    final paid = payments.fold(
+      Money.fromNumWithCurrency(0, _currencyObj),
+      (final sum, final p) =>
+          sum + Money.fromNumWithCurrency(p.totalSettled, _currencyObj),
     );
     return paid.toDouble();
   }

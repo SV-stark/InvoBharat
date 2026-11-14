@@ -273,24 +273,25 @@ class ProfessionalTemplate extends BasePdfTemplate {
                       invoice.totalTaxableValue,
                       profile.currency,
                     ),
-                    if (invoice.isInterState)
-                      buildSummaryRow(
-                        "IGST Total",
-                        invoice.totalIGST,
-                        profile.currency,
-                      )
-                    else ...[
-                      buildSummaryRow(
-                        "CGST Total",
-                        invoice.totalCGST,
-                        profile.currency,
-                      ),
-                      buildSummaryRow(
-                        "SGST Total",
-                        invoice.totalSGST,
-                        profile.currency,
-                      ),
-                    ],
+                    if (invoice.type != InvoiceType.billOfSupply)
+                      if (invoice.isInterState)
+                        buildSummaryRow(
+                          "IGST Total",
+                          invoice.totalIGST,
+                          profile.currency,
+                        )
+                      else ...[
+                        buildSummaryRow(
+                          "CGST Total",
+                          invoice.totalCGST,
+                          profile.currency,
+                        ),
+                        buildSummaryRow(
+                          "SGST Total",
+                          invoice.totalSGST,
+                          profile.currency,
+                        ),
+                      ],
                     pw.Divider(thickness: 1, color: PdfColors.grey400),
                     buildSummaryRow(
                       "GRAND TOTAL",
@@ -298,6 +299,7 @@ class ProfessionalTemplate extends BasePdfTemplate {
                       profile.currency,
                       isBold: true,
                     ),
+                    ...buildPaymentSettlementRows(invoice, profile.currency),
                   ],
                 ),
               ),

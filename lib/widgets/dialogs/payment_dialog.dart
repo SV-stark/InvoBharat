@@ -4,7 +4,13 @@ import 'package:invobharat/utils/constants.dart';
 class PaymentDialog extends StatefulWidget {
   final double balanceDue;
   final String currencySymbol;
-  final Function(double amount, DateTime date, String mode, String notes)
+  final void Function(
+    double amount,
+    DateTime date,
+    String mode,
+    String notes,
+    double tdsDeducted,
+  )
   onConfirm;
 
   const PaymentDialog({
@@ -20,6 +26,7 @@ class PaymentDialog extends StatefulWidget {
 
 class _PaymentDialogState extends State<PaymentDialog> {
   late TextEditingController _amountController;
+  late TextEditingController _tdsController;
   late TextEditingController _notesController;
   DateTime _selectedDate = DateTime.now();
   String _selectedMode = 'Cash';
@@ -30,12 +37,14 @@ class _PaymentDialogState extends State<PaymentDialog> {
     _amountController = TextEditingController(
       text: widget.balanceDue.toStringAsFixed(2),
     );
+    _tdsController = TextEditingController(text: '0.00');
     _notesController = TextEditingController();
   }
 
   @override
   void dispose() {
     _amountController.dispose();
+    _tdsController.dispose();
     _notesController.dispose();
     super.dispose();
   }
@@ -49,10 +58,25 @@ class _PaymentDialogState extends State<PaymentDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InfoLabel(
-            label: "Amount",
+            label: "Amount Received",
             child: TextBox(
               controller: _amountController,
-              placeholder: "Enter amount",
+              placeholder: "Enter amount received",
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              prefix: Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Text(widget.currencySymbol),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          InfoLabel(
+            label: "TDS Deducted (Optional)",
+            child: TextBox(
+              controller: _tdsController,
+              placeholder: "e.g. 194J / 194C TDS withheld by client",
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
@@ -103,13 +127,15 @@ class _PaymentDialogState extends State<PaymentDialog> {
           child: const Text("Reflect Payment"),
           onPressed: () {
             final amount = double.tryParse(_amountController.text) ?? 0.0;
-            if (amount <= 0) return;
+            final tds = double.tryParse(_tdsController.text) ?? 0.0;
+            if (amount <= 0 && tds <= 0) return;
 
             widget.onConfirm(
-              amount,
+              amount < 0 ? 0.0 : amount,
               _selectedDate,
               _selectedMode,
               _notesController.text,
+              tds < 0 ? 0.0 : tds,
             );
             Navigator.pop(context);
           },

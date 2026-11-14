@@ -9,15 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 _No changes yet._
 
-## [1.2.0] - 2026-10-20
+## [1.2.0] - 2026-11-14
+
+### Added
+- **TDS Deduction on Payments**: Added `tdsDeducted` tracking across `PaymentTransaction`, the `Payments` Drift table (schema v19 migration), `PaymentDialog` (live balance preview + quick `2% 194C` / `10% 194J` buttons), Payment History screen & CSV export, Client Ledger running balance (`TDS Deducted` entries), and invoice payment calculations (`totalCashPaid`, `totalTdsDeducted`, `totalPaid`, `balanceDue`).
+- **GSTR-1 Portal JSON Export**: Added GST Offline Tool / Portal compliant JSON export (`b2b`, `b2cl`, `b2cs`, `cdnr`, `cdnur`, and `hsn` sections) directly from the Fluent Reports screen.
+- **Multi-Sheet Excel GSTR-1 Summaries**: Enhanced Excel workbook export with dedicated `GSTR1 B2CS Summary`, `GSTR1 CDNR Summary`, and `GSTR1 HSN Summary` worksheets alongside existing invoice and B2B sheets.
+- **Bill of Supply Support (`InvoiceType.billOfSupply`)**: Added statutory Bill of Supply document type (Sec 31(3)(c) CGST Act) for exempt supplies and composition dealers, automatically enforcing 0% GST, displaying `BILL OF SUPPLY` headers, and suppressing tax columns and HSN tax breakdown tables across all 6 PDF templates.
+- **PDF Payment Settlement Breakdown**: Added `Amount Paid`, `TDS Deducted (u/s 194C/194J)`, and `Balance Due` rows to the totals block of all 6 PDF templates (`Minimal`, `Classic`, `Modern`, `Corporate`, `Creative`, `Professional`) whenever payments or TDS exist.
+- **Unit Test Suite**: Added comprehensive unit tests in `test/services/improvements_and_tax_math_test.dart` covering invoice-level discount tax math, E-Invoice JSON reconciliation, GSTR-1 Portal JSON & CSV generation, TDS payment math, and Bill of Supply rules.
 
 ### Changed
+- **UI Modularization**: Decomposed `fluent_settings.dart` into 7 focused tab widgets under `lib/screens/windows/settings/`, extracted dashboard KPI/stat widgets into `lib/screens/windows/dashboard/dashboard_stat_cards.dart`, and extracted invoice wizard sections into `lib/screens/windows/wizard/wizard_sections.dart`.
+- **Database Performance (`SqlInvoiceRepository`)**: Replaced sequential loop inserts with `database.batch`, optimized `deleteInvoicesBatch` using `isInQuery(...)` subqueries, added 500-ID chunking + $O(N+M)$ hash-map grouping in `_mapInvoices`, and replaced `watchInvoices` N+1 reactive queries with `customSelect(..., readsFrom: {invoices, invoiceItems, payments})`.
+- **GST Utilities Consolidation**: Unified duplicate state name/code/abbreviation lookup logic into `GstUtils.getStateCodeFromInput` across `GstUtils`, `EInvoiceExporter`, `GstrService`, and `Gstr1JsonImportService`.
 - Dependency refresh: upgraded `fluent_ui` 4.16.1 → 4.17.0, `go_router` 18.0.2 → 18.1.0, `material_ui` 1.6.0 → 1.7.0, `sqlite3` 3.7.0 → 3.7.1, `file_saver` 0.6.0 → 0.7.0, `freezed` 4.0.2 → 4.0.3, `json_serializable` 6.14.1 → 6.15.1, `shared_preferences_android`/`shared_preferences_foundation`, and other transitive updates.
 - Migrated Excel export from `excel` to `excel_plus` (drop-in, performance-focused fork), enabling `archive` 3.6.1 → 4.5.2 and `image` 4.3.0 → 4.12.0.
 - Migrated CSV handling from `csv` to `csv_plus` (the CSV engine used by `excel_plus`); removed the `csv` dependency.
 - `backup_service.dart`: updated zip-directory parsing for `archive` 4.x (`ZipDirectory` instance + `InputMemoryStream`).
 
 ### Fixed
+- **Tax Math & Discount Proration**: Fixed NIC E-Invoice & E-Way Bill JSON exporter double-subtracting invoice-level `discountAmount` in `TotInvVal` and overstating item-level `AssVal`/`CgstAmt`/`SgstAmt`/`IgstAmt`. Updated `GstrService`, `Gstr3bService`, `ExcelExportService`, `CsvExportService`, and `FluentReportsScreen` to use prorated item tax helpers (`invoice.itemTaxableValue(item)`, etc.) so line items reconcile with `grandTotal`.
+- **SQLite Repository Data Integrity**: Fixed `SqlInvoiceRepository._mapInvoices` dropping `supplier.state`, `discountAmount`, `currency`, `isArchived`, and `deliveryAddress` when reading from SQLite, and fixed `saveInvoice` failing to delete orphaned payment rows when an invoice's payments list is cleared.
+- **CSV Export Escaping**: Replaced manual string interpolation in `PaymentHistoryScreen._exportCsv` with `CsvCodec().encode(...)` to properly escape commas, quotes, and newlines.
 - Fixed compile errors introduced by `fluent_ui` 4.17.0: `ThemeMode` now resolves to `material_ui`'s in Fluent screens (aliased Flutter `ThemeMode`), renamed `ScaffoldPage.scrollable`'s `bottomBar` parameter to `footer`, and replaced the removed `CircleAvatar` with Flutter's `CircleAvatar`.
 - Resolved `file_saver` 0.7.0 API usage (returns `String` instead of `Uri?`).
 

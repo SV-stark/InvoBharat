@@ -82,6 +82,8 @@ Future<Uint8List> _generatePdfInIsolate(final PdfGeneratorParams params) async {
       effectiveTitle = 'CREDIT NOTE';
     } else if (params.invoice.type == InvoiceType.debitNote) {
       effectiveTitle = 'DEBIT NOTE';
+    } else if (params.invoice.type == InvoiceType.billOfSupply) {
+      effectiveTitle = 'BILL OF SUPPLY';
     } else if (params.invoice.receiver.gstin.isEmpty) {
       effectiveTitle = 'RETAIL INVOICE';
     } else {

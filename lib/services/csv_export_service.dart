@@ -100,7 +100,7 @@ class CsvExportService {
           dateFormat.format(invoice.invoiceDate),
           invoice.grandTotal.toStringAsFixed(2),
           item.gstRate.toString(),
-          item.netAmount.toStringAsFixed(2),
+          invoice.itemTaxableValue(item).toStringAsFixed(2),
           '0', // CESS
           _sanitize(invoice.placeOfSupply),
           _sanitize(invoice.reverseCharge),

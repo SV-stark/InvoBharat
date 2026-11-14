@@ -41,16 +41,30 @@ final clientLedgerProvider = FutureProvider.family<List<LedgerEntry>, String>((
   final List<LedgerEntry> entries = [];
 
   for (final inv in clientInvoices) {
-    // 3. Invoice Entry (Debit)
-    if (inv.type == InvoiceType.invoice) {
+    // 3. Invoice / Bill of Supply / Debit Note Entry (Debit)
+    if (inv.type == InvoiceType.invoice ||
+        inv.type == InvoiceType.billOfSupply) {
       entries.add(
         LedgerEntry(
           date: inv.invoiceDate,
-          particulars: "Invoice #${inv.invoiceNo}",
+          particulars: inv.type == InvoiceType.billOfSupply
+              ? "Bill of Supply #${inv.invoiceNo}"
+              : "Invoice #${inv.invoiceNo}",
           type: 'INVOICE',
           debit: inv.grandTotal,
           credit: 0,
           balance: 0, // Calc later
+        ),
+      );
+    } else if (inv.type == InvoiceType.debitNote) {
+      entries.add(
+        LedgerEntry(
+          date: inv.invoiceDate,
+          particulars: "Debit Note #${inv.invoiceNo}",
+          type: 'DEBIT_NOTE',
+          debit: inv.grandTotal,
+          credit: 0,
+          balance: 0,
         ),
       );
     } else if (inv.type == InvoiceType.creditNote) {
@@ -75,10 +89,12 @@ final clientLedgerProvider = FutureProvider.family<List<LedgerEntry>, String>((
       entries.add(
         LedgerEntry(
           date: pay.date,
-          particulars: "Payment (${pay.paymentMode})",
+          particulars: pay.tdsDeducted > 0
+              ? "Payment (${pay.paymentMode}) + TDS"
+              : "Payment (${pay.paymentMode})",
           type: 'PAYMENT',
           debit: 0,
-          credit: pay.amount,
+          credit: pay.totalSettled,
           balance: 0,
         ),
       );

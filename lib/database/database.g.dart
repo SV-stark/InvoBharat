@@ -5242,6 +5242,18 @@ class $PaymentsTable extends Payments with TableInfo<$PaymentsTable, Payment> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _tdsDeductedMeta = const VerificationMeta(
+    'tdsDeducted',
+  );
+  @override
+  late final GeneratedColumn<double> tdsDeducted = GeneratedColumn<double>(
+    'tds_deducted',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -5250,6 +5262,7 @@ class $PaymentsTable extends Payments with TableInfo<$PaymentsTable, Payment> {
     date,
     method,
     notes,
+    tdsDeducted,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -5306,6 +5319,15 @@ class $PaymentsTable extends Payments with TableInfo<$PaymentsTable, Payment> {
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
+    if (data.containsKey('tds_deducted')) {
+      context.handle(
+        _tdsDeductedMeta,
+        tdsDeducted.isAcceptableOrUnknown(
+          data['tds_deducted']!,
+          _tdsDeductedMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -5339,6 +5361,12 @@ class $PaymentsTable extends Payments with TableInfo<$PaymentsTable, Payment> {
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
+      tdsDeducted:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.double,
+            data['${effectivePrefix}tds_deducted'],
+          ) ??
+          0.0,
     );
   }
 
@@ -5355,6 +5383,7 @@ class Payment extends DataClass implements Insertable<Payment> {
   final DateTime date;
   final String method;
   final String? notes;
+  final double tdsDeducted;
   const Payment({
     required this.id,
     required this.invoiceId,
@@ -5362,6 +5391,7 @@ class Payment extends DataClass implements Insertable<Payment> {
     required this.date,
     required this.method,
     this.notes,
+    this.tdsDeducted = 0.0,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -5374,6 +5404,7 @@ class Payment extends DataClass implements Insertable<Payment> {
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
+    map['tds_deducted'] = Variable<double>(tdsDeducted);
     return map;
   }
 
@@ -5387,6 +5418,7 @@ class Payment extends DataClass implements Insertable<Payment> {
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
+      tdsDeducted: Value(tdsDeducted),
     );
   }
 
@@ -5402,6 +5434,9 @@ class Payment extends DataClass implements Insertable<Payment> {
       date: serializer.fromJson<DateTime>(json['date']),
       method: serializer.fromJson<String>(json['method']),
       notes: serializer.fromJson<String?>(json['notes']),
+      tdsDeducted: json['tdsDeducted'] != null
+          ? serializer.fromJson<double>(json['tdsDeducted'])
+          : 0.0,
     );
   }
   @override
@@ -5414,6 +5449,7 @@ class Payment extends DataClass implements Insertable<Payment> {
       'date': serializer.toJson<DateTime>(date),
       'method': serializer.toJson<String>(method),
       'notes': serializer.toJson<String?>(notes),
+      'tdsDeducted': serializer.toJson<double>(tdsDeducted),
     };
   }
 
@@ -5424,6 +5460,7 @@ class Payment extends DataClass implements Insertable<Payment> {
     DateTime? date,
     String? method,
     Value<String?> notes = const Value.absent(),
+    double? tdsDeducted,
   }) => Payment(
     id: id ?? this.id,
     invoiceId: invoiceId ?? this.invoiceId,
@@ -5431,6 +5468,7 @@ class Payment extends DataClass implements Insertable<Payment> {
     date: date ?? this.date,
     method: method ?? this.method,
     notes: notes.present ? notes.value : this.notes,
+    tdsDeducted: tdsDeducted ?? this.tdsDeducted,
   );
   Payment copyWithCompanion(PaymentsCompanion data) {
     return Payment(
@@ -5440,6 +5478,9 @@ class Payment extends DataClass implements Insertable<Payment> {
       date: data.date.present ? data.date.value : this.date,
       method: data.method.present ? data.method.value : this.method,
       notes: data.notes.present ? data.notes.value : this.notes,
+      tdsDeducted: data.tdsDeducted.present
+          ? data.tdsDeducted.value
+          : this.tdsDeducted,
     );
   }
 
@@ -5451,13 +5492,15 @@ class Payment extends DataClass implements Insertable<Payment> {
           ..write('amount: $amount, ')
           ..write('date: $date, ')
           ..write('method: $method, ')
-          ..write('notes: $notes')
+          ..write('notes: $notes, ')
+          ..write('tdsDeducted: $tdsDeducted')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, invoiceId, amount, date, method, notes);
+  int get hashCode =>
+      Object.hash(id, invoiceId, amount, date, method, notes, tdsDeducted);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -5467,7 +5510,8 @@ class Payment extends DataClass implements Insertable<Payment> {
           other.amount == this.amount &&
           other.date == this.date &&
           other.method == this.method &&
-          other.notes == this.notes);
+          other.notes == this.notes &&
+          other.tdsDeducted == this.tdsDeducted);
 }
 
 class PaymentsCompanion extends UpdateCompanion<Payment> {
@@ -5477,6 +5521,7 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
   final Value<DateTime> date;
   final Value<String> method;
   final Value<String?> notes;
+  final Value<double> tdsDeducted;
   final Value<int> rowid;
   const PaymentsCompanion({
     this.id = const Value.absent(),
@@ -5485,6 +5530,7 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
     this.date = const Value.absent(),
     this.method = const Value.absent(),
     this.notes = const Value.absent(),
+    this.tdsDeducted = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   PaymentsCompanion.insert({
@@ -5494,6 +5540,7 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
     required DateTime date,
     required String method,
     this.notes = const Value.absent(),
+    this.tdsDeducted = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        invoiceId = Value(invoiceId),
@@ -5507,6 +5554,7 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
     Expression<DateTime>? date,
     Expression<String>? method,
     Expression<String>? notes,
+    Expression<double>? tdsDeducted,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -5516,6 +5564,7 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
       if (date != null) 'date': date,
       if (method != null) 'method': method,
       if (notes != null) 'notes': notes,
+      if (tdsDeducted != null) 'tds_deducted': tdsDeducted,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -5527,6 +5576,7 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
     Value<DateTime>? date,
     Value<String>? method,
     Value<String?>? notes,
+    Value<double>? tdsDeducted,
     Value<int>? rowid,
   }) {
     return PaymentsCompanion(
@@ -5536,6 +5586,7 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
       date: date ?? this.date,
       method: method ?? this.method,
       notes: notes ?? this.notes,
+      tdsDeducted: tdsDeducted ?? this.tdsDeducted,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -5561,6 +5612,9 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
+    if (tdsDeducted.present) {
+      map['tds_deducted'] = Variable<double>(tdsDeducted.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -5576,6 +5630,7 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
           ..write('date: $date, ')
           ..write('method: $method, ')
           ..write('notes: $notes, ')
+          ..write('tdsDeducted: $tdsDeducted, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -12389,6 +12444,7 @@ typedef $$PaymentsTableCreateCompanionBuilder =
       required DateTime date,
       required String method,
       Value<String?> notes,
+      Value<double> tdsDeducted,
       Value<int> rowid,
     });
 typedef $$PaymentsTableUpdateCompanionBuilder =
@@ -12399,6 +12455,7 @@ typedef $$PaymentsTableUpdateCompanionBuilder =
       Value<DateTime> date,
       Value<String> method,
       Value<String?> notes,
+      Value<double> tdsDeducted,
       Value<int> rowid,
     });
 
@@ -12455,6 +12512,11 @@ class $$PaymentsTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get tdsDeducted => $composableBuilder(
+    column: $table.tdsDeducted,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12516,6 +12578,11 @@ class $$PaymentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get tdsDeducted => $composableBuilder(
+    column: $table.tdsDeducted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$InvoicesTableOrderingComposer get invoiceId {
     final $$InvoicesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -12563,6 +12630,11 @@ class $$PaymentsTableAnnotationComposer
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<double> get tdsDeducted => $composableBuilder(
+    column: $table.tdsDeducted,
+    builder: (column) => column,
+  );
 
   $$InvoicesTableAnnotationComposer get invoiceId {
     final $$InvoicesTableAnnotationComposer composer = $composerBuilder(
@@ -12622,6 +12694,7 @@ class $$PaymentsTableTableManager
                 Value<DateTime> date = const Value.absent(),
                 Value<String> method = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<double> tdsDeducted = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PaymentsCompanion(
                 id: id,
@@ -12630,6 +12703,7 @@ class $$PaymentsTableTableManager
                 date: date,
                 method: method,
                 notes: notes,
+                tdsDeducted: tdsDeducted,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -12640,6 +12714,7 @@ class $$PaymentsTableTableManager
                 required DateTime date,
                 required String method,
                 Value<String?> notes = const Value.absent(),
+                Value<double> tdsDeducted = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PaymentsCompanion.insert(
                 id: id,
@@ -12648,6 +12723,7 @@ class $$PaymentsTableTableManager
                 date: date,
                 method: method,
                 notes: notes,
+                tdsDeducted: tdsDeducted,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

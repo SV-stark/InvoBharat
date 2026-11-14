@@ -97,15 +97,18 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
     final pw.EdgeInsets? cellPadding,
   }) {
     final isInterState = invoice.isInterState;
+    final isBillOfSupply = invoice.type == InvoiceType.billOfSupply;
 
     final List<String> headers = [];
     if (includeIndex) headers.add('#');
     headers.addAll(['Item', 'HSN/SAC', 'Qty', 'Rate', 'Taxable Val']);
 
-    if (isInterState) {
-      headers.addAll(['IGST %', 'IGST Amt']);
-    } else {
-      headers.addAll(['CGST %', 'CGST Amt', 'SGST %', 'SGST Amt']);
+    if (!isBillOfSupply) {
+      if (isInterState) {
+        headers.addAll(['IGST %', 'IGST Amt']);
+      } else {
+        headers.addAll(['CGST %', 'CGST Amt', 'SGST %', 'SGST Amt']);
+      }
     }
     headers.add('Total');
 
@@ -122,18 +125,20 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
       row.add(item.amount.toIndianFormat());
       row.add(taxableValue.toIndianFormat());
 
-      if (isInterState) {
-        row.add("${item.gstRate}%");
-        row.add(invoice.itemIgstAmount(item).toIndianFormat());
-      } else {
-        final halfRate = item.gstRate / 2;
-        final halfRateStr = halfRate == halfRate.truncateToDouble()
-            ? halfRate.toInt().toString()
-            : halfRate.toStringAsFixed(1);
-        row.add("$halfRateStr%");
-        row.add(invoice.itemCgstAmount(item).toIndianFormat());
-        row.add("$halfRateStr%");
-        row.add(invoice.itemSgstAmount(item).toIndianFormat());
+      if (!isBillOfSupply) {
+        if (isInterState) {
+          row.add("${item.gstRate}%");
+          row.add(invoice.itemIgstAmount(item).toIndianFormat());
+        } else {
+          final halfRate = item.gstRate / 2;
+          final halfRateStr = halfRate == halfRate.truncateToDouble()
+              ? halfRate.toInt().toString()
+              : halfRate.toStringAsFixed(1);
+          row.add("$halfRateStr%");
+          row.add(invoice.itemCgstAmount(item).toIndianFormat());
+          row.add("$halfRateStr%");
+          row.add(invoice.itemSgstAmount(item).toIndianFormat());
+        }
       }
 
       row.add(invoice.itemTotalAmount(item).toIndianFormat());
@@ -520,11 +525,33 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
     );
   }
 
+  List<pw.Widget> buildPaymentSettlementRows(
+    final Invoice invoice,
+    final String? symbol,
+  ) {
+    if (invoice.payments.isEmpty) return const [];
+    return [
+      if (invoice.totalCashPaid > 0)
+        buildSummaryRow("Amount Paid", invoice.totalCashPaid, symbol),
+      if (invoice.totalTdsDeducted > 0)
+        buildSummaryRow("TDS Deducted", invoice.totalTdsDeducted, symbol),
+      buildSummaryRow(
+        "Balance Due",
+        invoice.balanceDue,
+        symbol,
+        isBold: true,
+      ),
+    ];
+  }
+
   pw.Widget buildHsnSummaryTable(
     final Invoice invoice,
     final pw.Font font,
     final pw.Font fontBold,
   ) {
+    if (invoice.type == InvoiceType.billOfSupply) {
+      return pw.SizedBox();
+    }
     // 1. Group items by HSN Code AND GST Rate
     final Map<String, List<InvoiceItem>> grouped = {};
     for (final item in invoice.items) {

@@ -57,6 +57,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
         amount: Value(p.amount),
         method: Value(p.paymentMode),
         notes: Value(p.notes),
+        tdsDeducted: Value(p.tdsDeducted),
       );
     }).toList();
 
@@ -186,22 +187,23 @@ class SqlInvoiceRepository implements InvoiceRepository {
             ),
           );
 
-      // Replace Items
+      // Replace Items & Payments atomically via batch
       await (database.delete(
         database.invoiceItems,
       )..where((final t) => t.invoiceId.equals(invoiceId))).go();
-      for (var item in items) {
-        await database.into(database.invoiceItems).insert(item);
-      }
+      await (database.delete(
+        database.payments,
+      )..where((final t) => t.invoiceId.equals(invoiceId))).go();
 
-      // Replace Payments: if caller provided payments, replace; if payments is empty, preserve existing payments
-      if (payments.isNotEmpty) {
-        await (database.delete(
-          database.payments,
-        )..where((final t) => t.invoiceId.equals(invoiceId))).go();
-        for (var p in payments) {
-          await database.into(database.payments).insert(p);
-        }
+      if (items.isNotEmpty || payments.isNotEmpty) {
+        await database.batch((final batch) {
+          if (items.isNotEmpty) {
+            batch.insertAll(database.invoiceItems, items);
+          }
+          if (payments.isNotEmpty) {
+            batch.insertAll(database.payments, payments);
+          }
+        });
       }
     });
   }
@@ -275,6 +277,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
               amount: row.amount,
               paymentMode: row.method,
               notes: row.notes,
+              tdsDeducted: row.tdsDeducted,
             ),
           )
           .toList(),
@@ -330,6 +333,66 @@ class SqlInvoiceRepository implements InvoiceRepository {
     );
   }
 
+  Future<List<InvoiceItem>> _fetchItemsByIds(final List<String> ids) async {
+    if (ids.isEmpty) return [];
+    const chunkSize = 500;
+    if (ids.length <= chunkSize) {
+      return (database.select(
+        database.invoiceItems,
+      )..where((final t) => t.invoiceId.isIn(ids))).get();
+    }
+    final results = <InvoiceItem>[];
+    for (var i = 0; i < ids.length; i += chunkSize) {
+      final end = (i + chunkSize < ids.length) ? i + chunkSize : ids.length;
+      final chunk = ids.sublist(i, end);
+      final rows = await (database.select(
+        database.invoiceItems,
+      )..where((final t) => t.invoiceId.isIn(chunk))).get();
+      results.addAll(rows);
+    }
+    return results;
+  }
+
+  Future<List<Payment>> _fetchPaymentsByIds(final List<String> ids) async {
+    if (ids.isEmpty) return [];
+    const chunkSize = 500;
+    if (ids.length <= chunkSize) {
+      return (database.select(
+        database.payments,
+      )..where((final t) => t.invoiceId.isIn(ids))).get();
+    }
+    final results = <Payment>[];
+    for (var i = 0; i < ids.length; i += chunkSize) {
+      final end = (i + chunkSize < ids.length) ? i + chunkSize : ids.length;
+      final chunk = ids.sublist(i, end);
+      final rows = await (database.select(
+        database.payments,
+      )..where((final t) => t.invoiceId.isIn(chunk))).get();
+      results.addAll(rows);
+    }
+    return results;
+  }
+
+  Future<List<Client>> _fetchClientsByIds(final List<String> ids) async {
+    if (ids.isEmpty) return [];
+    const chunkSize = 500;
+    if (ids.length <= chunkSize) {
+      return (database.select(
+        database.clients,
+      )..where((final t) => t.id.isIn(ids))).get();
+    }
+    final results = <Client>[];
+    for (var i = 0; i < ids.length; i += chunkSize) {
+      final end = (i + chunkSize < ids.length) ? i + chunkSize : ids.length;
+      final chunk = ids.sublist(i, end);
+      final rows = await (database.select(
+        database.clients,
+      )..where((final t) => t.id.isIn(chunk))).get();
+      results.addAll(rows);
+    }
+    return results;
+  }
+
   @override
   Future<List<model.Invoice>> getAllInvoices() async {
     final invoiceRows =
@@ -343,13 +406,21 @@ class SqlInvoiceRepository implements InvoiceRepository {
               ]))
             .get();
     if (invoiceRows.isEmpty) return [];
-    final invoiceIds = invoiceRows.map((final r) => r.id).toList();
-    final allItems = await (database.select(
-      database.invoiceItems,
-    )..where((final t) => t.invoiceId.isIn(invoiceIds))).get();
-    final allPayments = await (database.select(
-      database.payments,
-    )..where((final t) => t.invoiceId.isIn(invoiceIds))).get();
+
+    final profileInvoicesSubquery = database.selectOnly(database.invoices)
+      ..addColumns([database.invoices.id])
+      ..where(database.invoices.profileId.equals(profileId));
+
+    final allItems =
+        await (database.select(database.invoiceItems)..where(
+              (final t) => t.invoiceId.isInQuery(profileInvoicesSubquery),
+            ))
+            .get();
+    final allPayments =
+        await (database.select(database.payments)..where(
+              (final t) => t.invoiceId.isInQuery(profileInvoicesSubquery),
+            ))
+            .get();
 
     final clientIds = invoiceRows
         .map((final r) => r.clientId)
@@ -357,11 +428,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
         .toSet()
         .toList();
 
-    final clientRows = clientIds.isNotEmpty
-        ? await (database.select(
-            database.clients,
-          )..where((final t) => t.id.isIn(clientIds))).get()
-        : [];
+    final clientRows = await _fetchClientsByIds(clientIds);
 
     final Map<String, dynamic> clientMap = <String, dynamic>{
       for (var c in clientRows) c.id: c,
@@ -423,12 +490,8 @@ class SqlInvoiceRepository implements InvoiceRepository {
     if (invoiceRows.isEmpty) return [];
 
     final invoiceIds = invoiceRows.map((final r) => r.id).toList();
-    final allItems = await (database.select(
-      database.invoiceItems,
-    )..where((final t) => t.invoiceId.isIn(invoiceIds))).get();
-    final allPayments = await (database.select(
-      database.payments,
-    )..where((final t) => t.invoiceId.isIn(invoiceIds))).get();
+    final allItems = await _fetchItemsByIds(invoiceIds);
+    final allPayments = await _fetchPaymentsByIds(invoiceIds);
 
     final clientIds = invoiceRows
         .map((final r) => r.clientId)
@@ -436,11 +499,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
         .toSet()
         .toList();
 
-    final clientRows = clientIds.isNotEmpty
-        ? await (database.select(
-            database.clients,
-          )..where((final t) => t.id.isIn(clientIds))).get()
-        : [];
+    final clientRows = await _fetchClientsByIds(clientIds);
 
     final Map<String, dynamic> clientMap = <String, dynamic>{
       for (var c in clientRows) c.id: c,
@@ -466,19 +525,9 @@ class SqlInvoiceRepository implements InvoiceRepository {
               ..limit(limit, offset: offset))
             .get();
     if (invoiceRows.isEmpty) return [];
-    final invoiceIds = invoiceRows.map((final r) => r.id).toSet();
-    final allItems = await (database.select(
-      database.invoiceItems,
-    )..where((final t) => t.invoiceId.isIn(invoiceIds))).get();
-    final allPayments = await (database.select(
-      database.payments,
-    )..where((final t) => t.invoiceId.isIn(invoiceIds))).get();
-    final filteredItems = allItems
-        .where((final i) => invoiceIds.contains(i.invoiceId))
-        .toList();
-    final filteredPayments = allPayments
-        .where((final p) => invoiceIds.contains(p.invoiceId))
-        .toList();
+    final invoiceIds = invoiceRows.map((final r) => r.id).toSet().toList();
+    final allItems = await _fetchItemsByIds(invoiceIds);
+    final allPayments = await _fetchPaymentsByIds(invoiceIds);
 
     final clientIds = invoiceRows
         .map((final r) => r.clientId)
@@ -486,22 +535,13 @@ class SqlInvoiceRepository implements InvoiceRepository {
         .toSet()
         .toList();
 
-    final clientRows = clientIds.isNotEmpty
-        ? await (database.select(
-            database.clients,
-          )..where((final t) => t.id.isIn(clientIds))).get()
-        : [];
+    final clientRows = await _fetchClientsByIds(clientIds);
 
     final Map<String, dynamic> clientMap = <String, dynamic>{
       for (var c in clientRows) c.id: c,
     };
 
-    return _mapInvoices(
-      invoiceRows,
-      filteredItems,
-      filteredPayments,
-      clientMap,
-    );
+    return _mapInvoices(invoiceRows, allItems, allPayments, clientMap);
   }
 
   @override
@@ -520,9 +560,19 @@ class SqlInvoiceRepository implements InvoiceRepository {
     final List<dynamic> allPayments,
     final Map<String, dynamic> clientMap,
   ) {
+    final itemsByInvoiceId = <String, List<dynamic>>{};
+    for (final item in allItems) {
+      itemsByInvoiceId.putIfAbsent(item.invoiceId as String, () => []).add(item);
+    }
+
+    final paymentsByInvoiceId = <String, List<dynamic>>{};
+    for (final p in allPayments) {
+      paymentsByInvoiceId.putIfAbsent(p.invoiceId as String, () => []).add(p);
+    }
+
     return invoiceRows.map((final row) {
-      final items = allItems
-          .where((final item) => item.invoiceId == row.id)
+      final rowItems = itemsByInvoiceId[row.id] ?? const [];
+      final items = rowItems
           .map(
             (final itemRow) => model.InvoiceItem(
               id: itemRow.id,
@@ -540,8 +590,8 @@ class SqlInvoiceRepository implements InvoiceRepository {
           )
           .toList();
 
-      final payments = allPayments
-          .where((final p) => p.invoiceId == row.id)
+      final rowPayments = paymentsByInvoiceId[row.id] ?? const [];
+      final payments = rowPayments
           .map(
             (final pRow) => model.PaymentTransaction(
               id: pRow.id,
@@ -550,6 +600,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
               amount: pRow.amount,
               paymentMode: pRow.method,
               notes: pRow.notes,
+              tdsDeducted: pRow.tdsDeducted,
             ),
           )
           .toList();
@@ -606,6 +657,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
           name: row.supplierName ?? "",
           address: row.supplierAddress ?? "",
           gstin: row.supplierGstin ?? "",
+          state: row.supplierState ?? "",
           email: row.supplierEmail ?? "",
           phone: row.supplierPhone ?? "",
         ),
@@ -618,6 +670,10 @@ class SqlInvoiceRepository implements InvoiceRepository {
         ewayBillNo: row.ewayBillNo,
         vehicleNo: row.vehicleNo,
         irnNo: row.irnNo,
+        discountAmount: row.discountAmount,
+        currency: row.currency,
+        isArchived: row.isArchived,
+        deliveryAddress: row.deliveryAddress ?? "",
       );
     }).toList();
   }
@@ -641,18 +697,17 @@ class SqlInvoiceRepository implements InvoiceRepository {
   @override
   Future<void> deleteAll() async {
     await database.transaction(() async {
-      final invoices = await (database.select(
-        database.invoices,
-      )..where((final t) => t.profileId.equals(profileId))).get();
-      final ids = invoices.map((final i) => i.id).toList();
-      if (ids.isNotEmpty) {
-        await (database.delete(
-          database.invoiceItems,
-        )..where((final t) => t.invoiceId.isIn(ids))).go();
-        await (database.delete(
-          database.payments,
-        )..where((final t) => t.invoiceId.isIn(ids))).go();
-      }
+      final profileInvoicesSubquery = database.selectOnly(database.invoices)
+        ..addColumns([database.invoices.id])
+        ..where(database.invoices.profileId.equals(profileId));
+      await (database.delete(database.invoiceItems)..where(
+            (final t) => t.invoiceId.isInQuery(profileInvoicesSubquery),
+          ))
+          .go();
+      await (database.delete(database.payments)..where(
+            (final t) => t.invoiceId.isInQuery(profileInvoicesSubquery),
+          ))
+          .go();
       await (database.delete(
         database.invoices,
       )..where((final t) => t.profileId.equals(profileId))).go();
@@ -794,8 +849,10 @@ class SqlInvoiceRepository implements InvoiceRepository {
         database.estimateItems,
       )..where((final t) => t.estimateId.equals(estimateId))).go();
 
-      for (final item in items) {
-        await database.into(database.estimateItems).insert(item);
+      if (items.isNotEmpty) {
+        await database.batch((final batch) {
+          batch.insertAll(database.estimateItems, items);
+        });
       }
     });
   }
@@ -812,14 +869,23 @@ class SqlInvoiceRepository implements InvoiceRepository {
             .get();
     if (estimateRows.isEmpty) return [];
 
-    final estimateIds = estimateRows.map((final r) => r.id).toList();
-    final allItems = await (database.select(
-      database.estimateItems,
-    )..where((final t) => t.estimateId.isIn(estimateIds))).get();
+    final profileEstimatesSubquery = database.selectOnly(database.estimates)
+      ..addColumns([database.estimates.id])
+      ..where(database.estimates.profileId.equals(profileId));
+    final allItems =
+        await (database.select(database.estimateItems)..where(
+              (final t) => t.estimateId.isInQuery(profileEstimatesSubquery),
+            ))
+            .get();
+
+    final itemsByEstimateId = <String, List<EstimateItem>>{};
+    for (final item in allItems) {
+      itemsByEstimateId.putIfAbsent(item.estimateId, () => []).add(item);
+    }
 
     return estimateRows.map((final row) {
-      final items = allItems
-          .where((final item) => item.estimateId == row.id)
+      final rowItems = itemsByEstimateId[row.id] ?? const [];
+      final items = rowItems
           .map(
             (final itemRow) => model.InvoiceItem(
               id: itemRow.id,

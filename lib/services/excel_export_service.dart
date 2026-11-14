@@ -119,8 +119,13 @@ class ExcelExportService {
     itemsSheet.appendRow(itemHeader);
 
     for (final inv in invoices) {
-      final isInterState = inv.isInterState;
       for (final item in inv.items) {
+        final effectiveTaxable = inv.itemTaxableValue(item);
+        final effectiveDiscount =
+            ((item.amount * item.quantity) - effectiveTaxable).clamp(
+              0.0,
+              double.infinity,
+            );
         itemsSheet.appendRow([
           TextCellValue(inv.invoiceNo),
           TextCellValue(dateFormat.format(inv.invoiceDate)),
@@ -130,13 +135,13 @@ class ExcelExportService {
           DoubleCellValue(item.quantity),
           TextCellValue(item.unit),
           DoubleCellValue(item.amount),
-          DoubleCellValue(item.discount),
+          DoubleCellValue(effectiveDiscount),
           DoubleCellValue(item.gstRate),
-          DoubleCellValue(item.netAmount),
-          DoubleCellValue(item.calculateCgst(isInterState)),
-          DoubleCellValue(item.calculateSgst(isInterState)),
-          DoubleCellValue(item.calculateIgst(isInterState)),
-          DoubleCellValue(item.totalAmount),
+          DoubleCellValue(effectiveTaxable),
+          DoubleCellValue(inv.itemCgstAmount(item)),
+          DoubleCellValue(inv.itemSgstAmount(item)),
+          DoubleCellValue(inv.itemIgstAmount(item)),
+          DoubleCellValue(inv.itemTotalAmount(item)),
         ]);
       }
     }
@@ -157,7 +162,10 @@ class ExcelExportService {
     ]);
 
     for (final inv in invoices) {
-      if (inv.receiver.gstin.isNotEmpty) {
+      if (inv.receiver.gstin.isNotEmpty &&
+          inv.type != InvoiceType.creditNote &&
+          inv.type != InvoiceType.debitNote &&
+          inv.type != InvoiceType.deliveryChallan) {
         for (int i = 0; i < inv.items.length; i++) {
           final item = inv.items[i];
           final isFirstItem = i == 0;
@@ -170,11 +178,172 @@ class ExcelExportService {
             TextCellValue(inv.placeOfSupply),
             TextCellValue(inv.reverseCharge),
             DoubleCellValue(item.gstRate),
-            DoubleCellValue(item.netAmount),
+            DoubleCellValue(inv.itemTaxableValue(item)),
             const DoubleCellValue(0.0),
           ]);
         }
       }
+    }
+
+    // 4. GSTR-1 B2CS Summary Sheet
+    final Sheet b2csSheet = excel['GSTR1 B2CS Summary'];
+    b2csSheet.appendRow([
+      TextCellValue('Type'),
+      TextCellValue('Place of Supply'),
+      TextCellValue('Rate (%)'),
+      TextCellValue('Taxable Value (₹)'),
+      TextCellValue('CGST (₹)'),
+      TextCellValue('SGST (₹)'),
+      TextCellValue('IGST (₹)'),
+      TextCellValue('Cess Amount (₹)'),
+    ]);
+    final b2csBuckets = <String, Map<String, dynamic>>{};
+    for (final inv in invoices) {
+      if (inv.receiver.gstin.trim().isEmpty &&
+          inv.type != InvoiceType.creditNote &&
+          inv.type != InvoiceType.debitNote &&
+          inv.type != InvoiceType.deliveryChallan) {
+        final pos = inv.placeOfSupply.isNotEmpty
+            ? inv.placeOfSupply
+            : inv.receiver.state;
+        for (final item in inv.items) {
+          final key = '$pos|${item.gstRate.toStringAsFixed(2)}';
+          final bucket = b2csBuckets.putIfAbsent(
+            key,
+            () => {
+              'pos': pos,
+              'rate': item.gstRate,
+              'taxable': 0.0,
+              'cgst': 0.0,
+              'sgst': 0.0,
+              'igst': 0.0,
+            },
+          );
+          bucket['taxable'] =
+              (bucket['taxable'] as double) + inv.itemTaxableValue(item);
+          bucket['cgst'] =
+              (bucket['cgst'] as double) + inv.itemCgstAmount(item);
+          bucket['sgst'] =
+              (bucket['sgst'] as double) + inv.itemSgstAmount(item);
+          bucket['igst'] =
+              (bucket['igst'] as double) + inv.itemIgstAmount(item);
+        }
+      }
+    }
+    for (final b in b2csBuckets.values) {
+      b2csSheet.appendRow([
+        TextCellValue('OE'),
+        TextCellValue(b['pos'] as String),
+        DoubleCellValue(b['rate'] as double),
+        DoubleCellValue(b['taxable'] as double),
+        DoubleCellValue(b['cgst'] as double),
+        DoubleCellValue(b['sgst'] as double),
+        DoubleCellValue(b['igst'] as double),
+        const DoubleCellValue(0.0),
+      ]);
+    }
+
+    // 5. GSTR-1 CDNR Summary Sheet (Credit / Debit Notes)
+    final Sheet cdnrSheet = excel['GSTR1 CDNR Summary'];
+    cdnrSheet.appendRow([
+      TextCellValue('Receiver GSTIN'),
+      TextCellValue('Receiver Name'),
+      TextCellValue('Note Number'),
+      TextCellValue('Note Date'),
+      TextCellValue('Note Type'),
+      TextCellValue('Original Invoice No'),
+      TextCellValue('Place of Supply'),
+      TextCellValue('Rate (%)'),
+      TextCellValue('Taxable Value (₹)'),
+      TextCellValue('Note Value (₹)'),
+    ]);
+    for (final inv in invoices) {
+      if (inv.type == InvoiceType.creditNote ||
+          inv.type == InvoiceType.debitNote) {
+        final noteType = inv.type == InvoiceType.creditNote ? 'C' : 'D';
+        for (int i = 0; i < inv.items.length; i++) {
+          final item = inv.items[i];
+          cdnrSheet.appendRow([
+            TextCellValue(
+              inv.receiver.gstin.isNotEmpty ? inv.receiver.gstin : 'URP',
+            ),
+            TextCellValue(inv.receiver.name),
+            TextCellValue(inv.invoiceNo),
+            TextCellValue(dateFormat.format(inv.invoiceDate)),
+            TextCellValue(noteType),
+            TextCellValue(inv.originalInvoiceNumber ?? '-'),
+            TextCellValue(inv.placeOfSupply),
+            DoubleCellValue(item.gstRate),
+            DoubleCellValue(inv.itemTaxableValue(item)),
+            DoubleCellValue(i == 0 ? inv.grandTotal : 0.0),
+          ]);
+        }
+      }
+    }
+
+    // 6. GSTR-1 HSN Summary Sheet
+    final Sheet hsnSheet = excel['GSTR1 HSN Summary'];
+    hsnSheet.appendRow([
+      TextCellValue('HSN / SAC'),
+      TextCellValue('Description'),
+      TextCellValue('UQC'),
+      TextCellValue('Total Quantity'),
+      TextCellValue('Rate (%)'),
+      TextCellValue('Total Taxable Value (₹)'),
+      TextCellValue('Integrated Tax (₹)'),
+      TextCellValue('Central Tax (₹)'),
+      TextCellValue('State/UT Tax (₹)'),
+      TextCellValue('Total Value (₹)'),
+    ]);
+    final hsnBuckets = <String, Map<String, dynamic>>{};
+    for (final inv in invoices) {
+      if (inv.type == InvoiceType.deliveryChallan) continue;
+      final mult = inv.type == InvoiceType.creditNote ? -1.0 : 1.0;
+      for (final item in inv.items) {
+        final code = item.cleanSacCode.isEmpty ? '998311' : item.cleanSacCode;
+        final key = '$code|${item.unit}|${item.gstRate.toStringAsFixed(2)}';
+        final bucket = hsnBuckets.putIfAbsent(
+          key,
+          () => {
+            'code': code,
+            'desc': item.description,
+            'uqc': item.unit,
+            'qty': 0.0,
+            'rate': item.gstRate,
+            'taxable': 0.0,
+            'igst': 0.0,
+            'cgst': 0.0,
+            'sgst': 0.0,
+            'total': 0.0,
+          },
+        );
+        bucket['qty'] = (bucket['qty'] as double) + (item.quantity * mult);
+        bucket['taxable'] =
+            (bucket['taxable'] as double) +
+            (inv.itemTaxableValue(item) * mult);
+        bucket['igst'] =
+            (bucket['igst'] as double) + (inv.itemIgstAmount(item) * mult);
+        bucket['cgst'] =
+            (bucket['cgst'] as double) + (inv.itemCgstAmount(item) * mult);
+        bucket['sgst'] =
+            (bucket['sgst'] as double) + (inv.itemSgstAmount(item) * mult);
+        bucket['total'] =
+            (bucket['total'] as double) + (inv.itemTotalAmount(item) * mult);
+      }
+    }
+    for (final h in hsnBuckets.values) {
+      hsnSheet.appendRow([
+        TextCellValue(h['code'] as String),
+        TextCellValue(h['desc'] as String),
+        TextCellValue(h['uqc'] as String),
+        DoubleCellValue(h['qty'] as double),
+        DoubleCellValue(h['rate'] as double),
+        DoubleCellValue(h['taxable'] as double),
+        DoubleCellValue(h['igst'] as double),
+        DoubleCellValue(h['cgst'] as double),
+        DoubleCellValue(h['sgst'] as double),
+        DoubleCellValue(h['total'] as double),
+      ]);
     }
 
     return excel.encode() ?? [];

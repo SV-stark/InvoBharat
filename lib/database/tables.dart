@@ -144,6 +144,7 @@ class Payments extends Table {
   DateTimeColumn get date => dateTime()();
   TextColumn get method => text()(); // e.g. Cash, UPI
   TextColumn get notes => text().nullable()();
+  RealColumn get tdsDeducted => real().withDefault(const Constant(0.0))();
 
   @override
   Set<Column> get primaryKey => {id};

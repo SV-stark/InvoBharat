@@ -314,29 +314,35 @@ class CreativeTemplate extends BasePdfTemplate {
                                       invoice.totalTaxableValue,
                                       profile.currency,
                                     ),
-                                    if (!invoice.isInterState) ...[
-                                      buildSummaryRow(
-                                        "CGST",
-                                        invoice.totalCGST,
-                                        profile.currency,
-                                      ),
-                                      buildSummaryRow(
-                                        "SGST",
-                                        invoice.totalSGST,
-                                        profile.currency,
-                                      ),
-                                    ] else
-                                      buildSummaryRow(
-                                        "IGST",
-                                        invoice.totalIGST,
-                                        profile.currency,
-                                      ),
+                                    if (invoice.type !=
+                                        InvoiceType.billOfSupply)
+                                      if (!invoice.isInterState) ...[
+                                        buildSummaryRow(
+                                          "CGST",
+                                          invoice.totalCGST,
+                                          profile.currency,
+                                        ),
+                                        buildSummaryRow(
+                                          "SGST",
+                                          invoice.totalSGST,
+                                          profile.currency,
+                                        ),
+                                      ] else
+                                        buildSummaryRow(
+                                          "IGST",
+                                          invoice.totalIGST,
+                                          profile.currency,
+                                        ),
                                     pw.Divider(),
                                     buildSummaryRow(
                                       "Total",
                                       invoice.grandTotal,
                                       profile.currency,
                                       isBold: true,
+                                    ),
+                                    ...buildPaymentSettlementRows(
+                                      invoice,
+                                      profile.currency,
                                     ),
                                   ],
                                 ),

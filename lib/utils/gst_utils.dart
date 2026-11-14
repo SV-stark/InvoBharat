@@ -51,6 +51,65 @@ class GstUtils {
     '99': 'Centre Jurisdiction',
   };
 
+  static const Map<String, String> _stateAliasMap = {
+    'jammu': '01',
+    'kashmir': '01',
+    'jk': '01',
+    'himachal': '02',
+    'hp': '02',
+    'uk': '05',
+    'uttaranchal': '05',
+    'nctofdelhi': '07',
+    'newdelhi': '07',
+    'dl': '07',
+    'rj': '08',
+    'up': '09',
+    'br': '10',
+    'sk': '11',
+    'arunachal': '12',
+    'ar': '12',
+    'nl': '13',
+    'mn': '14',
+    'mz': '15',
+    'tr': '16',
+    'ml': '17',
+    'as': '18',
+    'bengal': '19',
+    'wb': '19',
+    'jh': '20',
+    'orissa': '21',
+    'od': '21',
+    'cg': '22',
+    'mp': '23',
+    'gj': '24',
+    'daman': '26',
+    'diu': '26',
+    'dadra': '26',
+    'nagarhaveli': '26',
+    'dadraandnagarhaveli': '26',
+    'damananddiu': '26',
+    'mh': '27',
+    'ka': '29',
+    'ga': '30',
+    'ld': '31',
+    'kl': '32',
+    'tamil': '33',
+    'tn': '33',
+    'pondicherry': '34',
+    'py': '34',
+    'andaman': '35',
+    'nicobar': '35',
+    'andamanandnicobar': '35',
+    'an': '35',
+    'tg': '36',
+    'ts': '36',
+    'andhra': '37',
+    'ap': '37',
+    'la': '38',
+    'otherterritory': '97',
+    'centrejurisdiction': '99',
+  };
+
   /// Resolves a standardized 2-digit GST state code from string (code, name, or combined)
   static String? getStateCodeFromInput(final String? input) {
     if (input == null || input.trim().isEmpty) return null;
@@ -78,7 +137,11 @@ class GstUtils {
       }
     }
 
-    // 2. Input contains the full state name (e.g. "Delhi (UT)" contains "delhi")
+    // 2. Alias match
+    final aliasCode = _stateAliasMap[normalized];
+    if (aliasCode != null) return aliasCode;
+
+    // 3. Input contains the full state name (e.g. "Delhi (UT)" contains "delhi")
     for (final entry in stateCodeMap.entries) {
       final entryNorm = entry.value.toLowerCase().replaceAll(
         RegExp(r'[^a-z0-9]'),

@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:csv_plus/csv_plus.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -55,8 +56,17 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
   }
 
   void _exportToCsv(final List<Map<String, dynamic>> data) async {
-    final rows = <List<String>>[];
-    rows.add(['Date', 'Client', 'Invoice No', 'Mode', 'Amount', 'Notes']);
+    final rows = <List<dynamic>>[];
+    rows.add([
+      'Date',
+      'Client',
+      'Invoice No',
+      'Mode',
+      'Amount Received',
+      'TDS Deducted',
+      'Total Settled',
+      'Notes',
+    ]);
     for (final entry in data) {
       final payment = entry['payment'] as dynamic;
       final invoice = entry['invoice'] as dynamic;
@@ -65,12 +75,14 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
         invoice.receiver.name,
         invoice.invoiceNo,
         payment.paymentMode,
-        payment.amount.toString(),
+        payment.amount.toStringAsFixed(2),
+        payment.tdsDeducted.toStringAsFixed(2),
+        payment.totalSettled.toStringAsFixed(2),
         payment.notes ?? '',
       ]);
     }
 
-    final csvData = rows.map((final e) => e.join(',')).join('\n');
+    final csvData = const CsvCodec().encode(rows);
     try {
       final saveUri = await FilePicker.saveFile(
         dialogTitle: 'Save Payment History CSV',
@@ -206,15 +218,30 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
                       subtitle: Text(
                         "${DateFormat('dd MMM yyyy').format(payment.date)} • ${payment.paymentMode}\nInvoice #${invoice.invoiceNo}",
                       ),
-                      trailing: Text(
-                        payment.amount.toIndianFormat(
-                          includeSymbol: true,
-                          symbol: ref.read(businessProfileProvider).currency,
-                        ),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            payment.amount.toIndianFormat(
+                              includeSymbol: true,
+                              symbol:
+                                  ref.read(businessProfileProvider).currency,
+                            ),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          if ((payment.tdsDeducted as double) > 0)
+                            Text(
+                              "TDS: ${payment.tdsDeducted.toIndianFormat(includeSymbol: true, symbol: ref.read(businessProfileProvider).currency)}",
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey,
+                              ),
+                            ),
+                        ],
                       ),
                     );
                   },
