@@ -301,10 +301,10 @@ packages:
     dependency: "direct main"
     description:
       name: excel_plus
-      sha256: d9165b6e22d65017538c574643cb598f58392d95f79ea69d117ec4f812409d0c
+      sha256: "3febe16dc22485065e836c2fb9d459d6b54401df78b92c762c3b7128ecb1491f"
       url: "https://pub.dev"
     source: hosted
-    version: "2.29.0"
+    version: "2.29.1"
   fake_async:
     dependency: transitive
     description:
