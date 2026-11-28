@@ -2,6 +2,7 @@ import 'dart:isolate';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:invobharat/models/enums.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/utils/invoice_template.dart';
@@ -25,6 +26,7 @@ class PdfGeneratorParams {
   final ByteData boldFont;
   final ByteData? fallbackFont;
   final bool showHsnSummary;
+  final InvoiceCopyType copyType;
   final Uint8List? logoBytes;
   final Uint8List? stampBytes;
   final Uint8List? signatureBytes;
@@ -37,6 +39,7 @@ class PdfGeneratorParams {
     this.fallbackFont,
     this.title,
     this.showHsnSummary = true,
+    this.copyType = InvoiceCopyType.none,
     this.logoBytes,
     this.stampBytes,
     this.signatureBytes,
@@ -99,6 +102,7 @@ Future<Uint8List> _generatePdfInIsolate(final PdfGeneratorParams params) async {
     fontFallback: fontFallback,
     title: effectiveTitle,
     showHsnSummary: params.showHsnSummary,
+    copyType: params.copyType,
     logoBytes: params.logoBytes,
     stampBytes: params.stampBytes,
     signatureBytes: params.signatureBytes,
@@ -111,6 +115,7 @@ Future<Uint8List> generateInvoicePdf(
   final BusinessProfile profile, {
   final String? title,
   final bool showHsnSummary = true,
+  final InvoiceCopyType copyType = InvoiceCopyType.none,
 }) async {
   // Load fonts in the main thread where rootBundle is guaranteed to work
   final regularData = await rootBundle.load('fonts/Spectral-Regular.ttf');
@@ -158,6 +163,7 @@ Future<Uint8List> generateInvoicePdf(
     boldFont: boldData,
     fallbackFont: fallbackData,
     showHsnSummary: showHsnSummary,
+    copyType: copyType,
     logoBytes: logoBytes,
     stampBytes: stampBytes,
     signatureBytes: signatureBytes,

@@ -13,6 +13,7 @@ class InvoiceQuickActions extends StatefulWidget {
   final Function(BuildContext, Invoice)? onExportEWayBillJson;
   final Function(BuildContext, Invoice)? onCreateCreditNote;
   final Function(BuildContext, Invoice)? onCreateDebitNote;
+  final Function(BuildContext, Invoice)? onCancelInvoice;
 
   const InvoiceQuickActions({
     super.key,
@@ -27,6 +28,7 @@ class InvoiceQuickActions extends StatefulWidget {
     this.onExportEWayBillJson,
     this.onCreateCreditNote,
     this.onCreateDebitNote,
+    this.onCancelInvoice,
   });
 
   @override
@@ -136,8 +138,19 @@ class _InvoiceQuickActionsState extends State<InvoiceQuickActions> {
                       },
                     ),
                   const MenuFlyoutSeparator(),
+                  if (widget.onCancelInvoice != null)
+                    MenuFlyoutItem(
+                      text: const Text('Cancel Invoice'),
+                      leading: Icon(FluentIcons.cancel, color: Colors.orange),
+                      onPressed: widget.invoice.isCancelled
+                          ? null
+                          : () {
+                              Flyout.of(flyoutContext).close();
+                              widget.onCancelInvoice!(context, widget.invoice);
+                            },
+                    ),
                   MenuFlyoutItem(
-                    text: const Text('Delete'),
+                    text: const Text('Move to Trash'),
                     leading: Icon(FluentIcons.delete, color: Colors.red),
                     onPressed: () {
                       Flyout.of(flyoutContext).close();

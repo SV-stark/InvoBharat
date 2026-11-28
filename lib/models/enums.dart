@@ -16,3 +16,13 @@ enum GstRate {
   final double value;
   const GstRate(this.value);
 }
+
+enum InvoiceCopyType {
+  none(''),
+  original('ORIGINAL FOR RECIPIENT'),
+  duplicate('DUPLICATE FOR TRANSPORTER'),
+  triplicate('TRIPLICATE FOR SUPPLIER');
+
+  final String label;
+  const InvoiceCopyType(this.label);
+}

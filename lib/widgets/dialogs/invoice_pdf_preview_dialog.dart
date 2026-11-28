@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
+import 'package:invobharat/models/enums.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/utils/pdf_generator.dart';
@@ -37,6 +38,7 @@ class _InvoicePdfPreviewDialogState
     extends ConsumerState<InvoicePdfPreviewDialog> {
   late String _selectedStyle;
   late bool _showHsnSummary;
+  InvoiceCopyType _selectedCopyType = InvoiceCopyType.none;
   bool _isSaving = false;
 
   final List<Map<String, dynamic>> _styles = [
@@ -112,6 +114,32 @@ class _InvoicePdfPreviewDialogState
                           ],
                         ),
                       ),
+                      // Rule 48 Copy Label Selector
+                      DropdownButton<InvoiceCopyType>(
+                        value: _selectedCopyType,
+                        underline: const SizedBox.shrink(),
+                        isDense: true,
+                        items: InvoiceCopyType.values.map((final c) {
+                          final label = switch (c) {
+                            InvoiceCopyType.none => 'No Copy Label',
+                            InvoiceCopyType.original => 'Original (Recipient)',
+                            InvoiceCopyType.duplicate =>
+                              'Duplicate (Transporter)',
+                            InvoiceCopyType.triplicate =>
+                              'Triplicate (Supplier)',
+                          };
+                          return DropdownMenuItem(
+                            value: c,
+                            child: Text(label, style: theme.textTheme.bodySmall),
+                          );
+                        }).toList(),
+                        onChanged: (final val) {
+                          if (val != null) {
+                            setState(() => _selectedCopyType = val);
+                          }
+                        },
+                      ),
+                      const SizedBox(width: 12),
                       // HSN Summary Toggle
                       Row(
                         mainAxisSize: MainAxisSize.min,
@@ -185,12 +213,15 @@ class _InvoicePdfPreviewDialogState
             // PDF Preview Body
             Expanded(
               child: KeyedSubtree(
-                key: ValueKey("pdf_preview_${_selectedStyle}_$_showHsnSummary"),
+                key: ValueKey(
+                  "pdf_preview_${_selectedStyle}_${_showHsnSummary}_${_selectedCopyType.name}",
+                ),
                 child: PdfPreview(
                   build: (format) => generateInvoicePdf(
                     effectiveInvoice,
                     widget.profile,
                     showHsnSummary: _showHsnSummary,
+                    copyType: _selectedCopyType,
                   ),
                   canChangeOrientation: false,
                   canChangePageFormat: false,

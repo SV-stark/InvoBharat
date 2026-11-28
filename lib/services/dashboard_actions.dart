@@ -8,6 +8,7 @@ class DashboardActions {
   ) {
     final Map<String, double> monthlyRevenue = {};
     for (var inv in invoices) {
+      if (inv.isCancelled || inv.isDeleted) continue;
       final key = DateFormat('yyyy-MM').format(inv.invoiceDate);
       if (!monthlyRevenue.containsKey(key)) {
         monthlyRevenue[key] = 0.0;
@@ -27,6 +28,7 @@ class DashboardActions {
     final now = DateTime.now();
 
     for (var inv in invoices) {
+      if (inv.isCancelled || inv.isDeleted) continue;
       if (inv.paymentStatus == 'Paid') continue;
       final due = inv.dueDate ?? inv.invoiceDate;
       final diff = now.difference(due).inDays;
@@ -146,15 +148,16 @@ class DashboardActions {
   }
 
   static Map<String, dynamic> calculateStats(final List<Invoice> invoices) {
+    final active = invoices.where((final inv) => !inv.isCancelled && !inv.isDeleted);
     return {
-      'revenue': invoices.fold(
+      'revenue': active.fold(
         0.0,
         (final sum, final inv) => sum + inv.grandTotal,
       ),
-      'cgst': invoices.fold(0.0, (final sum, final inv) => sum + inv.totalCGST),
-      'sgst': invoices.fold(0.0, (final sum, final inv) => sum + inv.totalSGST),
-      'igst': invoices.fold(0.0, (final sum, final inv) => sum + inv.totalIGST),
-      'count': invoices.length,
+      'cgst': active.fold(0.0, (final sum, final inv) => sum + inv.totalCGST),
+      'sgst': active.fold(0.0, (final sum, final inv) => sum + inv.totalSGST),
+      'igst': active.fold(0.0, (final sum, final inv) => sum + inv.totalIGST),
+      'count': active.length,
     };
   }
 }

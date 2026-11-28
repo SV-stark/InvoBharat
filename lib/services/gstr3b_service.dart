@@ -29,9 +29,9 @@ class Gstr3bService {
     final validInvoices = invoices
         .where(
           (inv) =>
+              !inv.isDeleted &&
               inv.type != InvoiceType.deliveryChallan &&
-              inv.status.toLowerCase() != 'cancelled' &&
-              inv.status.toLowerCase() != 'void',
+              !inv.isCancelled,
         )
         .toList();
 
@@ -67,13 +67,16 @@ class Gstr3bService {
 
       for (final item in inv.items) {
         final rateKey = item.gstRate.toStringAsFixed(2);
-        final section = isInter
-            ? '3.1(a) - Inter-State'
-            : '3.1(b) - Intra-State';
-        final nature = isInter
-            ? 'Inter-State supplies'
-            : 'Intra-State supplies';
-        final compositeKey = '$section|$rateKey|$fy|$period';
+        final isZeroRated = inv.supplyType.isExport || inv.supplyType.isSez;
+        final section = isZeroRated
+            ? '3.1(b) - Zero rated supplies'
+            : (inv.type == InvoiceType.billOfSupply
+                  ? '3.1(c) - Nil rated / Exempt'
+                  : '3.1(a) - Outward taxable supplies');
+        final nature = isZeroRated
+            ? inv.supplyType.label
+            : (isInter ? 'Inter-State supplies' : 'Intra-State supplies');
+        final compositeKey = '$section|$nature|$rateKey|$fy|$period';
 
         if (!grouped.containsKey(compositeKey)) {
           grouped[compositeKey] = {
@@ -93,6 +96,8 @@ class Gstr3bService {
         final entry = grouped[compositeKey]!;
         final taxable = inv.itemTaxableValue(item) * multiplier;
         entry['taxableValue'] = (entry['taxableValue'] as double) + taxable;
+        entry['cess'] =
+            (entry['cess'] as double) + (inv.itemCessAmount(item) * multiplier);
 
         if (isInter) {
           entry['igst'] =

@@ -1,18 +1,93 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/providers/invoice_repository_provider.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/invoice_series_provider.dart';
 import 'package:uuid/uuid.dart';
 
+class PeriodLockedException implements Exception {
+  final String message;
+  const PeriodLockedException(this.message);
+
+  @override
+  String toString() => message;
+}
+
 class InvoiceActions {
+  static void _ensureNotLocked(
+    final WidgetRef ref,
+    final DateTime date,
+  ) {
+    final profile = ref.read(businessProfileProvider);
+    if (profile.isDateLocked(date)) {
+      final lock = profile.booksLockedUntil!;
+      final lockStr =
+          '${lock.day.toString().padLeft(2, '0')}/${lock.month.toString().padLeft(2, '0')}/${lock.year}';
+      throw PeriodLockedException(
+        'Books are locked through $lockStr. Unlock or pick a later date.',
+      );
+    }
+  }
+
   static Future<void> saveInvoice(
     final WidgetRef ref,
     final Invoice invoice,
   ) async {
+    _ensureNotLocked(ref, invoice.invoiceDate);
     await ref.read(invoiceRepositoryProvider).saveInvoice(invoice);
     ref.invalidate(invoiceListProvider);
+  }
+
+  static Future<void> cancelInvoice(
+    final WidgetRef ref,
+    final Invoice invoice, {
+    final String? reason,
+  }) async {
+    if (invoice.id == null) return;
+    _ensureNotLocked(ref, invoice.invoiceDate);
+    await ref
+        .read(invoiceRepositoryProvider)
+        .cancelInvoice(invoice.id!, reason: reason);
+    ref.invalidate(invoiceListProvider);
+  }
+
+  static Future<void> softDeleteInvoice(
+    final WidgetRef ref,
+    final Invoice invoice,
+  ) async {
+    if (invoice.id == null) return;
+    _ensureNotLocked(ref, invoice.invoiceDate);
+    await ref.read(invoiceRepositoryProvider).deleteInvoice(invoice.id!);
+    ref.invalidate(invoiceListProvider);
+    ref.invalidate(trashedInvoicesProvider);
+  }
+
+  static Future<void> restoreInvoice(
+    final WidgetRef ref,
+    final Invoice invoice,
+  ) async {
+    if (invoice.id == null) return;
+    await ref.read(invoiceRepositoryProvider).restoreInvoice(invoice.id!);
+    ref.invalidate(invoiceListProvider);
+    ref.invalidate(trashedInvoicesProvider);
+  }
+
+  static Future<void> permanentlyDeleteInvoice(
+    final WidgetRef ref,
+    final Invoice invoice,
+  ) async {
+    if (invoice.id == null) return;
+    await ref
+        .read(invoiceRepositoryProvider)
+        .permanentlyDeleteInvoice(invoice.id!);
+    ref.invalidate(trashedInvoicesProvider);
+  }
+
+  static Future<void> emptyTrash(final WidgetRef ref) async {
+    await ref.read(invoiceRepositoryProvider).emptyTrash();
+    ref.invalidate(trashedInvoicesProvider);
   }
 
   static Future<Invoice> duplicateInvoice(
@@ -152,6 +227,8 @@ class InvoiceActions {
         return Colors.blue;
       case 'Overdue':
         return Colors.red;
+      case 'Cancelled':
+        return Colors.red.shade300;
       default:
         return Colors.grey;
     }

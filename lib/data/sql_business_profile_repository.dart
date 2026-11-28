@@ -52,6 +52,10 @@ class SqlBusinessProfileRepository implements BusinessProfileRepository {
       stampY: row.stampY,
       signatureX: row.signatureX,
       signatureY: row.signatureY,
+      isCompositionDealer: row.isCompositionDealer,
+      lutNumber: row.lutNumber,
+      lutDate: row.lutDate,
+      booksLockedUntil: row.booksLockedUntil,
     );
   }
 
@@ -89,6 +93,10 @@ class SqlBusinessProfileRepository implements BusinessProfileRepository {
               stampY: Value(profile.stampY),
               signatureX: Value(profile.signatureX),
               signatureY: Value(profile.signatureY),
+              isCompositionDealer: Value(profile.isCompositionDealer),
+              lutNumber: Value(profile.lutNumber),
+              lutDate: Value(profile.lutDate),
+              booksLockedUntil: Value(profile.booksLockedUntil),
             ),
           );
 

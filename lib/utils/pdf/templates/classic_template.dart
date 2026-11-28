@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
+import 'package:invobharat/models/enums.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/utils/pdf/templates/base_template.dart';
@@ -19,6 +20,7 @@ class ClassicTemplate extends BasePdfTemplate {
     final pw.Font? fontFallback,
     final String? title,
     final bool showHsnSummary = true,
+    final InvoiceCopyType copyType = InvoiceCopyType.none,
     final Uint8List? logoBytes,
     final Uint8List? stampBytes,
     final Uint8List? signatureBytes,
@@ -50,10 +52,20 @@ class ClassicTemplate extends BasePdfTemplate {
 
     pdf.addPage(
       pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(40),
+        pageTheme: buildPageTheme(
+          invoice: invoice,
+          font: font,
+          fontBold: fontBold,
+          fontFallback: fontFallback,
+          margin: const pw.EdgeInsets.all(40),
+        ),
         build: (final context) {
           return [
+            if (copyType != InvoiceCopyType.none)
+              pw.Align(
+                alignment: pw.Alignment.centerRight,
+                child: buildCopyLabel(copyType, fontBold),
+              ),
             // Header
             pw.Row(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -245,7 +257,7 @@ class ClassicTemplate extends BasePdfTemplate {
                         invoice.totalTaxableValue,
                         profile.currency,
                       ),
-                      if (invoice.type != InvoiceType.billOfSupply)
+                      if (!invoice.isTaxExemptSupply) ...[
                         if (!invoice.isInterState) ...[
                           buildSummaryRow(
                             "CGST",
@@ -253,7 +265,7 @@ class ClassicTemplate extends BasePdfTemplate {
                             profile.currency,
                           ),
                           buildSummaryRow(
-                            "SGST",
+                            invoice.stateTaxLabel,
                             invoice.totalSGST,
                             profile.currency,
                           ),
@@ -263,6 +275,13 @@ class ClassicTemplate extends BasePdfTemplate {
                             invoice.totalIGST,
                             profile.currency,
                           ),
+                        if (invoice.totalCess > 0)
+                          buildSummaryRow(
+                            "GST Cess",
+                            invoice.totalCess,
+                            profile.currency,
+                          ),
+                      ],
                       pw.Divider(),
                       buildSummaryRow(
                         "Grand Total",
@@ -278,6 +297,7 @@ class ClassicTemplate extends BasePdfTemplate {
             ),
             pw.SizedBox(height: 16),
             buildAmountInWords(invoice.grandTotal),
+            buildStatutoryDeclaration(invoice, profile, font, fontBold),
             buildBankDetailsSection(
               invoice,
               profile,

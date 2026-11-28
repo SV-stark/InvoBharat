@@ -45,6 +45,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
         quantity: Value(item.quantity),
         unit: Value(item.unit),
         gstRate: Value(item.gstRate),
+        cessRate: Value(item.cessRate),
       );
     }).toList();
 
@@ -184,6 +185,10 @@ class SqlInvoiceRepository implements InvoiceRepository {
               isArchived: Value(invoice.isArchived),
               deliveryAddress: Value(invoice.deliveryAddress),
               financialYear: Value(fy),
+              supplyType: Value(invoice.supplyType.name),
+              deletedAt: Value(invoice.deletedAt),
+              cancelledAt: Value(invoice.cancelledAt),
+              cancellationReason: Value(invoice.cancellationReason),
             ),
           );
 
@@ -212,7 +217,10 @@ class SqlInvoiceRepository implements InvoiceRepository {
   Future<model.Invoice?> getInvoice(final String id) async {
     final invoiceRow =
         await (database.select(database.invoices)..where(
-              (final t) => t.id.equals(id) & t.profileId.equals(profileId),
+              (final t) =>
+                  t.id.equals(id) &
+                  t.profileId.equals(profileId) &
+                  t.deletedAt.isNull(),
             ))
             .getSingleOrNull();
     if (invoiceRow == null) return null;
@@ -264,6 +272,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
               quantity: row.quantity,
               unit: row.unit,
               gstRate: row.gstRate,
+              cessRate: row.cessRate,
               currency: invoiceRow.currency,
             ),
           )
@@ -330,6 +339,13 @@ class SqlInvoiceRepository implements InvoiceRepository {
       currency: invoiceRow.currency,
       isArchived: invoiceRow.isArchived,
       deliveryAddress: invoiceRow.deliveryAddress ?? "",
+      supplyType: model.SupplyType.values.firstWhere(
+        (final e) => e.name == invoiceRow.supplyType,
+        orElse: () => model.SupplyType.regular,
+      ),
+      deletedAt: invoiceRow.deletedAt,
+      cancelledAt: invoiceRow.cancelledAt,
+      cancellationReason: invoiceRow.cancellationReason,
     );
   }
 
@@ -397,7 +413,10 @@ class SqlInvoiceRepository implements InvoiceRepository {
   Future<List<model.Invoice>> getAllInvoices() async {
     final invoiceRows =
         await (database.select(database.invoices)
-              ..where((final t) => t.profileId.equals(profileId))
+              ..where(
+                (final t) =>
+                    t.profileId.equals(profileId) & t.deletedAt.isNull(),
+              )
               ..orderBy([
                 (final t) => OrderingTerm(
                   expression: t.invoiceDate,
@@ -409,7 +428,10 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
     final profileInvoicesSubquery = database.selectOnly(database.invoices)
       ..addColumns([database.invoices.id])
-      ..where(database.invoices.profileId.equals(profileId));
+      ..where(
+        database.invoices.profileId.equals(profileId) &
+            database.invoices.deletedAt.isNull(),
+      );
 
     final allItems =
         await (database.select(database.invoiceItems)..where(
@@ -449,7 +471,8 @@ class SqlInvoiceRepository implements InvoiceRepository {
 
     final stmt = database.select(database.invoices)
       ..where((final t) {
-        Expression<bool> predicate = t.profileId.equals(profileId);
+        Expression<bool> predicate =
+            t.profileId.equals(profileId) & t.deletedAt.isNull();
         if (clientId != null && clientId.isNotEmpty) {
           if (cleanGstin != null && cleanGstin.isNotEmpty) {
             predicate =
@@ -515,7 +538,10 @@ class SqlInvoiceRepository implements InvoiceRepository {
   }) async {
     final invoiceRows =
         await (database.select(database.invoices)
-              ..where((final t) => t.profileId.equals(profileId))
+              ..where(
+                (final t) =>
+                    t.profileId.equals(profileId) & t.deletedAt.isNull(),
+              )
               ..orderBy([
                 (final t) => OrderingTerm(
                   expression: t.invoiceDate,
@@ -549,7 +575,10 @@ class SqlInvoiceRepository implements InvoiceRepository {
     final result =
         await (database.selectOnly(database.invoices)
               ..addColumns([database.invoices.id.count()])
-              ..where(database.invoices.profileId.equals(profileId)))
+              ..where(
+                database.invoices.profileId.equals(profileId) &
+                    database.invoices.deletedAt.isNull(),
+              ))
             .getSingle();
     return result.read<int>(database.invoices.id.count()) ?? 0;
   }
@@ -585,6 +614,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
               quantity: itemRow.quantity,
               unit: itemRow.unit,
               gstRate: itemRow.gstRate,
+              cessRate: itemRow.cessRate,
               currency: row.currency,
             ),
           )
@@ -674,12 +704,66 @@ class SqlInvoiceRepository implements InvoiceRepository {
         currency: row.currency,
         isArchived: row.isArchived,
         deliveryAddress: row.deliveryAddress ?? "",
+        supplyType: model.SupplyType.values.firstWhere(
+          (final e) => e.name == row.supplyType,
+          orElse: () => model.SupplyType.regular,
+        ),
+        deletedAt: row.deletedAt,
+        cancelledAt: row.cancelledAt,
+        cancellationReason: row.cancellationReason,
       );
     }).toList();
   }
 
   @override
   Future<void> deleteInvoice(final String id) async {
+    await (database.update(database.invoices)..where(
+          (final t) => t.id.equals(id) & t.profileId.equals(profileId),
+        ))
+        .write(InvoicesCompanion(deletedAt: Value(DateTime.now())));
+  }
+
+  @override
+  Future<List<model.Invoice>> getTrashedInvoices() async {
+    final invoiceRows =
+        await (database.select(database.invoices)
+              ..where(
+                (final t) =>
+                    t.profileId.equals(profileId) & t.deletedAt.isNotNull(),
+              )
+              ..orderBy([
+                (final t) => OrderingTerm(
+                  expression: t.deletedAt,
+                  mode: OrderingMode.desc,
+                ),
+              ]))
+            .get();
+    if (invoiceRows.isEmpty) return [];
+
+    final invoiceIds = invoiceRows.map((final r) => r.id).toList();
+    final allItems = await _fetchItemsByIds(invoiceIds);
+    final allPayments = await _fetchPaymentsByIds(invoiceIds);
+    final clientIds = invoiceRows
+        .map((final r) => r.clientId)
+        .whereType<String>()
+        .toSet()
+        .toList();
+    final clientRows = await _fetchClientsByIds(clientIds);
+    final clientMap = <String, dynamic>{for (var c in clientRows) c.id: c};
+
+    return _mapInvoices(invoiceRows, allItems, allPayments, clientMap);
+  }
+
+  @override
+  Future<void> restoreInvoice(final String id) async {
+    await (database.update(database.invoices)..where(
+          (final t) => t.id.equals(id) & t.profileId.equals(profileId),
+        ))
+        .write(const InvoicesCompanion(deletedAt: Value(null)));
+  }
+
+  @override
+  Future<void> permanentlyDeleteInvoice(final String id) async {
     await database.transaction(() async {
       await (database.delete(
         database.invoiceItems,
@@ -692,6 +776,43 @@ class SqlInvoiceRepository implements InvoiceRepository {
           ))
           .go();
     });
+  }
+
+  @override
+  Future<void> emptyTrash() async {
+    await database.transaction(() async {
+      final trashedSubquery = database.selectOnly(database.invoices)
+        ..addColumns([database.invoices.id])
+        ..where(
+          database.invoices.profileId.equals(profileId) &
+              database.invoices.deletedAt.isNotNull(),
+        );
+      await (database.delete(
+        database.invoiceItems,
+      )..where((final t) => t.invoiceId.isInQuery(trashedSubquery))).go();
+      await (database.delete(
+        database.payments,
+      )..where((final t) => t.invoiceId.isInQuery(trashedSubquery))).go();
+      await (database.delete(database.invoices)..where(
+            (final t) =>
+                t.profileId.equals(profileId) & t.deletedAt.isNotNull(),
+          ))
+          .go();
+    });
+  }
+
+  @override
+  Future<void> cancelInvoice(final String id, {final String? reason}) async {
+    await (database.update(database.invoices)..where(
+          (final t) => t.id.equals(id) & t.profileId.equals(profileId),
+        ))
+        .write(
+          InvoicesCompanion(
+            status: const Value('Cancelled'),
+            cancelledAt: Value(DateTime.now()),
+            cancellationReason: Value(reason),
+          ),
+        );
   }
 
   @override
@@ -726,7 +847,8 @@ class SqlInvoiceRepository implements InvoiceRepository {
       ..where(
         (final tbl) =>
             tbl.invoiceNo.equals(invoiceNumber.trim()) &
-            tbl.profileId.equals(profileId),
+            tbl.profileId.equals(profileId) &
+            tbl.deletedAt.isNull(),
       );
 
     if (excludeId != null && excludeId.trim().isNotEmpty) {
@@ -765,6 +887,7 @@ class SqlInvoiceRepository implements InvoiceRepository {
       ..where(
         (final tbl) =>
             tbl.profileId.equals(profileId) &
+            tbl.deletedAt.isNull() &
             tbl.invoiceDate.isBetweenValues(fyStart, fyEnd) &
             (cleanPrefix.isEmpty
                 ? const Constant(true)

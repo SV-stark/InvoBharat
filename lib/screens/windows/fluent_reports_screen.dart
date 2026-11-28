@@ -13,6 +13,8 @@ import 'package:invobharat/services/audit_service.dart';
 import 'package:invobharat/services/gstr3b_service.dart';
 import 'package:invobharat/services/gstr_service.dart';
 import 'package:invobharat/services/excel_export_service.dart';
+import 'package:invobharat/services/tally_xml_export_service.dart';
+import 'package:file_saver/file_saver.dart';
 import 'package:invobharat/utils/formatters.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
@@ -360,6 +362,13 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
                       onPressed: () =>
                           _exportBatchEWayBill(context, filteredInvoices),
                     ),
+                    const MenuFlyoutSeparator(),
+                    MenuFlyoutItem(
+                      text: const Text('Export Tally XML (.xml)'),
+                      leading: const Icon(FluentIcons.document),
+                      onPressed: () =>
+                          _exportTallyXml(context, filteredInvoices),
+                    ),
                   ],
                 ),
               ],
@@ -382,6 +391,7 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
   ) {
     final List<Map<String, dynamic>> items = [];
     for (final inv in invoices) {
+      if (inv.isCancelled || inv.isDeleted) continue;
       final dateStr = DateFormat('dd-MM-yyyy').format(inv.invoiceDate);
       final isB2B = inv.receiver.gstin.trim().isNotEmpty;
       for (final item in inv.items) {
@@ -475,7 +485,7 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
     final grouped = <String, Map<String, dynamic>>{};
 
     for (final inv in invoices) {
-      if (inv.items.isEmpty) continue;
+      if (inv.isCancelled || inv.isDeleted || inv.items.isEmpty) continue;
       final isInter = inv.isInterState;
 
       for (final item in inv.items) {
@@ -868,6 +878,71 @@ class _GstReportsViewState extends ConsumerState<GstReportsView> {
             context,
             builder: (final context, final close) => InfoBar(
               title: const Text('E-Way Bill Export Failed'),
+              content: Text(e.toString()),
+              severity: InfoBarSeverity.error,
+              onClose: close,
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportTallyXml(
+    final BuildContext context,
+    final List<Invoice> invoices,
+  ) async {
+    try {
+      if (invoices.isEmpty) {
+        if (context.mounted) {
+          unawaited(
+            displayInfoBar(
+              context,
+              builder: (final context, final close) => InfoBar(
+                title: const Text('Export Notice'),
+                content: const Text(
+                  'No invoices available in selected period to export.',
+                ),
+                severity: InfoBarSeverity.warning,
+                onClose: close,
+              ),
+            ),
+          );
+        }
+        return;
+      }
+      final profile = ref.read(businessProfileProvider);
+      final xmlContent = await TallyXmlExportService().generateTallySalesXmlAsync(
+        invoices,
+        companyName: profile.companyName,
+      );
+      final bytes = Uint8List.fromList(utf8.encode(xmlContent));
+      final timestamp = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
+      final savedPath = await FileSaver.instance.saveFile(
+        name: 'Tally_Vouchers_$timestamp',
+        bytes: bytes,
+        fileExtension: 'xml',
+      );
+      if (context.mounted) {
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (final context, final close) => InfoBar(
+              title: const Text('Tally XML Exported'),
+              content: Text('Tally XML saved successfully to $savedPath'),
+              severity: InfoBarSeverity.success,
+              onClose: close,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        unawaited(
+          displayInfoBar(
+            context,
+            builder: (final context, final close) => InfoBar(
+              title: const Text('Tally XML Export Failed'),
               content: Text(e.toString()),
               severity: InfoBarSeverity.error,
               onClose: close,

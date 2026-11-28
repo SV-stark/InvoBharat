@@ -28,6 +28,11 @@ class BusinessProfiles extends Table {
   RealColumn get stampY => real().withDefault(const Constant(0.0))();
   RealColumn get signatureX => real().withDefault(const Constant(0.0))();
   RealColumn get signatureY => real().withDefault(const Constant(0.0))();
+  BoolColumn get isCompositionDealer =>
+      boolean().withDefault(const Constant(false))();
+  TextColumn get lutNumber => text().nullable()();
+  DateTimeColumn get lutDate => dateTime().nullable()();
+  DateTimeColumn get booksLockedUntil => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -114,6 +119,12 @@ class Invoices extends Table {
   TextColumn get supplierState => text().nullable()();
   TextColumn get financialYear => text().nullable()();
 
+  // Compliance, Soft-Delete & Cancellation Fields (V20)
+  TextColumn get supplyType => text().withDefault(const Constant('regular'))();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+  DateTimeColumn get cancelledAt => dateTime().nullable()();
+  TextColumn get cancellationReason => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -131,6 +142,7 @@ class InvoiceItems extends Table {
   RealColumn get quantity => real()();
   TextColumn get unit => text()();
   RealColumn get gstRate => real()();
+  RealColumn get cessRate => real().withDefault(const Constant(0.0))();
 
   @override
   Set<Column> get primaryKey => {id};

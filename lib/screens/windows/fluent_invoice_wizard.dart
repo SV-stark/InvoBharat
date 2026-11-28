@@ -3,8 +3,10 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:invobharat/utils/formatters.dart';
+import 'package:intl/intl.dart';
 import 'dart:async';
 
+import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/providers/business_profile_provider.dart';
 import 'package:invobharat/providers/client_provider.dart';
@@ -278,6 +280,19 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                   }).toList(),
                   onChanged: (final v) {
                     if (v != null) notifier.updateInvoiceType(v);
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+              InfoLabel(
+                label: "Supply Type",
+                child: ComboBox<SupplyType>(
+                  value: invoice.supplyType,
+                  items: SupplyType.values
+                      .map((final s) => ComboBoxItem(value: s, child: Text(s.label)))
+                      .toList(),
+                  onChanged: (final v) {
+                    if (v != null) notifier.updateSupplyType(v);
                   },
                 ),
               ),
@@ -631,16 +646,40 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
                         symbol: invoice.currency,
                       ),
                     ),
-                    _buildSummaryRow(
-                      "Total GST",
-                      (invoice.totalCGST +
-                              invoice.totalSGST +
-                              invoice.totalIGST)
-                          .toIndianFormat(
+                    if (!invoice.isTaxExemptSupply) ...[
+                      if (invoice.isInterState)
+                        _buildSummaryRow(
+                          "IGST",
+                          invoice.totalIGST.toIndianFormat(
                             includeSymbol: true,
                             symbol: invoice.currency,
                           ),
-                    ),
+                        )
+                      else ...[
+                        _buildSummaryRow(
+                          "CGST",
+                          invoice.totalCGST.toIndianFormat(
+                            includeSymbol: true,
+                            symbol: invoice.currency,
+                          ),
+                        ),
+                        _buildSummaryRow(
+                          invoice.stateTaxLabel,
+                          invoice.totalSGST.toIndianFormat(
+                            includeSymbol: true,
+                            symbol: invoice.currency,
+                          ),
+                        ),
+                      ],
+                      if (invoice.totalCess > 0)
+                        _buildSummaryRow(
+                          "GST Cess",
+                          invoice.totalCess.toIndianFormat(
+                            includeSymbol: true,
+                            symbol: invoice.currency,
+                          ),
+                        ),
+                    ],
                     const Divider(),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -839,6 +878,26 @@ class _FluentInvoiceWizardState extends ConsumerState<FluentInvoiceWizard>
             title: const Text("Required"),
             content: const Text("Please add at least one item"),
             severity: InfoBarSeverity.warning,
+            onClose: close,
+          );
+        },
+      );
+      return;
+    }
+
+    final profile = ref.read(businessProfileProvider);
+    if (profile.isDateLocked(invoice.invoiceDate)) {
+      final lock = profile.booksLockedUntil!;
+      final lockStr = DateFormat('dd MMM yyyy').format(lock);
+      displayInfoBar(
+        context,
+        builder: (final context, final close) {
+          return InfoBar(
+            title: const Text("Period Locked"),
+            content: Text(
+              "Books are locked through $lockStr. Unlock in Business Settings or choose a later date.",
+            ),
+            severity: InfoBarSeverity.error,
             onClose: close,
           );
         },

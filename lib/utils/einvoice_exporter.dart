@@ -164,6 +164,7 @@ class EInvoiceExporter {
       final cgst = invoice.itemCgstAmount(item);
       final sgst = invoice.itemSgstAmount(item);
       final igst = invoice.itemIgstAmount(item);
+      final cesAmt = invoice.itemCessAmount(item);
 
       itemsList.add({
         "SlNo": (i + 1).toString(),
@@ -181,6 +182,8 @@ class EInvoiceExporter {
         "CgstAmt": double.parse(cgst.toStringAsFixed(2)),
         "SgstAmt": double.parse(sgst.toStringAsFixed(2)),
         "IgstAmt": double.parse(igst.toStringAsFixed(2)),
+        "CesRt": double.parse(item.cessRate.toStringAsFixed(2)),
+        "CesAmt": double.parse(cesAmt.toStringAsFixed(2)),
         "TotItemVal": double.parse(
           invoice.itemTotalAmount(item).toStringAsFixed(2),
         ),
@@ -191,18 +194,27 @@ class EInvoiceExporter {
     final cgstVal = double.parse(invoice.totalCGST.toStringAsFixed(2));
     final sgstVal = double.parse(invoice.totalSGST.toStringAsFixed(2));
     final igstVal = double.parse(invoice.totalIGST.toStringAsFixed(2));
+    final cesVal = double.parse(invoice.totalCess.toStringAsFixed(2));
     final discountVal = double.parse(invoice.discountAmount.toStringAsFixed(2));
     // AssVal and tax amounts already have invoice.discountAmount proportionally deducted
-    // per CGST Act Sec 15(3), so TotInvVal is AssVal + CgstVal + SgstVal + IgstVal.
+    // per CGST Act Sec 15(3), so TotInvVal is AssVal + CgstVal + SgstVal + IgstVal + CesVal.
     final totInvVal = double.parse(
-      (assVal + cgstVal + sgstVal + igstVal).toStringAsFixed(2),
+      (assVal + cgstVal + sgstVal + igstVal + cesVal).toStringAsFixed(2),
     );
+
+    final supTyp = switch (invoice.supplyType) {
+      SupplyType.exportWithLut => 'EXPWOP',
+      SupplyType.exportWithPayment => 'EXPWP',
+      SupplyType.sezWithLut => 'SEZWOP',
+      SupplyType.sezWithPayment => 'SEZWP',
+      SupplyType.regular => buyerGstin == 'URP' ? 'B2C' : 'B2B',
+    };
 
     final payload = {
       "Version": "1.1",
       "TranDtls": {
         "TaxSch": "GST",
-        "SupTyp": buyerGstin == 'URP' ? 'B2C' : 'B2B',
+        "SupTyp": supTyp,
         "RegRev": invoice.reverseCharge == 'Y' ? 'Y' : 'N',
         "IgstOnIntra": "N",
       },
@@ -234,6 +246,7 @@ class EInvoiceExporter {
         "CgstVal": cgstVal,
         "SgstVal": sgstVal,
         "IgstVal": igstVal,
+        "CesVal": cesVal,
         "Discount": discountVal,
         "TotInvVal": totInvVal,
       },
@@ -352,7 +365,7 @@ class EInvoiceExporter {
         "igstRate": invoice.isInterState
             ? double.parse(rate.toStringAsFixed(2))
             : 0.0,
-        "cessRate": 0.0,
+        "cessRate": double.parse(item.cessRate.toStringAsFixed(2)),
         "cessNonAdvol": 0.0,
       });
     }
@@ -385,7 +398,7 @@ class EInvoiceExporter {
       "cgstValue": double.parse(invoice.totalCGST.toStringAsFixed(2)),
       "sgstValue": double.parse(invoice.totalSGST.toStringAsFixed(2)),
       "igstValue": double.parse(invoice.totalIGST.toStringAsFixed(2)),
-      "cessValue": 0.0,
+      "cessValue": double.parse(invoice.totalCess.toStringAsFixed(2)),
       "totInvValue": double.parse(invoice.grandTotal.toStringAsFixed(2)),
       "transMode": "1",
       "transDistance": "0",

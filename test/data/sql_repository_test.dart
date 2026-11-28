@@ -143,6 +143,7 @@ void main() {
       final retrieved = await invoiceRepo.getInvoice('inv-to-delete');
       expect(retrieved, isNull);
 
+      await invoiceRepo.permanentlyDeleteInvoice('inv-to-delete');
       final items = await database.select(database.invoiceItems).get();
       expect(items.any((final it) => it.invoiceId == 'inv-to-delete'), isFalse);
     });

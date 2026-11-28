@@ -15,6 +15,42 @@ enum InvoiceType {
   billOfSupply,
 }
 
+enum SupplyType {
+  regular,
+  exportWithLut,
+  exportWithPayment,
+  sezWithLut,
+  sezWithPayment,
+}
+
+extension SupplyTypeExt on SupplyType {
+  bool get isExport =>
+      this == SupplyType.exportWithLut || this == SupplyType.exportWithPayment;
+
+  bool get isSez =>
+      this == SupplyType.sezWithLut || this == SupplyType.sezWithPayment;
+
+  bool get isZeroRatedWithoutTax =>
+      this == SupplyType.exportWithLut || this == SupplyType.sezWithLut;
+
+  bool get forcesInterState => this != SupplyType.regular;
+
+  String get label {
+    switch (this) {
+      case SupplyType.regular:
+        return 'Regular';
+      case SupplyType.exportWithLut:
+        return 'Export (Under LUT)';
+      case SupplyType.exportWithPayment:
+        return 'Export (With IGST)';
+      case SupplyType.sezWithLut:
+        return 'SEZ (Under LUT)';
+      case SupplyType.sezWithPayment:
+        return 'SEZ (With IGST)';
+    }
+  }
+}
+
 @freezed
 abstract class Invoice with _$Invoice {
   const Invoice._();
@@ -51,6 +87,10 @@ abstract class Invoice with _$Invoice {
     String? ewayBillNo,
     String? vehicleNo,
     String? irnNo,
+    @Default(SupplyType.regular) SupplyType supplyType,
+    DateTime? deletedAt,
+    DateTime? cancelledAt,
+    String? cancellationReason,
   }) = _Invoice;
 
   factory Invoice.fromJson(final Map<String, dynamic> json) =>
@@ -59,7 +99,16 @@ abstract class Invoice with _$Invoice {
   Currency get _currencyObj =>
       Currencies().find(currency) ?? CommonCurrencies().inr;
 
+  bool get isCancelled =>
+      status.toLowerCase() == 'cancelled' || status.toLowerCase() == 'void';
+
+  bool get isDeleted => deletedAt != null;
+
+  bool get isTaxExemptSupply =>
+      type == InvoiceType.billOfSupply || supplyType.isZeroRatedWithoutTax;
+
   bool get isInterState {
+    if (supplyType.forcesInterState) return true;
     // 1. Effective Place of Supply (POS)
     final posInput = placeOfSupply.isNotEmpty ? placeOfSupply : receiver.state;
     final posCode =
@@ -86,6 +135,24 @@ abstract class Invoice with _$Invoice {
     return suppInput.trim().toLowerCase() != posInput.trim().toLowerCase();
   }
 
+  bool get isUtgstSupply {
+    if (isInterState || isTaxExemptSupply) return false;
+    final posInput = placeOfSupply.isNotEmpty ? placeOfSupply : receiver.state;
+    final code =
+        GstUtils.getStateCodeFromInput(posInput) ??
+        (receiver.gstin.length >= 2
+            ? GstUtils.getStateCodeFromInput(receiver.gstin.substring(0, 2))
+            : null) ??
+        GstUtils.getStateCodeFromInput(receiver.stateCode) ??
+        GstUtils.getStateCodeFromInput(supplier.state) ??
+        (supplier.gstin.length >= 2
+            ? GstUtils.getStateCodeFromInput(supplier.gstin.substring(0, 2))
+            : null);
+    return GstUtils.isUtgstState(code);
+  }
+
+  String get stateTaxLabel => isUtgstSupply ? 'UTGST' : 'SGST';
+
   double get grossTaxableValue =>
       items.fold(0.0, (final sum, final item) => sum + item.netAmount);
 
@@ -102,7 +169,7 @@ abstract class Invoice with _$Invoice {
   }
 
   double itemCgstAmount(final InvoiceItem item) {
-    if (type == InvoiceType.billOfSupply || isInterState) return 0;
+    if (isTaxExemptSupply || isInterState) return 0;
     final taxableMoney = Money.fromNumWithCurrency(
       itemTaxableValue(item),
       _currencyObj,
@@ -111,7 +178,7 @@ abstract class Invoice with _$Invoice {
   }
 
   double itemSgstAmount(final InvoiceItem item) {
-    if (type == InvoiceType.billOfSupply || isInterState) return 0;
+    if (isTaxExemptSupply || isInterState) return 0;
     final taxableMoney = Money.fromNumWithCurrency(
       itemTaxableValue(item),
       _currencyObj,
@@ -120,7 +187,7 @@ abstract class Invoice with _$Invoice {
   }
 
   double itemIgstAmount(final InvoiceItem item) {
-    if (type == InvoiceType.billOfSupply || !isInterState) return 0;
+    if (isTaxExemptSupply || !isInterState) return 0;
     final taxableMoney = Money.fromNumWithCurrency(
       itemTaxableValue(item),
       _currencyObj,
@@ -128,26 +195,38 @@ abstract class Invoice with _$Invoice {
     return (taxableMoney * (item.gstRate / 100)).toDouble();
   }
 
+  double itemCessAmount(final InvoiceItem item) {
+    if (isTaxExemptSupply || item.cessRate <= 0) return 0;
+    final taxableMoney = Money.fromNumWithCurrency(
+      itemTaxableValue(item),
+      _currencyObj,
+    );
+    return (taxableMoney * (item.cessRate / 100)).toDouble();
+  }
+
   double itemTotalAmount(final InvoiceItem item) {
     final taxableMoney = Money.fromNumWithCurrency(
       itemTaxableValue(item),
       _currencyObj,
     );
-    if (type == InvoiceType.billOfSupply) {
+    if (isTaxExemptSupply) {
       return taxableMoney.toDouble();
     }
+    final cessMoney = item.cessRate > 0
+        ? taxableMoney * (item.cessRate / 100)
+        : Money.fromNumWithCurrency(0, _currencyObj);
     if (isInterState) {
       final igstMoney = taxableMoney * (item.gstRate / 100);
-      return (taxableMoney + igstMoney).toDouble();
+      return (taxableMoney + igstMoney + cessMoney).toDouble();
     } else {
       final cgstMoney = taxableMoney * (item.cgstRate / 100);
       final sgstMoney = taxableMoney * (item.sgstRate / 100);
-      return (taxableMoney + cgstMoney + sgstMoney).toDouble();
+      return (taxableMoney + cgstMoney + sgstMoney + cessMoney).toDouble();
     }
   }
 
   double get totalCGST {
-    if (type == InvoiceType.billOfSupply || isInterState) return 0;
+    if (isTaxExemptSupply || isInterState) return 0;
     final total = items.fold(Money.fromNumWithCurrency(0, _currencyObj), (
       final sum,
       final item,
@@ -162,7 +241,7 @@ abstract class Invoice with _$Invoice {
   }
 
   double get totalSGST {
-    if (type == InvoiceType.billOfSupply || isInterState) return 0;
+    if (isTaxExemptSupply || isInterState) return 0;
     final total = items.fold(Money.fromNumWithCurrency(0, _currencyObj), (
       final sum,
       final item,
@@ -177,7 +256,7 @@ abstract class Invoice with _$Invoice {
   }
 
   double get totalIGST {
-    if (type == InvoiceType.billOfSupply || !isInterState) return 0;
+    if (isTaxExemptSupply || !isInterState) return 0;
     final total = items.fold(Money.fromNumWithCurrency(0, _currencyObj), (
       final sum,
       final item,
@@ -191,13 +270,30 @@ abstract class Invoice with _$Invoice {
     return total.toDouble();
   }
 
+  double get totalCess {
+    if (isTaxExemptSupply) return 0;
+    final total = items.fold(Money.fromNumWithCurrency(0, _currencyObj), (
+      final sum,
+      final item,
+    ) {
+      if (item.cessRate <= 0) return sum;
+      final taxableMoney = Money.fromNumWithCurrency(
+        itemTaxableValue(item),
+        _currencyObj,
+      );
+      return sum + (taxableMoney * (item.cessRate / 100));
+    });
+    return total.toDouble();
+  }
+
   double get grandTotal {
     final taxable = Money.fromNumWithCurrency(totalTaxableValue, _currencyObj);
     final cgst = Money.fromNumWithCurrency(totalCGST, _currencyObj);
     final sgst = Money.fromNumWithCurrency(totalSGST, _currencyObj);
     final igst = Money.fromNumWithCurrency(totalIGST, _currencyObj);
+    final cess = Money.fromNumWithCurrency(totalCess, _currencyObj);
 
-    return (taxable + cgst + sgst + igst).toDouble();
+    return (taxable + cgst + sgst + igst + cess).toDouble();
   }
 
   double get totalCashPaid {
@@ -235,6 +331,7 @@ abstract class Invoice with _$Invoice {
   }
 
   String get paymentStatus {
+    if (isCancelled) return 'Cancelled';
     if (totalPaid >= grandTotal - 0.001) return 'Paid';
     if (dueDate != null && DateTime.now().isAfter(dueDate!)) {
       return 'Overdue';
@@ -292,6 +389,7 @@ abstract class InvoiceItem with _$InvoiceItem {
     @Default(1.0) double quantity,
     @Default('Nos') String unit,
     @Default(18.0) double gstRate,
+    @Default(0.0) double cessRate,
     @Default('INR') String currency,
   }) = _InvoiceItem;
 

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
+import 'package:invobharat/models/enums.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/utils/pdf/templates/base_template.dart';
@@ -19,6 +20,7 @@ class CorporateTemplate extends BasePdfTemplate {
     final pw.Font? fontFallback,
     final String? title,
     final bool showHsnSummary = true,
+    final InvoiceCopyType copyType = InvoiceCopyType.none,
     final Uint8List? logoBytes,
     final Uint8List? stampBytes,
     final Uint8List? signatureBytes,
@@ -51,8 +53,13 @@ class CorporateTemplate extends BasePdfTemplate {
 
     pdf.addPage(
       pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: pw.EdgeInsets.zero, // Full bleed for header
+        pageTheme: buildPageTheme(
+          invoice: invoice,
+          font: font,
+          fontBold: fontBold,
+          fontFallback: fontFallback,
+          margin: pw.EdgeInsets.zero,
+        ),
         build: (final context) {
           return [
             // Header Bar
@@ -93,6 +100,12 @@ class CorporateTemplate extends BasePdfTemplate {
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.end,
                       children: [
+                        buildCopyLabel(
+                          copyType,
+                          fontBold,
+                          textColor: white,
+                          borderColor: white,
+                        ),
                         pw.Row(
                           mainAxisAlignment: pw.MainAxisAlignment.end,
                           children: [
@@ -343,7 +356,7 @@ class CorporateTemplate extends BasePdfTemplate {
                                 invoice.totalTaxableValue,
                                 profile.currencySymbol,
                               ),
-                              if (invoice.type != InvoiceType.billOfSupply)
+                              if (!invoice.isTaxExemptSupply) ...[
                                 if (!invoice.isInterState) ...[
                                   buildSummaryRow(
                                     "CGST",
@@ -351,7 +364,7 @@ class CorporateTemplate extends BasePdfTemplate {
                                     profile.currencySymbol,
                                   ),
                                   buildSummaryRow(
-                                    "SGST",
+                                    invoice.stateTaxLabel,
                                     invoice.totalSGST,
                                     profile.currencySymbol,
                                   ),
@@ -361,6 +374,13 @@ class CorporateTemplate extends BasePdfTemplate {
                                     invoice.totalIGST,
                                     profile.currencySymbol,
                                   ),
+                                if (invoice.totalCess > 0)
+                                  buildSummaryRow(
+                                    "GST Cess",
+                                    invoice.totalCess,
+                                    profile.currencySymbol,
+                                  ),
+                              ],
                               pw.Divider(color: PdfColors.white),
                               buildSummaryRow(
                                 "Total",
@@ -381,6 +401,7 @@ class CorporateTemplate extends BasePdfTemplate {
 
                   pw.SizedBox(height: 16),
                   buildAmountInWords(invoice.grandTotal),
+                  buildStatutoryDeclaration(invoice, profile, font, fontBold),
                   buildBankDetailsSection(
                     invoice,
                     profile,

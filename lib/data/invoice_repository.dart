@@ -18,6 +18,11 @@ abstract class InvoiceRepository {
   });
   Future<int> getInvoiceCount();
   Future<void> deleteInvoice(final String id);
+  Future<List<Invoice>> getTrashedInvoices();
+  Future<void> restoreInvoice(final String id);
+  Future<void> permanentlyDeleteInvoice(final String id);
+  Future<void> emptyTrash();
+  Future<void> cancelInvoice(final String id, {final String? reason});
   Future<void> deleteAll();
 
   Future<bool> checkInvoiceExists(

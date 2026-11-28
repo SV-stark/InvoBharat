@@ -290,6 +290,54 @@ class $BusinessProfilesTable extends BusinessProfiles
     requiredDuringInsert: false,
     defaultValue: const Constant(0.0),
   );
+  static const VerificationMeta _isCompositionDealerMeta =
+      const VerificationMeta('isCompositionDealer');
+  @override
+  late final GeneratedColumn<bool> isCompositionDealer = GeneratedColumn<bool>(
+    'is_composition_dealer',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_composition_dealer" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _lutNumberMeta = const VerificationMeta(
+    'lutNumber',
+  );
+  @override
+  late final GeneratedColumn<String> lutNumber = GeneratedColumn<String>(
+    'lut_number',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lutDateMeta = const VerificationMeta(
+    'lutDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lutDate = GeneratedColumn<DateTime>(
+    'lut_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _booksLockedUntilMeta = const VerificationMeta(
+    'booksLockedUntil',
+  );
+  @override
+  late final GeneratedColumn<DateTime> booksLockedUntil =
+      GeneratedColumn<DateTime>(
+        'books_locked_until',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -319,6 +367,10 @@ class $BusinessProfilesTable extends BusinessProfiles
     stampY,
     signatureX,
     signatureY,
+    isCompositionDealer,
+    lutNumber,
+    lutDate,
+    booksLockedUntil,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -548,6 +600,36 @@ class $BusinessProfilesTable extends BusinessProfiles
         signatureY.isAcceptableOrUnknown(data['signature_y']!, _signatureYMeta),
       );
     }
+    if (data.containsKey('is_composition_dealer')) {
+      context.handle(
+        _isCompositionDealerMeta,
+        isCompositionDealer.isAcceptableOrUnknown(
+          data['is_composition_dealer']!,
+          _isCompositionDealerMeta,
+        ),
+      );
+    }
+    if (data.containsKey('lut_number')) {
+      context.handle(
+        _lutNumberMeta,
+        lutNumber.isAcceptableOrUnknown(data['lut_number']!, _lutNumberMeta),
+      );
+    }
+    if (data.containsKey('lut_date')) {
+      context.handle(
+        _lutDateMeta,
+        lutDate.isAcceptableOrUnknown(data['lut_date']!, _lutDateMeta),
+      );
+    }
+    if (data.containsKey('books_locked_until')) {
+      context.handle(
+        _booksLockedUntilMeta,
+        booksLockedUntil.isAcceptableOrUnknown(
+          data['books_locked_until']!,
+          _booksLockedUntilMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -665,6 +747,22 @@ class $BusinessProfilesTable extends BusinessProfiles
         DriftSqlType.double,
         data['${effectivePrefix}signature_y'],
       )!,
+      isCompositionDealer: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_composition_dealer'],
+      )!,
+      lutNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}lut_number'],
+      ),
+      lutDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}lut_date'],
+      ),
+      booksLockedUntil: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}books_locked_until'],
+      ),
     );
   }
 
@@ -702,6 +800,10 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
   final double stampY;
   final double signatureX;
   final double signatureY;
+  final bool isCompositionDealer;
+  final String? lutNumber;
+  final DateTime? lutDate;
+  final DateTime? booksLockedUntil;
   const BusinessProfile({
     required this.id,
     required this.companyName,
@@ -730,6 +832,10 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
     required this.stampY,
     required this.signatureX,
     required this.signatureY,
+    required this.isCompositionDealer,
+    this.lutNumber,
+    this.lutDate,
+    this.booksLockedUntil,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -771,6 +877,16 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
     map['stamp_y'] = Variable<double>(stampY);
     map['signature_x'] = Variable<double>(signatureX);
     map['signature_y'] = Variable<double>(signatureY);
+    map['is_composition_dealer'] = Variable<bool>(isCompositionDealer);
+    if (!nullToAbsent || lutNumber != null) {
+      map['lut_number'] = Variable<String>(lutNumber);
+    }
+    if (!nullToAbsent || lutDate != null) {
+      map['lut_date'] = Variable<DateTime>(lutDate);
+    }
+    if (!nullToAbsent || booksLockedUntil != null) {
+      map['books_locked_until'] = Variable<DateTime>(booksLockedUntil);
+    }
     return map;
   }
 
@@ -813,6 +929,16 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
       stampY: Value(stampY),
       signatureX: Value(signatureX),
       signatureY: Value(signatureY),
+      isCompositionDealer: Value(isCompositionDealer),
+      lutNumber: lutNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lutNumber),
+      lutDate: lutDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lutDate),
+      booksLockedUntil: booksLockedUntil == null && nullToAbsent
+          ? const Value.absent()
+          : Value(booksLockedUntil),
     );
   }
 
@@ -851,6 +977,14 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
       stampY: serializer.fromJson<double>(json['stampY']),
       signatureX: serializer.fromJson<double>(json['signatureX']),
       signatureY: serializer.fromJson<double>(json['signatureY']),
+      isCompositionDealer: serializer.fromJson<bool>(
+        json['isCompositionDealer'],
+      ),
+      lutNumber: serializer.fromJson<String?>(json['lutNumber']),
+      lutDate: serializer.fromJson<DateTime?>(json['lutDate']),
+      booksLockedUntil: serializer.fromJson<DateTime?>(
+        json['booksLockedUntil'],
+      ),
     );
   }
   @override
@@ -884,6 +1018,10 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
       'stampY': serializer.toJson<double>(stampY),
       'signatureX': serializer.toJson<double>(signatureX),
       'signatureY': serializer.toJson<double>(signatureY),
+      'isCompositionDealer': serializer.toJson<bool>(isCompositionDealer),
+      'lutNumber': serializer.toJson<String?>(lutNumber),
+      'lutDate': serializer.toJson<DateTime?>(lutDate),
+      'booksLockedUntil': serializer.toJson<DateTime?>(booksLockedUntil),
     };
   }
 
@@ -915,6 +1053,10 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
     double? stampY,
     double? signatureX,
     double? signatureY,
+    bool? isCompositionDealer,
+    Value<String?> lutNumber = const Value.absent(),
+    Value<DateTime?> lutDate = const Value.absent(),
+    Value<DateTime?> booksLockedUntil = const Value.absent(),
   }) => BusinessProfile(
     id: id ?? this.id,
     companyName: companyName ?? this.companyName,
@@ -945,6 +1087,12 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
     stampY: stampY ?? this.stampY,
     signatureX: signatureX ?? this.signatureX,
     signatureY: signatureY ?? this.signatureY,
+    isCompositionDealer: isCompositionDealer ?? this.isCompositionDealer,
+    lutNumber: lutNumber.present ? lutNumber.value : this.lutNumber,
+    lutDate: lutDate.present ? lutDate.value : this.lutDate,
+    booksLockedUntil: booksLockedUntil.present
+        ? booksLockedUntil.value
+        : this.booksLockedUntil,
   );
   BusinessProfile copyWithCompanion(BusinessProfilesCompanion data) {
     return BusinessProfile(
@@ -995,6 +1143,14 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
       signatureY: data.signatureY.present
           ? data.signatureY.value
           : this.signatureY,
+      isCompositionDealer: data.isCompositionDealer.present
+          ? data.isCompositionDealer.value
+          : this.isCompositionDealer,
+      lutNumber: data.lutNumber.present ? data.lutNumber.value : this.lutNumber,
+      lutDate: data.lutDate.present ? data.lutDate.value : this.lutDate,
+      booksLockedUntil: data.booksLockedUntil.present
+          ? data.booksLockedUntil.value
+          : this.booksLockedUntil,
     );
   }
 
@@ -1027,7 +1183,11 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
           ..write('stampX: $stampX, ')
           ..write('stampY: $stampY, ')
           ..write('signatureX: $signatureX, ')
-          ..write('signatureY: $signatureY')
+          ..write('signatureY: $signatureY, ')
+          ..write('isCompositionDealer: $isCompositionDealer, ')
+          ..write('lutNumber: $lutNumber, ')
+          ..write('lutDate: $lutDate, ')
+          ..write('booksLockedUntil: $booksLockedUntil')
           ..write(')'))
         .toString();
   }
@@ -1061,6 +1221,10 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
     stampY,
     signatureX,
     signatureY,
+    isCompositionDealer,
+    lutNumber,
+    lutDate,
+    booksLockedUntil,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -1092,7 +1256,11 @@ class BusinessProfile extends DataClass implements Insertable<BusinessProfile> {
           other.stampX == this.stampX &&
           other.stampY == this.stampY &&
           other.signatureX == this.signatureX &&
-          other.signatureY == this.signatureY);
+          other.signatureY == this.signatureY &&
+          other.isCompositionDealer == this.isCompositionDealer &&
+          other.lutNumber == this.lutNumber &&
+          other.lutDate == this.lutDate &&
+          other.booksLockedUntil == this.booksLockedUntil);
 }
 
 class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
@@ -1123,6 +1291,10 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
   final Value<double> stampY;
   final Value<double> signatureX;
   final Value<double> signatureY;
+  final Value<bool> isCompositionDealer;
+  final Value<String?> lutNumber;
+  final Value<DateTime?> lutDate;
+  final Value<DateTime?> booksLockedUntil;
   final Value<int> rowid;
   const BusinessProfilesCompanion({
     this.id = const Value.absent(),
@@ -1152,6 +1324,10 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
     this.stampY = const Value.absent(),
     this.signatureX = const Value.absent(),
     this.signatureY = const Value.absent(),
+    this.isCompositionDealer = const Value.absent(),
+    this.lutNumber = const Value.absent(),
+    this.lutDate = const Value.absent(),
+    this.booksLockedUntil = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   BusinessProfilesCompanion.insert({
@@ -1182,6 +1358,10 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
     this.stampY = const Value.absent(),
     this.signatureX = const Value.absent(),
     this.signatureY = const Value.absent(),
+    this.isCompositionDealer = const Value.absent(),
+    this.lutNumber = const Value.absent(),
+    this.lutDate = const Value.absent(),
+    this.booksLockedUntil = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        companyName = Value(companyName),
@@ -1229,6 +1409,10 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
     Expression<double>? stampY,
     Expression<double>? signatureX,
     Expression<double>? signatureY,
+    Expression<bool>? isCompositionDealer,
+    Expression<String>? lutNumber,
+    Expression<DateTime>? lutDate,
+    Expression<DateTime>? booksLockedUntil,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1260,6 +1444,11 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
       if (stampY != null) 'stamp_y': stampY,
       if (signatureX != null) 'signature_x': signatureX,
       if (signatureY != null) 'signature_y': signatureY,
+      if (isCompositionDealer != null)
+        'is_composition_dealer': isCompositionDealer,
+      if (lutNumber != null) 'lut_number': lutNumber,
+      if (lutDate != null) 'lut_date': lutDate,
+      if (booksLockedUntil != null) 'books_locked_until': booksLockedUntil,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1292,6 +1481,10 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
     Value<double>? stampY,
     Value<double>? signatureX,
     Value<double>? signatureY,
+    Value<bool>? isCompositionDealer,
+    Value<String?>? lutNumber,
+    Value<DateTime?>? lutDate,
+    Value<DateTime?>? booksLockedUntil,
     Value<int>? rowid,
   }) {
     return BusinessProfilesCompanion(
@@ -1322,6 +1515,10 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
       stampY: stampY ?? this.stampY,
       signatureX: signatureX ?? this.signatureX,
       signatureY: signatureY ?? this.signatureY,
+      isCompositionDealer: isCompositionDealer ?? this.isCompositionDealer,
+      lutNumber: lutNumber ?? this.lutNumber,
+      lutDate: lutDate ?? this.lutDate,
+      booksLockedUntil: booksLockedUntil ?? this.booksLockedUntil,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1410,6 +1607,18 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
     if (signatureY.present) {
       map['signature_y'] = Variable<double>(signatureY.value);
     }
+    if (isCompositionDealer.present) {
+      map['is_composition_dealer'] = Variable<bool>(isCompositionDealer.value);
+    }
+    if (lutNumber.present) {
+      map['lut_number'] = Variable<String>(lutNumber.value);
+    }
+    if (lutDate.present) {
+      map['lut_date'] = Variable<DateTime>(lutDate.value);
+    }
+    if (booksLockedUntil.present) {
+      map['books_locked_until'] = Variable<DateTime>(booksLockedUntil.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1446,6 +1655,10 @@ class BusinessProfilesCompanion extends UpdateCompanion<BusinessProfile> {
           ..write('stampY: $stampY, ')
           ..write('signatureX: $signatureX, ')
           ..write('signatureY: $signatureY, ')
+          ..write('isCompositionDealer: $isCompositionDealer, ')
+          ..write('lutNumber: $lutNumber, ')
+          ..write('lutDate: $lutDate, ')
+          ..write('booksLockedUntil: $booksLockedUntil, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2634,6 +2847,51 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _supplyTypeMeta = const VerificationMeta(
+    'supplyType',
+  );
+  @override
+  late final GeneratedColumn<String> supplyType = GeneratedColumn<String>(
+    'supply_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('regular'),
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _cancelledAtMeta = const VerificationMeta(
+    'cancelledAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> cancelledAt = GeneratedColumn<DateTime>(
+    'cancelled_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _cancellationReasonMeta =
+      const VerificationMeta('cancellationReason');
+  @override
+  late final GeneratedColumn<String> cancellationReason =
+      GeneratedColumn<String>(
+        'cancellation_reason',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2679,6 +2937,10 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
     deliveryAddress,
     supplierState,
     financialYear,
+    supplyType,
+    deletedAt,
+    cancelledAt,
+    cancellationReason,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3041,6 +3303,36 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
         ),
       );
     }
+    if (data.containsKey('supply_type')) {
+      context.handle(
+        _supplyTypeMeta,
+        supplyType.isAcceptableOrUnknown(data['supply_type']!, _supplyTypeMeta),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('cancelled_at')) {
+      context.handle(
+        _cancelledAtMeta,
+        cancelledAt.isAcceptableOrUnknown(
+          data['cancelled_at']!,
+          _cancelledAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cancellation_reason')) {
+      context.handle(
+        _cancellationReasonMeta,
+        cancellationReason.isAcceptableOrUnknown(
+          data['cancellation_reason']!,
+          _cancellationReasonMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -3222,6 +3514,22 @@ class $InvoicesTable extends Invoices with TableInfo<$InvoicesTable, Invoice> {
         DriftSqlType.string,
         data['${effectivePrefix}financial_year'],
       ),
+      supplyType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}supply_type'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      cancelledAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}cancelled_at'],
+      ),
+      cancellationReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cancellation_reason'],
+      ),
     );
   }
 
@@ -3275,6 +3583,10 @@ class Invoice extends DataClass implements Insertable<Invoice> {
   final String? deliveryAddress;
   final String? supplierState;
   final String? financialYear;
+  final String supplyType;
+  final DateTime? deletedAt;
+  final DateTime? cancelledAt;
+  final String? cancellationReason;
   const Invoice({
     required this.id,
     required this.profileId,
@@ -3319,6 +3631,10 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     this.deliveryAddress,
     this.supplierState,
     this.financialYear,
+    required this.supplyType,
+    this.deletedAt,
+    this.cancelledAt,
+    this.cancellationReason,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3415,6 +3731,16 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     }
     if (!nullToAbsent || financialYear != null) {
       map['financial_year'] = Variable<String>(financialYear);
+    }
+    map['supply_type'] = Variable<String>(supplyType);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    if (!nullToAbsent || cancelledAt != null) {
+      map['cancelled_at'] = Variable<DateTime>(cancelledAt);
+    }
+    if (!nullToAbsent || cancellationReason != null) {
+      map['cancellation_reason'] = Variable<String>(cancellationReason);
     }
     return map;
   }
@@ -3514,6 +3840,16 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       financialYear: financialYear == null && nullToAbsent
           ? const Value.absent()
           : Value(financialYear),
+      supplyType: Value(supplyType),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      cancelledAt: cancelledAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cancelledAt),
+      cancellationReason: cancellationReason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cancellationReason),
     );
   }
 
@@ -3572,6 +3908,12 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       deliveryAddress: serializer.fromJson<String?>(json['deliveryAddress']),
       supplierState: serializer.fromJson<String?>(json['supplierState']),
       financialYear: serializer.fromJson<String?>(json['financialYear']),
+      supplyType: serializer.fromJson<String>(json['supplyType']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      cancelledAt: serializer.fromJson<DateTime?>(json['cancelledAt']),
+      cancellationReason: serializer.fromJson<String?>(
+        json['cancellationReason'],
+      ),
     );
   }
   @override
@@ -3623,6 +3965,10 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       'deliveryAddress': serializer.toJson<String?>(deliveryAddress),
       'supplierState': serializer.toJson<String?>(supplierState),
       'financialYear': serializer.toJson<String?>(financialYear),
+      'supplyType': serializer.toJson<String>(supplyType),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'cancelledAt': serializer.toJson<DateTime?>(cancelledAt),
+      'cancellationReason': serializer.toJson<String?>(cancellationReason),
     };
   }
 
@@ -3670,6 +4016,10 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     Value<String?> deliveryAddress = const Value.absent(),
     Value<String?> supplierState = const Value.absent(),
     Value<String?> financialYear = const Value.absent(),
+    String? supplyType,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    Value<DateTime?> cancelledAt = const Value.absent(),
+    Value<String?> cancellationReason = const Value.absent(),
   }) => Invoice(
     id: id ?? this.id,
     profileId: profileId ?? this.profileId,
@@ -3744,6 +4094,12 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     financialYear: financialYear.present
         ? financialYear.value
         : this.financialYear,
+    supplyType: supplyType ?? this.supplyType,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    cancelledAt: cancelledAt.present ? cancelledAt.value : this.cancelledAt,
+    cancellationReason: cancellationReason.present
+        ? cancellationReason.value
+        : this.cancellationReason,
   );
   Invoice copyWithCompanion(InvoicesCompanion data) {
     return Invoice(
@@ -3840,6 +4196,16 @@ class Invoice extends DataClass implements Insertable<Invoice> {
       financialYear: data.financialYear.present
           ? data.financialYear.value
           : this.financialYear,
+      supplyType: data.supplyType.present
+          ? data.supplyType.value
+          : this.supplyType,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      cancelledAt: data.cancelledAt.present
+          ? data.cancelledAt.value
+          : this.cancelledAt,
+      cancellationReason: data.cancellationReason.present
+          ? data.cancellationReason.value
+          : this.cancellationReason,
     );
   }
 
@@ -3888,7 +4254,11 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           ..write('isArchived: $isArchived, ')
           ..write('deliveryAddress: $deliveryAddress, ')
           ..write('supplierState: $supplierState, ')
-          ..write('financialYear: $financialYear')
+          ..write('financialYear: $financialYear, ')
+          ..write('supplyType: $supplyType, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('cancelledAt: $cancelledAt, ')
+          ..write('cancellationReason: $cancellationReason')
           ..write(')'))
         .toString();
   }
@@ -3938,6 +4308,10 @@ class Invoice extends DataClass implements Insertable<Invoice> {
     deliveryAddress,
     supplierState,
     financialYear,
+    supplyType,
+    deletedAt,
+    cancelledAt,
+    cancellationReason,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -3985,7 +4359,11 @@ class Invoice extends DataClass implements Insertable<Invoice> {
           other.isArchived == this.isArchived &&
           other.deliveryAddress == this.deliveryAddress &&
           other.supplierState == this.supplierState &&
-          other.financialYear == this.financialYear);
+          other.financialYear == this.financialYear &&
+          other.supplyType == this.supplyType &&
+          other.deletedAt == this.deletedAt &&
+          other.cancelledAt == this.cancelledAt &&
+          other.cancellationReason == this.cancellationReason);
 }
 
 class InvoicesCompanion extends UpdateCompanion<Invoice> {
@@ -4032,6 +4410,10 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
   final Value<String?> deliveryAddress;
   final Value<String?> supplierState;
   final Value<String?> financialYear;
+  final Value<String> supplyType;
+  final Value<DateTime?> deletedAt;
+  final Value<DateTime?> cancelledAt;
+  final Value<String?> cancellationReason;
   final Value<int> rowid;
   const InvoicesCompanion({
     this.id = const Value.absent(),
@@ -4077,6 +4459,10 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     this.deliveryAddress = const Value.absent(),
     this.supplierState = const Value.absent(),
     this.financialYear = const Value.absent(),
+    this.supplyType = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.cancelledAt = const Value.absent(),
+    this.cancellationReason = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   InvoicesCompanion.insert({
@@ -4123,6 +4509,10 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     this.deliveryAddress = const Value.absent(),
     this.supplierState = const Value.absent(),
     this.financialYear = const Value.absent(),
+    this.supplyType = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.cancelledAt = const Value.absent(),
+    this.cancellationReason = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        profileId = Value(profileId),
@@ -4179,6 +4569,10 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     Expression<String>? deliveryAddress,
     Expression<String>? supplierState,
     Expression<String>? financialYear,
+    Expression<String>? supplyType,
+    Expression<DateTime>? deletedAt,
+    Expression<DateTime>? cancelledAt,
+    Expression<String>? cancellationReason,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4227,6 +4621,10 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
       if (deliveryAddress != null) 'delivery_address': deliveryAddress,
       if (supplierState != null) 'supplier_state': supplierState,
       if (financialYear != null) 'financial_year': financialYear,
+      if (supplyType != null) 'supply_type': supplyType,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (cancelledAt != null) 'cancelled_at': cancelledAt,
+      if (cancellationReason != null) 'cancellation_reason': cancellationReason,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4275,6 +4673,10 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     Value<String?>? deliveryAddress,
     Value<String?>? supplierState,
     Value<String?>? financialYear,
+    Value<String>? supplyType,
+    Value<DateTime?>? deletedAt,
+    Value<DateTime?>? cancelledAt,
+    Value<String?>? cancellationReason,
     Value<int>? rowid,
   }) {
     return InvoicesCompanion(
@@ -4322,6 +4724,10 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
       deliveryAddress: deliveryAddress ?? this.deliveryAddress,
       supplierState: supplierState ?? this.supplierState,
       financialYear: financialYear ?? this.financialYear,
+      supplyType: supplyType ?? this.supplyType,
+      deletedAt: deletedAt ?? this.deletedAt,
+      cancelledAt: cancelledAt ?? this.cancelledAt,
+      cancellationReason: cancellationReason ?? this.cancellationReason,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4462,6 +4868,18 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
     if (financialYear.present) {
       map['financial_year'] = Variable<String>(financialYear.value);
     }
+    if (supplyType.present) {
+      map['supply_type'] = Variable<String>(supplyType.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (cancelledAt.present) {
+      map['cancelled_at'] = Variable<DateTime>(cancelledAt.value);
+    }
+    if (cancellationReason.present) {
+      map['cancellation_reason'] = Variable<String>(cancellationReason.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4514,6 +4932,10 @@ class InvoicesCompanion extends UpdateCompanion<Invoice> {
           ..write('deliveryAddress: $deliveryAddress, ')
           ..write('supplierState: $supplierState, ')
           ..write('financialYear: $financialYear, ')
+          ..write('supplyType: $supplyType, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('cancelledAt: $cancelledAt, ')
+          ..write('cancellationReason: $cancellationReason, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4642,6 +5064,18 @@ class $InvoiceItemsTable extends InvoiceItems
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _cessRateMeta = const VerificationMeta(
+    'cessRate',
+  );
+  @override
+  late final GeneratedColumn<double> cessRate = GeneratedColumn<double>(
+    'cess_rate',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -4655,6 +5089,7 @@ class $InvoiceItemsTable extends InvoiceItems
     quantity,
     unit,
     gstRate,
+    cessRate,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4756,6 +5191,12 @@ class $InvoiceItemsTable extends InvoiceItems
     } else if (isInserting) {
       context.missing(_gstRateMeta);
     }
+    if (data.containsKey('cess_rate')) {
+      context.handle(
+        _cessRateMeta,
+        cessRate.isAcceptableOrUnknown(data['cess_rate']!, _cessRateMeta),
+      );
+    }
     return context;
   }
 
@@ -4809,6 +5250,10 @@ class $InvoiceItemsTable extends InvoiceItems
         DriftSqlType.double,
         data['${effectivePrefix}gst_rate'],
       )!,
+      cessRate: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}cess_rate'],
+      )!,
     );
   }
 
@@ -4830,6 +5275,7 @@ class InvoiceItem extends DataClass implements Insertable<InvoiceItem> {
   final double quantity;
   final String unit;
   final double gstRate;
+  final double cessRate;
   const InvoiceItem({
     required this.id,
     required this.invoiceId,
@@ -4842,6 +5288,7 @@ class InvoiceItem extends DataClass implements Insertable<InvoiceItem> {
     required this.quantity,
     required this.unit,
     required this.gstRate,
+    required this.cessRate,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4857,6 +5304,7 @@ class InvoiceItem extends DataClass implements Insertable<InvoiceItem> {
     map['quantity'] = Variable<double>(quantity);
     map['unit'] = Variable<String>(unit);
     map['gst_rate'] = Variable<double>(gstRate);
+    map['cess_rate'] = Variable<double>(cessRate);
     return map;
   }
 
@@ -4873,6 +5321,7 @@ class InvoiceItem extends DataClass implements Insertable<InvoiceItem> {
       quantity: Value(quantity),
       unit: Value(unit),
       gstRate: Value(gstRate),
+      cessRate: Value(cessRate),
     );
   }
 
@@ -4893,6 +5342,7 @@ class InvoiceItem extends DataClass implements Insertable<InvoiceItem> {
       quantity: serializer.fromJson<double>(json['quantity']),
       unit: serializer.fromJson<String>(json['unit']),
       gstRate: serializer.fromJson<double>(json['gstRate']),
+      cessRate: serializer.fromJson<double>(json['cessRate']),
     );
   }
   @override
@@ -4910,6 +5360,7 @@ class InvoiceItem extends DataClass implements Insertable<InvoiceItem> {
       'quantity': serializer.toJson<double>(quantity),
       'unit': serializer.toJson<String>(unit),
       'gstRate': serializer.toJson<double>(gstRate),
+      'cessRate': serializer.toJson<double>(cessRate),
     };
   }
 
@@ -4925,6 +5376,7 @@ class InvoiceItem extends DataClass implements Insertable<InvoiceItem> {
     double? quantity,
     String? unit,
     double? gstRate,
+    double? cessRate,
   }) => InvoiceItem(
     id: id ?? this.id,
     invoiceId: invoiceId ?? this.invoiceId,
@@ -4937,6 +5389,7 @@ class InvoiceItem extends DataClass implements Insertable<InvoiceItem> {
     quantity: quantity ?? this.quantity,
     unit: unit ?? this.unit,
     gstRate: gstRate ?? this.gstRate,
+    cessRate: cessRate ?? this.cessRate,
   );
   InvoiceItem copyWithCompanion(InvoiceItemsCompanion data) {
     return InvoiceItem(
@@ -4953,6 +5406,7 @@ class InvoiceItem extends DataClass implements Insertable<InvoiceItem> {
       quantity: data.quantity.present ? data.quantity.value : this.quantity,
       unit: data.unit.present ? data.unit.value : this.unit,
       gstRate: data.gstRate.present ? data.gstRate.value : this.gstRate,
+      cessRate: data.cessRate.present ? data.cessRate.value : this.cessRate,
     );
   }
 
@@ -4969,7 +5423,8 @@ class InvoiceItem extends DataClass implements Insertable<InvoiceItem> {
           ..write('discount: $discount, ')
           ..write('quantity: $quantity, ')
           ..write('unit: $unit, ')
-          ..write('gstRate: $gstRate')
+          ..write('gstRate: $gstRate, ')
+          ..write('cessRate: $cessRate')
           ..write(')'))
         .toString();
   }
@@ -4987,6 +5442,7 @@ class InvoiceItem extends DataClass implements Insertable<InvoiceItem> {
     quantity,
     unit,
     gstRate,
+    cessRate,
   );
   @override
   bool operator ==(Object other) =>
@@ -5002,7 +5458,8 @@ class InvoiceItem extends DataClass implements Insertable<InvoiceItem> {
           other.discount == this.discount &&
           other.quantity == this.quantity &&
           other.unit == this.unit &&
-          other.gstRate == this.gstRate);
+          other.gstRate == this.gstRate &&
+          other.cessRate == this.cessRate);
 }
 
 class InvoiceItemsCompanion extends UpdateCompanion<InvoiceItem> {
@@ -5017,6 +5474,7 @@ class InvoiceItemsCompanion extends UpdateCompanion<InvoiceItem> {
   final Value<double> quantity;
   final Value<String> unit;
   final Value<double> gstRate;
+  final Value<double> cessRate;
   final Value<int> rowid;
   const InvoiceItemsCompanion({
     this.id = const Value.absent(),
@@ -5030,6 +5488,7 @@ class InvoiceItemsCompanion extends UpdateCompanion<InvoiceItem> {
     this.quantity = const Value.absent(),
     this.unit = const Value.absent(),
     this.gstRate = const Value.absent(),
+    this.cessRate = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   InvoiceItemsCompanion.insert({
@@ -5044,6 +5503,7 @@ class InvoiceItemsCompanion extends UpdateCompanion<InvoiceItem> {
     required double quantity,
     required String unit,
     required double gstRate,
+    this.cessRate = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        invoiceId = Value(invoiceId),
@@ -5068,6 +5528,7 @@ class InvoiceItemsCompanion extends UpdateCompanion<InvoiceItem> {
     Expression<double>? quantity,
     Expression<String>? unit,
     Expression<double>? gstRate,
+    Expression<double>? cessRate,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -5082,6 +5543,7 @@ class InvoiceItemsCompanion extends UpdateCompanion<InvoiceItem> {
       if (quantity != null) 'quantity': quantity,
       if (unit != null) 'unit': unit,
       if (gstRate != null) 'gst_rate': gstRate,
+      if (cessRate != null) 'cess_rate': cessRate,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -5098,6 +5560,7 @@ class InvoiceItemsCompanion extends UpdateCompanion<InvoiceItem> {
     Value<double>? quantity,
     Value<String>? unit,
     Value<double>? gstRate,
+    Value<double>? cessRate,
     Value<int>? rowid,
   }) {
     return InvoiceItemsCompanion(
@@ -5112,6 +5575,7 @@ class InvoiceItemsCompanion extends UpdateCompanion<InvoiceItem> {
       quantity: quantity ?? this.quantity,
       unit: unit ?? this.unit,
       gstRate: gstRate ?? this.gstRate,
+      cessRate: cessRate ?? this.cessRate,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -5152,6 +5616,9 @@ class InvoiceItemsCompanion extends UpdateCompanion<InvoiceItem> {
     if (gstRate.present) {
       map['gst_rate'] = Variable<double>(gstRate.value);
     }
+    if (cessRate.present) {
+      map['cess_rate'] = Variable<double>(cessRate.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -5172,6 +5639,7 @@ class InvoiceItemsCompanion extends UpdateCompanion<InvoiceItem> {
           ..write('quantity: $quantity, ')
           ..write('unit: $unit, ')
           ..write('gstRate: $gstRate, ')
+          ..write('cessRate: $cessRate, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -5361,12 +5829,10 @@ class $PaymentsTable extends Payments with TableInfo<$PaymentsTable, Payment> {
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
-      tdsDeducted:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.double,
-            data['${effectivePrefix}tds_deducted'],
-          ) ??
-          0.0,
+      tdsDeducted: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}tds_deducted'],
+      )!,
     );
   }
 
@@ -5391,7 +5857,7 @@ class Payment extends DataClass implements Insertable<Payment> {
     required this.date,
     required this.method,
     this.notes,
-    this.tdsDeducted = 0.0,
+    required this.tdsDeducted,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -5434,9 +5900,7 @@ class Payment extends DataClass implements Insertable<Payment> {
       date: serializer.fromJson<DateTime>(json['date']),
       method: serializer.fromJson<String>(json['method']),
       notes: serializer.fromJson<String?>(json['notes']),
-      tdsDeducted: json['tdsDeducted'] != null
-          ? serializer.fromJson<double>(json['tdsDeducted'])
-          : 0.0,
+      tdsDeducted: serializer.fromJson<double>(json['tdsDeducted']),
     );
   }
   @override
@@ -8982,6 +9446,10 @@ typedef $$BusinessProfilesTableCreateCompanionBuilder =
       Value<double> stampY,
       Value<double> signatureX,
       Value<double> signatureY,
+      Value<bool> isCompositionDealer,
+      Value<String?> lutNumber,
+      Value<DateTime?> lutDate,
+      Value<DateTime?> booksLockedUntil,
       Value<int> rowid,
     });
 typedef $$BusinessProfilesTableUpdateCompanionBuilder =
@@ -9013,6 +9481,10 @@ typedef $$BusinessProfilesTableUpdateCompanionBuilder =
       Value<double> stampY,
       Value<double> signatureX,
       Value<double> signatureY,
+      Value<bool> isCompositionDealer,
+      Value<String?> lutNumber,
+      Value<DateTime?> lutDate,
+      Value<DateTime?> booksLockedUntil,
       Value<int> rowid,
     });
 
@@ -9267,6 +9739,26 @@ class $$BusinessProfilesTableFilterComposer
 
   ColumnFilters<double> get signatureY => $composableBuilder(
     column: $table.signatureY,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isCompositionDealer => $composableBuilder(
+    column: $table.isCompositionDealer,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lutNumber => $composableBuilder(
+    column: $table.lutNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lutDate => $composableBuilder(
+    column: $table.lutDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get booksLockedUntil => $composableBuilder(
+    column: $table.booksLockedUntil,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9540,6 +10032,26 @@ class $$BusinessProfilesTableOrderingComposer
     column: $table.signatureY,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get isCompositionDealer => $composableBuilder(
+    column: $table.isCompositionDealer,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lutNumber => $composableBuilder(
+    column: $table.lutNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lutDate => $composableBuilder(
+    column: $table.lutDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get booksLockedUntil => $composableBuilder(
+    column: $table.booksLockedUntil,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$BusinessProfilesTableAnnotationComposer
@@ -9649,6 +10161,22 @@ class $$BusinessProfilesTableAnnotationComposer
 
   GeneratedColumn<double> get signatureY => $composableBuilder(
     column: $table.signatureY,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isCompositionDealer => $composableBuilder(
+    column: $table.isCompositionDealer,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lutNumber =>
+      $composableBuilder(column: $table.lutNumber, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lutDate =>
+      $composableBuilder(column: $table.lutDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get booksLockedUntil => $composableBuilder(
+    column: $table.booksLockedUntil,
     builder: (column) => column,
   );
 
@@ -9842,6 +10370,10 @@ class $$BusinessProfilesTableTableManager
                 Value<double> stampY = const Value.absent(),
                 Value<double> signatureX = const Value.absent(),
                 Value<double> signatureY = const Value.absent(),
+                Value<bool> isCompositionDealer = const Value.absent(),
+                Value<String?> lutNumber = const Value.absent(),
+                Value<DateTime?> lutDate = const Value.absent(),
+                Value<DateTime?> booksLockedUntil = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BusinessProfilesCompanion(
                 id: id,
@@ -9871,6 +10403,10 @@ class $$BusinessProfilesTableTableManager
                 stampY: stampY,
                 signatureX: signatureX,
                 signatureY: signatureY,
+                isCompositionDealer: isCompositionDealer,
+                lutNumber: lutNumber,
+                lutDate: lutDate,
+                booksLockedUntil: booksLockedUntil,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -9902,6 +10438,10 @@ class $$BusinessProfilesTableTableManager
                 Value<double> stampY = const Value.absent(),
                 Value<double> signatureX = const Value.absent(),
                 Value<double> signatureY = const Value.absent(),
+                Value<bool> isCompositionDealer = const Value.absent(),
+                Value<String?> lutNumber = const Value.absent(),
+                Value<DateTime?> lutDate = const Value.absent(),
+                Value<DateTime?> booksLockedUntil = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BusinessProfilesCompanion.insert(
                 id: id,
@@ -9931,6 +10471,10 @@ class $$BusinessProfilesTableTableManager
                 stampY: stampY,
                 signatureX: signatureX,
                 signatureY: signatureY,
+                isCompositionDealer: isCompositionDealer,
+                lutNumber: lutNumber,
+                lutDate: lutDate,
+                booksLockedUntil: booksLockedUntil,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -9962,10 +10506,11 @@ class $$BusinessProfilesTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (clientsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           BusinessProfile,
                           $BusinessProfilesTable,
-                          Client
+                          Client,
+                          $ClientsTable
                         >(
                           currentTable: table,
                           referencedTable: $$BusinessProfilesTableReferences
@@ -9976,17 +10521,16 @@ class $$BusinessProfilesTableTableManager
                                 table,
                                 p0,
                               ).clientsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.profileId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'profile_id',
                           typedResults: items,
                         ),
                       if (invoicesRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           BusinessProfile,
                           $BusinessProfilesTable,
-                          Invoice
+                          Invoice,
+                          $InvoicesTable
                         >(
                           currentTable: table,
                           referencedTable: $$BusinessProfilesTableReferences
@@ -9997,17 +10541,16 @@ class $$BusinessProfilesTableTableManager
                                 table,
                                 p0,
                               ).invoicesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.profileId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'profile_id',
                           typedResults: items,
                         ),
                       if (bankAccountsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           BusinessProfile,
                           $BusinessProfilesTable,
-                          BankAccountData
+                          BankAccountData,
+                          $BankAccountsTable
                         >(
                           currentTable: table,
                           referencedTable: $$BusinessProfilesTableReferences
@@ -10018,17 +10561,16 @@ class $$BusinessProfilesTableTableManager
                                 table,
                                 p0,
                               ).bankAccountsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.profileId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'profile_id',
                           typedResults: items,
                         ),
                       if (estimatesRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           BusinessProfile,
                           $BusinessProfilesTable,
-                          Estimate
+                          Estimate,
+                          $EstimatesTable
                         >(
                           currentTable: table,
                           referencedTable: $$BusinessProfilesTableReferences
@@ -10039,17 +10581,16 @@ class $$BusinessProfilesTableTableManager
                                 table,
                                 p0,
                               ).estimatesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.profileId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'profile_id',
                           typedResults: items,
                         ),
                       if (recurringProfilesTableRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           BusinessProfile,
                           $BusinessProfilesTable,
-                          RecurringProfilesTableData
+                          RecurringProfilesTableData,
+                          $RecurringProfilesTableTable
                         >(
                           currentTable: table,
                           referencedTable: $$BusinessProfilesTableReferences
@@ -10060,10 +10601,8 @@ class $$BusinessProfilesTableTableManager
                                 table,
                                 p0,
                               ).recurringProfilesTableRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.profileId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'profile_id',
                           typedResults: items,
                         ),
                     ];
@@ -10596,14 +11135,19 @@ class $$ClientsTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (invoicesRefs)
-                    await $_getPrefetchedData<Client, $ClientsTable, Invoice>(
+                    await $_getPrefetchedDataByColumns<
+                      Client,
+                      $ClientsTable,
+                      Invoice,
+                      $InvoicesTable
+                    >(
                       currentTable: table,
                       referencedTable: $$ClientsTableReferences
                           ._invoicesRefsTable(db),
                       managerFromTypedResult: (p0) =>
                           $$ClientsTableReferences(db, table, p0).invoicesRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.clientId == item.id),
+                      currentColumn: 'id',
+                      referencedColumn: 'client_id',
                       typedResults: items,
                     ),
                 ];
@@ -10673,6 +11217,10 @@ typedef $$InvoicesTableCreateCompanionBuilder =
       Value<String?> deliveryAddress,
       Value<String?> supplierState,
       Value<String?> financialYear,
+      Value<String> supplyType,
+      Value<DateTime?> deletedAt,
+      Value<DateTime?> cancelledAt,
+      Value<String?> cancellationReason,
       Value<int> rowid,
     });
 typedef $$InvoicesTableUpdateCompanionBuilder =
@@ -10720,6 +11268,10 @@ typedef $$InvoicesTableUpdateCompanionBuilder =
       Value<String?> deliveryAddress,
       Value<String?> supplierState,
       Value<String?> financialYear,
+      Value<String> supplyType,
+      Value<DateTime?> deletedAt,
+      Value<DateTime?> cancelledAt,
+      Value<String?> cancellationReason,
       Value<int> rowid,
     });
 
@@ -11011,6 +11563,26 @@ class $$InvoicesTableFilterComposer
 
   ColumnFilters<String> get financialYear => $composableBuilder(
     column: $table.financialYear,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get supplyType => $composableBuilder(
+    column: $table.supplyType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get cancelledAt => $composableBuilder(
+    column: $table.cancelledAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cancellationReason => $composableBuilder(
+    column: $table.cancellationReason,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11325,6 +11897,26 @@ class $$InvoicesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get supplyType => $composableBuilder(
+    column: $table.supplyType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get cancelledAt => $composableBuilder(
+    column: $table.cancelledAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cancellationReason => $composableBuilder(
+    column: $table.cancellationReason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$BusinessProfilesTableOrderingComposer get profileId {
     final $$BusinessProfilesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -11554,6 +12146,24 @@ class $$InvoicesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get supplyType => $composableBuilder(
+    column: $table.supplyType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get cancelledAt => $composableBuilder(
+    column: $table.cancelledAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get cancellationReason => $composableBuilder(
+    column: $table.cancellationReason,
+    builder: (column) => column,
+  );
+
   $$BusinessProfilesTableAnnotationComposer get profileId {
     final $$BusinessProfilesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -11727,6 +12337,10 @@ class $$InvoicesTableTableManager
                 Value<String?> deliveryAddress = const Value.absent(),
                 Value<String?> supplierState = const Value.absent(),
                 Value<String?> financialYear = const Value.absent(),
+                Value<String> supplyType = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<DateTime?> cancelledAt = const Value.absent(),
+                Value<String?> cancellationReason = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => InvoicesCompanion(
                 id: id,
@@ -11772,6 +12386,10 @@ class $$InvoicesTableTableManager
                 deliveryAddress: deliveryAddress,
                 supplierState: supplierState,
                 financialYear: financialYear,
+                supplyType: supplyType,
+                deletedAt: deletedAt,
+                cancelledAt: cancelledAt,
+                cancellationReason: cancellationReason,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -11819,6 +12437,10 @@ class $$InvoicesTableTableManager
                 Value<String?> deliveryAddress = const Value.absent(),
                 Value<String?> supplierState = const Value.absent(),
                 Value<String?> financialYear = const Value.absent(),
+                Value<String> supplyType = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<DateTime?> cancelledAt = const Value.absent(),
+                Value<String?> cancellationReason = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => InvoicesCompanion.insert(
                 id: id,
@@ -11864,6 +12486,10 @@ class $$InvoicesTableTableManager
                 deliveryAddress: deliveryAddress,
                 supplierState: supplierState,
                 financialYear: financialYear,
+                supplyType: supplyType,
+                deletedAt: deletedAt,
+                cancelledAt: cancelledAt,
+                cancellationReason: cancellationReason,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -11935,10 +12561,11 @@ class $$InvoicesTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (invoiceItemsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Invoice,
                           $InvoicesTable,
-                          InvoiceItem
+                          InvoiceItem,
+                          $InvoiceItemsTable
                         >(
                           currentTable: table,
                           referencedTable: $$InvoicesTableReferences
@@ -11949,17 +12576,16 @@ class $$InvoicesTableTableManager
                                 table,
                                 p0,
                               ).invoiceItemsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.invoiceId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'invoice_id',
                           typedResults: items,
                         ),
                       if (paymentsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Invoice,
                           $InvoicesTable,
-                          Payment
+                          Payment,
+                          $PaymentsTable
                         >(
                           currentTable: table,
                           referencedTable: $$InvoicesTableReferences
@@ -11970,10 +12596,8 @@ class $$InvoicesTableTableManager
                                 table,
                                 p0,
                               ).paymentsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.invoiceId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'invoice_id',
                           typedResults: items,
                         ),
                     ];
@@ -12016,6 +12640,7 @@ typedef $$InvoiceItemsTableCreateCompanionBuilder =
       required double quantity,
       required String unit,
       required double gstRate,
+      Value<double> cessRate,
       Value<int> rowid,
     });
 typedef $$InvoiceItemsTableUpdateCompanionBuilder =
@@ -12031,6 +12656,7 @@ typedef $$InvoiceItemsTableUpdateCompanionBuilder =
       Value<double> quantity,
       Value<String> unit,
       Value<double> gstRate,
+      Value<double> cessRate,
       Value<int> rowid,
     });
 
@@ -12112,6 +12738,11 @@ class $$InvoiceItemsTableFilterComposer
 
   ColumnFilters<double> get gstRate => $composableBuilder(
     column: $table.gstRate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get cessRate => $composableBuilder(
+    column: $table.cessRate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12198,6 +12829,11 @@ class $$InvoiceItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get cessRate => $composableBuilder(
+    column: $table.cessRate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$InvoicesTableOrderingComposer get invoiceId {
     final $$InvoicesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -12263,6 +12899,9 @@ class $$InvoiceItemsTableAnnotationComposer
   GeneratedColumn<double> get gstRate =>
       $composableBuilder(column: $table.gstRate, builder: (column) => column);
 
+  GeneratedColumn<double> get cessRate =>
+      $composableBuilder(column: $table.cessRate, builder: (column) => column);
+
   $$InvoicesTableAnnotationComposer get invoiceId {
     final $$InvoicesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -12326,6 +12965,7 @@ class $$InvoiceItemsTableTableManager
                 Value<double> quantity = const Value.absent(),
                 Value<String> unit = const Value.absent(),
                 Value<double> gstRate = const Value.absent(),
+                Value<double> cessRate = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => InvoiceItemsCompanion(
                 id: id,
@@ -12339,6 +12979,7 @@ class $$InvoiceItemsTableTableManager
                 quantity: quantity,
                 unit: unit,
                 gstRate: gstRate,
+                cessRate: cessRate,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -12354,6 +12995,7 @@ class $$InvoiceItemsTableTableManager
                 required double quantity,
                 required String unit,
                 required double gstRate,
+                Value<double> cessRate = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => InvoiceItemsCompanion.insert(
                 id: id,
@@ -12367,6 +13009,7 @@ class $$InvoiceItemsTableTableManager
                 quantity: quantity,
                 unit: unit,
                 gstRate: gstRate,
+                cessRate: cessRate,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -14040,10 +14683,11 @@ class $$EstimatesTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (estimateItemsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           Estimate,
                           $EstimatesTable,
-                          EstimateItem
+                          EstimateItem,
+                          $EstimateItemsTable
                         >(
                           currentTable: table,
                           referencedTable: $$EstimatesTableReferences
@@ -14054,10 +14698,8 @@ class $$EstimatesTableTableManager
                                 table,
                                 p0,
                               ).estimateItemsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.estimateId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'estimate_id',
                           typedResults: items,
                         ),
                     ];

@@ -87,6 +87,30 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 },
               ),
               const Gap(8),
+              Consumer(
+                builder: (final context, final ref, final _) {
+                  final trashCount = ref
+                      .watch(trashedInvoicesProvider)
+                      .maybeWhen(
+                        data: (final list) => list.length,
+                        orElse: () => 0,
+                      );
+                  return Button(
+                    onPressed: _showTrashDialog,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(FluentIcons.delete, size: 14),
+                        const Gap(6),
+                        Text(
+                          trashCount > 0 ? "Trash ($trashCount)" : "Trash",
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              const Gap(8),
               if (_selectedIds.isNotEmpty)
                 Button(
                   onPressed: _deleteSelected,
@@ -631,6 +655,7 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                                       onMarkSent: _markAsSent,
                                       onExportEInvoiceJson: _exportEInvoiceJson,
                                       onExportEWayBillJson: _exportEWayBillJson,
+                                      onCancelInvoice: _cancelInvoice,
                                     ),
                                   ),
                                 ],
@@ -736,9 +761,9 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
       context: ctx,
       builder: (final dialogCtx) {
         return ContentDialog(
-          title: const Text("Delete Invoice?"),
+          title: const Text("Move Invoice to Trash?"),
           content: Text(
-            "Are you sure you want to delete ${invoice.invoiceNo}?",
+            "Move ${invoice.invoiceNo} to Trash? You can restore it later from the Trash bin.",
           ),
           actions: [
             Button(
@@ -750,25 +775,37 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
                 backgroundColor: WidgetStateProperty.all(Colors.red),
                 foregroundColor: WidgetStateProperty.all(Colors.white),
               ),
-              child: const Text("Delete"),
+              child: const Text("Move to Trash"),
               onPressed: () async {
                 Navigator.pop(dialogCtx);
-                await ref
-                    .read(invoiceRepositoryProvider)
-                    .deleteInvoice(invoice.id!);
-                ref.invalidate(invoiceListProvider);
-                if (!ctx.mounted) return;
-                displayInfoBar(
-                  ctx,
-                  builder: (final context, final close) {
-                    return InfoBar(
-                      title: const Text("Deleted"),
-                      content: Text("Invoice ${invoice.invoiceNo} deleted"),
-                      severity: InfoBarSeverity.success,
+                try {
+                  await InvoiceActions.softDeleteInvoice(ref, invoice);
+                  if (!ctx.mounted) return;
+                  displayInfoBar(
+                    ctx,
+                    builder: (final context, final close) {
+                      return InfoBar(
+                        title: const Text("Moved to Trash"),
+                        content: Text(
+                          "Invoice ${invoice.invoiceNo} moved to Trash",
+                        ),
+                        severity: InfoBarSeverity.success,
+                        onClose: close,
+                      );
+                    },
+                  );
+                } on PeriodLockedException catch (e) {
+                  if (!ctx.mounted) return;
+                  displayInfoBar(
+                    ctx,
+                    builder: (final context, final close) => InfoBar(
+                      title: const Text("Period Locked"),
+                      content: Text(e.message),
+                      severity: InfoBarSeverity.error,
                       onClose: close,
-                    );
-                  },
-                );
+                    ),
+                  );
+                }
               },
             ),
           ],
@@ -1129,14 +1166,191 @@ class _FluentDashboardState extends ConsumerState<FluentDashboard> {
     );
 
     if (confirmed == true) {
-      for (final id in _selectedIds) {
-        await ref.read(invoiceRepositoryProvider).deleteInvoice(id);
+      try {
+        final allInvoices = ref.read(invoiceListProvider).value ?? [];
+        for (final id in _selectedIds) {
+          final inv = allInvoices.where((final i) => i.id == id).firstOrNull;
+          if (inv != null) {
+            await InvoiceActions.softDeleteInvoice(ref, inv);
+          } else {
+            await ref.read(invoiceRepositoryProvider).deleteInvoice(id);
+          }
+        }
+        setState(() {
+          _selectedIds.clear();
+        });
+        ref.invalidate(invoiceListProvider);
+        ref.invalidate(trashedInvoicesProvider);
+      } on PeriodLockedException catch (e) {
+        if (!mounted) return;
+        displayInfoBar(
+          context,
+          builder: (final context, final close) => InfoBar(
+            title: const Text("Period Locked"),
+            content: Text(e.message),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          ),
+        );
       }
-      setState(() {
-        _selectedIds.clear();
-      });
-      ref.invalidate(invoiceListProvider);
     }
+  }
+
+  void _cancelInvoice(BuildContext _, final Invoice invoice) async {
+    if (!mounted || invoice.id == null) return;
+    final ctx = context;
+    final reasonCtrl = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
+      context: ctx,
+      builder: (final dialogCtx) => ContentDialog(
+        title: Text("Cancel Invoice ${invoice.invoiceNo}?"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "The invoice number will be preserved for GST audit compliance, stamped CANCELLED on PDFs, and excluded from tax totals.",
+            ),
+            const Gap(12),
+            InfoLabel(
+              label: "Reason (optional)",
+              child: TextBox(
+                controller: reasonCtrl,
+                placeholder: "e.g. Entered wrong GSTIN",
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Button(
+            child: const Text("Keep Active"),
+            onPressed: () => Navigator.pop(dialogCtx, false),
+          ),
+          FilledButton(
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(Colors.orange),
+            ),
+            child: const Text("Cancel Invoice"),
+            onPressed: () => Navigator.pop(dialogCtx, true),
+          ),
+        ],
+      ),
+    );
+
+    final reason = reasonCtrl.text.trim();
+    reasonCtrl.dispose();
+
+    if (confirmed == true) {
+      try {
+        await InvoiceActions.cancelInvoice(
+          ref,
+          invoice,
+          reason: reason.isEmpty ? null : reason,
+        );
+        if (!ctx.mounted) return;
+        displayInfoBar(
+          ctx,
+          builder: (final context, final close) => InfoBar(
+            title: const Text("Invoice Cancelled"),
+            content: Text("${invoice.invoiceNo} marked as Cancelled."),
+            onClose: close,
+          ),
+        );
+      } on PeriodLockedException catch (e) {
+        if (!ctx.mounted) return;
+        displayInfoBar(
+          ctx,
+          builder: (final context, final close) => InfoBar(
+            title: const Text("Period Locked"),
+            content: Text(e.message),
+            severity: InfoBarSeverity.error,
+            onClose: close,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _showTrashDialog() async {
+    await showDialog(
+      context: context,
+      builder: (final dialogCtx) => Consumer(
+        builder: (final context, final ref, final _) {
+          final trashAsync = ref.watch(trashedInvoicesProvider);
+          return ContentDialog(
+            constraints: const BoxConstraints(maxWidth: 640, maxHeight: 520),
+            title: const Text("Trash Bin"),
+            content: trashAsync.when(
+              loading: () => const SizedBox(
+                height: 160,
+                child: Center(child: ProgressRing()),
+              ),
+              error: (final e, final _) => Text("Error: $e"),
+              data: (final trashed) {
+                if (trashed.isEmpty) {
+                  return const SizedBox(
+                    height: 120,
+                    child: Center(child: Text("Trash is empty.")),
+                  );
+                }
+                return SizedBox(
+                  height: 320,
+                  child: ListView.builder(
+                    itemCount: trashed.length,
+                    itemBuilder: (final ctx, final idx) {
+                      final inv = trashed[idx];
+                      return ListTile(
+                        title: Text("${inv.invoiceNo} • ${inv.receiver.name}"),
+                        subtitle: Text(
+                          DateFormat('dd MMM yyyy').format(inv.invoiceDate),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Button(
+                              child: const Text("Restore"),
+                              onPressed: () =>
+                                  InvoiceActions.restoreInvoice(ref, inv),
+                            ),
+                            const Gap(8),
+                            IconButton(
+                              icon: Icon(
+                                FluentIcons.delete,
+                                color: Colors.red,
+                              ),
+                              onPressed: () =>
+                                  InvoiceActions.permanentlyDeleteInvoice(
+                                    ref,
+                                    inv,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+            actions: [
+              if ((trashAsync.value ?? const []).isNotEmpty)
+                Button(
+                  child: Text(
+                    "Empty Trash",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onPressed: () => InvoiceActions.emptyTrash(ref),
+                ),
+              FilledButton(
+                child: const Text("Close"),
+                onPressed: () => Navigator.pop(dialogCtx),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   Future<void> _importInvoices(final BuildContext context) async {

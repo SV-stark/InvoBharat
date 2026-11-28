@@ -24,6 +24,7 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
   late double price;
   late double discount;
   late double gst;
+  late double cess;
 
   @override
   void initState() {
@@ -36,6 +37,7 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
     price = widget.item?.amount ?? 0;
     discount = widget.item?.discount ?? 0;
     gst = widget.item?.gstRate ?? 18;
+    cess = widget.item?.cessRate ?? 0;
   }
 
   @override
@@ -194,6 +196,18 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
                   ),
                 ),
               ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: InfoLabel(
+                  label: "Cess %",
+                  child: NumberBox<double>(
+                    value: cess,
+                    min: 0.0,
+                    onChanged: (final v) => setState(() => cess = v ?? 0),
+                    mode: SpinButtonPlacementMode.inline,
+                  ),
+                ),
+              ),
             ],
           ),
         ],
@@ -207,11 +221,13 @@ class _InvoiceItemDialogState extends State<InvoiceItemDialog> {
           child: const Text("Save"),
           onPressed: () {
             final newItem = InvoiceItem(
+              id: widget.item?.id,
               description: _descCtrl.text,
               quantity: qty,
               amount: price,
               discount: discount,
               gstRate: gst,
+              cessRate: cess,
               unit: _unitCtrl.text,
               sacCode: _sacCtrl.text,
             );

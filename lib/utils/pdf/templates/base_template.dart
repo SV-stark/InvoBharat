@@ -1,6 +1,8 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:invobharat/models/enums.dart';
 import 'package:invobharat/models/invoice.dart';
 import 'package:invobharat/models/business_profile.dart';
 import 'package:invobharat/utils/invoice_template.dart';
@@ -20,10 +22,134 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
     final pw.Font? fontFallback,
     final String? title,
     final bool showHsnSummary = true,
+    final InvoiceCopyType copyType = InvoiceCopyType.none,
     final Uint8List? logoBytes,
     final Uint8List? stampBytes,
     final Uint8List? signatureBytes,
   });
+
+  pw.PageTheme buildPageTheme({
+    required final Invoice invoice,
+    required final pw.Font font,
+    required final pw.Font fontBold,
+    final pw.Font? fontFallback,
+    final pw.EdgeInsets margin = const pw.EdgeInsets.all(32),
+  }) {
+    final isCancelled = invoice.isCancelled;
+    final isDraft = !isCancelled && invoice.status.toLowerCase() == 'draft';
+    final watermarkText = isCancelled
+        ? 'CANCELLED'
+        : (isDraft ? 'DRAFT' : null);
+
+    return pw.PageTheme(
+      pageFormat: PdfPageFormat.a4,
+      margin: margin,
+      theme: pw.ThemeData.withFont(
+        base: font,
+        bold: fontBold,
+        fontFallback: fontFallback != null ? [fontFallback] : const [],
+      ),
+      buildBackground: watermarkText == null
+          ? null
+          : (final context) => pw.FullPage(
+              ignoreMargins: true,
+              child: pw.Center(
+                child: pw.Transform.rotate(
+                  angle: math.pi / 4,
+                  child: pw.Opacity(
+                    opacity: 0.14,
+                    child: pw.Text(
+                      watermarkText,
+                      style: pw.TextStyle(
+                        font: fontBold,
+                        fontSize: 76,
+                        fontWeight: pw.FontWeight.bold,
+                        color: isCancelled
+                            ? PdfColors.red600
+                            : PdfColors.grey600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+    );
+  }
+
+  pw.Widget buildCopyLabel(
+    final InvoiceCopyType copyType,
+    final pw.Font fontBold, {
+    final PdfColor textColor = PdfColors.grey700,
+    final PdfColor? borderColor,
+  }) {
+    if (copyType == InvoiceCopyType.none) return pw.SizedBox();
+    return pw.Container(
+      padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      margin: const pw.EdgeInsets.only(bottom: 4),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(
+          color: borderColor ?? textColor,
+          width: 0.6,
+        ),
+        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(3)),
+      ),
+      child: pw.Text(
+        copyType.label,
+        style: pw.TextStyle(
+          font: fontBold,
+          fontSize: 7,
+          fontWeight: pw.FontWeight.bold,
+          color: textColor,
+        ),
+      ),
+    );
+  }
+
+  pw.Widget buildStatutoryDeclaration(
+    final Invoice invoice,
+    final BusinessProfile profile,
+    final pw.Font font,
+    final pw.Font fontBold,
+  ) {
+    final declarations = <String>[];
+    if (profile.isCompositionDealer) {
+      declarations.add(
+        'Composition taxable person, not eligible to collect tax on supplies (Rule 46A of CGST Rules, 2017).',
+      );
+    }
+    if (invoice.supplyType.isZeroRatedWithoutTax) {
+      final lutParts = <String>[
+        if ((profile.lutNumber ?? '').trim().isNotEmpty)
+          'LUT No: ${profile.lutNumber!.trim()}',
+        if (profile.lutDate != null)
+          'dated ${DateFormat('dd MMM yyyy').format(profile.lutDate!)}',
+      ];
+      final lutSuffix = lutParts.isNotEmpty ? ' (${lutParts.join(', ')})' : '';
+      declarations.add(
+        'SUPPLY MEANT FOR EXPORT / SUPPLY TO SEZ UNIT OR SEZ DEVELOPER FOR AUTHORISED OPERATIONS UNDER BOND OR LETTER OF UNDERTAKING WITHOUT PAYMENT OF INTEGRATED TAX$lutSuffix.',
+      );
+    }
+    if (declarations.isEmpty) return pw.SizedBox();
+
+    return pw.Container(
+      width: double.infinity,
+      margin: const pw.EdgeInsets.only(top: 8, bottom: 4),
+      padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.grey100,
+        border: pw.Border.all(color: PdfColors.grey300, width: 0.5),
+        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(3)),
+      ),
+      child: pw.Text(
+        declarations.join('\n'),
+        style: pw.TextStyle(
+          font: fontBold,
+          fontSize: 7.5,
+          color: PdfColors.grey800,
+        ),
+      ),
+    );
+  }
 
   pw.Widget buildBadge(
     final String text, {
@@ -57,7 +183,11 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
     PdfColor bg = PdfColors.grey200;
     PdfColor textCol = PdfColors.grey800;
 
-    if (balance <= 0 && total > 0) {
+    if (invoice.isCancelled) {
+      text = 'CANCELLED';
+      bg = PdfColor.fromHex('#FEE2E2');
+      textCol = PdfColor.fromHex('#991B1B');
+    } else if (balance <= 0 && total > 0) {
       text = 'PAID';
       bg = PdfColor.fromHex('#DCFCE7'); // Soft Emerald
       textCol = PdfColor.fromHex('#166534');
@@ -97,17 +227,27 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
     final pw.EdgeInsets? cellPadding,
   }) {
     final isInterState = invoice.isInterState;
-    final isBillOfSupply = invoice.type == InvoiceType.billOfSupply;
+    final isExempt = invoice.isTaxExemptSupply;
+    final hasCess = !isExempt && invoice.items.any((final i) => i.cessRate > 0);
+    final stateTaxLabel = invoice.stateTaxLabel;
 
     final List<String> headers = [];
     if (includeIndex) headers.add('#');
     headers.addAll(['Item', 'HSN/SAC', 'Qty', 'Rate', 'Taxable Val']);
 
-    if (!isBillOfSupply) {
+    if (!isExempt) {
       if (isInterState) {
         headers.addAll(['IGST %', 'IGST Amt']);
       } else {
-        headers.addAll(['CGST %', 'CGST Amt', 'SGST %', 'SGST Amt']);
+        headers.addAll([
+          'CGST %',
+          'CGST Amt',
+          '$stateTaxLabel %',
+          '$stateTaxLabel Amt',
+        ]);
+      }
+      if (hasCess) {
+        headers.addAll(['Cess %', 'Cess Amt']);
       }
     }
     headers.add('Total');
@@ -125,7 +265,7 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
       row.add(item.amount.toIndianFormat());
       row.add(taxableValue.toIndianFormat());
 
-      if (!isBillOfSupply) {
+      if (!isExempt) {
         if (isInterState) {
           row.add("${item.gstRate}%");
           row.add(invoice.itemIgstAmount(item).toIndianFormat());
@@ -138,6 +278,10 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
           row.add(invoice.itemCgstAmount(item).toIndianFormat());
           row.add("$halfRateStr%");
           row.add(invoice.itemSgstAmount(item).toIndianFormat());
+        }
+        if (hasCess) {
+          row.add("${item.cessRate}%");
+          row.add(invoice.itemCessAmount(item).toIndianFormat());
         }
       }
 
@@ -549,7 +693,7 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
     final pw.Font font,
     final pw.Font fontBold,
   ) {
-    if (invoice.type == InvoiceType.billOfSupply) {
+    if (invoice.isTaxExemptSupply) {
       return pw.SizedBox();
     }
     // 1. Group items by HSN Code AND GST Rate
@@ -560,15 +704,18 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
       grouped.putIfAbsent(key, () => []).add(item);
     }
 
+    final stateTaxLabel = invoice.stateTaxLabel;
+    final hasCess = invoice.items.any((final i) => i.cessRate > 0);
     final headers = [
       'HSN/SAC',
       'Taxable Value',
       'CGST %',
       'CGST Amt',
-      'SGST %',
-      'SGST Amt',
+      '$stateTaxLabel %',
+      '$stateTaxLabel Amt',
       'IGST %',
       'IGST Amt',
+      if (hasCess) 'Cess Amt',
       'Total Tax',
     ];
     final isInterState = invoice.isInterState;
@@ -583,15 +730,17 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
       double cgstAmt = 0;
       double sgstAmt = 0;
       double igstAmt = 0;
+      double cessAmt = 0;
 
       for (final item in items) {
         taxableVal += invoice.itemTaxableValue(item);
         cgstAmt += invoice.itemCgstAmount(item);
         sgstAmt += invoice.itemSgstAmount(item);
         igstAmt += invoice.itemIgstAmount(item);
+        cessAmt += invoice.itemCessAmount(item);
       }
 
-      final totalTax = cgstAmt + sgstAmt + igstAmt;
+      final totalTax = cgstAmt + sgstAmt + igstAmt + cessAmt;
 
       return [
         code,
@@ -602,6 +751,7 @@ abstract class BasePdfTemplate implements InvoiceTemplate {
         sgstAmt.toIndianFormat(),
         !isInterState ? '0%' : '${gstRate.toStringAsFixed(1)}%',
         igstAmt.toIndianFormat(),
+        if (hasCess) cessAmt.toIndianFormat(),
         totalTax.toIndianFormat(),
       ];
     }).toList();

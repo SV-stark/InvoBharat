@@ -340,6 +340,93 @@ class _BusinessInfoSettingsTabState
             placeholder: "Select State",
           ),
         ),
+        const Gap(24),
+        const Divider(),
+        const Gap(16),
+        Text(
+          "GST Compliance & Period Lock",
+          style: FluentTheme.of(context).typography.subtitle,
+        ),
+        const Gap(12),
+        ToggleSwitch(
+          checked: profile.isCompositionDealer,
+          content: const Text(
+            "Composition Scheme Dealer (Rule 46A — defaults new bills to Bill of Supply)",
+          ),
+          onChanged: (final v) => ref
+              .read(businessProfileListProvider.notifier)
+              .updateProfile(profile.copyWith(isCompositionDealer: v)),
+        ),
+        const Gap(12),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: InfoLabel(
+                label: "LUT Number (Exports / SEZ)",
+                child: TextFormBox(
+                  initialValue: profile.lutNumber ?? '',
+                  placeholder: "e.g. AD270325001234A",
+                  onChanged: (final v) => ref
+                      .read(businessProfileListProvider.notifier)
+                      .updateProfile(
+                        profile.copyWith(
+                          lutNumber: v.trim().isEmpty ? null : v.trim(),
+                        ),
+                      ),
+                ),
+              ),
+            ),
+            const Gap(10),
+            Expanded(
+              child: DatePicker(
+                header: "LUT Filing Date",
+                selected: profile.lutDate,
+                onChanged: (final d) => ref
+                    .read(businessProfileListProvider.notifier)
+                    .updateProfile(profile.copyWith(lutDate: d)),
+              ),
+            ),
+            if (profile.lutDate != null) ...[
+              const Gap(8),
+              Button(
+                child: const Text("Clear"),
+                onPressed: () => ref
+                    .read(businessProfileListProvider.notifier)
+                    .updateProfile(profile.copyWith(lutDate: null)),
+              ),
+            ],
+          ],
+        ),
+        const Gap(12),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: DatePicker(
+                header: "Lock Books Through Date (Close Filed Periods)",
+                selected: profile.booksLockedUntil,
+                onChanged: (final d) => ref
+                    .read(businessProfileListProvider.notifier)
+                    .updateProfile(profile.copyWith(booksLockedUntil: d)),
+              ),
+            ),
+            if (profile.booksLockedUntil != null) ...[
+              const Gap(8),
+              Button(
+                child: const Text("Unlock"),
+                onPressed: () => ref
+                    .read(businessProfileListProvider.notifier)
+                    .updateProfile(profile.copyWith(booksLockedUntil: null)),
+              ),
+            ],
+          ],
+        ),
+        const Gap(4),
+        const Text(
+          "Invoices dated on or before the lock date cannot be created, edited, cancelled, or deleted.",
+          style: TextStyle(fontSize: 12, color: Colors.grey),
+        ),
       ],
     );
   }

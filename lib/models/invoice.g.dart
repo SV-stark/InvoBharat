@@ -54,6 +54,16 @@ _Invoice _$InvoiceFromJson(Map<String, dynamic> json) => _Invoice(
   ewayBillNo: json['ewayBillNo'] as String?,
   vehicleNo: json['vehicleNo'] as String?,
   irnNo: json['irnNo'] as String?,
+  supplyType:
+      $enumDecodeNullable(_$SupplyTypeEnumMap, json['supplyType']) ??
+      SupplyType.regular,
+  deletedAt: json['deletedAt'] == null
+      ? null
+      : DateTime.parse(json['deletedAt'] as String),
+  cancelledAt: json['cancelledAt'] == null
+      ? null
+      : DateTime.parse(json['cancelledAt'] as String),
+  cancellationReason: json['cancellationReason'] as String?,
 );
 
 Map<String, dynamic> _$InvoiceToJson(_Invoice instance) => <String, dynamic>{
@@ -88,6 +98,10 @@ Map<String, dynamic> _$InvoiceToJson(_Invoice instance) => <String, dynamic>{
   'ewayBillNo': instance.ewayBillNo,
   'vehicleNo': instance.vehicleNo,
   'irnNo': instance.irnNo,
+  'supplyType': _$SupplyTypeEnumMap[instance.supplyType]!,
+  'deletedAt': instance.deletedAt?.toIso8601String(),
+  'cancelledAt': instance.cancelledAt?.toIso8601String(),
+  'cancellationReason': instance.cancellationReason,
 };
 
 const _$InvoiceTypeEnumMap = {
@@ -96,6 +110,14 @@ const _$InvoiceTypeEnumMap = {
   InvoiceType.creditNote: 'creditNote',
   InvoiceType.debitNote: 'debitNote',
   InvoiceType.billOfSupply: 'billOfSupply',
+};
+
+const _$SupplyTypeEnumMap = {
+  SupplyType.regular: 'regular',
+  SupplyType.exportWithLut: 'exportWithLut',
+  SupplyType.exportWithPayment: 'exportWithPayment',
+  SupplyType.sezWithLut: 'sezWithLut',
+  SupplyType.sezWithPayment: 'sezWithPayment',
 };
 
 _Supplier _$SupplierFromJson(Map<String, dynamic> json) => _Supplier(
@@ -151,6 +173,7 @@ _InvoiceItem _$InvoiceItemFromJson(Map<String, dynamic> json) => _InvoiceItem(
   quantity: (json['quantity'] as num?)?.toDouble() ?? 1.0,
   unit: json['unit'] as String? ?? 'Nos',
   gstRate: (json['gstRate'] as num?)?.toDouble() ?? 18.0,
+  cessRate: (json['cessRate'] as num?)?.toDouble() ?? 0.0,
   currency: json['currency'] as String? ?? 'INR',
 );
 
@@ -166,5 +189,6 @@ Map<String, dynamic> _$InvoiceItemToJson(_InvoiceItem instance) =>
       'quantity': instance.quantity,
       'unit': instance.unit,
       'gstRate': instance.gstRate,
+      'cessRate': instance.cessRate,
       'currency': instance.currency,
     };

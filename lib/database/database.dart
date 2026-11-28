@@ -39,7 +39,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   @override
   MigrationStrategy get migration {
@@ -401,6 +401,53 @@ class AppDatabase extends _$AppDatabase {
               .toSet();
           if (!existingCols.contains('tds_deducted')) {
             await m.addColumn(payments, payments.tdsDeducted);
+          }
+        }
+        if (from < 20) {
+          Future<Set<String>> getCols(final String table) async {
+            final res = await m.database
+                .customSelect('PRAGMA table_info(`$table`)')
+                .get();
+            return res.map((final r) => r.read<String>('name')).toSet();
+          }
+
+          final bpCols = await getCols('business_profiles');
+          if (!bpCols.contains('is_composition_dealer')) {
+            await m.addColumn(
+              businessProfiles,
+              businessProfiles.isCompositionDealer,
+            );
+          }
+          if (!bpCols.contains('lut_number')) {
+            await m.addColumn(businessProfiles, businessProfiles.lutNumber);
+          }
+          if (!bpCols.contains('lut_date')) {
+            await m.addColumn(businessProfiles, businessProfiles.lutDate);
+          }
+          if (!bpCols.contains('books_locked_until')) {
+            await m.addColumn(
+              businessProfiles,
+              businessProfiles.booksLockedUntil,
+            );
+          }
+
+          final invCols = await getCols('invoices');
+          if (!invCols.contains('supply_type')) {
+            await m.addColumn(invoices, invoices.supplyType);
+          }
+          if (!invCols.contains('deleted_at')) {
+            await m.addColumn(invoices, invoices.deletedAt);
+          }
+          if (!invCols.contains('cancelled_at')) {
+            await m.addColumn(invoices, invoices.cancelledAt);
+          }
+          if (!invCols.contains('cancellation_reason')) {
+            await m.addColumn(invoices, invoices.cancellationReason);
+          }
+
+          final itemCols = await getCols('invoice_items');
+          if (!itemCols.contains('cess_rate')) {
+            await m.addColumn(invoiceItems, invoiceItems.cessRate);
           }
         }
       },

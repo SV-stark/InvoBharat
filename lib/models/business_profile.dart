@@ -34,6 +34,10 @@ abstract class BusinessProfile with _$BusinessProfile {
     @Default(0.0) double signatureX,
     @Default(0.0) double signatureY,
     @Default(0xFF009688) int colorValue,
+    @Default(false) bool isCompositionDealer,
+    String? lutNumber,
+    DateTime? lutDate,
+    DateTime? booksLockedUntil,
   }) = _BusinessProfile;
 
   factory BusinessProfile.fromJson(final Map<String, dynamic> json) =>
@@ -56,4 +60,12 @@ extension BusinessProfileExt on BusinessProfile {
   // Aliases for compatibility
   String get accountNumber => accountNo;
   String get branchName => branch;
+
+  bool isDateLocked(final DateTime date) {
+    final lock = booksLockedUntil;
+    if (lock == null) return false;
+    final d = DateTime(date.year, date.month, date.day);
+    final l = DateTime(lock.year, lock.month, lock.day);
+    return !d.isAfter(l);
+  }
 }

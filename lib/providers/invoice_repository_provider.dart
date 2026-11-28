@@ -17,6 +17,10 @@ final invoiceListProvider = FutureProvider<List<Invoice>>((final ref) async {
   return ref.watch(invoiceRepositoryProvider).getAllInvoices();
 });
 
+final trashedInvoicesProvider = FutureProvider<List<Invoice>>((final ref) async {
+  return ref.watch(invoiceRepositoryProvider).getTrashedInvoices();
+});
+
 final paginatedInvoicesProvider = FutureProvider.family<List<Invoice>, int>((
   final ref,
   final page,

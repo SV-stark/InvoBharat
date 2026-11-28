@@ -51,6 +51,14 @@ class GstUtils {
     '99': 'Centre Jurisdiction',
   };
 
+  /// Union Territories without a legislature where UTGST applies instead of SGST.
+  static const Set<String> utgstStateCodes = {'04', '26', '31', '35', '38'};
+
+  static bool isUtgstState(final String? input) {
+    final code = getStateCodeFromInput(input);
+    return code != null && utgstStateCodes.contains(code);
+  }
+
   static const Map<String, String> _stateAliasMap = {
     'jammu': '01',
     'kashmir': '01',

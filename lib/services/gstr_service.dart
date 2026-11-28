@@ -63,9 +63,9 @@ class GstrService {
     final validInvoices = invoices
         .where(
           (inv) =>
+              !inv.isDeleted &&
               inv.type != InvoiceType.deliveryChallan &&
-              inv.status.toLowerCase() != 'cancelled' &&
-              inv.status.toLowerCase() != 'void',
+              !inv.isCancelled,
         )
         .toList();
 
@@ -150,6 +150,7 @@ class GstrService {
           final cgst = inv.itemCgstAmount(item) * multiplier;
           final sgst = inv.itemSgstAmount(item) * multiplier;
           final igst = inv.itemIgstAmount(item) * multiplier;
+          final itemCess = inv.itemCessAmount(item) * multiplier;
           final hsnDesc = item.description;
           final hsnDetails = item.sacCode;
 
@@ -164,7 +165,7 @@ class GstrService {
             cgst.toStringAsFixed(2),
             sgst.toStringAsFixed(2),
             igst.toStringAsFixed(2),
-            cess,
+            itemCess.toStringAsFixed(2),
             _sanitize(placeOfSupply),
             _sanitize(rcm),
             _sanitize(hsnDetails),
@@ -178,18 +179,19 @@ class GstrService {
     return const CsvCodec().encode(rows);
   }
 
-  /// Generates GSTN Offline Tool compatible GSTR-1 JSON (b2b, b2cl, b2cs, cdnr, cdnur, hsn)
+  /// Generates GSTN Offline Tool compatible GSTR-1 JSON (b2b, b2cl, b2cs, exp, cdnr, cdnur, hsn, doc_issue)
   String generateGstr1PortalJson(
     final List<Invoice> invoices, {
     final String gstin = '',
     final String fp = '',
   }) {
-    final validInvoices = invoices
+    final nonDeletedInvoices = invoices
+        .where((inv) => !inv.isDeleted)
+        .toList();
+    final validInvoices = nonDeletedInvoices
         .where(
           (inv) =>
-              inv.type != InvoiceType.deliveryChallan &&
-              inv.status.toLowerCase() != 'cancelled' &&
-              inv.status.toLowerCase() != 'void',
+              inv.type != InvoiceType.deliveryChallan && !inv.isCancelled,
         )
         .toList();
 
@@ -197,6 +199,7 @@ class GstrService {
     final b2bByCtin = <String, List<Map<String, dynamic>>>{};
     final b2clByPos = <String, List<Map<String, dynamic>>>{};
     final b2csGrouped = <String, Map<String, dynamic>>{};
+    final expByTyp = <String, List<Map<String, dynamic>>>{};
     final cdnrByCtin = <String, List<Map<String, dynamic>>>{};
     final cdnurList = <Map<String, dynamic>>[];
     final hsnGrouped = <String, Map<String, dynamic>>{};
@@ -229,15 +232,23 @@ class GstrService {
         final iamt = inv.itemIgstAmount(item);
         final camt = inv.itemCgstAmount(item);
         final samt = inv.itemSgstAmount(item);
+        final csamt = inv.itemCessAmount(item);
 
         final bucket = itemsByRate.putIfAbsent(
           rate,
-          () => {'txval': 0.0, 'iamt': 0.0, 'camt': 0.0, 'samt': 0.0},
+          () => {
+            'txval': 0.0,
+            'iamt': 0.0,
+            'camt': 0.0,
+            'samt': 0.0,
+            'csamt': 0.0,
+          },
         );
         bucket['txval'] = bucket['txval']! + txval;
         bucket['iamt'] = bucket['iamt']! + iamt;
         bucket['camt'] = bucket['camt']! + camt;
         bucket['samt'] = bucket['samt']! + samt;
+        bucket['csamt'] = bucket['csamt']! + csamt;
 
         // Populate HSN summary
         final hsnCode = item.cleanSacCode.isEmpty ? '998311' : item.cleanSacCode;
@@ -271,6 +282,8 @@ class GstrService {
         hsnEntry['iamt'] = (hsnEntry['iamt'] as double) + (iamt * multiplier);
         hsnEntry['camt'] = (hsnEntry['camt'] as double) + (camt * multiplier);
         hsnEntry['samt'] = (hsnEntry['samt'] as double) + (samt * multiplier);
+        hsnEntry['csamt'] =
+            (hsnEntry['csamt'] as double) + (csamt * multiplier);
       }
 
       int itemIndex = 1;
@@ -280,7 +293,7 @@ class GstrService {
         final det = <String, dynamic>{
           'txval': double.parse(b['txval']!.toStringAsFixed(2)),
           'rt': double.parse(rate.toStringAsFixed(2)),
-          'csamt': 0.0,
+          'csamt': double.parse(b['csamt']!.toStringAsFixed(2)),
         };
         if (inv.isInterState) {
           det['iamt'] = double.parse(b['iamt']!.toStringAsFixed(2));
@@ -290,6 +303,10 @@ class GstrService {
         }
         return {'num': itemIndex++, 'itm_det': det};
       }).toList();
+
+      final invTyp = inv.supplyType == SupplyType.sezWithPayment
+          ? 'SEWP'
+          : (inv.supplyType == SupplyType.sezWithLut ? 'SEWOP' : 'R');
 
       if (isNote) {
         final noteObj = <String, dynamic>{
@@ -304,7 +321,7 @@ class GstrService {
           'val': double.parse(inv.grandTotal.toStringAsFixed(2)),
           'pos': posCode,
           'rchrg': inv.reverseCharge == 'Y' ? 'Y' : 'N',
-          'inv_typ': 'R',
+          'inv_typ': invTyp,
           'itms': itmsJson,
         };
         if (isB2B) {
@@ -312,6 +329,19 @@ class GstrService {
         } else {
           cdnurList.add(noteObj);
         }
+      } else if (inv.supplyType.isExport) {
+        final expTyp = inv.supplyType == SupplyType.exportWithPayment
+            ? 'WPAY'
+            : 'WOPAY';
+        expByTyp.putIfAbsent(expTyp, () => []).add({
+          'inum': inv.invoiceNo,
+          'idt': dateFmt.format(inv.invoiceDate),
+          'val': double.parse(inv.grandTotal.toStringAsFixed(2)),
+          'sbpcode': '',
+          'sbnum': '',
+          'sbdt': '',
+          'itms': itmsJson,
+        });
       } else if (isB2B) {
         b2bByCtin.putIfAbsent(ctin, () => []).add({
           'inum': inv.invoiceNo,
@@ -319,7 +349,7 @@ class GstrService {
           'val': double.parse(inv.grandTotal.toStringAsFixed(2)),
           'pos': posCode,
           'rchrg': inv.reverseCharge == 'Y' ? 'Y' : 'N',
-          'inv_typ': 'R',
+          'inv_typ': invTyp,
           'itms': itmsJson,
         });
       } else if (inv.isInterState && inv.grandTotal > 250000) {
@@ -356,6 +386,7 @@ class GstrService {
           b2cs['iamt'] = (b2cs['iamt'] as double) + b['iamt']!;
           b2cs['camt'] = (b2cs['camt'] as double) + b['camt']!;
           b2cs['samt'] = (b2cs['samt'] as double) + b['samt']!;
+          b2cs['csamt'] = (b2cs['csamt'] as double) + b['csamt']!;
         }
       }
     }
@@ -373,7 +404,7 @@ class GstrService {
         'iamt': double.parse((h['iamt'] as double).toStringAsFixed(2)),
         'camt': double.parse((h['camt'] as double).toStringAsFixed(2)),
         'samt': double.parse((h['samt'] as double).toStringAsFixed(2)),
-        'csamt': 0.0,
+        'csamt': double.parse((h['csamt'] as double).toStringAsFixed(2)),
       };
     }).toList();
 
@@ -384,7 +415,7 @@ class GstrService {
         'typ': b['typ'],
         'rt': b['rt'],
         'txval': double.parse((b['txval'] as double).toStringAsFixed(2)),
-        'csamt': 0.0,
+        'csamt': double.parse((b['csamt'] as double).toStringAsFixed(2)),
       };
       if (b['sply_ty'] == 'INTER') {
         map['iamt'] = double.parse((b['iamt'] as double).toStringAsFixed(2));
@@ -393,6 +424,38 @@ class GstrService {
         map['samt'] = double.parse((b['samt'] as double).toStringAsFixed(2));
       }
       return map;
+    }).toList();
+
+    // Table 13: Documents Issued (includes both active and cancelled non-deleted documents)
+    final docGroups = <int, List<Invoice>>{};
+    for (final inv in nonDeletedInvoices) {
+      final docNum = switch (inv.type) {
+        InvoiceType.debitNote => 4,
+        InvoiceType.creditNote => 5,
+        InvoiceType.deliveryChallan => 2,
+        InvoiceType.invoice || InvoiceType.billOfSupply => 1,
+      };
+      docGroups.putIfAbsent(docNum, () => []).add(inv);
+    }
+
+    final docDetList = docGroups.entries.map((final entry) {
+      final list = List<Invoice>.from(entry.value)
+        ..sort((final a, final b) => a.invoiceNo.compareTo(b.invoiceNo));
+      final totalNum = list.length;
+      final cancelCount = list.where((final i) => i.isCancelled).length;
+      return {
+        'doc_num': entry.key,
+        'docs': [
+          {
+            'num': 1,
+            'from': list.first.invoiceNo,
+            'to': list.last.invoiceNo,
+            'totnum': totalNum,
+            'cancel': cancelCount,
+            'net_issue': totalNum - cancelCount,
+          },
+        ],
+      };
     }).toList();
 
     final effectiveGstin = gstin.trim().isNotEmpty
@@ -418,11 +481,15 @@ class GstrService {
           .map((final e) => {'pos': e.key, 'inv': e.value})
           .toList(),
       'b2cs': b2csData,
+      'exp': expByTyp.entries
+          .map((final e) => {'exp_typ': e.key, 'inv': e.value})
+          .toList(),
       'cdnr': cdnrByCtin.entries
           .map((final e) => {'ctin': e.key, 'nt': e.value})
           .toList(),
       'cdnur': cdnurList,
       'hsn': {'data': hsnData},
+      'doc_issue': {'doc_det': docDetList},
     };
 
     return const JsonEncoder.withIndent('  ').convert(payload);

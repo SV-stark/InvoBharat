@@ -23,6 +23,9 @@ Invoice _createDefaultInvoice(
   final String? defaultStyle,
 }) {
   return Invoice(
+    type: profile.isCompositionDealer
+        ? InvoiceType.billOfSupply
+        : InvoiceType.invoice,
     supplier: Supplier(
       name: profile.companyName,
       address: profile.address,
@@ -313,6 +316,19 @@ class InvoiceNotifier extends Notifier<Invoice> {
 
   void updateInvoiceType(final InvoiceType type) {
     state = state.copyWith(type: type);
+  }
+
+  void updateSupplyType(final SupplyType supplyType) {
+    state = state.copyWith(supplyType: supplyType);
+  }
+
+  void updateItemCessRate(final int index, final String val) {
+    if (index < 0 || index >= state.items.length) return;
+    final newItems = List<InvoiceItem>.from(state.items);
+    newItems[index] = newItems[index].copyWith(
+      cessRate: double.tryParse(val) ?? 0.0,
+    );
+    state = state.copyWith(items: newItems);
   }
 
   void updateOriginalInvoiceNumber(final String val) {
