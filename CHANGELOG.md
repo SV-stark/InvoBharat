@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_No changes yet._
+### Added
+- **Cancelled Invoices & GSTR-1 Table 13 (`doc_issue`)**: Added `Cancel Invoice` action with optional cancellation reason, preserving invoice sequence integrity for GST audit compliance, stamping `CANCELLED` on PDFs, excluding cancelled invoices from dashboard stats and GSTR tax tables, and reporting them in GSTR-1 Portal JSON `doc_issue`.
+- **Period Locking ("Close the Books")**: Added `booksLockedUntil` per business profile (Settings → Business Info) to prevent creating, editing, cancelling, or deleting invoices dated on or before a locked filing period.
+- **Soft-Delete & Trash Bin**: Invoices now soft-delete (`deletedAt`) to a **Trash** bin accessible from the Fluent Dashboard, supporting **Restore**, **Delete Permanently**, and **Empty Trash**.
+- **Indian GST Edge Cases**:
+  - **UTGST**: Automatic UTGST labelling for the 5 Union Territories without a legislature (`04`, `26`, `31`, `35`, `38`) across invoice totals, PDFs, and Tally XML.
+  - **Exports & SEZ**: Added `SupplyType` (`Regular`, `Export (Under LUT)`, `Export (With IGST)`, `SEZ (Under LUT)`, `SEZ (With IGST)`), profile LUT number/date settings, GSTR-1 `exp` / `SEWP` / `SEWOP` JSON support, GSTR-3B `3.1(b)` zero-rated classification, and E-Invoice `SupTyp` mapping.
+  - **Composition Scheme (Rule 46A)**: Added `isCompositionDealer` profile toggle defaulting new bills to `Bill of Supply` with Rule 46A declaration on PDFs.
+  - **Per-Line GST Cess**: Added `cessRate` on invoice items with proportional discount handling across totals, PDFs, GSTR-1 (`csamt`), GSTR-3B, and E-Invoice/E-Way Bill JSONs.
+- **Rule 48 Multi-Copy & PDF Watermarks**: Added `ORIGINAL FOR RECIPIENT`, `DUPLICATE FOR TRANSPORTER`, and `TRIPLICATE FOR SUPPLIER` copy labels in the PDF preview dialog and diagonal `DRAFT` / `CANCELLED` watermarks across all 6 PDF templates.
+- **Tally XML Export (CA Bridge)**: Added `TallyXmlExportService` (`Export Tally XML (.xml)` in Fluent Reports) generating balanced TallyPrime / Tally.ERP 9 XML vouchers (`Sales`, `Credit Note`, `Debit Note`, `Output UTGST`, `Output GST Cess`, `Round Off`, and `<ISCANCELLED>Yes</ISCANCELLED>`).
+- **Database Schema v20 & Tests**: Added Drift v20 migration and `test/services/gst_bookkeeping_features_test.dart` covering all new GST, bookkeeping, database, and PDF features.
 
 ## [1.2.0] - 2026-11-14
 
